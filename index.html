@@ -275,6 +275,7 @@
           <input type="email" id="authLoginEmail" placeholder="ornek@eposta.com">
           <label for="authLoginPassword">Şifre</label>
           <input type="password" id="authLoginPassword" placeholder="••••••••">
+          <div class="auth-modal-forgot"><a href="#" data-auth-switch="reset">Şifremi unuttum</a></div>
           <button class="btn-primary" type="button">Giriş Yap</button>
           <div class="auth-modal-divider">veya</div>
           <div class="auth-social-list">
@@ -296,6 +297,14 @@
             </button>
           </div>
           <div class="auth-modal-switch">Hesabın yok mu? <a href="#" data-auth-switch="register">Üye ol</a></div>
+        </div>
+        <div class="auth-modal-panel" data-auth-panel="reset">
+          <strong class="auth-reset-title">Şifreni mi unuttun?</strong>
+          <p class="auth-reset-intro">E-posta adresini gir, şifreni yenilemen için sana bir bağlantı gönderelim.</p>
+          <label for="authResetEmail">E-posta</label>
+          <input type="email" id="authResetEmail" placeholder="ornek@eposta.com">
+          <button class="btn-primary" type="button">Sıfırlama bağlantısı gönder</button>
+          <div class="auth-modal-switch">Şifreni hatırladın mı? <a href="#" data-auth-switch="login">Giriş yap</a></div>
         </div>
         <div class="auth-modal-panel" data-auth-panel="register">
           <label for="authRegName">Ad Soyad</label>
