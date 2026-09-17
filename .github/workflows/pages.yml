@@ -30,6 +30,17 @@ jobs:
           # Repo icin Pages henuz etkinlestirilmemisse ilk calistirmada otomatik acar.
           enablement: true
 
+      # Tarayicilar style.css / app.js gibi sabit adli dosyalari onbellekte
+      # tutuyor ve yeni surum yayinlandiginda eski dosyayi gosterebiliyor.
+      # Her yayinda dosya adlarina commit'e ozel ?v=... eklenir; adres
+      # degistigi icin tarayici dosyayi yeniden indirmek zorunda kalir.
+      - name: Statik dosyalara surum damgasi ekle
+        run: |
+          VER="${GITHUB_SHA::8}"
+          sed -E -i 's#(href|src)="(assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' index.html
+          echo "Surum: $VER"
+          grep -nE 'assets/(css|js)/' index.html
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
