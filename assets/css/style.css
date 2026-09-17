@@ -1048,6 +1048,13 @@ ul {
   border-color: #1666d8;
 }
 .auth-social-btn.auth-social-facebook .icon { color: #fff; }
+/* Facebook marka isareti dolgulu cizilir: genel ".icon svg" kurali tum
+   ikonlari cizgi (stroke) olarak gosterdigi icin burada geri alinir.
+   Daire beyaz dolar, "f" harfi bosluk olarak butonun mavisini gosterir. */
+.auth-social-btn.auth-social-facebook .icon svg {
+  fill: currentColor;
+  stroke: none;
+}
 .auth-social-btn.auth-social-instagram {
   background: linear-gradient(90deg,#F58529,#DD2A7B,#8134AF,#515BD4);
   border-color: transparent;
@@ -1178,7 +1185,9 @@ ul {
      altına indirilmez, aksi halde iOS alana dokununca sayfayı
      yakınlaştırır. */
   .auth-modal-panel input {
-    padding: 9px 14px;
+    /* box-sizing:border-box oldugu icin yukseklik kenarlik ve bosluk dahil. */
+    height: 43px;
+    padding: 10px 14px;
     font-size: 16px;
     line-height: 1.25;
   }
