@@ -2099,6 +2099,9 @@ document.addEventListener('keydown', (e)=>{
 function setAuthTab(tab){
   document.querySelectorAll('.auth-modal-tab').forEach(t=> t.classList.toggle('active', t.dataset.authTab===tab));
   document.querySelectorAll('.auth-modal-panel').forEach(p=> p.classList.toggle('active', p.dataset.authPanel===tab));
+  /* Şifre sıfırlama ayrı bir adım; sekme çubuğu gizlenir, ekranın kendi
+     başlığı ve "Giriş yap"a dönüş bağlantısı devreye girer. */
+  authOverlay.classList.toggle('is-reset', tab === 'reset');
 }
 document.getElementById('headerRegisterBtn').addEventListener('click', ()=> openAuthModal('login'));
 document.getElementById('drawerAuthBtn').addEventListener('click', ()=> openAuthModal('login'));
