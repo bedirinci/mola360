@@ -51,7 +51,12 @@ html,body {
    kaplamadığı için scrollbar-gutter da 0'a düşer, kilit sırasında
    yerleşim kaymaz. Mobilde işletim sisteminin kendi otomatik gizlenen
    çubuğu olduğu gibi bırakılır. */
+/* Sayfa tuvali (canvas): belgenin bittiği yerin altı ve mobil tarayıcıların
+   "lastik" (overscroll) alanı bu renkle boyanır. Footer ile aynı lacivert
+   olduğu için sayfanın altında açık renk bir şerit görünmez; body kendi
+   açık zeminini zaten ayrıca taşıyor. */
 html {
+  background: var(--navy-deep);
   overflow-y: scroll;
   scrollbar-gutter: stable;
   overscroll-behavior-y: contain;
@@ -3131,10 +3136,15 @@ ul {
   .tab-item:active {
     transform: scale(.93);
   }
+  /* Alt menünün kapladığı yeri footer'ın KENDİ alt boşluğu ayırıyor.
+     Burada ayrıca body'ye boşluk verilirse footer'ın altında sayfa
+     zemini renginde (açık) boş bir şerit kalıyor ve sayfa lacivert
+     footer ile bitmiyordu. */
   body {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    padding-bottom: 0;
   }
   .site-footer {
+    margin-bottom: 0;
     padding: 24px 12px calc(100px + env(safe-area-inset-bottom));
   }
 }
