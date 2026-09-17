@@ -201,12 +201,8 @@ function setCssVars(el, vars){
     else el.style.setProperty(name, String(value));
   });
 }
-function getInitials(name){
-  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
-  if(!parts.length) return '?';
-  if(parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-}
+/* normalizeSearchText, getSearchCategoryIcon, getSearchCardType, getInitials
+   artık assets/js/search-utils.js içinde (bu dosyadan önce yüklenir). */
 function renderProfileAvatar(el){
   if(!el) return;
   if(currentUser.avatarUrl){
@@ -811,31 +807,8 @@ if (searchOverlayInput) searchOverlayInput.addEventListener('keydown', event => 
 
 const searchOverlayClear = document.getElementById('searchOverlayClear');
 
-function normalizeSearchText(value) {
-  return String(value || '').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-function getSearchCategoryIcon(name) {
-  const iconMap = {
-    'Fırsatlar':'percent',
-    'Etkinlikler':'ticket',
-    'Oteller':'home',
-    'Aktiviteler':'compass',
-    'Mekanlar':'mapPin',
-    'Kuponlarım':'wallet',
-    'Yeni Eklenenler':'star',
-    'Bu Hafta':'calendar'
-  };
-  return iconMap[name] || 'compass';
-}
-
-function getSearchCardType(sectionTitle) {
-  if (sectionTitle.includes('Otel')) return 'Otel';
-  if (sectionTitle.includes('Aktivit')) return 'Aktivite';
-  if (sectionTitle.includes('Tur')) return 'Tur';
-  return 'Etkinlik';
-}
-
+/* normalizeSearchText, getSearchCategoryIcon, getSearchCardType artık
+   assets/js/search-utils.js içinde (bu dosyadan önce yüklenir). */
 function getSearchImage(item) {
   return cardImages[item.img] || ('https://picsum.photos/seed/'+encodeURIComponent(item.img)+'/400/300');
 }
