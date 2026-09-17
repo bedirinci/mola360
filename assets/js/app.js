@@ -1112,16 +1112,147 @@ document.getElementById('searchHomeContent').addEventListener('click', (e)=>{
   searchOverlayInput.focus({preventScroll:true});
 });
 
-/* ---------------- notification panel toggle ---------------- */
+/* ---------------- bildirimler ----------------
+   Liste tek kaynaktan (bu dizi) uretilir; filtreleme, gruplama ve sayac
+   metinleri notif-utils.js'teki saf fonksiyonlardan gelir.
+   group: 'today' | 'week' | 'earlier'  ·  type: filtre cipleriyle ayni anahtar */
+const notifications = [
+  {id:'n1',  type:'deal',     group:'today',   time:'5 dakika önce', unread:true,  title:'Kapadokya Balon Turu\'nda %20 indirim!'},
+  {id:'n2',  type:'booking',  group:'today',   time:'1 saat önce',   unread:true,  title:'Rezervasyonunuz onaylandı: Pamukkale Termal Tatili'},
+  {id:'n3',  type:'event',    group:'today',   time:'3 saat önce',   unread:true,  title:'Yeni etkinlik: Bodrum Tekne Turu yakında başlıyor'},
+  {id:'n4',  type:'favorite', group:'week',    time:'Dün',           unread:true,  title:'Favorilediğiniz Efes Turu\'nda yer sayısı azalıyor'},
+  {id:'n5',  type:'system',   group:'week',    time:'2 gün önce',    unread:true,  title:'Hesap bilgilerinizi güncellemeyi unutmayın'},
+  {id:'n6',  type:'deal',     group:'week',    time:'2 gün önce',    unread:true,  title:'Antalya Tekne Turu\'nda son 3 gün: %15 indirim'},
+  {id:'n7',  type:'booking',  group:'week',    time:'2 gün önce',    unread:false, title:'Rezervasyonunuz onaylandı: Fethiye Yamaç Paraşütü'},
+  {id:'n8',  type:'event',    group:'week',    time:'3 gün önce',    unread:false, title:'Yeni etkinlik: Pamukkale Gün Doğumu Turu eklendi'},
+  {id:'n9',  type:'favorite', group:'week',    time:'3 gün önce',    unread:false, title:'Favorilediğiniz Kapadokya Balon Turu\'nda fiyat düştü'},
+  {id:'n10', type:'system',   group:'week',    time:'3 gün önce',    unread:false, title:'Ödeme yönteminizin süresi yakında doluyor'},
+  {id:'n11', type:'deal',     group:'week',    time:'4 gün önce',    unread:false, title:'Hafta sonuna özel: Bursa Uludağ Turu\'nda %10 indirim'},
+  {id:'n12', type:'booking',  group:'week',    time:'4 gün önce',    unread:false, title:'Rezervasyon hatırlatması: İzmir Efes Turu yarın'},
+  {id:'n13', type:'event',    group:'week',    time:'5 gün önce',    unread:false, title:'Yeni etkinlik: Bodrum Gece Turu programı yayında'},
+  {id:'n14', type:'favorite', group:'week',    time:'5 gün önce',    unread:false, title:'Favorilediğiniz Pamukkale Termal Tatili\'nde son 5 kontenjan'},
+  {id:'n15', type:'system',   group:'week',    time:'6 gün önce',    unread:false, title:'Gizlilik politikamızda güncelleme yapıldı'},
+  {id:'n16', type:'deal',     group:'earlier', time:'1 hafta önce',  unread:false, title:'Erken rezervasyon fırsatı: Fethiye Tekne Turu\'nda %25 indirim'},
+  {id:'n17', type:'booking',  group:'earlier', time:'1 hafta önce',  unread:false, title:'Rezervasyonunuz onaylandı: Kapadokya Balon Turu'},
+  {id:'n18', type:'event',    group:'earlier', time:'1 hafta önce',  unread:false, title:'Yeni etkinlik: Antalya Rafting Turu takvime eklendi'},
+  {id:'n19', type:'system',   group:'earlier', time:'1 hafta önce',  unread:false, title:'Uygulamamızın yeni sürümü yayında, güncellemeyi unutmayın'},
+  {id:'n20', type:'favorite', group:'earlier', time:'1 hafta önce',  unread:false, title:'Favorilediğiniz Bodrum Tekne Turu\'nda yeni tarihler eklendi'}
+];
+
+const notifTypeIcons = {
+  deal:     '<circle cx="7.5" cy="7.5" r="1.6"></circle><circle cx="16.5" cy="16.5" r="1.6"></circle><line x1="18" y1="6" x2="6" y2="18"></line>',
+  booking:  '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><line x1="3" y1="9.5" x2="21" y2="9.5"></line><line x1="8" y1="2.5" x2="8" y2="6.5"></line><line x1="16" y1="2.5" x2="16" y2="6.5"></line><polyline points="9 14.5 11 16.5 15 12.5"></polyline>',
+  event:    '<path d="M3 8.5A2 2 0 0 1 5 6.5h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4.4v2A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4.4z"></path><line x1="9.5" y1="6.5" x2="9.5" y2="19" stroke-dasharray="2.2 2.2"></line>',
+  favorite: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"></path>',
+  system:   '<circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>'
+};
+function notifIconSvg(paths){
+  return '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+}
+
 const notifBtn = document.getElementById('notifBtn');
 const notifPanel = document.getElementById('notifPanel');
 const notifPanelInner = notifPanel.querySelector('.notif-panel-inner');
+const notifListEl = document.getElementById('notifList');
+const notifFiltersEl = document.getElementById('notifFilters');
+const notifSubtitleEl = document.getElementById('notifPanelSubtitle');
+const notifMarkAllBtn = document.getElementById('notifMarkAll');
+const notifBackBtn = document.getElementById('notifPanelBack');
+const notifBadgeEl = document.querySelector('.notif-badge');
+let notifFilter = 'all';
+
+function notifItemMarkup(item){
+  return `<div class="notif-item${item.unread ? ' unread' : ''}" data-notif-id="${item.id}" role="button" tabindex="0" aria-label="${getNotifTypeLabel(item.type)}: ${item.title}">
+    <span class="notif-icon ${item.type}"><span class="icon">${notifIconSvg(notifTypeIcons[item.type] || notifTypeIcons.system)}</span></span>
+    <span class="notif-text">
+      <span class="notif-meta"><span class="notif-type">${getNotifTypeLabel(item.type)}</span><span class="notif-meta-dot"></span><span class="notif-time">${item.time}</span></span>
+      <span class="notif-title">${item.title}</span>
+    </span>
+    <button class="notif-dismiss" type="button" data-notif-dismiss="${item.id}" aria-label="Bildirimi kaldır">
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>`;
+}
+
+function notifEmptyMarkup(){
+  const text = notifFilter === 'unread'
+    ? 'Okunmamış bildirimin kalmadı. Yeni bir şey olduğunda burada göreceksin.'
+    : 'Bu filtrede gösterilecek bildirim yok. Başka bir filtre deneyebilirsin.';
+  return `<div class="notif-empty">
+    <span class="notif-empty-icon">${notifIconSvg('<path d="M18 8a6 6 0 0 0-9.3-5"></path><path d="M6.2 6.3A6 6 0 0 0 6 8c0 7-3 9-3 9h13"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path><line x1="3" y1="3" x2="21" y2="21"></line>')}</span>
+    <p class="notif-empty-title">Bildirim yok</p>
+    <p class="notif-empty-text">${text}</p>
+  </div>`;
+}
+
+function renderNotifFilters(){
+  notifFiltersEl.innerHTML = NOTIF_FILTERS.map(f => `<button class="notif-filter-chip${f.key === notifFilter ? ' active' : ''}" type="button" role="tab" aria-selected="${f.key === notifFilter}" data-notif-filter="${f.key}">${f.label}<span class="notif-filter-count"></span></button>`).join('');
+}
+
+function renderNotifList(){
+  const groups = groupNotifications(filterNotifications(notifications, notifFilter));
+  notifListEl.innerHTML = groups.length
+    ? groups.map(g => `<div class="notif-group"><div class="notif-group-head">${g.label}</div>${g.items.map(notifItemMarkup).join('')}</div>`).join('')
+    : notifEmptyMarkup();
+}
+
+/* Rozet, ozet satiri ve cip sayaclari tek yerden guncellenir. */
+function refreshNotifChrome(){
+  const unread = countUnreadNotifications(notifications);
+  if (notifBadgeEl){
+    notifBadgeEl.textContent = formatNotifCount(unread);
+    notifBadgeEl.classList.toggle('is-hidden', unread === 0);
+  }
+  if (notifSubtitleEl) notifSubtitleEl.textContent = notifSummaryText(unread);
+  if (notifMarkAllBtn) notifMarkAllBtn.disabled = unread === 0;
+  notifBtn.setAttribute('aria-label', unread > 0 ? `Bildirimler (${unread} okunmamış)` : 'Bildirimler');
+  notifFiltersEl.querySelectorAll('[data-notif-filter]').forEach(chip => {
+    const countEl = chip.querySelector('.notif-filter-count');
+    if (!countEl) return;
+    const count = filterNotifications(notifications, chip.dataset.notifFilter).length;
+    countEl.textContent = count;
+    chip.classList.toggle('is-empty', count === 0);
+  });
+}
+
+function renderNotifications(){
+  renderNotifFilters();
+  renderNotifList();
+  refreshNotifChrome();
+}
+renderNotifications();
+
+function markNotifRead(id, itemEl){
+  const item = notifications.find(n => n.id === id);
+  if (!item || !item.unread) return;
+  item.unread = false;
+  /* Liste yeniden cizilmez; kullanicinin kaydirma konumu korunur. */
+  if (itemEl) itemEl.classList.remove('unread');
+  refreshNotifChrome();
+}
+
+function dismissNotification(id, itemEl){
+  const index = notifications.findIndex(n => n.id === id);
+  if (index > -1) notifications.splice(index, 1);
+  refreshNotifChrome();
+  if (!itemEl) { renderNotifList(); return; }
+  itemEl.classList.add('is-removing');
+  window.setTimeout(() => {
+    const group = itemEl.closest('.notif-group');
+    itemEl.remove();
+    if (group && !group.querySelector('.notif-item')) group.remove();
+    if (!notifListEl.querySelector('.notif-item')) renderNotifList();
+  }, 180);
+}
+
 function closeNotifPanel(){
+  const wasOpen = notifPanel.classList.contains('open');
   notifPanel.classList.remove('open');
-  notifPanelInner.classList.remove('is-mobile-positioned');
   notifBtn.setAttribute('aria-expanded','false');
   document.body.classList.remove('notif-modal-open');
   refreshScrollLock();
+  /* Tam ekran sayfadan cikarken odak zil ikonuna geri doner. */
+  if (wasOpen && isMobileViewport()) notifBtn.focus({preventScroll:true});
 }
 notifBtn.addEventListener('click', (e)=>{
   e.stopPropagation();
@@ -1134,22 +1265,22 @@ notifBtn.addEventListener('click', (e)=>{
     profilePanel.classList.remove('open');
     profileBtn.classList.remove('open');
     document.body.classList.remove('profile-modal-open');
-    const rect = notifBtn.getBoundingClientRect();
-    const gap = 10;
-    const viewportTop = Math.round(rect.bottom + gap);
-    const right = Math.max(12, Math.round(window.innerWidth - rect.right) - 15);
-    const maxH = Math.max(240, window.innerHeight - viewportTop - 20) + 'px';
-    /* Mobil (ortalanmış, kararmış popup) için */
-    setCssVars(notifPanelInner, { '--notif-mobile-top': viewportTop + 'px', '--notif-mobile-max-height': maxH });
-    notifPanelInner.classList.add('is-mobile-positioned');
-    /* Masaüstü/tablet: dikey konum artık header ile aynı sabit sistemde
+    /* Masaüstü/tablet: dikey konum header ile aynı sabit sistemde
        (CSS'te top:66px, arama ekranındaki gibi); burada sadece panelin
-       zil ikonunun altına denk gelmesi için yatay (sağ) boşluk hesaplanır. */
+       zil ikonunun altına denk gelmesi için yatay (sağ) boşluk hesaplanır.
+       Mobilde panel tam ekran açıldığı için bu değer kullanılmaz. */
+    const rect = notifBtn.getBoundingClientRect();
+    const right = Math.max(12, Math.round(window.innerWidth - rect.right) - 15);
     setCssVars(notifPanelInner, { '--notif-dd-right': right + 'px' });
+    notifListEl.scrollTop = 0;
+    /* Panel yalnızca mobilde tam ekran ve sayfayı kilitleyen bir diyalog;
+       masaüstünde header'a bitişik bir açılır menü. */
+    notifPanel.setAttribute('aria-modal', isMobileViewport() ? 'true' : 'false');
     notifPanel.classList.add('open');
     notifBtn.setAttribute('aria-expanded','true');
     document.body.classList.add('notif-modal-open');
     refreshScrollLock();
+    if (isMobileViewport() && notifBackBtn) notifBackBtn.focus({preventScroll:true});
   }
 });
 notifPanelInner.addEventListener('click', (e)=> e.stopPropagation());
@@ -1163,15 +1294,43 @@ document.addEventListener('click', (e)=>{
   if (notifBtn.contains(e.target) || notifPanelInner.contains(e.target)) return;
   closeNotifPanel();
 });
+if (notifBackBtn) notifBackBtn.addEventListener('click', (e)=>{ e.stopPropagation(); closeNotifPanel(); });
 document.getElementById('notifPanelClose').addEventListener('click', (e)=>{
   e.stopPropagation();
   closeNotifPanel();
 });
-document.getElementById('notifMarkAll').addEventListener('click', ()=>{
-  document.querySelectorAll('.notif-item.unread').forEach(item=>{
-    item.classList.remove('unread');
-  });
-  document.querySelector('.notif-badge')?.classList.add('is-hidden');
+notifMarkAllBtn.addEventListener('click', ()=>{
+  notifications.forEach(item => { item.unread = false; });
+  notifListEl.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+  if (notifFilter === 'unread') renderNotifList();
+  refreshNotifChrome();
+});
+notifFiltersEl.addEventListener('click', (e)=>{
+  const chip = e.target.closest('[data-notif-filter]');
+  if (!chip || chip.dataset.notifFilter === notifFilter) return;
+  notifFilter = chip.dataset.notifFilter;
+  renderNotifFilters();
+  renderNotifList();
+  refreshNotifChrome();
+  notifListEl.scrollTop = 0;
+});
+notifListEl.addEventListener('click', (e)=>{
+  const dismissBtn = e.target.closest('[data-notif-dismiss]');
+  if (dismissBtn){
+    e.stopPropagation();
+    dismissNotification(dismissBtn.dataset.notifDismiss, dismissBtn.closest('.notif-item'));
+    return;
+  }
+  const item = e.target.closest('.notif-item');
+  if (!item) return;
+  markNotifRead(item.dataset.notifId, item);
+});
+notifListEl.addEventListener('keydown', (e)=>{
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const item = e.target.closest('.notif-item');
+  if (!item) return;
+  e.preventDefault();
+  markNotifRead(item.dataset.notifId, item);
 });
 
 /* ---------------- profil menüsü toggle ---------------- */
@@ -1916,6 +2075,10 @@ function openAuthModal(tab){
     authOverlay.classList.add('open');
     document.body.classList.add('auth-modal-open');
     refreshScrollLock();
+    /* Mobilde ekran tam sayfa açıldığı için odak, klavyeyi açmayan geri
+       butonuna taşınır; kullanıcı ilk dokunuşta çıkışı bulabilsin. */
+    const backBtn = document.getElementById('authModalBackBtn');
+    if (backBtn && isMobileViewport()) backBtn.focus({preventScroll:true});
   }
   setAuthTab(tab || 'login');
 }
@@ -1969,6 +2132,8 @@ if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal(
   });
 })();
 document.getElementById('authModalCloseBtn').addEventListener('click', closeAuthModal);
+/* Mobil tam ekran başlığındaki geri oku da aynı kapatmayı çalıştırır. */
+document.getElementById('authModalBackBtn').addEventListener('click', closeAuthModal);
 authOverlay.addEventListener('click', e=>{ if(e.target === authOverlay) closeAuthModal(); });
 document.querySelectorAll('.auth-modal-tab').forEach(tabBtn=>{
   tabBtn.addEventListener('click', ()=> setAuthTab(tabBtn.dataset.authTab));

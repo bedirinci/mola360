@@ -254,6 +254,17 @@
   <div class="auth-modal-overlay" id="authModalOverlay">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Giriş yap">
       <button class="auth-modal-close" id="authModalCloseBtn" aria-label="Kapat"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span></button>
+      <!-- Mobilde tam ekran acilan giris ekraninin lacivert basligi.
+           Masaustunde gizlenir; orada sag ustteki kapatma butonu kullanilir. -->
+      <div class="auth-modal-hero">
+        <button class="auth-modal-back" id="authModalBackBtn" type="button" aria-label="Geri">
+          <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>
+        </button>
+        <div class="auth-modal-hero-text">
+          <strong>Mola360'a hoş geldin</strong>
+          <span>Giriş yap ya da saniyeler içinde üye ol; fırsatlar ve biletlerin tek yerde.</span>
+        </div>
+      </div>
       <div class="auth-modal-tabs">
         <button class="auth-modal-tab active" data-auth-tab="login" id="authTabLogin">Giriş Yap</button>
         <button class="auth-modal-tab" data-auth-tab="register" id="authTabRegister">Üye Ol</button>
@@ -348,160 +359,30 @@
       </div>
     </div>
   </header>
-  <!-- Bildirimler paneli: header disinda, tam ekran overlay z-index zincirinin (bottom-tab-bar dahil) uzerinde kalmasi icin. -->
-        <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Bildirimler">
-         <div class="notif-panel-inner">
-          <div class="notif-panel-header">
-            <span>Bildirimler</span>
-            <button class="notif-mark-all" id="notifMarkAll">Tümünü okundu işaretle</button>
-            <button class="notif-panel-close" id="notifPanelClose" aria-label="Kapat">
-              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-          <div class="notif-list">
-            <div class="notif-item unread">
-              <div class="notif-icon deal"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Kapadokya Balon Turu'nda %20 indirim!</p>
-                <p class="notif-time">5 dakika önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon booking"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Rezervasyonunuz onaylandı: Pamukkale Termal Tatili</p>
-                <p class="notif-time">1 saat önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon event"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><path d="M8 13h4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Yeni etkinlik: Bodrum Tekne Turu yakında başlıyor</p>
-                <p class="notif-time">3 saat önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon favorite"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Favorilediğiniz Efes Turu'nda yer sayısı azalıyor</p>
-                <p class="notif-time">Dün</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon system"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Hesap bilgilerinizi güncellemeyi unutmayın</p>
-                <p class="notif-time">2 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon deal"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Antalya Tekne Turu'nda son 3 gün: %15 indirim</p>
-                <p class="notif-time">2 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon booking"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Rezervasyonunuz onaylandı: Fethiye Yamaç Paraşütü</p>
-                <p class="notif-time">2 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon event"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><path d="M8 13h4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Yeni etkinlik: Pamukkale Gün Doğumu Turu eklendi</p>
-                <p class="notif-time">3 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon favorite"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Favorilediğiniz Kapadokya Balon Turu'nda fiyat düştü</p>
-                <p class="notif-time">3 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon system"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Ödeme yönteminizin süresi yakında doluyor</p>
-                <p class="notif-time">3 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon deal"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Hafta sonuna özel: Bursa Uludağ Turu'nda %10 indirim</p>
-                <p class="notif-time">4 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon booking"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Rezervasyon hatırlatması: İzmir Efes Turu yarın</p>
-                <p class="notif-time">4 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon event"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><path d="M8 13h4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Yeni etkinlik: Bodrum Gece Turu programı yayında</p>
-                <p class="notif-time">5 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon favorite"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Favorilediğiniz Pamukkale Termal Tatili'nde son 5 kontenjan</p>
-                <p class="notif-time">5 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon system"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Gizlilik politikamızda güncelleme yapıldı</p>
-                <p class="notif-time">6 gün önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon deal"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12l2 2 4-4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Erken rezervasyon fırsatı: Fethiye Tekne Turu'nda %25 indirim</p>
-                <p class="notif-time">1 hafta önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon booking"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Rezervasyonunuz onaylandı: Kapadokya Balon Turu</p>
-                <p class="notif-time">1 hafta önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon event"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><path d="M8 13h4"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Yeni etkinlik: Antalya Rafting Turu takvime eklendi</p>
-                <p class="notif-time">1 hafta önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon system"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Uygulamamızın yeni sürümü yayında, güncellemeyi unutmayın</p>
-                <p class="notif-time">1 hafta önce</p>
-              </div>
-            </div>
-            <div class="notif-item unread">
-              <div class="notif-icon favorite"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg></span></div>
-              <div class="notif-text">
-                <p class="notif-title">Favorilediğiniz Bodrum Tekne Turu'nda yeni tarihler eklendi</p>
-                <p class="notif-time">1 hafta önce</p>
-              </div>
-            </div>
-          </div>
-         </div>
+  <!-- Bildirimler: mobilde tam ekran bildirim sayfasi, masaustunde header'a
+       bitisik acilir panel. Liste app.js'teki "notifications" verisinden
+       uretilir; filtreleme/gruplama notif-utils.js'teki saf fonksiyonlarla
+       hesaplanir. Header disinda durur ki tam ekran overlay z-index
+       zincirinin (bottom-tab-bar dahil) uzerinde kalsin. -->
+  <div class="notif-panel" id="notifPanel" role="dialog" aria-modal="true" aria-label="Bildirimler">
+    <div class="notif-panel-inner">
+      <div class="notif-panel-header">
+        <button class="notif-panel-back" id="notifPanelBack" type="button" aria-label="Geri">
+          <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>
+        </button>
+        <div class="notif-panel-heading">
+          <span class="notif-panel-title">Bildirimler</span>
+          <span class="notif-panel-subtitle" id="notifPanelSubtitle">Tüm bildirimler okundu</span>
         </div>
+        <button class="notif-mark-all" id="notifMarkAll" type="button">Tümünü oku</button>
+        <button class="notif-panel-close" id="notifPanelClose" type="button" aria-label="Kapat">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="notif-filter-row" id="notifFilters" role="tablist" aria-label="Bildirim filtreleri"></div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+  </div>
 
   <!-- Profil menüsü: bildirim paneliyle aynı sistemde, header'a bitişik açılır. -->
         <div class="profile-panel" id="profilePanel" role="dialog" aria-label="Hesap menüsü">
@@ -801,6 +682,7 @@
 </main>
 
 <script src="assets/js/search-utils.js"></script>
+<script src="assets/js/notif-utils.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/ui.js"></script>
 
