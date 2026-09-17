@@ -1,0 +1,8 @@
+# Satır sonları her ortamda (Windows / Linux / bulut oturumu) LF kalsın.
+* text=auto eol=lf
+
+# Görseller ikili dosya; Git bunlara dokunmasın.
+*.png binary
+*.webp binary
+*.jpg binary
+*.ico binary
