@@ -1,0 +1,12 @@
+{
+  "name": "mola360",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Gezi, etkinlik ve konaklama rezervasyon platformu.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.4"
+  }
+}
