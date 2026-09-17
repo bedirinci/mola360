@@ -351,121 +351,114 @@ ul {
   padding: 0 3px;
   border: 1.5px solid var(--navy);
 }
+/* Okunmamış kalmadığında rozet tamamen kalkar (sayı JS ile yazılır). */
+.notif-badge.is-hidden {
+  display: none;
+}
+/* ==================== BİLDİRİMLER ====================
+   Mobil (<=680px): tam ekran bildirim sayfası. Arama ekranıyla aynı dilde
+   lacivert başlık, altında filtre çipleri ve zaman gruplarına ayrılmış liste.
+   Masaüstü/tablet (>=681px): header'daki zil ikonunun altına sabitlenen
+   açılır panel (yatay konum JS'teki --notif-dd-right ile hesaplanır).
+   ====================================================== */
 .notif-panel {
   display: none;
   position: fixed;
   inset: 0;
-  margin: 0;
-  width: auto;
-  height: auto;
-  box-sizing: border-box;
-  align-items: flex-start;
-  justify-content: center;
   z-index: 5001;
-  padding: 0 35px 20px;
-  background: rgba(11, 18, 48, 0.6);
+  background: var(--bg);
 }
 .notif-panel.open {
-  display: flex;
+  display: block;
 }
 .notif-panel-inner {
-  width: 100%;
-  max-width: 370px;
-  max-height: min(520px, 70vh);
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  animation: notifSheetIn .26s cubic-bezier(.32,.72,0,1);
 }
-@media (max-width: 680px) {
-  .notif-panel-inner {
-    max-width: 390px;
-  }
+@keyframes notifSheetIn {
+  from { transform: translateY(100%); opacity: .5; }
+  to   { transform: none; opacity: 1; }
 }
-/* ---- Bildirimler: masaüstü/tablette, arama ekranıyla aynı sistemde
-   header'a bitişik şekilde açılır. Header bu genişliklerde sabit (fixed)
-   olduğu için panel de position:fixed ile header'ın hemen altına (aynı
-   top değeriyle, 66px) sabitlenir; sayfa kaydırıldığında header gibi
-   yerinde kalır. Yatay konum (sağ boşluk) zil ikonunun altına denk
-   gelecek şekilde JS ile hesaplanır. Mobil davranış (yukarıda) bu
-   kuralların dışında kalır. ---- */
-@media (min-width: 681px) {
-  .notif-panel {
-    position: static;
-    padding: 0;
-    background: transparent;
-  }
-  .notif-panel.open {
-    display: block;
-  }
-  .notif-panel-inner {
-    position: fixed !important;
-    top: 66px !important;
-    left: auto !important;
-    right: var(--notif-dd-right, 24px) !important;
-    margin: 0 !important;
-    width: 550px;
-    max-width: min(550px, calc(100vw - 32px));
-    max-height: calc(100vh - 66px - 20px) !important;
-    max-height: calc(100dvh - 66px - 20px) !important;
-    border-radius: 0 0 18px 18px !important;
-    box-shadow: 0 8px 20px rgba(21,32,72,.10);
-    z-index: 5001;
-  }
-}
-@media (min-width: 1025px) {
-  .notif-panel-header {
-    padding: 16px 20px;
-    font-size: 16px;
-  }
-  .notif-item {
-    padding: 14px 20px;
-    gap: 14px;
-  }
-  .notif-icon {
-    width: 40px;
-    height: 40px;
-  }
-  .notif-icon .icon {
-    width: 19px;
-    height: 19px;
-  }
-  .notif-title {
-    font-size: 13.5px;
-  }
-  .notif-time {
-    font-size: 12px;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .notif-panel-inner { animation: none; }
+  .notif-item { transition: none; }
 }
 .notif-panel-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
+  background: var(--navy);
+  color: #fff;
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+  box-shadow: 0 3px 10px rgba(11,18,48,.11);
+}
+.notif-panel-back {
   flex-shrink: 0;
-}
-.notif-panel-header > span {
-  flex-shrink: 0;
-}
-.notif-mark-all {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--green-dark);
-  margin-left: auto;
-}
-.notif-panel-close {
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+}
+.notif-panel-back:hover {
+  background: rgba(255,255,255,.1);
+}
+.notif-panel-back .icon,
+.notif-panel-back svg {
+  width: 22px;
+  height: 22px;
+}
+.notif-panel-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.notif-panel-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.notif-panel-subtitle {
+  font-size: 12px;
+  color: rgba(255,255,255,.72);
+}
+.notif-mark-all {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background .15s ease, opacity .15s ease;
+}
+.notif-mark-all:hover {
+  background: rgba(255,255,255,.22);
+}
+.notif-mark-all:disabled {
+  opacity: .45;
+  pointer-events: none;
+}
+/* Mobilde kapatma işini başlıktaki geri oku üstlenir. */
+.notif-panel-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
   color: var(--text-faint);
 }
@@ -474,63 +467,311 @@ ul {
   width: 18px;
   height: 18px;
 }
+/* ---- filtre çipleri ---- */
+.notif-filter-row {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.notif-filter-row::-webkit-scrollbar {
+  display: none;
+}
+.notif-filter-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.notif-filter-chip:hover {
+  border-color: #D6DAE4;
+}
+.notif-filter-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.notif-filter-chip.is-empty {
+  opacity: .5;
+}
+/* Seçili çip boş olsa bile soluklaşmaz; aktif durum net kalmalı. */
+.notif-filter-chip.active.is-empty {
+  opacity: 1;
+}
+.notif-filter-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.notif-filter-chip.active .notif-filter-count {
+  color: rgba(255,255,255,.78);
+}
+/* ---- liste ---- */
 .notif-list {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 14px calc(22px + env(safe-area-inset-bottom));
+}
+.notif-group-head {
+  padding: 12px 4px 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 .notif-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
   position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 12px 12px 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .15s ease, opacity .18s ease, border-color .15s ease;
 }
-.notif-item:last-child {
-  border-bottom: none;
+.notif-item:active {
+  transform: scale(.995);
 }
-.notif-item.unread {
-  background: #F6F8FF;
-}
+/* Okunmamış: sol kenarda yeşil şerit + daha koyu başlık. */
 .notif-item.unread::before {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 18px;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
   background: var(--green);
+}
+.notif-item.is-removing {
+  opacity: 0;
+  transform: translateX(18px);
 }
 .notif-icon {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
 }
 .notif-icon .icon {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
+  display: block;
 }
-.notif-icon.deal { background: #2F9E44; }
-.notif-icon.booking { background: #1E6FD9; }
-.notif-icon.event { background: #E8940C; }
-.notif-icon.favorite { background: #E4483C; }
-.notif-icon.system { background: #6B7180; }
-.notif-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.35;
+.notif-icon .icon svg {
+  width: 100%;
+  height: 100%;
+}
+.notif-icon.deal     { background: rgba(47,158,68,.12);  color: #2F9E44; }
+.notif-icon.booking  { background: rgba(30,111,217,.12); color: #1E6FD9; }
+.notif-icon.event    { background: rgba(232,148,12,.15); color: #C77A05; }
+.notif-icon.favorite { background: rgba(228,72,60,.12);  color: #E4483C; }
+.notif-icon.system   { background: rgba(107,113,128,.14);color: #6B7180; }
+.notif-text {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+.notif-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.notif-type {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.notif-meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--text-faint);
 }
 .notif-time {
   font-size: 11.5px;
   color: var(--text-faint);
-  margin-top: 3px;
+}
+.notif-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.notif-item.unread .notif-title {
+  font-weight: 700;
+  color: var(--text);
+}
+.notif-dismiss {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-faint);
+  transition: background .15s ease, color .15s ease;
+}
+.notif-dismiss:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+.notif-dismiss svg {
+  width: 15px;
+  height: 15px;
+}
+/* ---- boş durum ---- */
+.notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* Tam ekranda boş durum listenin ortasında durur. */
+  min-height: 52vh;
+  padding: 32px 24px;
+  text-align: center;
+}
+.notif-empty-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text-faint);
+}
+.notif-empty-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.notif-empty-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.notif-empty-text {
+  max-width: 250px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+/* ---- masaüstü/tablet: header'a bitişik açılır panel ---- */
+@media (min-width: 681px) {
+  .notif-panel {
+    position: static;
+    background: transparent;
+  }
+  .notif-panel-inner {
+    position: fixed;
+    top: 66px;
+    left: auto;
+    right: var(--notif-dd-right, 24px);
+    width: 550px;
+    max-width: min(550px, calc(100vw - 32px));
+    height: auto;
+    max-height: calc(100vh - 66px - 20px);
+    max-height: calc(100dvh - 66px - 20px);
+    background: var(--card);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 8px 20px rgba(21,32,72,.10);
+    animation: none;
+    z-index: 5001;
+  }
+  .notif-panel-header {
+    padding: 14px 18px;
+    background: var(--card);
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .notif-panel-back {
+    display: none;
+  }
+  .notif-panel-title {
+    font-size: 16px;
+  }
+  .notif-panel-subtitle {
+    color: var(--text-muted);
+  }
+  .notif-mark-all {
+    padding: 4px 2px;
+    background: transparent;
+    color: var(--green-dark);
+    font-size: 12px;
+  }
+  .notif-mark-all:hover {
+    background: transparent;
+    text-decoration: underline;
+  }
+  .notif-panel-close {
+    display: flex;
+  }
+  .notif-filter-row {
+    padding: 12px 18px 10px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+  .notif-list {
+    padding: 6px 14px 14px;
+    background: var(--card);
+  }
+  .notif-item {
+    box-shadow: none;
+  }
+  .notif-item:hover {
+    border-color: #D6DAE4;
+  }
+  .notif-empty {
+    min-height: 0;
+    padding: 46px 24px;
+  }
+}
+@media (min-width: 1025px) {
+  .notif-item {
+    padding: 13px 14px 13px 16px;
+  }
+  .notif-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .notif-title {
+    font-size: 14px;
+  }
 }
 /* ---- Profil menüsü: header'daki profil ikonuna tıklayınca, bildirim
    panelindeki ile aynı sistemde header'a bitişik şekilde açılır. ---- */
@@ -834,6 +1075,122 @@ ul {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+/* ---- mobil tam ekran giriş/üye ol başlığı ----
+   Masaüstünde popup görünümü korunduğu için gizlidir; yalnızca 680px ve
+   altında görünür. */
+.auth-modal-hero {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 18px;
+  background: var(--navy);
+  color: #fff;
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+}
+.auth-modal-back {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+}
+.auth-modal-back:hover {
+  background: rgba(255,255,255,.1);
+}
+.auth-modal-back .icon,
+.auth-modal-back svg {
+  width: 22px;
+  height: 22px;
+}
+.auth-modal-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 3px;
+}
+.auth-modal-hero-text strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+}
+.auth-modal-hero-text span {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.75);
+}
+/* ---- mobil: giriş/üye ol ekranı tam ekran açılır ---- */
+@media (max-width: 680px) {
+  .auth-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    background: var(--bg);
+  }
+  .auth-modal {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    box-shadow: none;
+    animation: authSheetIn .26s cubic-bezier(.32,.72,0,1);
+  }
+  .auth-modal-hero {
+    display: flex;
+    flex-shrink: 0;
+  }
+  /* Kapatma işini başlıktaki geri oku üstlenir. */
+  .auth-modal-close {
+    display: none;
+  }
+  .auth-modal-tabs {
+    flex-shrink: 0;
+    background: var(--card);
+  }
+  .auth-modal-tab {
+    padding: 16px 0 13px;
+    font-size: 15.5px;
+  }
+  .auth-modal-body {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    padding: 22px 18px calc(30px + env(safe-area-inset-bottom));
+    background: var(--card);
+  }
+  .auth-modal-panel {
+    gap: 13px;
+  }
+  /* 16px altındaki yazı tipi iOS'ta alana dokununca sayfayı yakınlaştırır. */
+  .auth-modal-panel input {
+    padding: 13px 14px;
+    font-size: 16px;
+  }
+  .auth-modal-panel .btn-primary {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+  .auth-social-btn {
+    padding: 13px 14px;
+  }
+  .auth-modal-switch {
+    margin-top: 18px;
+    font-size: 13.5px;
+  }
+}
+@keyframes authSheetIn {
+  from { transform: translateY(100%); opacity: .5; }
+  to   { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-modal { animation: none; }
 }
 /* =============== MOBILE DRAWER =============== */
   .drawer-overlay {
@@ -3885,7 +4242,6 @@ ul {
 .hscroll-arrow.is-hidden { display: none; }
 .hscroll-arrow.is-visible { display: flex; }
 .h-scroll.is-overflow-visible { overflow-x: visible; }
-.notif-panel-inner.is-mobile-positioned { margin-top: var(--notif-mobile-top, 0px); max-height: var(--notif-mobile-max-height); }
 .profile-panel-inner.is-mobile-positioned { margin-top: var(--profile-mobile-top, 0px); }
 .search-overlay-body.has-keyboard-inset { padding-bottom: var(--keyboard-inset-padding); }
 
