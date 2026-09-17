@@ -1086,15 +1086,19 @@ ul {
 /* ---- mobil tam ekran giriş/üye ol başlığı ----
    Masaüstünde popup görünümü korunduğu için gizlidir; yalnızca 680px ve
    altında görünür. */
+/* Olculer bildirimler ekraninin basligiyla (.notif-panel-header) birebir
+   ayni tutulur: ic bosluk, hizalama, golge ve yazi boyutlari. Biri
+   degisirse digeri de guncellenmeli. */
 .auth-modal-hero {
   display: none;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 18px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
   background: var(--navy);
   color: #fff;
   border-bottom-left-radius: 22px;
   border-bottom-right-radius: 22px;
+  box-shadow: 0 3px 10px rgba(11,18,48,.11);
 }
 .auth-modal-back {
   flex-shrink: 0;
@@ -1119,20 +1123,18 @@ ul {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-top: 3px;
+  gap: 2px;
 }
 .auth-modal-hero-text strong {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -.3px;
+  letter-spacing: -.2px;
 }
 /* Alt satır tek satırda kalır; dar ekranda sarmak yerine kısalır. */
 .auth-modal-hero-text span {
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: rgba(255,255,255,.75);
+  font-size: 12px;
+  color: rgba(255,255,255,.72);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
