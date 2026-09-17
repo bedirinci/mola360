@@ -26,6 +26,9 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Repo icin Pages henuz etkinlestirilmemisse ilk calistirmada otomatik acar.
+          enablement: true
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
