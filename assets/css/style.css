@@ -1174,10 +1174,13 @@ ul {
   .auth-modal-panel {
     gap: 13px;
   }
-  /* 16px altındaki yazı tipi iOS'ta alana dokununca sayfayı yakınlaştırır. */
+  /* Kutular ince dursun diye dikey boşluk kısıldı; yazı tipi 16px'in
+     altına indirilmez, aksi halde iOS alana dokununca sayfayı
+     yakınlaştırır. */
   .auth-modal-panel input {
-    padding: 13px 14px;
+    padding: 9px 14px;
     font-size: 16px;
+    line-height: 1.25;
   }
   .auth-modal-panel .btn-primary {
     padding: 14px 18px;
