@@ -1108,6 +1108,8 @@ ul {
   height: 22px;
 }
 .auth-modal-hero-text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1119,10 +1121,14 @@ ul {
   font-weight: 700;
   letter-spacing: -.3px;
 }
+/* Alt satır tek satırda kalır; dar ekranda sarmak yerine kısalır. */
 .auth-modal-hero-text span {
   font-size: 12.5px;
   line-height: 1.45;
   color: rgba(255,255,255,.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* ---- mobil: giriş/üye ol ekranı tam ekran açılır ---- */
 @media (max-width: 680px) {
