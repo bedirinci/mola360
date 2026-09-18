@@ -1749,6 +1749,12 @@ function positionDesktopDropdown(trigger, panel) {
     panel.classList.add('dropdown-open-up');
   }
 
+  /* Ne aşağı ne yukarı tam sığmadığında (kısa ekran) panel görünür alana
+     kenetlenir; aksi hâlde alt kenarı ekranın dışında kalabiliyordu. */
+  if (panelHeight) {
+    top = Math.max(12, Math.min(top, window.innerHeight - panelHeight - 12));
+  }
+
   /* Fixed + viewport coordinates: the panel is no longer geometrically
      related to .filter-group or any horizontal overflow container. */
   panel.style.left = Math.round(left) + 'px';
