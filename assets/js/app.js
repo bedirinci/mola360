@@ -530,7 +530,9 @@ function initHscrollArrows() {
     if (wrap._hscrollBound) return;
     wrap._hscrollBound = true;
 
-    const track = wrap.querySelector('.h-scroll');
+    /* Kart şeritleri dışında kampanya ve tema şeritleri de aynı okları
+       kullanır. */
+    const track = wrap.querySelector('.h-scroll, .promo-scroll, .theme-scroll');
     const leftBtn = wrap.querySelector('.hscroll-arrow.left');
     const rightBtn = wrap.querySelector('.hscroll-arrow.right');
     if (!track || !leftBtn || !rightBtn) return;

@@ -114,9 +114,9 @@ describe('blok verileri', () => {
     expect(new Set(basliklar).size).toBe(basliklar.length);
   });
 
-  it('kampanya bandı günübirlik turlardan sonra geliyor', () => {
-    expect(HOME_BLOCK_PLACEMENT['Günübirlik Turlar'][0]).toBe('promo');
-    expect(HOME_BLOCK_PLACEMENT['Yaklaşan Etkinlikler']).toBeUndefined();
+  it('kampanya bandı yaklaşan planların altında geliyor', () => {
+    expect(HOME_BLOCK_PLACEMENT['Yaklaşan Planlar']).toContain('promo');
+    expect(HOME_BLOCK_PLACEMENT['Günübirlik Turlar']).not.toContain('promo');
   });
 
   it('kampanya kartlarında gerekli alanlar var', () => {
