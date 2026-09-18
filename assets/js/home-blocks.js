@@ -55,16 +55,16 @@ const GRID_COLLECTIONS = [
    Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
    open:true olan mekan "Açık" rozetiyle isaretlenir. */
 /* ---- Mekanlar: Izmir ----
-   img alanlari mevcut gorsel kayitlarindan konu olarak en yakin olani
-   secer. Yildizli olanlar icin hala gercek Izmir fotografi gerekiyor;
-   ayrintili liste icin docs/gorsel-ihtiyaclari.md dosyasina bakin. */
+   Her mekanin kendi fotografi var; gorseller Wikimedia Commons'tan,
+   dosya adi konuyu anlatacak sekilde secildi. Kaynak ve lisans listesi:
+   docs/gorsel-kaynaklari.md */
 const VENUES = [
   { img:'efes',    type:'Ören Yeri',    title:'Efes Antik Kent',        area:'Selçuk, İzmir',   rating:'4.9', reviews:'12b+',  hours:'08:00 – 19:00', open:true },
-  { img:'market1', type:'Çarşı',        title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
-  { img:'bodrum',  type:'Sahil',        title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
-  { img:'cunda2',  type:'Gezi Noktası', title:'Alaçatı Taş Sokaklar',   area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
-  { img:'iznik',   type:'Tarihi Doku',  title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
-  { img:'ege2',    type:'Müze',         title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
+  { img:'kemeralti', type:'Çarşı',      title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
+  { img:'izmirKordon', type:'Sahil',    title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
+  { img:'alacati', type:'Gezi Noktası', title:'Alaçatı Taş Sokaklar',   area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
+  { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
+  { img:'izmirMuze', type:'Müze',       title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
 ];
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
@@ -407,6 +407,26 @@ const SEO_FAQ = [
   }
 ];
 
+/* Wikimedia Commons'tan alinan gorsellerin kaynaklari.
+   CC lisanslari atif ister; asagidaki satir sayfada gorunur ve her
+   gorselin dosya sayfasina baglanir. Yazar ve lisans bilgisi o
+   sayfalarda yazili — yayina almadan once docs/gorsel-kaynaklari.md
+   icindeki notu okuyun. */
+const IMAGE_CREDITS = [
+  { ad: 'Efes Celsus Kütüphanesi', dosya: 'Ephesus Celsus Library Façade.jpg' },
+  { ad: 'Kemeraltı Çarşısı',       dosya: 'Kemeraltı market 02.jpg' },
+  { ad: 'Konak Meydanı',           dosya: 'Izmir Konak Square.jpg' },
+  { ad: 'Kordon, Alsancak',        dosya: 'Izmir Alsancak Kordon 6339.jpg' },
+  { ad: 'İzmir Arkeoloji Müzesi',  dosya: 'İzmir Archaeological Museum 2462 1.jpg' },
+  { ad: 'Alaçatı değirmenleri',    dosya: 'Alaçatı değirmenler 01.jpg' },
+  { ad: 'Aspendos Antik Tiyatro',  dosya: 'Aspendos Turkey.JPG' },
+  { ad: 'Erciyes Dağı',            dosya: 'Erciyes Dağı Kayseri.JPG' }
+];
+
+function commonsDosyaUrl(dosya) {
+  return 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(dosya.replace(/ /g, '_'));
+}
+
 /* ---- SEO blogu isaretlemesi ---- */
 function seoLinkGroupMarkup(group) {
   const links = group.links
@@ -617,6 +637,11 @@ const HOME_BLOCK_MARKUP = {
             ${SEO_FAQ.map(seoFaqMarkup).join('')}
           </div>
         </div>
+
+        <p class="seo-credits">
+          Görseller: Wikimedia Commons —
+          ${IMAGE_CREDITS.map(k => `<a href="${commonsDosyaUrl(k.dosya)}" target="_blank" rel="noopener">${k.ad}</a>`).join(', ')}
+        </p>
 
       </div>
     </section>`
