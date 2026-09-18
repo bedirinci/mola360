@@ -717,6 +717,12 @@ function initHomeBlocks(){
     const bolum = cardSections.find(sec => sec.filterKey === anahtar);
     if (!liste || !bolum) return;
 
+    /* Şerit yatay kaydırılabilir olduğu için, tarayıcı geri/ileri gidişte
+       eski kaydırma konumunu geri yükleyebiliyor; o durumda seçili ilk çip
+       ("En yakın") ekranın solunda kalıp hiçbir şey seçili değilmiş gibi
+       görünüyordu. Açılışta şerit her zaman başa sarılır. */
+    row.scrollLeft = 0;
+
     row.addEventListener('click', (e)=>{
       const chip = e.target.closest('[data-filter-value]');
       if (!chip || chip.classList.contains('active')) return;
