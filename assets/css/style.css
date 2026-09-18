@@ -2055,6 +2055,19 @@ ul {
   font-weight: 700;
   color: var(--navy);
 }
+/* Başlığın altında açıklama satırı olan bölümler (Temalar, Koleksiyonlar).
+   Diğer bölümlerin başlığı değişmeden kalır. */
+.section-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.section-subtitle {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
 .see-all {
   display: flex;
   align-items: center;

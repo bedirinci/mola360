@@ -26,26 +26,29 @@ const UPCOMING_FILTERS = [
 /* Gun filtreleri: kayittaki dayKey bu anahtarlarla eslesir. */
 const UPCOMING_DAY_KEYS = ['cuma', 'cumartesi', 'pazar'];
 
-/* ---- Temaya göre koleksiyonlar (yatay şerit) ---- */
+/* ---- Temalar: NE yapmak istediğin (aktivite türü) ----
+   Koleksiyonlarla karışmaması için burada yalnızca aktivite türleri
+   bulunur; kitle/bütçe başlıkları GRID_COLLECTIONS'a aittir. */
 const THEME_COLLECTIONS = [
-  { img:'ege2',       title:'Balayı Kaçamakları', count:'24 tur' },
-  { img:'uludag',     title:'Kış & Kayak',        count:'12 tur' },
-  { img:'iznik2',     title:'Doğa Yürüyüşü',      count:'31 tur' },
-  { img:'bogaz',      title:'Şehir Turları',      count:'18 tur' },
-  { img:'kapadokya',  title:'Fotoğraf Rotaları',  count:'9 tur' },
-  { img:'coffee1',    title:'Lezzet Durakları',   count:'15 etkinlik' }
+  { img:'iznik2',     title:'Doğa & Yayla',       count:'31 tur' },
+  { img:'efes',       title:'Kültür & Tarih',     count:'24 tur' },
+  { img:'cunda2',     title:'Deniz & Tekne',      count:'18 tur' },
+  { img:'uludag',     title:'Kış Sporları',       count:'12 tur' },
+  { img:'coffee1',    title:'Gastronomi',         count:'15 etkinlik' },
+  { img:'paraglide3', title:'Macera & Adrenalin', count:'9 aktivite' }
 ];
 
-/* ---- Koleksiyon ızgarası (kaydırmasız) ---- */
+/* ---- Koleksiyonlar: KİMİNLE / hangi bütçeyle (kaydırmasız ızgara) ----
+   Aktivite türü değil, kitle ve durum başlıkları. */
 const GRID_COLLECTIONS = [
-  { img:'abant2',     title:'Ailece',      text:'Çocuklu ailelere uygun' },
-  { img:'assos',      title:'Romantik',    text:'İki kişilik kaçamaklar' },
-  { img:'market1',    title:'Bütçe Dostu', text:'500 TL altı seçenekler' },
-  { img:'paraglide3', title:'Adrenalin',   text:'Cesaret isteyenlere' },
-  { img:'uludag',     title:'Kış Kaçamağı', text:'Kar ve kayak sevenlere' },
-  { img:'hotel6',     title:'Termal',      text:'Şifalı sularda dinlenme' },
-  { img:'sile',       title:'Deniz Kenarı', text:'Koylar ve sahil rotaları' },
-  { img:'efes',       title:'Kültür & Tarih', text:'Antik kentler ve müzeler' }
+  { img:'abant2',     title:'Ailece',           text:'Çocuklu ailelere uygun' },
+  { img:'assos',      title:'Romantik',         text:'İki kişilik kaçamaklar' },
+  { img:'market1',    title:'Bütçe Dostu',      text:'500 TL altı seçenekler' },
+  { img:'dogu2',      title:'Tek Başına',       text:'Yalnız gezenler için' },
+  { img:'rafting3',   title:'Arkadaş Grubu',    text:'Kalabalık gruplara' },
+  { img:'sapanca2',   title:'Son Dakika',       text:'Bu hafta kalkanlar' },
+  { img:'kapadokya2', title:'Uzun Hafta Sonu',  text:'2-3 gecelik kaçışlar' },
+  { img:'balloon3',   title:'Yeni Başlayanlar', text:'İlk kez deneyenlere' }
 ];
 
 /* ---- Mekanlar ----
@@ -118,8 +121,13 @@ function homeBlockImage(key) {
 }
 
 /* ---------------- isaretleme ---------------- */
-function homeSectionHead(title, link) {
-  return `<div class="section-head"><h2>${title}</h2>${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
+/* Aciklama satiri yalnizca verildiginde eklenir; diger bolumlerin
+   basligi oldugu gibi kalir. */
+function homeSectionHead(title, link, subtitle) {
+  const baslik = subtitle
+    ? `<div class="section-head-text"><h2>${title}</h2><p class="section-subtitle">${subtitle}</p></div>`
+    : `<h2>${title}</h2>`;
+  return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
 }
 
 const HOME_BLOCK_MARKUP = {
@@ -172,7 +180,7 @@ const HOME_BLOCK_MARKUP = {
 
   themes: () => `
     <section class="section home-themes">
-      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör')}
+      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç')}
       <div class="hscroll-wrap">
       <div class="theme-scroll">
         ${THEME_COLLECTIONS.map(c => `
@@ -189,7 +197,7 @@ const HOME_BLOCK_MARKUP = {
 
   collectionGrid: () => `
     <section class="section home-collections">
-      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör')}
+      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre')}
       <div class="collection-grid">
         ${GRID_COLLECTIONS.map(c => `
           <a class="collection-tile" href="#">
