@@ -329,6 +329,7 @@ const ICONS = {
   user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"/>',
   lock:'<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
   headset:'<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="13" width="4.5" height="6" rx="1.5"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.1 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.9z"/>',
   refresh:'<path d="M4 12a8 8 0 0 1 14-5.3L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3L4 16"/><path d="M4 20v-4h4"/>',
   apple:'<path d="M16.5 7.2c-1.1-.1-2 .6-2.6.6-.6 0-1.4-.6-2.4-.6-1.2 0-2.4.7-3 1.9-1.3 2.3-.3 5.7 1 7.6.6 1 1.4 2 2.4 2 1 0 1.3-.6 2.5-.6s1.5.6 2.5.6 1.7-1 2.3-2c.7-1 1-2 1-2.1-.1 0-2-.8-2-3 0-1.9 1.5-2.8 1.6-2.9-.9-1.3-2.2-1.4-2.7-1.5z"/><path d="M14 4.5c.5-.6.8-1.4.7-2.2-.7 0-1.6.5-2.1 1.1-.4.5-.8 1.3-.7 2.1.8.1 1.6-.4 2.1-1z"/>',
   play:'<polygon points="5 3 19 12 5 21"/>',
@@ -457,11 +458,17 @@ const cardSections = [
     {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Efsane 90\'lar Gecesi', meta1:'BAOB Sahne · 21:00', meta2:'21 Eylül, Pazartesi', priceMain:'210'},
     {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'18+', title:'Bursa Kahve Festivali', meta1:'Sukaypark · 11:00', meta2:'11 Eylül, Cuma', priceMain:'180'},
   ]},
-  {title:'Yaklaşan Etkinlikler', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Etkinlik:', items:[
-    {img:'concert2', badges:['Konser'], rating:'4.9', reviews:'52+', title:'Sonbahar Caz Akşamları', meta1:'Merinos AKM · 20:00', meta2:'12 gün sonra', priceMain:'400'},
-    {img:'theatre1', badges:['Tiyatro'], rating:'4.7', reviews:'96+', title:'7 Kocalı Hürmüz Müzikali', meta1:'Açıkhava Tiyatrosu', meta2:'5 gün sonra', priceMain:'1150'},
-    {img:'market1', badges:['Pazar'], rating:'4.4', reviews:'12+', title:'Cumalıkızık Yöresel Pazar', meta1:'Cumalıkızık · 10:00', meta2:'3 gün sonra', priceMain:'50'},
-    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'30+', title:'Bursa Gece Koşusu', meta1:'İznik Gölü Kıyısı', meta2:'9 gün sonra', priceMain:'150'},
+  /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
+     inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
+  {title:'Yaklaşan Etkinlikler', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Etkinlik:', filterKey:'upcoming', items:[
+    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'30+', title:'Bursa Gece Koşusu', meta1:'İznik Gölü Kıyısı · 19:00', meta2:'Bugün', priceMain:'150', inDays:0},
+    {img:'theatre1', badges:['Tiyatro'], rating:'4.7', reviews:'96+', title:'7 Kocalı Hürmüz Müzikali', meta1:'Açıkhava Tiyatrosu · 20:00', meta2:'Bu Cumartesi', priceMain:'1150', inDays:1, dayKey:'cumartesi'},
+    {img:'concert2', badges:['Konser'], rating:'4.9', reviews:'52+', title:'Sonbahar Caz Akşamları', meta1:'Merinos AKM · 20:00', meta2:'Bu Cumartesi', priceMain:'400', inDays:1, dayKey:'cumartesi'},
+    {img:'market1', badges:['Pazar'], rating:'4.4', reviews:'12+', title:'Cumalıkızık Yöresel Pazar', meta1:'Cumalıkızık · 10:00', meta2:'Bu Pazar', priceMain:'50', inDays:2, dayKey:'pazar'},
+    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'18+', title:'Bursa Kahve Festivali', meta1:'Sukaypark · 11:00', meta2:'Bu Pazar', priceMain:'180', inDays:2, dayKey:'pazar'},
+    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Efsane 90\'lar Gecesi', meta1:'BAOB Sahne · 21:00', meta2:'3 gün sonra', priceMain:'210', inDays:3},
+    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'64+', title:'Bursa Kültürpark Konserleri', meta1:'Kültürpark · 20:30', meta2:'6 gün sonra', priceMain:'320', inDays:6},
+    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'40+', title:'Uludağ Kar Festivali', meta1:'Uludağ · Tüm gün', meta2:'12 gün sonra', priceMain:'250', inDays:12},
   ]},
   {title:'Konaklamalı Turlar', titleIcon:'moon', meta1Icon:'moon', meta2Label:'En yakın:', items:[
     {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'210+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Bursa Hareketli', meta2:'20 Ekim, Salı', priceMain:'3399'},
@@ -563,6 +570,9 @@ function initHscrollArrows() {
 
     track.addEventListener('scroll', update, {passive:true});
     onViewportResize(update);
+    /* Serit icerigi sonradan degisirse (zaman filtresi) ok gorunurlugu
+       disaridan tazelenebilsin. */
+    wrap._hscrollUpdate = update;
     update();
   });
 }
@@ -610,12 +620,10 @@ document.getElementById('catScroll').innerHTML = categories.map(c=>`
 updateCategoryLayout();
 onViewportResize(updateCategoryLayout);
 
-document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
-  <section class="section">
-    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
-    <div class="hscroll-wrap">
-    <div class="h-scroll">
-      ${sec.items.map(it=>`
+/* Tek bir kartin isaretlemesi. Zaman filtresi olan seritlerde liste filtre
+   degistikce bu fonksiyonla yeniden cizildigi icin ayri tutuluyor. */
+function poiCardMarkup(sec, it){
+  return `
         <article class="poi-card">
           <div class="poi-media">
             <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="">
@@ -634,8 +642,30 @@ document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
             <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">TL</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
             <button class="poi-cart-btn"><span class="icon">${svg('basket')}</span></button>
           </div>
-        </article>`).join('')}
-    </div>
+        </article>`;
+}
+
+/* Seritteki kartlar. filterKey tasiyan seritlerde secime gore suzulur. */
+function sectionCardsMarkup(sec, filterKey){
+  const items = sec.filterKey ? filterUpcomingItems(sec.items, filterKey) : sec.items;
+  if (!items.length) return '<p class="section-empty">Bu seçim için uygun etkinlik yok.</p>';
+  return items.map(it => poiCardMarkup(sec, it)).join('');
+}
+
+/* Baslik altindaki zaman filtresi cipleri. */
+function sectionFilterMarkup(sec){
+  if (!sec.filterKey) return '';
+  return `<div class="section-filter-row" data-section-filters="${sec.filterKey}" role="tablist" aria-label="${sec.title} zaman filtresi">
+      ${UPCOMING_FILTERS.map((f, i)=>`<button class="section-filter-chip${i === 0 ? ' active' : ''}" type="button" role="tab" aria-selected="${i === 0}" data-filter-value="${f.key}">${f.label}</button>`).join('')}
+    </div>`;
+}
+
+document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
+  <section class="section">
+    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
+    ${sectionFilterMarkup(sec)}
+    <div class="hscroll-wrap">
+    <div class="h-scroll"${sec.filterKey ? ` data-section-list="${sec.filterKey}"` : ''}>${sectionCardsMarkup(sec, UPCOMING_FILTERS[0].key)}</div>
     <button class="hscroll-arrow left" type="button" data-dir="left" aria-label="Geri"><span class="icon">${svg('chevLeft')}</span></button>
     <button class="hscroll-arrow right" type="button" data-dir="right" aria-label="İleri"><span class="icon">${svg('chevRight')}</span></button>
     </div>
@@ -650,32 +680,38 @@ initHomeBlocks();
    yerleştirildikten sonraki davranışları bağlanır. Bir blok
    HOME_BLOCK_PLACEMENT'tan çıkarılırsa buradaki kod sessizce atlanır. */
 function initHomeBlocks(){
-  /* Bu hafta sonu: gün seçimi listeyi yeniden çizer. */
-  const days = document.getElementById('weekendDays');
-  const list = document.getElementById('weekendList');
-  if (days && list) {
-    days.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-weekend-day]');
-      if (!btn || btn.classList.contains('active')) return;
-      days.querySelectorAll('[data-weekend-day]').forEach(el => {
-        const secili = el === btn;
+  /* --- Şerit zaman filtresi (Yaklaşan Etkinlikler) --- */
+  document.querySelectorAll('[data-section-filters]').forEach(row => {
+    const anahtar = row.dataset.sectionFilters;
+    const liste = document.querySelector(`[data-section-list="${anahtar}"]`);
+    const bolum = cardSections.find(sec => sec.filterKey === anahtar);
+    if (!liste || !bolum) return;
+
+    row.addEventListener('click', (e)=>{
+      const chip = e.target.closest('[data-filter-value]');
+      if (!chip || chip.classList.contains('active')) return;
+      row.querySelectorAll('[data-filter-value]').forEach(el => {
+        const secili = el === chip;
         el.classList.toggle('active', secili);
         el.setAttribute('aria-selected', String(secili));
       });
-      list.innerHTML = weekendCardsMarkup(btn.dataset.weekendDay);
-      list.scrollLeft = 0;
+      liste.innerHTML = sectionCardsMarkup(bolum, chip.dataset.filterValue);
+      liste.scrollLeft = 0;
+      /* Kart sayısı değiştiği için masaüstündeki okların görünürlüğü yeniden
+         hesaplanmalı. */
+      const wrap = liste.closest('.hscroll-wrap');
+      if (wrap && typeof wrap._hscrollUpdate === 'function') wrap._hscrollUpdate();
     });
-  }
+  });
 
-  /* E-bülten: arka uç yok; geçerli adreste form yerini teşekkür mesajı alır. */
+  /* --- E-bülten: arka uç yok; geçerli adreste form yerini teşekkür alır. --- */
   const form = document.getElementById('homeNewsletterForm');
   const note = document.getElementById('homeNewsletterNote');
   if (form) {
     form.addEventListener('submit', (e)=>{
       e.preventDefault();
       const input = document.getElementById('homeNewsletterEmail');
-      const deger = input ? input.value : '';
-      if (!isValidEmail(deger)) {
+      if (!isValidEmail(input ? input.value : '')) {
         form.classList.add('has-error');
         if (note) {
           note.textContent = 'Geçerli bir e-posta adresi gir.';
@@ -690,6 +726,47 @@ function initHomeBlocks(){
         note.textContent = 'Kaydın alındı. Fırsatlar artık e-postana gelecek.';
         note.classList.remove('is-error');
         note.classList.add('is-success');
+      }
+    });
+  }
+
+  /* --- Beni ara: buton formu açar, gönderimde numara doğrulanır. --- */
+  const callbackBtn = document.getElementById('homeCallbackBtn');
+  const callbackForm = document.getElementById('homeCallbackForm');
+  const callbackNote = document.getElementById('homeCallbackNote');
+  if (callbackBtn && callbackForm) {
+    callbackBtn.addEventListener('click', ()=>{
+      const acik = !callbackForm.hidden;
+      callbackForm.hidden = acik;
+      callbackBtn.classList.toggle('is-open', !acik);
+      callbackBtn.setAttribute('aria-expanded', String(!acik));
+      if (!acik) {
+        const input = document.getElementById('homeCallbackPhone');
+        if (input) input.focus({preventScroll:true});
+      }
+    });
+
+    callbackForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const input = document.getElementById('homeCallbackPhone');
+      if (!isValidPhone(input ? input.value : '')) {
+        callbackForm.classList.add('has-error');
+        if (callbackNote) {
+          callbackNote.textContent = 'Numaranı 05XX XXX XX XX biçiminde gir.';
+          callbackNote.classList.add('is-error');
+        }
+        if (input) input.focus({preventScroll:true});
+        return;
+      }
+      callbackForm.classList.remove('has-error');
+      const satir = callbackForm.querySelector('.home-callback-row');
+      const etiket = callbackForm.querySelector('label');
+      if (satir) satir.remove();
+      if (etiket) etiket.remove();
+      if (callbackNote) {
+        callbackNote.textContent = 'Talebin alındı. En kısa sürede seni arayacağız.';
+        callbackNote.classList.remove('is-error');
+        callbackNote.classList.add('is-success');
       }
     });
   }

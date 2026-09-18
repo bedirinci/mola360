@@ -4563,8 +4563,8 @@ ul {
    bir blok oradan çıkarılırsa buradaki kurallar da atıl kalır.
    ===================================================== */
 
-/* ---- Bu hafta sonu ne var? ---- */
-.weekend-days {
+/* ---- Şerit zaman filtresi (Yaklaşan Etkinlikler) ---- */
+.section-filter-row {
   display: flex;
   gap: 8px;
   margin: -4px 0 12px;
@@ -4572,8 +4572,8 @@ ul {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
-.weekend-days::-webkit-scrollbar { display: none; }
-.weekend-day {
+.section-filter-row::-webkit-scrollbar { display: none; }
+.section-filter-chip {
   flex-shrink: 0;
   padding: 8px 14px;
   border: 1px solid var(--border);
@@ -4585,96 +4585,14 @@ ul {
   white-space: nowrap;
   transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.weekend-day:hover { border-color: #D6DAE4; }
-.weekend-day.active {
+.section-filter-chip:hover { border-color: #D6DAE4; }
+.section-filter-chip.active {
   background: var(--navy);
   border-color: var(--navy);
   color: #fff;
 }
-.weekend-list {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-  padding-bottom: 4px;
-}
-.weekend-list::-webkit-scrollbar { display: none; }
-.weekend-card {
-  flex: 0 0 200px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  scroll-snap-align: start;
-}
-.weekend-card-media {
-  position: relative;
-  height: 110px;
-}
-.weekend-card-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.weekend-card-time {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(11,18,48,.72);
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-.weekend-card-time .icon { width: 13px; height: 13px; }
-.weekend-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px 12px;
-}
-.weekend-card-tag {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: .4px;
-  text-transform: uppercase;
-  color: var(--green-dark);
-}
-.weekend-card-body h3 {
-  font-size: 13.5px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: var(--text);
-  /* Başlık iki satırda kesilir; kartların yüksekliği eşit kalsın. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.weekend-card-body p {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.weekend-card-body p .icon { width: 13px; height: 13px; flex-shrink: 0; }
-.weekend-card-price {
-  margin-top: 2px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--navy);
-}
-.weekend-empty {
-  padding: 18px 2px;
+.section-empty {
+  padding: 18px 2px 8px;
   font-size: 13px;
   color: var(--text-muted);
 }
@@ -4800,54 +4718,6 @@ ul {
   color: rgba(255,255,255,.75);
 }
 
-/* ---- Neden mola360 / güven şeridi ---- */
-.home-trust {
-  margin-top: 24px;
-  padding: 26px 16px;
-  background: var(--navy);
-  color: #fff;
-}
-.home-trust-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-.home-trust h2 {
-  margin-bottom: 18px;
-  font-size: 18px;
-  color: #fff;
-}
-.home-trust-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px 12px;
-}
-.home-trust-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.home-trust-icon {
-  width: 34px;
-  height: 34px;
-  margin-bottom: 3px;
-  border-radius: 10px;
-  background: rgba(255,255,255,.1);
-  color: var(--green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.home-trust-icon svg { width: 18px; height: 18px; }
-.home-trust-item strong {
-  font-size: 13.5px;
-  font-weight: 700;
-}
-.home-trust-item p {
-  font-size: 12px;
-  line-height: 1.45;
-  color: rgba(255,255,255,.7);
-}
-
 /* ---- Koleksiyon ızgarası ---- */
 .collection-grid {
   display: grid;
@@ -4869,8 +4739,8 @@ ul {
   object-fit: cover;
 }
 
-/* ---- E-bülten / fırsat bildirimi ---- */
-.home-newsletter {
+/* ---- E-bülten + iletişim ---- */
+.home-support {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4882,7 +4752,7 @@ ul {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
-.home-newsletter-icon {
+.home-support-icon {
   width: 44px;
   height: 44px;
   border-radius: 14px;
@@ -4892,9 +4762,9 @@ ul {
   align-items: center;
   justify-content: center;
 }
-.home-newsletter-icon svg { width: 22px; height: 22px; }
-.home-newsletter h2 { font-size: 17px; }
-.home-newsletter > p {
+.home-support-icon svg { width: 22px; height: 22px; }
+.home-support h2 { font-size: 17px; }
+.home-support-lead {
   max-width: 340px;
   font-size: 13px;
   line-height: 1.5;
@@ -4940,22 +4810,186 @@ ul {
   font-weight: 600;
 }
 
+/* Bülten ile iletişim bölümünü ayıran, ortasında başlık olan çizgi. */
+.home-support-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  margin: 18px 0 4px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.home-support-divider::before,
+.home-support-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Telefon satırı: dokununca numarayı arar. */
+.home-support-phone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  text-align: left;
+  transition: border-color .15s ease, background .15s ease;
+}
+.home-support-phone:hover {
+  border-color: #D6DAE4;
+  background: var(--card);
+}
+.home-support-phone-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(21,32,72,.08);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-support-phone-icon svg { width: 19px; height: 19px; }
+.home-support-phone-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.home-support-phone-text strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  color: var(--navy);
+}
+.home-support-phone-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.home-support-phone-chev {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--text-faint);
+}
+
+.home-support-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 4px;
+}
+.home-support-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  transition: filter .15s ease, background .15s ease, border-color .15s ease;
+}
+.home-support-btn .icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+.home-support-btn.is-whatsapp {
+  background: #25D366;
+  color: #fff;
+}
+.home-support-btn.is-whatsapp:hover { filter: brightness(.95); }
+/* WhatsApp işareti dolgulu çizilir; genel ".icon svg" kuralı geri alınır. */
+.home-support-wa-icon svg {
+  fill: currentColor;
+  stroke: none;
+}
+.home-support-btn.is-callback {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--navy);
+}
+.home-support-btn.is-callback:hover { border-color: #D6DAE4; background: var(--bg); }
+.home-support-btn.is-callback.is-open {
+  border-color: var(--navy);
+  background: var(--bg);
+}
+
+.home-callback-form {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 10px;
+  text-align: left;
+}
+.home-callback-form[hidden] { display: none; }
+.home-callback-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.home-callback-row {
+  display: flex;
+  gap: 8px;
+}
+.home-callback-row input {
+  flex: 1;
+  min-width: 0;
+  height: 43px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+}
+.home-callback-row input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: var(--card);
+}
+.home-callback-form.has-error .home-callback-row input { border-color: #E4483C; }
+.home-callback-row .btn-primary {
+  flex-shrink: 0;
+  height: 43px;
+  padding: 0 18px;
+}
+.home-callback-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+}
+.home-callback-note.is-error { color: #E4483C; }
+.home-callback-note.is-success {
+  color: var(--green-dark);
+  font-weight: 600;
+}
+
 /* ---- masaüstü / tablet ---- */
 @media (min-width: 681px) {
-  .weekend-card { flex-basis: 230px; }
-  .weekend-card-media { height: 130px; }
   .theme-card { flex: 0 0 190px; height: 210px; }
   .collection-grid { grid-template-columns: repeat(4, 1fr); }
   .collection-tile { height: 170px; }
-  .home-trust {
-    margin-top: 30px;
-    padding: 32px 24px;
-  }
-  .home-trust h2 { font-size: 20px; }
-  .home-trust-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
-  }
   .home-promo { height: 230px; }
   .home-promo-content {
     max-width: 58%;
@@ -4963,6 +4997,9 @@ ul {
   }
   .home-promo-content strong { font-size: 24px; }
   .home-promo-text { font-size: 13.5px; }
-  .home-newsletter { padding: 30px 24px; }
-  .home-newsletter h2 { font-size: 19px; }
+  .home-support { padding: 30px 24px; }
+  .home-support h2 { font-size: 19px; }
+  .home-support-actions {
+    flex-direction: row;
+  }
 }

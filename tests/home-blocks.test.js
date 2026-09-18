@@ -1,41 +1,51 @@
 import { describe, it, expect } from 'vitest';
 import {
   HOME_BLOCK_PLACEMENT,
-  WEEKEND_DAYS,
-  WEEKEND_ITEMS,
+  UPCOMING_FILTERS,
   THEME_COLLECTIONS,
   GRID_COLLECTIONS,
-  TRUST_ITEMS,
-  filterWeekendItems,
+  CONTACT,
+  filterUpcomingItems,
   isValidEmail,
+  isValidPhone,
 } from '../assets/js/home-blocks.js';
 
-describe('filterWeekendItems', () => {
-  const ornek = [
-    { day: 'bugun', title: 'A' },
-    { day: 'pazar', title: 'B' },
-    { day: 'bugun', title: 'C' },
-  ];
+const ornek = [
+  { title: 'Uzak',      inDays: 12 },
+  { title: 'Cumartesi', inDays: 1, dayKey: 'cumartesi' },
+  { title: 'Bugün',     inDays: 0 },
+  { title: 'Pazar',     inDays: 2, dayKey: 'pazar' },
+  { title: 'Üç gün',    inDays: 3 },
+];
 
-  it('verilen güne ait kayıtları döndürür', () => {
-    expect(filterWeekendItems(ornek, 'bugun').map(i => i.title)).toEqual(['A', 'C']);
+describe('filterUpcomingItems', () => {
+  it('"en yakın" tümünü en yakın tarihten uzağa sıralar', () => {
+    expect(filterUpcomingItems(ornek, 'enyakin').map(i => i.title))
+      .toEqual(['Bugün', 'Cumartesi', 'Pazar', 'Üç gün', 'Uzak']);
   });
 
-  it('gün verilmezse tümünü döndürür', () => {
-    expect(filterWeekendItems(ornek)).toHaveLength(3);
+  it('bilinmeyen anahtar da tüm listeyi sıralı döndürür', () => {
+    expect(filterUpcomingItems(ornek, 'yok')).toHaveLength(5);
   });
 
-  it('eşleşme yoksa boş liste döndürür', () => {
-    expect(filterWeekendItems(ornek, 'cumartesi')).toEqual([]);
+  it('"3 gün içinde" yalnızca 3 gün ve altını alır', () => {
+    expect(filterUpcomingItems(ornek, 'ucgun').map(i => i.title))
+      .toEqual(['Bugün', 'Cumartesi', 'Pazar', 'Üç gün']);
+  });
+
+  it('gün filtreleri yalnızca o günün kayıtlarını alır', () => {
+    expect(filterUpcomingItems(ornek, 'cumartesi').map(i => i.title)).toEqual(['Cumartesi']);
+    expect(filterUpcomingItems(ornek, 'pazar').map(i => i.title)).toEqual(['Pazar']);
   });
 
   it('kaynağı değiştirmez', () => {
-    filterWeekendItems(ornek).pop();
-    expect(ornek).toHaveLength(3);
+    filterUpcomingItems(ornek, 'enyakin').pop();
+    expect(ornek).toHaveLength(5);
+    expect(ornek[0].title).toBe('Uzak');
   });
 
   it('geçersiz girdide boş liste döndürür', () => {
-    expect(filterWeekendItems(null, 'bugun')).toEqual([]);
+    expect(filterUpcomingItems(null, 'enyakin')).toEqual([]);
   });
 });
 
@@ -51,26 +61,38 @@ describe('isValidEmail', () => {
   });
 });
 
+describe('isValidPhone', () => {
+  it('yazım biçiminden bağımsız olarak Türkiye numaralarını kabul eder', () => {
+    ['05551112233', '5551112233', '0555 111 22 33', '+90 555 111 22 33', '(0555) 111-22-33']
+      .forEach(deger => expect(isValidPhone(deger)).toBe(true));
+  });
+
+  it('eksik, fazla veya hatalı numaraları reddeder', () => {
+    ['', '123', '555111223', '05551112233444', '0055511122', null, undefined]
+      .forEach(deger => expect(isValidPhone(deger)).toBe(false));
+  });
+});
+
 describe('blok verileri', () => {
-  it('her hafta sonu günü için en az bir kayıt vardır', () => {
-    WEEKEND_DAYS.forEach(gun => {
-      expect(filterWeekendItems(WEEKEND_ITEMS, gun.key).length).toBeGreaterThan(0);
-    });
-  });
-
-  it('hafta sonu kayıtlarının günü tanımlı günlerden biridir', () => {
-    const gecerli = WEEKEND_DAYS.map(g => g.key);
-    WEEKEND_ITEMS.forEach(item => expect(gecerli).toContain(item.day));
-  });
-
-  it('yerleşim haritasındaki bölüm başlıkları tekildir', () => {
-    const anahtarlar = Object.keys(HOME_BLOCK_PLACEMENT);
+  it('filtre listesi "en yakın" ile başlar ve anahtarları tekildir', () => {
+    const anahtarlar = UPCOMING_FILTERS.map(f => f.key);
+    expect(anahtarlar[0]).toBe('enyakin');
     expect(new Set(anahtarlar).size).toBe(anahtarlar.length);
   });
 
-  it('koleksiyon ve güven blokları boş değildir', () => {
+  it('kaldırılan bloklar yerleşim haritasında yok', () => {
+    const yerlesenler = Object.values(HOME_BLOCK_PLACEMENT).flat();
+    expect(yerlesenler).not.toContain('weekend');
+    expect(yerlesenler).not.toContain('trust');
+  });
+
+  it('koleksiyon blokları boş değil', () => {
     expect(THEME_COLLECTIONS.length).toBeGreaterThan(0);
     expect(GRID_COLLECTIONS.length).toBeGreaterThan(0);
-    expect(TRUST_ITEMS.length).toBeGreaterThan(0);
+  });
+
+  it('iletişim bağlantıları doğru biçimde', () => {
+    expect(CONTACT.phoneHref.startsWith('tel:')).toBe(true);
+    expect(CONTACT.whatsappHref.startsWith('https://wa.me/')).toBe(true);
   });
 });
