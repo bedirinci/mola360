@@ -6,6 +6,8 @@ import {
   THEME_COLLECTIONS,
   GRID_COLLECTIONS,
   VENUES,
+  PROMO_BANDS,
+  NEWSLETTER_PERKS,
   CONTACT,
   filterUpcomingItems,
   isValidEmail,
@@ -115,6 +117,22 @@ describe('blok verileri', () => {
   it('kampanya bandı günübirlik turlardan sonra geliyor', () => {
     expect(HOME_BLOCK_PLACEMENT['Günübirlik Turlar'][0]).toBe('promo');
     expect(HOME_BLOCK_PLACEMENT['Yaklaşan Etkinlikler']).toBeUndefined();
+  });
+
+  it('kampanya kartlarında gerekli alanlar var', () => {
+    expect(PROMO_BANDS.length).toBeGreaterThan(1);
+    PROMO_BANDS.forEach(kampanya => {
+      ['img', 'badge', 'title', 'text', 'cta'].forEach(alan => {
+        expect(String(kampanya[alan] || '')).not.toBe('');
+      });
+    });
+  });
+
+  it('bülten ve iletişim ayrı bloklar olarak yerleşir', () => {
+    const otelAltinda = HOME_BLOCK_PLACEMENT['Oteller'];
+    expect(otelAltinda).toContain('newsletter');
+    expect(otelAltinda).toContain('support');
+    expect(NEWSLETTER_PERKS.length).toBeGreaterThan(0);
   });
 
   it('iletişim bağlantıları doğru biçimde', () => {

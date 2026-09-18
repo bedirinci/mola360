@@ -4862,11 +4862,39 @@ ul {
   min-width: 0;
 }
 
-/* ---- Kampanya bandı ---- */
+/* ---- Kampanyalar ----
+   Kart şeritleriyle aynı davranış: yatay kaydırılır ve sayfanın yan
+   boşluklarının üzerine taşar (.h-scroll ile aynı teknik). */
+.promo-scroll,
+.theme-scroll {
+  /* Sayfanın yan boşluğu: masaüstünde 16px, mobilde 12px. */
+  --scroller-gutter: 16px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 var(--scroller-gutter) 8px;
+  margin-left: calc(var(--scroller-gutter) * -1);
+  margin-right: calc(var(--scroller-gutter) * -1);
+  width: calc(100% + var(--scroller-gutter) * 2);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 680px) {
+  .promo-scroll,
+  .theme-scroll { --scroller-gutter: 12px; }
+}
+.promo-scroll::-webkit-scrollbar,
+.theme-scroll::-webkit-scrollbar { display: none; }
+.promo-scroll {
+  scroll-snap-type: x mandatory;
+}
 .home-promo {
   position: relative;
   display: block;
+  flex: 0 0 86%;
   height: 190px;
+  scroll-snap-align: center;
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -4929,15 +4957,6 @@ ul {
 .home-promo-cta .icon { width: 15px; height: 15px; }
 
 /* ---- Temaya göre keşfet (yatay şerit) ---- */
-.theme-scroll {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
-}
-.theme-scroll::-webkit-scrollbar { display: none; }
 .theme-card {
   position: relative;
   display: block;
@@ -5004,104 +5023,172 @@ ul {
   object-fit: cover;
 }
 
-/* ---- E-bülten + iletişim ---- */
-.home-support {
+/* ---- E-bülten kartı ----
+   Etrafındaki beyaz kartlardan ayrışsın diye lacivert vurgu kartı. */
+.home-newsletter {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 24px 18px;
+  padding: 26px 18px 22px;
   text-align: center;
-  background: var(--card);
-  border: 1px solid var(--border);
+  color: #fff;
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 55%, var(--navy-2) 100%);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
 }
-.home-support-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: rgba(140,198,63,.16);
-  color: var(--green-dark);
-  display: flex;
+/* Sağ üstte hafif yeşil ışık: düz laciverti kırar. */
+.home-newsletter::after {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -50px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(140,198,63,.28) 0%, rgba(140,198,63,0) 70%);
+  pointer-events: none;
+}
+.home-newsletter > * { position: relative; z-index: 1; }
+.home-newsletter-badge {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 5px 12px 5px 9px;
+  border-radius: 999px;
+  background: rgba(140,198,63,.18);
+  color: var(--green);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: uppercase;
 }
-.home-support-icon svg { width: 22px; height: 22px; }
-.home-support h2 { font-size: 17px; }
-.home-support-lead {
-  max-width: 340px;
+.home-newsletter-badge .icon { width: 14px; height: 14px; }
+.home-newsletter h2 {
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: -.3px;
+  color: #fff;
+}
+.home-newsletter-lead {
+  max-width: 360px;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text-muted);
+  color: rgba(255,255,255,.75);
 }
 .home-newsletter-form {
   display: flex;
   gap: 8px;
   width: 100%;
   max-width: 420px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 .home-newsletter-form input {
   flex: 1;
   min-width: 0;
-  height: 43px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
+  height: 46px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #fff;
   color: var(--text);
   font-family: inherit;
   font-size: 16px;
 }
+.home-newsletter-form input::placeholder { color: #9AA1BE; }
 .home-newsletter-form input:focus {
   outline: none;
   border-color: var(--green);
-  background: var(--card);
 }
-.home-newsletter-form.has-error input { border-color: #E4483C; }
+.home-newsletter-form.has-error input { border-color: #FF8A80; }
 .home-newsletter-form .btn-primary {
   flex-shrink: 0;
-  height: 43px;
-  padding: 0 18px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
 }
 .home-newsletter-note {
   font-size: 12px;
-  color: var(--text-faint);
+  color: rgba(255,255,255,.6);
 }
-.home-newsletter-note.is-error { color: #E4483C; }
+.home-newsletter-note.is-error { color: #FF9A90; }
 .home-newsletter-note.is-success {
-  color: var(--green-dark);
+  color: var(--green);
   font-weight: 600;
 }
-
-/* Bülten ile iletişim bölümünü ayıran, ortasında başlık olan çizgi. */
-.home-support-divider {
+.home-newsletter-perks {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 7px;
   width: 100%;
   max-width: 420px;
-  margin: 18px 0 4px;
-  color: var(--text-muted);
-  font-size: 12.5px;
-  font-weight: 600;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  text-align: left;
 }
-.home-support-divider::before,
-.home-support-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+.home-newsletter-perks li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.82);
+}
+.home-newsletter-perks .icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--green);
 }
 
+/* ---- İletişim kartı ---- */
+.home-support {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.home-support-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.home-support-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(21,32,72,.07);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-support-icon svg { width: 21px; height: 21px; }
+.home-support-head-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.home-support-head-text h2 { font-size: 17px; }
+.home-support-head-text p {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
 /* Telefon satırı: dokununca numarayı arar. */
 .home-support-phone {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  max-width: 420px;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -5118,8 +5205,8 @@ ul {
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(21,32,72,.08);
-  color: var(--navy);
+  background: rgba(140,198,63,.16);
+  color: var(--green-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5149,14 +5236,11 @@ ul {
   height: 18px;
   color: var(--text-faint);
 }
-
 .home-support-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: 420px;
-  margin-top: 4px;
 }
 .home-support-btn {
   display: flex;
@@ -5196,12 +5280,8 @@ ul {
   border-color: var(--navy);
   background: var(--bg);
 }
-
 .home-callback-form {
   width: 100%;
-  max-width: 420px;
-  margin-top: 10px;
-  text-align: left;
 }
 .home-callback-form[hidden] { display: none; }
 .home-callback-form label {
@@ -5242,7 +5322,6 @@ ul {
   margin-top: 8px;
   font-size: 12px;
   color: var(--text-faint);
-  text-align: center;
 }
 .home-callback-note.is-error { color: #E4483C; }
 .home-callback-note.is-success {
@@ -5266,15 +5345,26 @@ ul {
   .theme-card { flex: 0 0 190px; height: 210px; }
   .collection-grid { grid-template-columns: repeat(4, 1fr); }
   .collection-tile { height: 170px; }
-  .home-promo { height: 230px; }
+  .home-promo {
+    flex: 0 0 min(560px, 62%);
+    height: 230px;
+  }
   .home-promo-content {
-    max-width: 58%;
+    max-width: 68%;
     padding: 26px 28px;
   }
   .home-promo-content strong { font-size: 24px; }
   .home-promo-text { font-size: 13.5px; }
-  .home-support { padding: 30px 24px; }
-  .home-support h2 { font-size: 19px; }
+  .home-newsletter { padding: 34px 28px 28px; }
+  .home-newsletter h2 { font-size: 22px; }
+  .home-newsletter-perks {
+    flex-direction: row;
+    justify-content: center;
+    gap: 18px;
+    max-width: none;
+  }
+  .home-support { padding: 24px; }
+  .home-support-head-text h2 { font-size: 19px; }
   .home-support-actions {
     flex-direction: row;
   }
