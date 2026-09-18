@@ -4360,10 +4360,16 @@ ul {
 .filter-dropdown-panel.dropdown-portal {
   display: none !important;
   position: fixed !important;
-  top: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  left: auto !important;
+  /* Bu dort ofset, portal oncesi capali yerlesimi (.filter-dropdown-panel'in
+     top:calc(100% + 8px)/left:0 degerleri) notrlemek icin var; secici
+     ozgullugu zaten o kurali yendigi icin !important kullanilmaz.
+     Masaustunde konumu positionDesktopDropdown() satir ici stille yaziyor;
+     !important olsaydi satir ici deger ezilir, panel ekran disinda kalirdi.
+     Mobilde 680px bloğu bu degerleri !important ile tekrar sabitliyor. */
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
   transform: none !important;
   z-index: 2010 !important;
   box-sizing: border-box !important;
