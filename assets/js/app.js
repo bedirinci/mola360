@@ -460,7 +460,8 @@ const cardSections = [
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
-  {title:'Yaklaşan Etkinlikler', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Etkinlik:', filterKey:'upcoming', cardStyle:'compact', items:[
+  /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar". */
+  {title:'Yaklaşan Planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
     {img:'run1', badges:['Spor'], rating:'4.6', reviews:'30+', title:'Bursa Gece Koşusu', meta1:'İznik Gölü Kıyısı · 19:00', meta2:'Bugün', priceMain:'150', inDays:0},
     {img:'theatre1', badges:['Tiyatro'], rating:'4.7', reviews:'96+', title:'7 Kocalı Hürmüz Müzikali', meta1:'Açıkhava Tiyatrosu · 20:00', meta2:'Bu Cumartesi', priceMain:'1150', inDays:1, dayKey:'cumartesi'},
     {img:'concert2', badges:['Konser'], rating:'4.9', reviews:'52+', title:'Sonbahar Caz Akşamları', meta1:'Merinos AKM · 20:00', meta2:'Bu Cumartesi', priceMain:'400', inDays:1, dayKey:'cumartesi'},
@@ -469,6 +470,10 @@ const cardSections = [
     {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Efsane 90\'lar Gecesi', meta1:'BAOB Sahne · 21:00', meta2:'3 gün sonra', priceMain:'210', inDays:3},
     {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'64+', title:'Bursa Kültürpark Konserleri', meta1:'Kültürpark · 20:30', meta2:'6 gün sonra', priceMain:'320', inDays:6},
     {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'40+', title:'Uludağ Kar Festivali', meta1:'Uludağ · Tüm gün', meta2:'12 gün sonra', priceMain:'250', inDays:12},
+    {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Masukiye Turu', meta1:'Bursa Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
+    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · 08:00', meta2:'Bu Pazar', priceMain:'450', inDays:2, dayKey:'pazar'},
+    {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'55+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Kahvaltı Dahil · 08:30', meta2:'3 gün sonra', priceMain:'520', inDays:3},
+    {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'210+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Bursa Hareketli', meta2:'9 gün sonra', priceMain:'3399', inDays:9},
   ]},
   {title:'Konaklamalı Turlar', titleIcon:'moon', meta1Icon:'moon', meta2Label:'En yakın:', items:[
     {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'210+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Bursa Hareketli', meta2:'20 Ekim, Salı', priceMain:'3399'},
