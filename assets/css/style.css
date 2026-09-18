@@ -5442,3 +5442,11 @@ ul {
     white-space: nowrap;
   }
 }
+
+/* Tam ekran diyaloglar açılırken odak, kapsayıcının kendisine taşınıyor
+   (bkz. app.js). Kapsayıcı görsel bir kontrol olmadığı için tarayıcının
+   odak halkası burada gösterilmez; butonların kendi odak halkası korunur. */
+.notif-panel:focus,
+.auth-modal:focus {
+  outline: none;
+}
