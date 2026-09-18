@@ -340,6 +340,12 @@ const ICONS = {
   basket:'<path d="M4.5 8h15l-1.4 10.8a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8z"/><path d="M8.5 8V6.2a3.5 3.5 0 0 1 7 0V8"/>',
   heart:'<path d="M12 20.5s-7.5-4.6-10-9.3C0.4 8 2 4.5 5.6 4c2.1-0.3 4 0.7 6.4 3 2.4-2.3 4.3-3.3 6.4-3C21.9 4.5 23.6 8 22 11.2c-2.5 4.7-10 9.3-10 9.3z"/>',
   moon:'<path d="M20 14.2A8 8 0 1 1 9.8 4a6.4 6.4 0 0 0 10.2 10.2z"/>',
+  /* activity: "Aktiviteler" kavramina ait. Turlar compass kullandigi icin
+     ikisi ayrildi; ayni ikon iki farkli kavrami temsil etmez. */
+  activity:'<path d="M3 12h3.5l2.2-6 3.6 12 2.4-7.5 1.6 1.5H21"/>',
+  /* sparkle: "Yeni Eklenenler". Daha once star kullaniyordu, ama star
+     puanlama rozetlerinin ikonu; ayni ikon iki anlam tasiyamaz. */
+  sparkle:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
   sun:'<circle cx="12" cy="12" r="4.2"/><line x1="12" y1="2.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21.5" y2="12"/><line x1="5.3" y1="5.3" x2="7" y2="7"/><line x1="17" y1="17" x2="18.7" y2="18.7"/><line x1="5.3" y1="18.7" x2="7" y2="17"/><line x1="17" y1="7" x2="18.7" y2="5.3"/>',
 };
 function svg(name){ return `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`; }
@@ -421,10 +427,10 @@ const categories = [
   {name:'Turlar', icon:'compass', img:'turlar'},
   {name:'Etkinlikler', icon:'ticket', img:'etkinlikler'},
   {name:'Oteller', icon:'home', img:'oteller'},
-  {name:'Aktiviteler', icon:'compass', img:'aktiviteler'},
+  {name:'Aktiviteler', icon:'activity', img:'aktiviteler'},
   {name:'Mekanlar', icon:'mapPin', img:'mekanlar'},
   {name:'Kuponlarım', icon:'wallet', img:'kuponlarim'},
-  {name:'Yeni Eklenenler', icon:'star', img:'yenieklenenler'},
+  {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler'},
   {name:'Bu Hafta', icon:'calendar', img:'buhafta'},
 ];
 
@@ -433,15 +439,15 @@ const searchCategories = [
   {name:'Turlar', icon:'compass'},
   {name:'Etkinlikler', icon:'ticket'},
   {name:'Oteller', icon:'home'},
-  {name:'Aktiviteler', icon:'compass'},
+  {name:'Aktiviteler', icon:'activity'},
   {name:'Mekanlar', icon:'mapPin'},
 ];
 
 // Arama ekranında örnek olarak gösterilen son aramalar.
 const recentSearchTerms = [
-  'Bursa konserleri',
-  'Uludağ otelleri',
-  'Bursa aktiviteleri'
+  'İstanbul konserleri',
+  'Kapadokya otelleri',
+  'İzmir mekanları'
 ];
 
 // Arama ekranında gösterilen önerilen aramalar (trend/öneri niteliğinde, sabit liste).
@@ -453,54 +459,60 @@ const suggestedSearchTerms = [
   'Kamp alanları'
 ];
 const cardSections = [
+  /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
   {title:'Popüler Etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'64+', title:'Bursa Kültürpark Konserleri', meta1:'Kültürpark · 20:30', meta2:'Bu Cuma', priceMain:'320'},
-    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'40+', title:'Uludağ Kar Festivali', meta1:'Uludağ · Tüm gün', meta2:'13 Aralık, Pazar', priceMain:'250'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Efsane 90\'lar Gecesi', meta1:'BAOB Sahne · 21:00', meta2:'21 Eylül, Pazartesi', priceMain:'210'},
-    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'18+', title:'Bursa Kahve Festivali', meta1:'Sukaypark · 11:00', meta2:'11 Eylül, Cuma', priceMain:'180'},
+    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Cemil Topuzlu Sahnesi, İstanbul · 21:00', meta2:'12 Eylül, Cuma', priceMain:'890'},
+    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'310+', title:'Çeşme Yaz Festivali', meta1:'Alaçatı Sahil, İzmir · Tüm gün', meta2:'19 Eylül, Cuma', priceMain:'650'},
+    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'21 Eylül, Pazartesi', priceMain:'420'},
+    {img:'theatre1', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos Antik Tiyatro, Antalya · 20:30', meta2:'26 Eylül, Cumartesi', priceMain:'750'},
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
-  /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar". */
+  /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar".
+     Icerik Turkiye geneli: her gun filtresinde farkli sehirler bulunur. */
   {title:'Yaklaşan Planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
     /* dayKey: gun filtreleri (Bu Cuma / Bu Cumartesi / Bu Pazar) bununla suzer.
        inDays: siralama icin kalan gun. meta2: kartta gorunen tarih metni. */
-    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'30+', title:'Bursa Gece Koşusu', meta1:'İznik Gölü Kıyısı · 19:00', meta2:'Bu Cuma', priceMain:'150', inDays:0, dayKey:'cuma'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Efsane 90\'lar Gecesi', meta1:'BAOB Sahne · 21:00', meta2:'Bu Cuma', priceMain:'210', inDays:0, dayKey:'cuma'},
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'64+', title:'Bursa Kültürpark Konserleri', meta1:'Kültürpark · 20:30', meta2:'Bu Cuma', priceMain:'320', inDays:0, dayKey:'cuma'},
-    {img:'theatre1', badges:['Tiyatro'], rating:'4.7', reviews:'96+', title:'7 Kocalı Hürmüz Müzikali', meta1:'Açıkhava Tiyatrosu · 20:00', meta2:'Bu Cumartesi', priceMain:'1150', inDays:1, dayKey:'cumartesi'},
-    {img:'concert2', badges:['Konser'], rating:'4.9', reviews:'52+', title:'Sonbahar Caz Akşamları', meta1:'Merinos AKM · 20:00', meta2:'Bu Cumartesi', priceMain:'400', inDays:1, dayKey:'cumartesi'},
-    {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Masukiye Turu', meta1:'Bursa Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
-    {img:'market1', badges:['Pazar'], rating:'4.4', reviews:'12+', title:'Cumalıkızık Yöresel Pazar', meta1:'Cumalıkızık · 10:00', meta2:'Bu Pazar', priceMain:'50', inDays:2, dayKey:'pazar'},
-    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'18+', title:'Bursa Kahve Festivali', meta1:'Sukaypark · 11:00', meta2:'Bu Pazar', priceMain:'180', inDays:2, dayKey:'pazar'},
+    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'240+', title:'İstanbul Gece Yarısı Koşusu', meta1:'Kadıköy Sahil, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'350', inDays:0, dayKey:'cuma'},
+    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'Bu Cuma', priceMain:'420', inDays:0, dayKey:'cuma'},
+    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Harbiye, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'890', inDays:0, dayKey:'cuma'},
+    {img:'theatre1', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos, Antalya · 20:30', meta2:'Bu Cumartesi', priceMain:'750', inDays:1, dayKey:'cumartesi'},
+    {img:'concert2', badges:['Konser'], rating:'4.7', reviews:'120+', title:'Kordon Caz Akşamları', meta1:'Alsancak, İzmir · 20:00', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
+    {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Maşukiye Turu', meta1:'İstanbul Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'780', inDays:1, dayKey:'cumartesi'},
+    {img:'market1', badges:['Günübirlik'], rating:'4.4', reviews:'96+', title:'Alaçatı Pazar Turu', meta1:'İzmir Çıkışlı · 09:00', meta2:'Bu Pazar', priceMain:'350', inDays:2, dayKey:'pazar'},
+    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'210+', title:'İstanbul Kahve Festivali', meta1:'Küçükçiftlik Park · 11:00', meta2:'Bu Pazar', priceMain:'290', inDays:2, dayKey:'pazar'},
     {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · 08:00', meta2:'Bu Pazar', priceMain:'450', inDays:2, dayKey:'pazar'},
-    {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'55+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Kahvaltı Dahil · 08:30', meta2:'3 gün kaldı', priceMain:'520', inDays:3},
-    {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'210+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Bursa Hareketli', meta2:'9 gün kaldı', priceMain:'3399', inDays:9},
-    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'40+', title:'Uludağ Kar Festivali', meta1:'Uludağ · Tüm gün', meta2:'12 gün kaldı', priceMain:'250', inDays:12},
+    {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'155+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Ankara Çıkışlı · 08:30', meta2:'3 gün kaldı', priceMain:'620', inDays:3},
+    {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Uçaklı', meta2:'9 gün kaldı', priceMain:'8990', inDays:9},
+    {img:'kayak3', badges:['Kış Sporu'], rating:'4.6', reviews:'140+', title:'Erciyes Kayak Haftası', meta1:'Kayseri · 4 Gece 5 Gün', meta2:'12 gün kaldı', priceMain:'6400', inDays:12},
   ]},
-  {title:'Konaklamalı Turlar', titleIcon:'moon', meta1Icon:'moon', meta2Label:'En yakın:', items:[
-    {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'210+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Bursa Hareketli', meta2:'20 Ekim, Salı', priceMain:'3399'},
-    {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı', meta2:'2 Kasım, Pazar', priceMain:'5100'},
-    {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'88+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Bursa Hareketli', meta2:'15 Eylül, Salı', priceMain:'2990'},
-    {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'150+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli', meta2:'8 Aralık, Salı', priceMain:'6750'},
+  /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
+     titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
+     anlatir; ayni ikon iki anlam tasimaz. */
+  {title:'Konaklamalı Turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
+    {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı', meta2:'20 Ekim, Salı', priceMain:'8990'},
+    {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
+    {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
+    {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
   ]},
-  {title:'Günübirlik Turlar', titleIcon:'sun', meta1Icon:'sun', meta2Label:'En yakın:', items:[
-    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Günübirlik · Bursa Çıkışlı', meta2:'Bu Pazar', priceMain:'450'},
-    {img:'sapanca2', badges:['Günübirlik'], sponsored:true, title:'Sapanca ve Masukiye Turu', meta1:'Günübirlik · Bursa Çıkışlı', meta2:'Bu Cumartesi', priceMain:'480'},
-    {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'55+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Günübirlik · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'520'},
-    {img:'cunda2', badges:['Günübirlik'], rating:'4.7', reviews:'64+', title:'Cunda Adası ve Ayvalık', meta1:'Günübirlik · Tekne Dahil', meta2:'19 Ekim, Pazar', priceMain:'690'},
+  {title:'Günübirlik Turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
+    {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
+    {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
+    {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},
+    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · Rehberli', meta2:'19 Ekim, Pazar', priceMain:'450'},
   ]},
-  {title:'Aktiviteler', titleIcon:'compass', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'rafting3', badges:['Su Sporları'], rating:'4.8', reviews:'44+', title:'Köprülü Kanyon Rafting', meta1:'Yarım Gün · Ekipman Dahil', meta2:'Bu hafta s', priceMain:'850'},
-    {img:'paraglide3', badges:['Macera'], rating:'4.9', reviews:'120+', title:'Ölüdeniz Yamaç Paraşütü', meta1:'20 dk Uçuş · Fotoğraf Dahil', meta2:'Her gün', priceMain:'1450'},
-    {img:'balloon3', badges:['Macera'], sponsored:true, title:'Kapadokya Sıcak Hava Balonu', meta1:'1 Saat Uçuş · Kahvaltı Dahil', meta2:'Her sabah', priceMain:'2990'},
-    {img:'kayak3', badges:['Kış Sporu'], rating:'4.5', reviews:'33+', title:'Uludağ Kayak Dersi', meta1:'2 Saat · Ekipman Dahil', meta2:'Hafta içi', priceMain:'750'},
+  /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
+  {title:'Aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[
+    {img:'rafting3', badges:['Su Sporları'], rating:'4.8', reviews:'440+', title:'Köprülü Kanyon Rafting', meta1:'Antalya, Manavgat · Yarım Gün', meta2:'Her gün', priceMain:'850'},
+    {img:'paraglide3', badges:['Macera'], rating:'4.9', reviews:'1,2b+', title:'Ölüdeniz Yamaç Paraşütü', meta1:'Fethiye, Muğla · 20 dk Uçuş', meta2:'Her gün', priceMain:'1450'},
+    {img:'balloon3', badges:['Macera'], sponsored:true, title:'Kapadokya Sıcak Hava Balonu', meta1:'Göreme, Nevşehir · 1 Saat Uçuş', meta2:'Her sabah', priceMain:'2990'},
+    {img:'kayak3', badges:['Kış Sporu'], rating:'4.5', reviews:'330+', title:'Uludağ Kayak Dersi', meta1:'Bursa, Uludağ · 2 Saat Özel Ders', meta2:'Hafta içi', priceMain:'750'},
   ]},
   {title:'Oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
-    {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort Antalya', meta1:'Antalya, Kemer · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
-    {img:'hotel5', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Divan Bursa', meta1:'Osmangazi, Bursa · Merkezi', meta2:'Bugün', priceMain:'1450', unit:'/gece'},
-    {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
-    {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Cumalıkızık Konak Otel', meta1:'Bursa, Cumalıkızık · Tarihi Doku', meta2:'Bu hafta', priceMain:'1750', unit:'/gece'},
+    {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
+    {img:'hotel5', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Kordon Butik Otel', meta1:'Alsancak, İzmir · Sahile Yürüme Mesafesi', meta2:'Bugün', priceMain:'1950', unit:'/gece'},
+    {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
+    {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Göreme Mağara Otel', meta1:'Göreme, Nevşehir · Tarihi Doku', meta2:'Bu hafta', priceMain:'2450', unit:'/gece'},
   ]},
 ];
 
