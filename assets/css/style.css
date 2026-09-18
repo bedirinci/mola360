@@ -4913,8 +4913,9 @@ ul {
    boşluklarının üzerine taşar (.h-scroll ile aynı teknik). */
 .promo-scroll,
 .theme-scroll {
+  --scroller-gap: 12px;
   display: flex;
-  gap: 12px;
+  gap: var(--scroller-gap);
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0 var(--page-gutter) 8px;
@@ -5397,8 +5398,12 @@ ul {
   .theme-card { flex: 0 0 190px; height: 210px; }
   .collection-grid { grid-template-columns: repeat(4, 1fr); }
   .collection-tile { height: 170px; }
+  /* Masaüstünde tam iki kart görünür. Böylece kaydırılabilir mesafe kart
+     adımının tam katı olur: her ok tıklaması bir kart kaydırır ve son
+     tıklama da tam kart kenarında biter. Kesirli kart genişliğinde son
+     adım kısa kalıp "fazla kaydırıyor" hissi veriyordu. */
   .home-promo {
-    flex: 0 0 min(560px, 62%);
+    flex: 0 0 calc((100% - var(--scroller-gap)) / 2);
     height: 230px;
   }
   .home-promo-content {
