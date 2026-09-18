@@ -22,6 +22,19 @@
   --cat-gap: 15px;
   --cat-gap-tablet: 15px;
   --desktop-sidebar-width: 286px;
+  /* Ana içerik alanının yan boşluğu. Bölümler, filtre çubuğu, footer ve
+     yatay şeritlerin taşma payı bu tek değerden beslenir; biri değişince
+     hepsi birlikte değişir. */
+  --page-gutter: 16px;
+}
+@media (max-width: 680px) {
+  :root { --page-gutter: 12px; }
+}
+@media (min-width: 681px) {
+  :root { --page-gutter: 24px; }
+}
+@media (min-width: 1025px) {
+  :root { --page-gutter: 32px; }
 }
 
 * {
@@ -2008,7 +2021,7 @@ ul {
 }
 /* =============== SECTION SHELL =============== */
   .section {
-  padding: 20px 16px 0px;
+  padding: 20px var(--page-gutter) 0px;
 }
 .section-head {
   display: flex;
@@ -2038,10 +2051,10 @@ ul {
   gap: 14px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 16px 8px;
-  margin-left: -16px;
-  margin-right: -16px;
-  width: calc(100% + 32px);
+  padding: 0 var(--page-gutter) 8px;
+  margin-left: calc(var(--page-gutter) * -1);
+  margin-right: calc(var(--page-gutter) * -1);
+  width: calc(100% + var(--page-gutter) * 2);
   scroll-snap-type: none;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
@@ -2186,7 +2199,7 @@ ul {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 12px 16px;
+  padding: 12px var(--page-gutter);
   position: relative;
   z-index: 60;
   overflow: visible;
@@ -2781,7 +2794,7 @@ ul {
   margin-top: 30px;
   background: var(--navy-deep);
   color: #C7CDE6;
-  padding: 32px 16px 20px;
+  padding: 32px var(--page-gutter) 20px;
 }
 .footer-top {
   display: grid;
@@ -2943,14 +2956,7 @@ ul {
   }
 
   .section {
-    padding: 16px 12px 0px;
-  }
-  .h-scroll {
-    padding-left: 12px;
-    padding-right: 12px;
-    margin-left: -12px;
-    margin-right: -12px;
-    width: calc(100% + 24px);
+    padding: 16px var(--page-gutter) 0px;
   }
   .section-head h2 {
     font-size: 17px;
@@ -2997,7 +3003,7 @@ ul {
     border-radius: 15px;
   }
   .filter-bar {
-    padding: 7px 12px;
+    padding: 7px var(--page-gutter);
     /* Arama kutusunun HEMEN altına yapışır. Yükseklik JS tarafından
        ölçülüp --m360-search-h değişkenine yazılır; sabit sayı yok. */
     position: sticky;
@@ -3145,7 +3151,7 @@ ul {
   }
   .site-footer {
     margin-bottom: 0;
-    padding: 24px 12px calc(100px + env(safe-area-inset-bottom));
+    padding: 24px var(--page-gutter) calc(100px + env(safe-area-inset-bottom));
   }
 }
 
@@ -4873,22 +4879,16 @@ ul {
    boşluklarının üzerine taşar (.h-scroll ile aynı teknik). */
 .promo-scroll,
 .theme-scroll {
-  /* Sayfanın yan boşluğu: masaüstünde 16px, mobilde 12px. */
-  --scroller-gutter: 16px;
   display: flex;
   gap: 12px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 var(--scroller-gutter) 8px;
-  margin-left: calc(var(--scroller-gutter) * -1);
-  margin-right: calc(var(--scroller-gutter) * -1);
-  width: calc(100% + var(--scroller-gutter) * 2);
+  padding: 0 var(--page-gutter) 8px;
+  margin-left: calc(var(--page-gutter) * -1);
+  margin-right: calc(var(--page-gutter) * -1);
+  width: calc(100% + var(--page-gutter) * 2);
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-}
-@media (max-width: 680px) {
-  .promo-scroll,
-  .theme-scroll { --scroller-gutter: 12px; }
 }
 .promo-scroll::-webkit-scrollbar,
 .theme-scroll::-webkit-scrollbar { display: none; }
