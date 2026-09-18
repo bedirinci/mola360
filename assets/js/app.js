@@ -712,6 +712,42 @@ initHomeBlocks();
    Blokların verisi ve işaretlemesi home-blocks.js'te; burada yalnızca
    yerleştirildikten sonraki davranışları bağlanır. Bir blok
    HOME_BLOCK_PLACEMENT'tan çıkarılırsa buradaki kod sessizce atlanır. */
+/* iOS'ta klavye açılınca yalnızca "visual viewport" küçülür; sayfanın
+   düzen (layout) viewport'u aynı kaldığı için programatik olarak
+   odaklanan alan klavyenin arkasında kalabiliyor. Odaktan sonra alanı
+   görünür yüksekliğin üst tarafına kaydırıyoruz; klavye açıldığında
+   viewport bir kez daha küçüldüğü için kaydırmayı o an tekrarlıyoruz. */
+function focusAndRevealInput(input){
+  if (!input) return;
+  input.focus();
+
+  const reveal = () => {
+    const vv = window.visualViewport;
+    const gorunurYukseklik = vv ? vv.height : window.innerHeight;
+    /* Sayfanın yapışkan arama + filtre çubukları üstte ~110-130px yer
+       kaplıyor; alan hiçbir koşulda onların altında kalmasın. */
+    const ustBosluk = Math.max(165, Math.round(gorunurYukseklik * 0.32));
+    const hedef = window.scrollY + input.getBoundingClientRect().top - ustBosluk;
+    window.scrollTo({ top: Math.max(0, hedef), behavior: 'smooth' });
+  };
+
+  reveal();
+
+  const vv = window.visualViewport;
+  if (!vv) {
+    window.setTimeout(reveal, 350);
+    return;
+  }
+  /* Klavyenin açılması viewport'u yeniden boyutlandırır; ilk boyut
+     değişiminde konumu düzeltip dinlemeyi bırakıyoruz. */
+  const onResize = () => {
+    reveal();
+    vv.removeEventListener('resize', onResize);
+  };
+  vv.addEventListener('resize', onResize);
+  window.setTimeout(() => vv.removeEventListener('resize', onResize), 1500);
+}
+
 function initHomeBlocks(){
   /* --- Şerit zaman filtresi (Yaklaşan Etkinlikler) --- */
   document.querySelectorAll('[data-section-filters]').forEach(row => {
@@ -756,7 +792,7 @@ function initHomeBlocks(){
           note.textContent = 'Geçerli bir e-posta adresi gir.';
           note.classList.add('is-error');
         }
-        if (input) input.focus({preventScroll:true});
+        focusAndRevealInput(input);
         return;
       }
       form.classList.remove('has-error');
@@ -780,8 +816,7 @@ function initHomeBlocks(){
       callbackBtn.classList.toggle('is-open', !acik);
       callbackBtn.setAttribute('aria-expanded', String(!acik));
       if (!acik) {
-        const input = document.getElementById('homeCallbackPhone');
-        if (input) input.focus({preventScroll:true});
+        focusAndRevealInput(document.getElementById('homeCallbackPhone'));
       }
     });
 
@@ -794,7 +829,7 @@ function initHomeBlocks(){
           callbackNote.textContent = 'Numaranı 05XX XXX XX XX biçiminde gir.';
           callbackNote.classList.add('is-error');
         }
-        if (input) input.focus({preventScroll:true});
+        focusAndRevealInput(input);
         return;
       }
       callbackForm.classList.remove('has-error');
