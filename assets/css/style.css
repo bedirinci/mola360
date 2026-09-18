@@ -34,7 +34,28 @@
   :root { --page-gutter: 24px; }
 }
 @media (min-width: 1025px) {
-  :root { --page-gutter: 32px; }
+  :root { --page-gutter: 40px; }
+}
+/* Geniş ekranlarda içerik sonsuza kadar genişlemesin: ölçülü bir sütun
+   genişliğinde kalıp ortalanır, kalan yer iki yana boşluk olarak dağılır.
+   (Kutu modeli border-box olduğu için yan boşluk da bu değere dahildir.) */
+@media (min-width: 1025px) {
+  :root { --page-max: 1400px; }
+  .section,
+  .filter-bar {
+    max-width: calc(var(--page-max) + var(--page-gutter) * 2);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* Footer'ın lacivert zemini tüm genişliği kaplamaya devam eder;
+     yalnızca içindeki içerik ortalanır. */
+  .footer-top,
+  .footer-trust,
+  .footer-bottom {
+    max-width: var(--page-max);
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 * {
