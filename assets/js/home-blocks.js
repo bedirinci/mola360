@@ -74,7 +74,7 @@ const NEWSLETTER_PERKS = [
 const CONTACT = {
   phoneLabel: '0850 000 00 00',
   phoneHref: 'tel:+908500000000',
-  hours: 'Her gün 09:00 – 22:00',
+  hours: 'Her Gün 09:00 – 22:00',
   whatsappHref: 'https://wa.me/900000000000'
 };
 
@@ -238,11 +238,11 @@ const HOME_BLOCK_MARKUP = {
         <div class="home-support-actions">
           <a class="home-support-btn is-whatsapp" href="${CONTACT.whatsappHref}" target="_blank" rel="noopener">
             <span class="icon home-support-wa-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="${WHATSAPP_ICON_PATH}"></path></svg></span>
-            WhatsApp canlı destek
+            WhatsApp Canlı Destek
           </a>
           <button class="home-support-btn is-callback" type="button" id="homeCallbackBtn" aria-expanded="false" aria-controls="homeCallbackForm">
             <span class="icon">${svg('phone')}</span>
-            Beni ara
+            Beni Ara
           </button>
         </div>
         </div>
