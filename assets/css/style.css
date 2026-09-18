@@ -5442,3 +5442,188 @@ ul {
     white-space: nowrap;
   }
 }
+
+/* =====================================================
+   MASAÜSTÜ CİLASI
+   Bu bölümdeki kuralların tamamı 681px ve üzerini etkiler;
+   mobil görünüm olduğu gibi kalır.
+   ===================================================== */
+
+/* ---- Şeritlerdeki kart genişliği ızgaraya oturur ----
+   Sabit piksel genişlik yerine görünür alanın kesri kullanılır; böylece
+   her ekranda aynı sayıda tam kart ve aynı oranda "sonraki kart ucu"
+   görünür. Kesirli sayı bilinçli bir ipucu payı bırakır. */
+@media (min-width: 681px) {
+  :root {
+    --strip-gap: 14px;
+    --strip-cols: 2.4;
+    --strip-compact-cols: 3.2;
+    --theme-cols: 3.4;
+  }
+
+  /* Dar sol sütunda sadakat başlığı ikinci satıra düşmesin. */
+  .desktop-sidebar .mobile-profile-loyalty-head { gap: 6px; }
+  .desktop-sidebar .mobile-profile-loyalty-head strong { white-space: nowrap; }
+}
+@media (min-width: 1025px) {
+  :root {
+    --strip-cols: 4.25;
+    --strip-compact-cols: 5.25;
+    --theme-cols: 4.5;
+    /* Sol sütun 26px daralır; kazanılan genişlik ana içerik alanına gider.
+       Tablet aralığı zaten 252px ile çalıştığı için kart içerikleri sığar. */
+    --desktop-sidebar-width: 260px;
+  }
+}
+@media (min-width: 681px) {
+  .poi-card {
+    flex: 0 0 calc((100% - (var(--strip-cols) - 1) * var(--strip-gap)) / var(--strip-cols));
+  }
+  .compact-card {
+    flex: 0 0 calc((100% - (var(--strip-compact-cols) - 1) * var(--strip-gap)) / var(--strip-compact-cols));
+  }
+  .theme-card {
+    flex: 0 0 calc((100% - (var(--theme-cols) - 1) * var(--scroller-gap)) / var(--theme-cols));
+  }
+}
+@media (min-width: 1025px) {
+  .theme-card { height: 250px; }
+}
+
+/* ---- Bölümler arası nefes payı ---- */
+@media (min-width: 681px) {
+  .section { padding-top: 34px; }
+}
+@media (min-width: 1025px) {
+  .section { padding-top: 44px; }
+}
+
+/* ---- Yazı ölçeği: masaüstünde mobil ölçeğinde kalmasın ---- */
+@media (min-width: 1025px) {
+  .section-head h2 {
+    font-size: 24px;
+    letter-spacing: -.3px;
+  }
+  .section-subtitle { font-size: 13.5px; }
+  .see-all { font-size: 14px; }
+  .see-all .icon { width: 16px; height: 16px; }
+  .poi-title { font-size: 16px; }
+  .poi-meta-row { font-size: 13px; }
+  .compact-card-title { font-size: 15px; }
+  .compact-card-place { font-size: 12.5px; }
+  .venue-title { font-size: 16px; }
+  .hero-content .hero-title { font-size: 48px; }
+  .hero-content p { font-size: 17px; max-width: 520px; }
+}
+
+/* ---- Hero: ince bir bant yerine gerçek bir kapak ---- */
+@media (min-width: 1025px) {
+  .hero {
+    aspect-ratio: auto;
+    height: clamp(400px, 32vw, 520px);
+  }
+}
+
+/* ---- Hero'daki çağrı bağlantısı masaüstünde buton olur ---- */
+@media (min-width: 1025px) {
+  .hero-cta {
+    margin-top: 14px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--navy);
+    font-weight: 700;
+    gap: 8px;
+    box-shadow: 0 8px 20px rgba(11,18,48,.25);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .hero-cta-icon {
+    width: 16px;
+    height: 16px;
+    background: var(--navy);
+    color: #fff;
+  }
+  .hero-cta-icon svg { width: 11px; height: 11px; }
+}
+
+/* ---- Yan menüdeki kampanya kartı kırpılmasın: tek kart görünür ---- */
+@media (min-width: 681px) {
+  .desktop-sidebar .drawer-promo-card {
+    flex: 0 0 100%;
+    width: auto;
+  }
+}
+
+/* ---- Fare etkileşimi: kartlar tıklanabilir olduğunu belli etsin ---- */
+@media (hover: hover) and (min-width: 681px) {
+  .poi-card,
+  .compact-card,
+  .venue-card,
+  .theme-card,
+  .collection-tile,
+  .home-promo,
+  .top10-card {
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .poi-card:hover,
+  .compact-card:hover,
+  .venue-card:hover {
+    transform: translateY(-3px);
+    border-color: #D6DAE4;
+    box-shadow: 0 12px 26px rgba(21,32,72,.13);
+  }
+  .theme-card:hover,
+  .collection-tile:hover,
+  .home-promo:hover,
+  .top10-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(11,18,48,.26);
+  }
+  /* Görsel hafifçe yakınlaşır; kartların overflow'u gizli olduğu için taşmaz. */
+  .poi-media img,
+  .compact-card-media img,
+  .venue-media img,
+  .theme-card img,
+  .collection-tile img,
+  .home-promo img {
+    transition: transform .45s cubic-bezier(.2,.6,.2,1);
+  }
+  .poi-card:hover .poi-media img,
+  .compact-card:hover .compact-card-media img,
+  .venue-card:hover .venue-media img,
+  .theme-card:hover img,
+  .collection-tile:hover img,
+  .home-promo:hover img {
+    transform: scale(1.06);
+  }
+  .hero-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(11,18,48,.32);
+  }
+  .see-all {
+    transition: color .15s ease, gap .15s ease;
+  }
+  .see-all:hover {
+    color: var(--navy);
+    gap: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .poi-card, .compact-card, .venue-card, .theme-card,
+  .collection-tile, .home-promo, .top10-card,
+  .poi-media img, .compact-card-media img, .venue-media img,
+  .theme-card img, .collection-tile img, .home-promo img {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ---- Klavye ile gezinme: odak halkası ---- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--green-dark);
+  outline-offset: 2px;
+}
