@@ -41,7 +41,11 @@ const GRID_COLLECTIONS = [
   { img:'abant2',     title:'Ailece',      text:'Çocuklu ailelere uygun' },
   { img:'assos',      title:'Romantik',    text:'İki kişilik kaçamaklar' },
   { img:'market1',    title:'Bütçe Dostu', text:'500 TL altı seçenekler' },
-  { img:'paraglide3', title:'Adrenalin',   text:'Cesaret isteyenlere' }
+  { img:'paraglide3', title:'Adrenalin',   text:'Cesaret isteyenlere' },
+  { img:'uludag',     title:'Kış Kaçamağı', text:'Kar ve kayak sevenlere' },
+  { img:'hotel6',     title:'Termal',      text:'Şifalı sularda dinlenme' },
+  { img:'sile',       title:'Deniz Kenarı', text:'Koylar ve sahil rotaları' },
+  { img:'efes',       title:'Kültür & Tarih', text:'Antik kentler ve müzeler' }
 ];
 
 /* ---- Mekanlar ----
@@ -52,7 +56,8 @@ const VENUES = [
   { img:'uludag',   type:'Gezi Noktası', title:'Uludağ Teleferik',           area:'Teferrüç, Osmangazi',   rating:'4.8', reviews:'1,2b+', hours:'09:00 – 20:00', open:true },
   { img:'theatre1', type:'Müze',         title:'Bursa Kent Müzesi',          area:'Heykel, Osmangazi',     rating:'4.6', reviews:'180+',  hours:'09:00 – 17:00', open:false },
   { img:'market1',  type:'Çarşı',        title:'Kapalıçarşı ve Koza Han',    area:'Osmangazi',             rating:'4.7', reviews:'640+',  hours:'10:00 – 19:00', open:true },
-  { img:'iznik',    type:'Tarihi Doku',  title:'İnkaya Çınarı',              area:'Çekirge, Osmangazi',    rating:'4.5', reviews:'90+',   hours:'Her zaman açık', open:true }
+  { img:'iznik',    type:'Tarihi Doku',  title:'İnkaya Çınarı',              area:'Çekirge, Osmangazi',    rating:'4.5', reviews:'90+',   hours:'Her zaman açık', open:true },
+  { img:'cunda2',   type:'Yeme-İçme',    title:'Sakarya Caddesi Balıkçılar', area:'Osmangazi',             rating:'4.6', reviews:'410+',  hours:'12:00 – 24:00',  open:true }
 ];
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
