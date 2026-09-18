@@ -8,34 +8,18 @@
    Bir blogu kaldirmak icin buradaki satirini silmek yeterli. */
 
 const HOME_BLOCK_PLACEMENT = {
-  'Popüler Etkinlikler': ['weekend'],
   'Yaklaşan Etkinlikler': ['promo'],
   'Günübirlik Turlar': ['themes'],
-  'Aktiviteler': ['trust'],
   'Oteller': ['collectionGrid', 'newsletter']
 };
 
-/* ---- Bu hafta sonu ne var? ---- */
-const WEEKEND_DAYS = [
-  { key: 'bugun',     label: 'Bugün' },
-  { key: 'yarin',     label: 'Yarın' },
-  { key: 'cumartesi', label: 'Cumartesi' },
-  { key: 'pazar',     label: 'Pazar' }
-];
-
-const WEEKEND_ITEMS = [
-  { day:'bugun',     img:'concert1',  tag:'Konser',   time:'20:30', title:'Kültürpark Akşam Konseri',   place:'Kültürpark, Bursa',   price:'320' },
-  { day:'bugun',     img:'coffee1',   tag:'Festival', time:'11:00', title:'Bursa Kahve Festivali',      place:'Sukaypark',           price:'180' },
-  { day:'bugun',     img:'standup1',  tag:'Stand Up', time:'21:00', title:'Efsane 90\'lar Gecesi',      place:'BAOB Sahne',          price:'210' },
-  { day:'yarin',     img:'theatre1',  tag:'Tiyatro',  time:'20:00', title:'7 Kocalı Hürmüz Müzikali',   place:'Açıkhava Tiyatrosu',  price:'1150' },
-  { day:'yarin',     img:'market1',   tag:'Pazar',    time:'10:00', title:'Cumalıkızık Yöresel Pazar',  place:'Cumalıkızık',         price:'50' },
-  { day:'yarin',     img:'run1',      tag:'Spor',     time:'19:00', title:'Bursa Gece Koşusu',          place:'İznik Gölü Kıyısı',   price:'150' },
-  { day:'cumartesi', img:'sapanca2',  tag:'Günübirlik', time:'07:30', title:'Sapanca ve Masukiye Turu', place:'Bursa Çıkışlı',       price:'480' },
-  { day:'cumartesi', img:'concert2',  tag:'Konser',   time:'20:00', title:'Sonbahar Caz Akşamları',     place:'Merinos AKM',         price:'400' },
-  { day:'cumartesi', img:'rafting3',  tag:'Aktivite', time:'09:00', title:'Köprülü Kanyon Rafting',     place:'Yarım gün · Ekipman dahil', price:'850' },
-  { day:'pazar',     img:'iznik2',    tag:'Günübirlik', time:'08:00', title:'İznik Gölü ve Antik Kent', place:'Bursa Çıkışlı',       price:'450' },
-  { day:'pazar',     img:'abant2',    tag:'Doğa',     time:'08:30', title:'Abant Gölü Doğa Yürüyüşü',   place:'Kahvaltı dahil',      price:'520' },
-  { day:'pazar',     img:'festival1', tag:'Festival', time:'12:00', title:'Uludağ Kar Festivali',       place:'Uludağ · Tüm gün',    price:'250' }
+/* ---- Yaklasan Etkinlikler seridideki zaman filtreleri ----
+   Ilk siradaki secenek varsayilan olarak acilir. */
+const UPCOMING_FILTERS = [
+  { key: 'enyakin',   label: 'En yakın' },
+  { key: 'ucgun',     label: '3 gün içinde' },
+  { key: 'cumartesi', label: 'Bu Cumartesi' },
+  { key: 'pazar',     label: 'Bu Pazar' }
 ];
 
 /* ---- Temaya göre koleksiyonlar (yatay şerit) ---- */
@@ -56,14 +40,6 @@ const GRID_COLLECTIONS = [
   { img:'paraglide3', title:'Adrenalin',   text:'Cesaret isteyenlere' }
 ];
 
-/* ---- Neden mola360 / güven şeridi ---- */
-const TRUST_ITEMS = [
-  { icon:'lock',    title:'Güvenli ödeme',  text:'Kart bilgilerin 256-bit SSL ile korunur.' },
-  { icon:'refresh', title:'Ücretsiz iptal', text:'Seçili turlarda 24 saat öncesine kadar.' },
-  { icon:'headset', title:'7/24 destek',    text:'Yoldayken bile bize ulaşabilirsin.' },
-  { icon:'wallet',  title:'En iyi fiyat',   text:'Aynı turu ucuz bulursan farkı iade.' }
-];
-
 /* ---- Kampanya bandı ---- */
 const PROMO_BAND = {
   img: 'karadeniz2',
@@ -73,16 +49,41 @@ const PROMO_BAND = {
   cta: 'Fırsatları gör'
 };
 
+/* ---- Iletisim bilgileri (tek yerden degistirilir) ---- */
+const CONTACT = {
+  phoneLabel: '0850 000 00 00',
+  phoneHref: 'tel:+908500000000',
+  hours: 'Her gün 09:00 – 22:00',
+  whatsappHref: 'https://wa.me/900000000000'
+};
+
+const WHATSAPP_ICON_PATH = 'M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z';
+
 /* ---------------- saf yardimcilar ---------------- */
-function filterWeekendItems(items, day) {
+
+/* Yaklasan etkinlikler her durumda en yakin tarihten uzaga dogru siralanir;
+   filtre yalnizca hangilerinin listelenecegini belirler. */
+function filterUpcomingItems(items, key) {
   const list = Array.isArray(items) ? items : [];
-  if (!day) return list.slice();
-  return list.filter(item => item.day === day);
+  const byDistance = (a, b) => (Number(a.inDays) || 0) - (Number(b.inDays) || 0);
+  let sonuc = list;
+  if (key === 'ucgun') sonuc = list.filter(item => (Number(item.inDays) || 0) <= 3);
+  else if (key === 'cumartesi' || key === 'pazar') sonuc = list.filter(item => item.dayKey === key);
+  return sonuc.slice().sort(byDistance);
 }
 
 /* Basit ve sert olmayan bir kontrol: bosluk yok, tek @, alan adinda nokta. */
 function isValidEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || '').trim());
+}
+
+/* Turkiye numarasi: bosluk/parantez/tire serbest, basindaki 0 veya +90
+   atilir, geriye 10 hane kalmalidir. */
+function isValidPhone(value) {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.startsWith('90')) digits = digits.slice(2);
+  else if (digits.startsWith('0')) digits = digits.slice(1);
+  return /^[1-9]\d{9}$/.test(digits);
 }
 
 function homeBlockImage(key) {
@@ -95,34 +96,7 @@ function homeSectionHead(title, link) {
   return `<div class="section-head"><h2>${title}</h2>${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
 }
 
-function weekendCardsMarkup(day) {
-  const items = filterWeekendItems(WEEKEND_ITEMS, day);
-  if (!items.length) return '<p class="weekend-empty">Bu gün için planlanmış bir şey yok.</p>';
-  return items.map(item => `
-    <article class="weekend-card">
-      <div class="weekend-card-media">
-        <img src="${homeBlockImage(item.img)}" alt="" loading="lazy">
-        <span class="weekend-card-time"><span class="icon">${svg('clock')}</span>${item.time}</span>
-      </div>
-      <div class="weekend-card-body">
-        <span class="weekend-card-tag">${item.tag}</span>
-        <h3>${item.title}</h3>
-        <p><span class="icon">${svg('mapPin')}</span>${item.place}</p>
-        <span class="weekend-card-price">${item.price} TL</span>
-      </div>
-    </article>`).join('');
-}
-
 const HOME_BLOCK_MARKUP = {
-  weekend: () => `
-    <section class="section home-weekend">
-      ${homeSectionHead('Bu Hafta Sonu Ne Var?', 'Tümünü Gör')}
-      <div class="weekend-days" id="weekendDays" role="tablist" aria-label="Gün seçimi">
-        ${WEEKEND_DAYS.map((d, i) => `<button class="weekend-day${i === 0 ? ' active' : ''}" type="button" role="tab" aria-selected="${i === 0}" data-weekend-day="${d.key}">${d.label}</button>`).join('')}
-      </div>
-      <div class="weekend-list" id="weekendList">${weekendCardsMarkup(WEEKEND_DAYS[0].key)}</div>
-    </section>`,
-
   promo: () => `
     <section class="section home-promo-section">
       <a class="home-promo" href="#">
@@ -150,21 +124,6 @@ const HOME_BLOCK_MARKUP = {
       </div>
     </section>`,
 
-  trust: () => `
-    <section class="home-trust" aria-label="Neden mola360">
-      <div class="home-trust-inner">
-        <h2>Neden mola360?</h2>
-        <div class="home-trust-grid">
-          ${TRUST_ITEMS.map(t => `
-            <div class="home-trust-item">
-              <span class="home-trust-icon">${svg(t.icon)}</span>
-              <strong>${t.title}</strong>
-              <p>${t.text}</p>
-            </div>`).join('')}
-        </div>
-      </div>
-    </section>`,
-
   collectionGrid: () => `
     <section class="section home-collections">
       ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör')}
@@ -178,17 +137,50 @@ const HOME_BLOCK_MARKUP = {
       </div>
     </section>`,
 
+  /* E-bulten + iletisim: ust yarida kayit, alt yarida telefon, WhatsApp ve
+     geri arama talebi. */
   newsletter: () => `
-    <section class="section home-newsletter-section">
-      <div class="home-newsletter">
-        <span class="home-newsletter-icon">${svg('percent')}</span>
+    <section class="section home-support-section">
+      <div class="home-support">
+        <span class="home-support-icon">${svg('percent')}</span>
         <h2>Fırsatları ilk sen öğren</h2>
-        <p>Haftada bir e-posta: sadece seçili indirimler ve yeni eklenen turlar.</p>
+        <p class="home-support-lead">Haftada bir e-posta: sadece seçili indirimler ve yeni eklenen turlar.</p>
         <form class="home-newsletter-form" id="homeNewsletterForm" novalidate>
           <input type="email" id="homeNewsletterEmail" placeholder="ornek@eposta.com" autocomplete="email" aria-label="E-posta adresin">
           <button class="btn-primary" type="submit">Kaydol</button>
         </form>
         <p class="home-newsletter-note" id="homeNewsletterNote">İstediğin zaman tek tıkla çıkabilirsin.</p>
+
+        <div class="home-support-divider"><span>Yardıma mı ihtiyacın var?</span></div>
+
+        <a class="home-support-phone" href="${CONTACT.phoneHref}">
+          <span class="home-support-phone-icon">${svg('phone')}</span>
+          <span class="home-support-phone-text">
+            <strong>${CONTACT.phoneLabel}</strong>
+            <span>${CONTACT.hours}</span>
+          </span>
+          <span class="icon home-support-phone-chev">${svg('chevRight')}</span>
+        </a>
+
+        <div class="home-support-actions">
+          <a class="home-support-btn is-whatsapp" href="${CONTACT.whatsappHref}" target="_blank" rel="noopener">
+            <span class="icon home-support-wa-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="${WHATSAPP_ICON_PATH}"></path></svg></span>
+            WhatsApp canlı destek
+          </a>
+          <button class="home-support-btn is-callback" type="button" id="homeCallbackBtn" aria-expanded="false" aria-controls="homeCallbackForm">
+            <span class="icon">${svg('phone')}</span>
+            Beni ara
+          </button>
+        </div>
+
+        <form class="home-callback-form" id="homeCallbackForm" novalidate hidden>
+          <label for="homeCallbackPhone">Telefon numaran</label>
+          <div class="home-callback-row">
+            <input type="tel" id="homeCallbackPhone" inputmode="tel" placeholder="05XX XXX XX XX" autocomplete="tel">
+            <button class="btn-primary" type="submit">Gönder</button>
+          </div>
+          <p class="home-callback-note" id="homeCallbackNote">Çalışma saatleri içinde 15 dakika içinde arıyoruz.</p>
+        </form>
       </div>
     </section>`
 };
@@ -203,12 +195,12 @@ function homeBlocksAfter(sectionTitle) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     HOME_BLOCK_PLACEMENT,
-    WEEKEND_DAYS,
-    WEEKEND_ITEMS,
+    UPCOMING_FILTERS,
     THEME_COLLECTIONS,
     GRID_COLLECTIONS,
-    TRUST_ITEMS,
-    filterWeekendItems,
-    isValidEmail
+    CONTACT,
+    filterUpcomingItems,
+    isValidEmail,
+    isValidPhone
   };
 }
