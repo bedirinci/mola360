@@ -5669,3 +5669,15 @@ ul {
     background: linear-gradient(to bottom, rgba(0,0,0,0), var(--card));
   }
 }
+
+/* Görsel kaynak satırı: CC lisansları atıf istediği için sayfada görünür. */
+.seo-credits {
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.seo-credits a { color: var(--text-muted); text-decoration: underline; }
+.seo-credits a:hover { color: var(--green-dark); }

@@ -369,7 +369,7 @@ const cardImages = {
   "kapadokya": "https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?auto=format&fit=crop&w=500&h=600&q=85",
   "pamukkale": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=500&h=600&q=85",
   "bodrum": "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=500&h=600&q=85",
-  "efes": "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=500&h=600&q=85",
+  "efes": "https://commons.wikimedia.org/wiki/Special:FilePath/Ephesus_Celsus_Library_Fa%C3%A7ade.jpg?width=800",
   "uludag": "https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=500&h=600&q=85",
   "bogaz": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=500&h=600&q=85",
   "ayder": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=500&h=600&q=85",
@@ -399,7 +399,19 @@ const cardImages = {
   "hotel4": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=500&h=350&q=85",
   "hotel5": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500&h=350&q=85",
   "hotel6": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=500&h=350&q=85",
-  "hotel7": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500&h=350&q=85"
+  "hotel7": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500&h=350&q=85",
+
+  /* ---- Wikimedia Commons gorselleri ----
+     Special:FilePath adresi dosya adindan deterministik olarak kurulur;
+     dosya adi konuyu anlattigi icin hangi fotografin geldigi adindan
+     bellidir. Yazar ve lisans bilgisi icin docs/gorsel-kaynaklari.md. */
+  "kemeralti": "https://commons.wikimedia.org/wiki/Special:FilePath/Kemeralt%C4%B1_market_02.jpg?width=800",
+  "izmirKonak": "https://commons.wikimedia.org/wiki/Special:FilePath/Izmir_Konak_Square.jpg?width=800",
+  "izmirKordon": "https://commons.wikimedia.org/wiki/Special:FilePath/Izmir_Alsancak_Kordon_6339.jpg?width=800",
+  "izmirMuze": "https://commons.wikimedia.org/wiki/Special:FilePath/%C4%B0zmir_Archaeological_Museum_2462_1.jpg?width=800",
+  "alacati": "https://commons.wikimedia.org/wiki/Special:FilePath/Ala%C3%A7at%C4%B1_de%C4%9Firmenler_01.jpg?width=800",
+  "aspendos": "https://commons.wikimedia.org/wiki/Special:FilePath/Aspendos_Turkey.JPG?width=800",
+  "erciyes": "https://commons.wikimedia.org/wiki/Special:FilePath/Erciyes_Da%C4%9F%C4%B1_Kayseri.JPG?width=800"
 };
 
 const top10 = [
@@ -464,7 +476,7 @@ const cardSections = [
     {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Cemil Topuzlu Sahnesi, İstanbul · 21:00', meta2:'12 Eylül, Cuma', priceMain:'890'},
     {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'310+', title:'Çeşme Yaz Festivali', meta1:'Alaçatı Sahil, İzmir · Tüm gün', meta2:'19 Eylül, Cuma', priceMain:'650'},
     {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'21 Eylül, Pazartesi', priceMain:'420'},
-    {img:'theatre1', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos Antik Tiyatro, Antalya · 20:30', meta2:'26 Eylül, Cumartesi', priceMain:'750'},
+    {img:'aspendos', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos Antik Tiyatro, Antalya · 20:30', meta2:'26 Eylül, Cumartesi', priceMain:'750'},
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
@@ -476,7 +488,7 @@ const cardSections = [
     {img:'run1', badges:['Spor'], rating:'4.6', reviews:'240+', title:'İstanbul Gece Yarısı Koşusu', meta1:'Kadıköy Sahil, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'350', inDays:0, dayKey:'cuma'},
     {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'Bu Cuma', priceMain:'420', inDays:0, dayKey:'cuma'},
     {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Harbiye, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'890', inDays:0, dayKey:'cuma'},
-    {img:'theatre1', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos, Antalya · 20:30', meta2:'Bu Cumartesi', priceMain:'750', inDays:1, dayKey:'cumartesi'},
+    {img:'aspendos', badges:['Sahne'], rating:'4.9', reviews:'180+', title:'Aspendos Opera ve Bale Festivali', meta1:'Aspendos, Antalya · 20:30', meta2:'Bu Cumartesi', priceMain:'750', inDays:1, dayKey:'cumartesi'},
     {img:'concert2', badges:['Konser'], rating:'4.7', reviews:'120+', title:'Kordon Caz Akşamları', meta1:'Alsancak, İzmir · 20:00', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
     {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Maşukiye Turu', meta1:'İstanbul Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'780', inDays:1, dayKey:'cumartesi'},
     {img:'market1', badges:['Günübirlik'], rating:'4.4', reviews:'96+', title:'Alaçatı Pazar Turu', meta1:'İzmir Çıkışlı · 09:00', meta2:'Bu Pazar', priceMain:'350', inDays:2, dayKey:'pazar'},
@@ -484,7 +496,7 @@ const cardSections = [
     {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · 08:00', meta2:'Bu Pazar', priceMain:'450', inDays:2, dayKey:'pazar'},
     {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'155+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Ankara Çıkışlı · 08:30', meta2:'3 gün kaldı', priceMain:'620', inDays:3},
     {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Uçaklı', meta2:'9 gün kaldı', priceMain:'8990', inDays:9},
-    {img:'kayak3', badges:['Kış Sporu'], rating:'4.6', reviews:'140+', title:'Erciyes Kayak Haftası', meta1:'Kayseri · 4 Gece 5 Gün', meta2:'12 gün kaldı', priceMain:'6400', inDays:12},
+    {img:'erciyes', badges:['Kış Sporu'], rating:'4.6', reviews:'140+', title:'Erciyes Kayak Haftası', meta1:'Kayseri · 4 Gece 5 Gün', meta2:'12 gün kaldı', priceMain:'6400', inDays:12},
   ]},
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
