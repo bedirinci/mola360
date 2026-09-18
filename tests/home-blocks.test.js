@@ -98,10 +98,18 @@ describe('blok verileri', () => {
   });
 
   it('koleksiyon blokları beklenen sayıda', () => {
-    expect(THEME_COLLECTIONS.length).toBeGreaterThan(0);
+    expect(THEME_COLLECTIONS.length).toBeGreaterThanOrEqual(6);
     expect(GRID_COLLECTIONS.length).toBeGreaterThanOrEqual(8);
     const basliklar = GRID_COLLECTIONS.map(k => k.title);
     expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('temalar ile koleksiyonlar aynı başlığı paylaşmaz', () => {
+    /* Temalar aktivite türü, koleksiyonlar kitle/durum başlığı taşır;
+       ikisi çakışırsa aynı fikir sayfada iki kez görünür. */
+    const temalar = THEME_COLLECTIONS.map(t => t.title);
+    const koleksiyonlar = GRID_COLLECTIONS.map(k => k.title);
+    expect(temalar.filter(t => koleksiyonlar.includes(t))).toEqual([]);
   });
 
   it('mekan kayıtlarında gerekli alanlar var ve başlıklar tekil', () => {
