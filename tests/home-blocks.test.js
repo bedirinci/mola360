@@ -97,13 +97,16 @@ describe('blok verileri', () => {
     expect(yerlesenler).not.toContain('trust');
   });
 
-  it('koleksiyon blokları boş değil', () => {
+  it('koleksiyon blokları beklenen sayıda', () => {
     expect(THEME_COLLECTIONS.length).toBeGreaterThan(0);
-    expect(GRID_COLLECTIONS.length).toBeGreaterThan(0);
+    expect(GRID_COLLECTIONS.length).toBeGreaterThanOrEqual(8);
+    const basliklar = GRID_COLLECTIONS.map(k => k.title);
+    expect(new Set(basliklar).size).toBe(basliklar.length);
   });
 
   it('mekan kayıtlarında gerekli alanlar var ve başlıklar tekil', () => {
-    expect(VENUES.length).toBeGreaterThan(0);
+    /* Masaüstünde 6 mekan / 8 koleksiyon görünmesi isteniyor. */
+    expect(VENUES.length).toBeGreaterThanOrEqual(6);
     VENUES.forEach(mekan => {
       ['img', 'type', 'title', 'area', 'rating', 'reviews', 'hours'].forEach(alan => {
         expect(String(mekan[alan] || '')).not.toBe('');
