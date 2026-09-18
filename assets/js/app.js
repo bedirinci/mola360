@@ -866,6 +866,25 @@ function initHomeBlocks(){
       }
     });
   }
+
+  /* Alt SEO metni: "Devamını oku" yalnızca görünür yüksekliği açar.
+     Metin hiçbir zaman display:none ile gizlenmez; arama motoru için
+     tamamı DOM'da ve okunabilir durumda kalır. */
+  const seoToggle = document.getElementById('homeSeoToggle');
+  const seoBody = document.getElementById('homeSeoBody');
+  if (seoToggle && seoBody) {
+    const etiket = seoToggle.querySelector('.seo-toggle-label');
+    seoToggle.addEventListener('click', () => {
+      const acik = seoBody.classList.toggle('is-expanded');
+      seoToggle.setAttribute('aria-expanded', acik ? 'true' : 'false');
+      if (etiket) etiket.textContent = acik ? 'Daha az göster' : 'Devamını oku';
+      if (!acik) {
+        /* Kapatirken baslik ekrandan kacmasin. */
+        const ust = seoBody.getBoundingClientRect().top + window.scrollY - 90;
+        window.scrollTo({ top: Math.max(0, ust), behavior: 'smooth' });
+      }
+    });
+  }
 }
 
 /* ---------------- mouse / touch drag ile yatay kaydırma ----------------

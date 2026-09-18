@@ -16,6 +16,144 @@
 
 <link rel="stylesheet" href="assets/css/style.css">
 
+  <!-- Yapisal veri: ham HTML icinde durur, JS calismadan da okunur.
+       FAQPage sorulari home-blocks.js icindeki SEO_FAQ ile ayni olmak
+       zorundadir (tests/home-blocks.test.js bunu dogrular). -->
+  <!-- WebSite + SearchAction -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "mola360",
+    "url": "https://bedirinci.github.io/mola360/",
+    "inLanguage": "tr-TR",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://bedirinci.github.io/mola360/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "mola360",
+    "url": "https://bedirinci.github.io/mola360/",
+    "description": "Türkiye genelinde etkinlik, günübirlik tur, otel ve aktivite rezervasyon platformu.",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Türkiye"
+    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+908500000000",
+        "contactType": "customer support",
+        "availableLanguage": [
+          "Turkish"
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- FAQPage (anasayfa SSS ile birebir ayni) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "mola360 üzerinden bilet nasıl satın alınır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aramak istediğiniz etkinliği, turu veya oteli arama kutusundan ya da kategori sayfalarından bulun, tarih ve kişi sayısını seçip sepete ekleyin. Ödeme adımında varsa kupon kodunuzu uygulayın ve 3D Secure ile ödemeyi tamamlayın. Onay ekranının ardından e-biletiniz oluşturulur."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Satın aldığım bileti nereden görüntülerim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tüm biletleriniz ve rezervasyonlarınız hesabınızdaki Biletlerim bölümünde karekodlu olarak durur. Aynı bilet satın alma sırasında verdiğiniz e-posta adresine de gönderilir. Etkinlik girişinde telefonunuzdaki karekodu göstermeniz yeterlidir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Rezervasyonumu iptal edebilir miyim, ücret iadesi nasıl işler?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "İptal ve iade koşulları her ürünün kendi sayfasında ayrıca belirtilir; tur, etkinlik ve konaklamada koşullar farklılık gösterebilir. Ürün sayfasındaki koşullar kapsamında iptal talebinizi Biletlerim bölümünden oluşturabilir, süreci aynı ekrandan takip edebilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Günübirlik tur fiyatına neler dahil?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Günübirlik turlarda ulaşım ve rehberlik hizmeti standart olarak fiyata dahildir. Öğle yemeği, müze ve ören yeri giriş ücretleri ile isteğe bağlı aktiviteler programdan programa değişir; her turun sayfasında \"Fiyata dahil olanlar\" ve \"Dahil olmayanlar\" başlıkları ayrı ayrı listelenir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Etkinlik iptal edilir veya ertelenirse ne oluyor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Etkinlik organizatör tarafından iptal edilirse ödemeniz ek bir işlem yapmanıza gerek kalmadan iade sürecine alınır ve bilgilendirme bildirimi gönderilir. Etkinlik ertelenirse biletiniz yeni tarih için geçerli olmaya devam eder; yeni tarih size uymuyorsa iade talebinde bulunabilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Otel rezervasyonunda ödemeyi ne zaman yapıyorum?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tesise ve seçtiğiniz tarifeye göre iki seçenek sunulur: rezervasyon anında tam ödeme veya tesiste ödeme. Hangisinin geçerli olduğu fiyatın hemen yanında yazar; ödeme adımına geçmeden önce görebilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kupon kodunu nerede kullanabilirim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kupon kodları ödeme adımındaki \"Kupon kodu\" alanına yazılır. Kod geçerliyse indirim tutarı toplam fiyatın altında anında güncellenir. Kuponlarınızı ve son kullanma tarihlerini hesabınızdaki Kuponlarım bölümünden görebilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Grup veya kurumsal rezervasyon yapabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Belirli bir kişi sayısının üzerindeki gruplar ve şirket organizasyonları için özel fiyatlandırma yapılabilir. Talebinizi WhatsApp canlı destek üzerinden veya Beni Ara formunu doldurarak iletebilirsiniz; ekibimiz size özel bir program hazırlar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Fiyatlara vergiler dahil mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Listelerde ve ürün sayfalarında gördüğünüz fiyatlar vergiler dahil tutarlardır. Ödeme adımında sürpriz bir ek ücret eklenmez; varsa isteğe bağlı ek hizmetler ayrıca ve açıkça gösterilir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Müşteri hizmetlerine nasıl ulaşırım?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yukarıdaki Yardım bölümünden telefonla arayabilir, WhatsApp canlı destek hattından yazabilir veya Beni Ara formuna numaranızı bırakabilirsiniz. Çalışma saatleri içinde bıraktığınız numaralara kısa süre içinde dönüş yapılır."
+        }
+      }
+    ]
+  }
+  </script>
+
+
 </head>
 <body>
 
