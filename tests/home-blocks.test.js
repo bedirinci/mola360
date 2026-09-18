@@ -218,4 +218,32 @@ describe('blok verileri', () => {
     const htmlCevaplar = faq.mainEntity.map(s => s.acceptedAnswer.text);
     expect(htmlCevaplar).toEqual(SEO_FAQ.map(s => s.a));
   });
+  /* ---- arastirma temelli SEO olcutleri (bkz. docs/seo-arastirma.md) ---- */
+
+  it('her metin bölümü çıkarılabilir pasaj bandında (130-170 kelime)', () => {
+    /* Uretken arama sayfayi bolum bolum alip puanliyor; olculen tercih
+       araligi 134-167 kelime. Band biraz genis tutuldu. */
+    SEO_ARTICLE.forEach(bolum => {
+      const kelime = bolum.p.join(' ').split(/\s+/).filter(Boolean).length;
+      expect(kelime, bolum.h).toBeGreaterThanOrEqual(130);
+      expect(kelime, bolum.h).toBeLessThanOrEqual(170);
+    });
+  });
+
+  it('bölüm başlıkları soru biçimli', () => {
+    SEO_ARTICLE.forEach(bolum => {
+      expect(bolum.h.trim().endsWith('?'), bolum.h).toBe(true);
+    });
+  });
+
+  it('metinde yeterli varlık (yer adı) yoğunluğu var', () => {
+    /* 15+ bagli varlik, secilme olasiligini belirgin artiriyor. */
+    const yerler = ['İstanbul','İzmir','Ankara','Antalya','Bursa','Kapadokya','Göreme',
+      'Nevşehir','Uludağ','Erciyes','Alaçatı','Çeşme','Alsancak','Konak','Kemeraltı',
+      'Efes','Selçuk','Pamukkale','Yalova','Abant','Sapanca','Şile','İznik','Ayvalık',
+      'Cunda','Bodrum','Fethiye','Ölüdeniz','Manavgat','Muğla','Harbiye','Aspendos'];
+    const metin = SEO_ARTICLE.flatMap(b => b.p).join(' ');
+    const gecen = yerler.filter(y => metin.includes(y));
+    expect(gecen.length).toBeGreaterThanOrEqual(25);
+  });
 });

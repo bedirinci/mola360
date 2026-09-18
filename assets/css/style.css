@@ -4959,13 +4959,18 @@ ul {
   height: 100%;
   object-fit: cover;
 }
+/* Perde hafifletildi: gorsel daha cok gorunsun diye sol kenar .92'den
+   .80'e, orta .75'ten .58'e, sag .25'ten .12'ye indi. Metnin okunurlugu
+   kaybolmasin diye yazilara golge eklendi (asagida). */
 .home-promo-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(11,18,48,.92) 0%, rgba(11,18,48,.75) 48%, rgba(11,18,48,.25) 100%);
+  background: linear-gradient(90deg, rgba(11,18,48,.80) 0%, rgba(11,18,48,.58) 45%, rgba(11,18,48,.12) 100%);
 }
 .home-promo-content {
   position: relative;
+  /* Perde hafifledigi icin kontrasti golge tasiyor. */
+  text-shadow: 0 1px 10px rgba(11,18,48,.55);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

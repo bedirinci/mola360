@@ -54,13 +54,17 @@ const GRID_COLLECTIONS = [
 /* ---- Mekanlar ----
    Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
    open:true olan mekan "Açık" rozetiyle isaretlenir. */
+/* ---- Mekanlar: Izmir ----
+   img alanlari mevcut gorsel kayitlarindan konu olarak en yakin olani
+   secer. Yildizli olanlar icin hala gercek Izmir fotografi gerekiyor;
+   ayrintili liste icin docs/gorsel-ihtiyaclari.md dosyasina bakin. */
 const VENUES = [
-  { img:'coffee1',  type:'Kahvaltı',     title:'Cumalıkızık Köy Kahvaltısı', area:'Cumalıkızık, Yıldırım', rating:'4.7', reviews:'320+', hours:'08:00 – 18:00', open:true },
-  { img:'uludag',   type:'Gezi Noktası', title:'Uludağ Teleferik',           area:'Teferrüç, Osmangazi',   rating:'4.8', reviews:'1,2b+', hours:'09:00 – 20:00', open:true },
-  { img:'theatre1', type:'Müze',         title:'Bursa Kent Müzesi',          area:'Heykel, Osmangazi',     rating:'4.6', reviews:'180+',  hours:'09:00 – 17:00', open:false },
-  { img:'market1',  type:'Çarşı',        title:'Kapalıçarşı ve Koza Han',    area:'Osmangazi',             rating:'4.7', reviews:'640+',  hours:'10:00 – 19:00', open:true },
-  { img:'iznik',    type:'Tarihi Doku',  title:'İnkaya Çınarı',              area:'Çekirge, Osmangazi',    rating:'4.5', reviews:'90+',   hours:'Her zaman açık', open:true },
-  { img:'cunda2',   type:'Yeme-İçme',    title:'Sakarya Caddesi Balıkçılar', area:'Osmangazi',             rating:'4.6', reviews:'410+',  hours:'12:00 – 24:00',  open:true }
+  { img:'efes',    type:'Ören Yeri',    title:'Efes Antik Kent',        area:'Selçuk, İzmir',   rating:'4.9', reviews:'12b+',  hours:'08:00 – 19:00', open:true },
+  { img:'market1', type:'Çarşı',        title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
+  { img:'bodrum',  type:'Sahil',        title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
+  { img:'cunda2',  type:'Gezi Noktası', title:'Alaçatı Taş Sokaklar',   area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
+  { img:'iznik',   type:'Tarihi Doku',  title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
+  { img:'ege2',    type:'Müze',         title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
 ];
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
@@ -175,7 +179,9 @@ const SEO_LINK_GROUPS = [
       { label: 'Termal oteller',             href: '#/termal-oteller' },
       { label: 'Bungalov & doğa evleri',     href: '#/bungalov-doga-evleri' },
       { label: 'Aktiviteler & atölyeler',    href: '#/aktiviteler' },
-      { label: 'Müze ve ören yerleri',       href: '#/muze-oren-yerleri' }
+      { label: 'Müze ve ören yerleri',       href: '#/muze-oren-yerleri' },
+      { label: 'İzmir gezilecek yerler',     href: '#/izmir-gezilecek-yerler' },
+      { label: 'Efes Antik Kent',            href: '#/efes-antik-kent' }
     ]
   },
   {
@@ -236,103 +242,122 @@ const SEO_RELATED_SEARCHES = [
   { label: 'karadeniz yayla turu 3 gün',          href: '#/karadeniz-yayla-turu' },
   { label: 'son dakika otel fırsatı',             href: '#/son-dakika-otel' },
   { label: 'açık hava sineması etkinlikleri',     href: '#/acik-hava-sinemasi' },
-  { label: 'kahve ve gastronomi festivali',       href: '#/gastronomi-festivali' }
+  { label: 'kahve ve gastronomi festivali',       href: '#/gastronomi-festivali' },
+  { label: 'izmir kemeraltı çarşısı',             href: '#/izmir-kemeralti' },
+  { label: 'alaçatı taş sokaklar',                href: '#/alacati-tas-sokaklar' },
+  { label: 'aspendos opera ve bale festivali',    href: '#/aspendos-festivali' },
+  { label: 'erciyes kayak paketi',                href: '#/erciyes-kayak-paketi' }
 ];
 
-/* Uzun tanitim metni. Ilk bolum acilista gorunur, geri kalani
-   "Devamını oku" ile acilir; metnin tamami her zaman DOM'da durur
-   ki arama motoru gizlenmis icerik gormesin. */
+/* Uzun tanitim metni.
+   Yapisi arastirmaya gore kuruldu (bkz. docs/seo-arastirma.md):
+   - Her bolum KENDI BASINA anlasilan 130-170 kelimelik bir pasaj. Uretken
+     arama motorlari sayfayi butun olarak degil, bolum bolum alip
+     puanliyor; bu araliktaki pasajlar belirgin sekilde daha cok aliniyor.
+   - Basliklar SORU bicimli; kullanicinin yazdigi sorguya dogrudan eslesir.
+   - Pasajlarda adi gecen yer/marka sayisi (varlik yogunlugu) bilinerek
+     yuksek tutuldu; secilme olasiligini en cok bu belirliyor.
+   Ilk bolum acilista gorunur, geri kalani "Devamını oku" ile acilir;
+   metnin tamami her zaman DOM'da durur ki gizlenmis icerik olmasin. */
 const SEO_ARTICLE = [
   {
-    h: 'mola360 nedir?',
+    h: 'mola360 nedir, ne işe yarar?',
     p: [
-      'mola360, Türkiye genelindeki etkinlikleri, günübirlik turları, otelleri, aktiviteleri ve mekanları tek bir yerde toplayan bir gezi ve rezervasyon platformudur. Konser biletinden yayla turuna, termal otelden atölye çalışmasına kadar bir hafta sonunu dolduracak her planı aynı arama kutusundan bulabilir; tarihe, bölgeye, temaya ve bütçeye göre filtreleyerek saniyeler içinde rezervasyon yapabilirsiniz.',
-      'Amacımız, "bu hafta sonu ne yapsak?" sorusunu onlarca sekme açmadan yanıtlamak. Bunun için etkinlik takvimini, tur programlarını ve konaklama seçeneklerini aynı listede yan yana getiriyor; her planın tarihini, süresini, kalkış noktasını ve fiyatını ilk bakışta görebileceğiniz şekilde sunuyoruz.',
-      'Platformda yer alan her tur, etkinlik ve tesis; program içeriği, iptal koşulları ve iletişim bilgileri kontrol edildikten sonra yayına alınır. Kullanıcı puanları ve yorumları yalnızca o planı gerçekten satın almış kişilerden toplanır; böylece listelerdeki 4,5 ve üzeri puanlar gerçek deneyimi yansıtır.'
+      'mola360, Türkiye genelindeki etkinlikleri, turları, otelleri, aktiviteleri ve gezilecek mekanları tek bir aramada toplayan bir gezi ve rezervasyon platformudur. İstanbul\'daki bir konser bileti, Kapadokya\'da balon turu, Antalya\'da rafting ve İzmir\'de bir hafta sonu kaçamağı aynı listede yan yana çıkar.',
+      'Amacımız "bu hafta sonu ne yapsak?" sorusunu onlarca sekme açmadan yanıtlamak. Bunun için etkinlik takvimini, tur programlarını ve konaklama seçeneklerini aynı ekranda birleştiriyor; her planın tarihini, süresini, kalkış şehrini ve fiyatını ilk bakışta görebileceğiniz biçimde gösteriyoruz.',
+      'Listelenen her tur, etkinlik ve tesis; program içeriği, iptal koşulları ve iletişim bilgileri kontrol edildikten sonra yayına alınır. Puanlar yalnızca o planı gerçekten satın almış kullanıcılardan toplanır, bu yüzden listelerdeki 4,5 ve üzeri puanlar gerçek deneyimi yansıtır.',
+      'Platform mobilde ve masaüstünde aynı içeriği sunar. Arama kutusuna doğrudan bir yer adı (Kapadokya, Alaçatı, Uludağ), bir kategori (konser bileti, günübirlik tur, termal otel) veya bir tarih aralığı yazabilirsiniz; sonuçlar üç başlıkta toplanır ve tek dokunuşla filtrelenir.'
     ]
   },
   {
-    h: 'Etkinlik ve konser bileti',
+    h: 'Etkinlik ve konser bileti nasıl alınır?',
     p: [
-      'Konser, festival, tiyatro, stand up ve açık hava etkinlikleri için biletler mola360 üzerinden dakikalar içinde alınır. Etkinlik biletleri satın alma sonrasında karekodlu e-bilet olarak hesabınıza düşer; telefonunuzdan göstermeniz yeterlidir, çıktı almanız gerekmez.',
-      'Şehir bazlı etkinlik takvimleri sayesinde İstanbul etkinlikleri, Bursa etkinlikleri veya Ankara konserleri gibi aramalarda o hafta sahne alan tüm programları tek sayfada görebilirsiniz. Yaklaşan planlar listesini "Bu Cuma", "Bu Cumartesi" ve "Bu Pazar" filtreleriyle daraltarak yalnızca uygun olduğunuz güne bakmanız da mümkün.',
-      'Bilet fiyatları kategori ve sahne konumuna göre değişir; her etkinlik sayfasında salon yerleşimi, kapı açılış saati ve yaş sınırı gibi bilgiler ayrı ayrı belirtilir. Popüler konserlerde kontenjan hızla dolduğu için favorilerinize eklediğiniz etkinliklerde son biletlere yaklaşıldığında bildirim gönderilir.'
+      'Konser, festival, tiyatro ve stand up biletleri mola360 üzerinden dakikalar içinde alınır. Etkinliği arama kutusundan veya şehir takviminden bulun, kategori ve kişi sayısını seçin, ödeme adımında varsa kupon kodunuzu uygulayın. Onaydan sonra karekodlu e-bilet hesabınızdaki Biletlerim bölümüne ve e-postanıza düşer; çıktı almanız gerekmez.',
+      'Şehir takvimleri sayesinde İstanbul Harbiye Cemil Topuzlu Açıkhava Sahnesi, Ankara Jolly Joker, İzmir Alsancak ve Antalya Aspendos Antik Tiyatro gibi mekanlarda o hafta sahne alan programları tek sayfada görebilirsiniz.',
+      'Her etkinlik sayfasında salon yerleşimi, kapı açılış saati ve yaş sınırı ayrı ayrı yazar. Popüler konserlerde kontenjan hızlı dolduğu için favorilediğiniz etkinliklerde son biletlere yaklaşıldığında bildirim gönderilir.',
+      'Bilet fiyatı kategoriye ve sahneye uzaklığa göre değişir. Sahne yerleşimi olan etkinliklerde koltuk bloklarını fiyatlarıyla birlikte görür, seçiminizi ödeme adımından önce değiştirebilirsiniz. Öğrenci, erken kuş ve grup indirimleri varsa aynı ekranda listelenir.'
     ]
   },
   {
-    h: 'Günübirlik turlar ve yurt içi turlar',
+    h: 'Günübirlik tur ile konaklamalı tur arasındaki fark nedir?',
     p: [
-      'Günübirlik turlar, tek güne sığan ama şehirden tamamen uzaklaştıran planlardır. Sabah kalkış, akşam dönüş; ulaşım, rehberlik ve çoğu programda öğle yemeği dahildir. İstanbul çevresi günübirlik turlar, Çanakkale günübirlik turlar ve İzmir çevresi gezilecek yerler en çok tercih edilen başlıkların başında gelir.',
-      'Daha uzun programlar arayanlar için yurt içi turlar ve kültür turları bölümü, iki ile beş gün arasında değişen rotalar sunar. Karadeniz yayla turu, Kapadokya balon turu, Efes antik kent turu ve Pamukkale termal tatili gibi klasikleşmiş rotaların yanında, kalabalıktan uzak alternatif güzergâhlar da listelenir.',
-      'Kültür turlarında rota, ziyaret edilecek ören yerleri ve müzeler gün gün açıklanır; yürüyüş mesafeleri ve rakım bilgisi verilir. Böylece programın temposunun size ve yanınızda gelen kişilere uygun olup olmadığına rezervasyondan önce karar verebilirsiniz. Turların büyük bölümünde birden fazla kalkış noktası bulunur; size en yakın binme noktasını seçerek yola daha geç çıkabilirsiniz.'
+      'Günübirlik turlar tek güne sığar: sabah kalkış, akşam dönüş. Ulaşım ve rehberlik fiyata dahildir, çoğu programda öğle yemeği de vardır. İstanbul çıkışlı Şile ve Ağva turu, İzmir çıkışlı Cunda Adası ve Ayvalık turu, Ankara çıkışlı Abant ve Gölcük turu ile Bursa çıkışlı İznik Gölü turu en çok tercih edilen örneklerdir.',
+      'Konaklamalı turlar iki ile beş gün arasında sürer ve otel konaklamasını içerir. Kapadokya 3 gece turu, Karadeniz yaylaları turu, Ege adaları kaçamağı ve Turistik Doğu Ekspresi bu gruptadır; ulaşım otobüs, uçak, feribot veya tren olabilir.',
+      'Karar verirken iki şeye bakın: toplam yol süresi ve programın temposu. Her tur sayfasında rota gün gün açıklanır, yürüyüş mesafeleri ve rakım bilgisi verilir.',
+      'Fiyata neyin dahil olduğu da farklıdır. Günübirlik turlarda ulaşım ve rehberlik standarttır; müze ve ören yeri girişleri ile isteğe bağlı aktiviteler ayrıca belirtilir. Konaklamalı turlarda otel, kahvaltı ve çoğu programda akşam yemeği fiyata dahildir.'
     ]
   },
   {
-    h: 'Otel, bungalov ve termal konaklama',
+    h: 'Hangi şehirden hangi turlara katılabilirim?',
     p: [
-      'Konaklama tarafında butik oteller, termal oteller, bungalov ve doğa evleri ile kamp & karavan alanları aynı listede karşılaştırılır. Fiyatlar vergiler dahil gösterilir; gizli ücret eklenmez.',
-      'Termal otel arayanlar için Denizli, Afyon ve Bursa bölgesindeki tesisler; doğada konaklamak isteyenler için Balıkesir, Bolu ve Karadeniz çevresindeki bungalov evleri öne çıkar. Hafta sonu kaçamağı planlarken turu ve konaklamayı aynı sepette birleştirebilirsiniz.',
-      'Tesis sayfalarında oda tipleri, kahvaltı ve yemek düzeni, evcil hayvan kabulü, otopark ve çocuk politikası gibi başlıklar standart bir düzende listelenir. Aynı bölgedeki tesisleri yan yana karşılaştırırken bu başlıkların hepsi aynı yerde durduğu için, sayfalar arasında gidip gelmeden karar verebilirsiniz.'
+      'Turların çoğunda birden fazla kalkış noktası bulunur; rezervasyon sırasında size en yakın binme noktasını seçersiniz. Kapadokya turları İstanbul, İzmir ve Ankara çıkışlı düzenlenir. Karadeniz yaylaları turu uçaklı olarak İstanbul\'dan, Ege adaları kaçamağı feribotlu olarak İzmir\'den, Turistik Doğu Ekspresi ise trenle Ankara\'dan hareket eder.',
+      'Günübirlik programlarda kalkış şehri turun kendisini belirler: İstanbul çıkışlılar Şile, Ağva, Sapanca ve Maşukiye yönüne; İzmir çıkışlılar Alaçatı, Çeşme, Ayvalık ve Cunda yönüne; Ankara çıkışlılar Abant, Gölcük ve Beypazarı yönüne gider.',
+      'Kalkış saati, buluşma noktasının tam adresi, haritadaki konumu ve tahmini dönüş saati her tur sayfasında yazar. Araç tipi ve kapasitesi de belirtilir; kalabalık bir grupla mı yoksa küçük bir grupla mı yola çıkacağınızı önceden bilirsiniz.',
+      'Şehir dışından katılacaklar için kalkış noktasına yakın otel önerileri tur sayfasından listelenir. Uçaklı ve trenli programlarda bilet turun içinde mi yoksa ayrı mı alınacak, rezervasyon ekranında açıkça yazar.'
     ]
   },
   {
-    h: 'Aktiviteler, atölyeler ve deneyimler',
+    h: 'Otel, bungalov ve termal tesis nasıl seçilir?',
     p: [
-      'Yamaç paraşütü, sıcak hava balonu, rafting, dalış, fotoğraf turları ve gastronomi atölyeleri gibi deneyimler "Aktiviteler" başlığı altında toplanır. Her aktivitede süre, zorluk seviyesi, yaş sınırı ve hava koşuluna bağlı iptal kuralı ilan edilir; sürpriz olmaz.',
-      'Yeni başlayanlar için hazırlanmış rehberli programlar ayrı bir koleksiyonda listelenir. Daha önce hiç denemediğiniz bir aktiviteye ilk kez katılacaksanız bu listeden başlamanız önerilir.',
-      'Aktivitelerin çoğunda ekipman fiyata dahildir; dahil olmayan durumlarda kiralama ücreti ürün sayfasında ayrıca gösterilir. Hava koşulu nedeniyle yapılamayan yamaç paraşütü, balon ve dalış gibi programlarda alternatif tarih veya tam iade seçeneği sunulur.'
+      'Konaklamada butik oteller, termal tesisler, bungalov ve doğa evleri ile kamp alanları aynı listede karşılaştırılır. Fiyatlar vergiler dahil gösterilir, ödeme adımında gizli ücret eklenmez.',
+      'Bölgeye göre öne çıkanlar farklıdır: Antalya Kemer ve Belek çevresinde her şey dahil tatil köyleri, İzmir Alsancak ve Çeşme\'de sahile yakın şehir ve butik oteller, Yalova Termal ile Denizli Karahayıt\'ta termal tesisler, Nevşehir Göreme\'de mağara otelleri, Bolu ve Karadeniz çevresinde bungalov evleri bulunur.',
+      'Tesis sayfalarında oda tipleri, kahvaltı ve yemek düzeni, evcil hayvan kabulü, otopark ve çocuk politikası standart bir düzende listelenir. Aynı bölgedeki tesisleri karşılaştırırken bu başlıklar hep aynı yerde durduğu için sayfalar arasında gidip gelmeden karar verebilirsiniz. Ödeme şekli de fiyatın yanında yazar: rezervasyonda tam ödeme veya tesiste ödeme.',
+      'Konaklamayı turla birleştirmek isterseniz aynı bölgedeki programlar tesis sayfasının altında önerilir; ikisini tek rezervasyonda toplayabilirsiniz.'
     ]
   },
   {
-    h: 'Mekanlar: sahneler, müzeler ve açık hava alanları',
+    h: 'Hangi aktiviteler nerede yapılır?',
     p: [
-      'Mekanlar bölümü, etkinliklerin gerçekleştiği sahneleri, kültür merkezlerini, müzeleri ve açık hava alanlarını tanıtır. Bir mekânın sayfasından o mekânda yaklaşan tüm etkinliklere, ulaşım bilgisine ve kapasite detayına ulaşabilirsiniz.',
-      'Sık gittiğiniz mekanları favorilerinize ekleyerek yeni etkinlik eklendiğinde bildirim almayı tercih edebilirsiniz.',
-      'Mekân sayfaları aynı zamanda çevredeki kafe, restoran ve konaklama önerilerini de içerir. Bir konser öncesinde nerede buluşacağınızı ya da etkinlik sonrası nerede kalacağınızı aynı sayfadan planlayabilirsiniz.'
+      'Aktiviteler bölümü, bir güne veya birkaç saate sığan deneyimleri toplar. Rafting Antalya Manavgat\'taki Köprülü Kanyon\'da, yamaç paraşütü Muğla Fethiye\'deki Ölüdeniz Babadağ\'da, sıcak hava balonu Nevşehir Göreme\'de, kayak dersi ise Bursa Uludağ\'da yapılır.',
+      'Bunların yanında dalış, tekne turu, doğa yürüyüşü, fotoğraf turu ve gastronomi atölyeleri gibi programlar da listelenir. Her aktivitede süre, zorluk seviyesi, yaş ve kilo sınırı ile hava koşuluna bağlı iptal kuralı ilan edilir; sürpriz çıkmaz.',
+      'Ekipman çoğu programda fiyata dahildir; dahil olmadığı durumlarda kiralama ücreti ürün sayfasında ayrıca gösterilir. Hava nedeniyle yapılamayan yamaç paraşütü, balon ve dalış programlarında alternatif tarih veya tam iade seçeneği sunulur. İlk kez deneyecekler için rehberli başlangıç programları ayrı bir koleksiyonda toplanır.',
+      'Aktivitelerin çoğu sabah ve öğleden sonra olmak üzere iki seansla düzenlenir. Balon turları yalnızca gün doğumunda kalkar, bu yüzden bir önceki gece bölgede konaklamak gerekir; tekne ve dalış programları ise mevsime bağlı çalışır.'
     ]
   },
   {
-    h: 'Tarihe, bölgeye ve bütçeye göre filtreleme',
+    h: 'İzmir\'de hangi mekanlar gezilir?',
     p: [
-      'Listeleme sayfalarındaki filtre çubuğu sıralama, tarih, süre, bölge, tema ve maksimum tutar seçeneklerini birlikte çalıştırır. Örneğin "bu hafta sonu, Marmara bölgesi, doğa & yayla teması, 1.500 TL altı" gibi bir kombinasyonu tek seferde uygulayabilirsiniz.',
-      'Seçtiğiniz filtreler etiket olarak üstte görünür; tek tıkla kaldırılabilir. Böylece aramayı sıfırdan kurmak zorunda kalmadan daraltıp genişletebilirsiniz.',
-      'Sıralama seçenekleri arasında en popüler, en yeni, fiyata göre artan ve azalan ile puana göre yüksek bulunur. Sonuç sayısı listenin üstünde anlık olarak güncellenir; bu sayede filtreyi fazla daralttığınızda hemen fark eder, bir kademe geri alabilirsiniz.'
+      'Mekanlar bölümü şu an İzmir\'e odaklanır ve şehrin en çok ziyaret edilen noktalarını tanıtır. Selçuk\'taki Efes Antik Kent, Konak\'taki Kemeraltı Çarşısı, Alsancak\'taki Kordon Boyu, Çeşme\'ye bağlı Alaçatı\'nın taş sokakları, Konak Meydanı ve Saat Kulesi ile İzmir Arkeoloji Müzesi listede yer alır.',
+      'Her mekân sayfasında açılış saatleri, güncel açık veya kapalı durumu, bulunduğu ilçe, ziyaretçi puanı ve ulaşım bilgisi bulunur. İzmir Metro, İZBAN ve vapur hatlarıyla nasıl gidileceği ayrıca yazar.',
+      'Mekân sayfasından o noktada veya yakınında yaklaşan etkinliklere, çevredeki kafe ve restoran önerilerine ve aynı hafta sonu için konaklama seçeneklerine geçebilirsiniz. Sık gittiğiniz mekanları favorilerinize eklerseniz yeni etkinlik açıldığında bildirim alırsınız.',
+      'Bir günde birden fazla noktayı gezmek isteyenler için hazır rotalar bulunur: Konak Meydanı, Kemeraltı ve Asansör bir arada; Selçuk\'ta Efes Antik Kent, Meryem Ana Evi ve Şirince bir arada gezilebilir. Çeşme ve Alaçatı ise günübirlik tek rota olarak listelenir.'
     ]
   },
   {
-    h: 'Güvenli ödeme, e-bilet ve iptal koşulları',
+    h: 'Arama sonuçları nasıl filtrelenir?',
     p: [
-      'Ödemeler 3D Secure ile korunan altyapı üzerinden alınır; kart bilgileriniz saklanmaz. Satın alma tamamlandığı anda e-bilet veya rezervasyon onayı hem e-postanıza hem de uygulamadaki "Biletlerim" bölümüne düşer.',
-      'İptal ve değişiklik koşulları her ürünün kendi sayfasında açıkça belirtilir. Etkinlik organizatör tarafından iptal edilir veya ertelenirse, ödeme iadeniz ek işlem yapmanıza gerek kalmadan başlatılır.'
+      'Listeleme sayfalarındaki filtre çubuğu sıralama, tarih, süre, bölge, tema ve maksimum tutar seçeneklerini birlikte çalıştırır. Örneğin "bu hafta sonu, Ege bölgesi, deniz ve tekne teması, 1.500 TL altı" kombinasyonunu tek seferde uygulayabilirsiniz.',
+      'Sıralama seçenekleri en popüler, en yeni, fiyata göre artan, fiyata göre azalan ve puana göre yüksek şeklindedir. Sonuç sayısı listenin üstünde anlık güncellenir; filtreyi fazla daralttığınızda hemen fark eder, bir kademe geri alabilirsiniz.',
+      'Seçtiğiniz filtreler etiket olarak üstte görünür ve tek dokunuşla kaldırılabilir, böylece aramayı sıfırdan kurmanız gerekmez. Yaklaşan Planlar şeridinde ayrıca Tümü, Bu Cuma, Bu Cumartesi ve Bu Pazar hızlı filtreleri bulunur; yalnızca uygun olduğunuz güne bakmak istediğinizde en pratik yol budur.',
+      'Filtreler mobilde alt sayfa, masaüstünde açılır panel olarak çalışır ve seçiminiz iki görünümde de korunur. Arama sonucunu daha sonra tekrar açmak isterseniz favorilerinize ekleyebilirsiniz; kaydettiğiniz aramaya yeni bir program eklendiğinde bildirim gönderilir.'
+    ]
+  },
+  {
+    h: 'Ödeme, e-bilet ve iptal nasıl işliyor?',
+    p: [
+      'Ödemeler 3D Secure ile korunan altyapı üzerinden alınır ve kart bilgileriniz saklanmaz. Satın alma tamamlandığı anda e-bilet veya rezervasyon onayı hem e-postanıza hem de uygulamadaki Biletlerim bölümüne düşer; girişte telefonunuzdaki karekodu göstermeniz yeterlidir.',
+      'İptal, değişiklik ve iade koşulları her ürünün kendi sayfasında açıkça belirtilir; tur, etkinlik ve konaklamada koşullar birbirinden farklı olabilir. İptal talebinizi Biletlerim bölümünden oluşturabilir, sürecin hangi aşamada olduğunu aynı ekrandan izleyebilirsiniz.',
+      'Etkinlik organizatör tarafından iptal edilirse ödemeniz ek işlem yapmanıza gerek kalmadan iade sürecine alınır ve size bildirim gönderilir. Etkinlik ertelenirse biletiniz yeni tarihte geçerli olmaya devam eder; yeni tarih size uymuyorsa iade talebinde bulunabilirsiniz. Grup ve kurumsal rezervasyonlar için WhatsApp destek hattından özel fiyat alınabilir.',
+      'Fiyatlarda vergiler dahildir ve listede gördüğünüz tutar ödeme adımında değişmez; isteğe bağlı ek hizmetler varsa ayrı ve açık şekilde gösterilir. Kupon kodları ödeme adımındaki alana yazılır, indirim tutarı onaydan önce toplamda görünür.'
     ]
   },
   {
     h: 'Hafta sonu kaçamağı nasıl planlanır?',
     p: [
-      'İyi bir hafta sonu planı genellikle üç soruyla kurulur: ne kadar zamanım var, ne kadar uzağa gidebilirim ve bütçem ne? mola360 bu üç soruyu filtrelerle doğrudan karşılar. "Bu Cumartesi" filtresiyle güne, bölge filtresiyle mesafeye, maksimum tutar filtresiyle bütçeye göre daraltma yaparsınız.',
-      'Kararsız kalanlar için hazır koleksiyonlar vardır: ailece gezilecek yerler, romantik kaçamaklar, bütçe dostu planlar, tek başına seyahat ve arkadaş grubuyla yapılacaklar. Her koleksiyon, o profile uyan turları, etkinlikleri ve konaklamaları bir arada gösterir.'
+      'İyi bir hafta sonu planı üç soruyla kurulur: ne kadar zamanım var, ne kadar uzağa gidebilirim, bütçem ne? mola360 bu üç soruyu doğrudan filtrelerle karşılar. Gün filtresiyle zamana, bölge filtresiyle mesafeye, maksimum tutar filtresiyle bütçeye göre daraltırsınız.',
+      'Kararsız kalanlar için hazır koleksiyonlar vardır: ailece gezilecek yerler, romantik kaçamaklar, bütçe dostu planlar, tek başına seyahat, arkadaş grubuyla yapılacaklar ve yeni başlayanlar için programlar. Her koleksiyon o profile uyan turları, etkinlikleri ve konaklamaları bir arada gösterir.',
+      'Turu ve oteli aynı sepette birleştirebilirsiniz; örneğin Cumartesi Alaçatı turu ve Çeşme\'de bir gece konaklama tek rezervasyonda toplanır. Şehir dışından geliyorsanız etkinlik sayfası size aynı hafta sonu için yakın konaklama seçeneklerini de önerir.',
+      'Yola çıkmadan önce iki şeyi kontrol edin: buluşma saati ve dönüş saati. Pazar akşamı dönüşlü programlarda trafiğe bağlı gecikme payı tur sayfasında belirtilir, ertesi gün işe yetişmesi gerekenler için bu bilgi belirleyici olur.'
     ]
   },
   {
-    h: 'Ulaşım, buluşma noktası ve zaman planlaması',
+    h: 'Mevsime göre nereye gidilir?',
     p: [
-      'Günübirlik turlarda en çok merak edilen konu ulaşımdır. Her turun sayfasında kalkış saati, buluşma noktasının tam adresi ve haritadaki konumu, tahmini dönüş saati ve yolculuk süresi açıkça yazar. Araç tipi ve kapasitesi de belirtilir; kalabalık bir grupla mı yoksa küçük bir grupla mı yola çıkacağınızı önceden bilirsiniz.',
-      'Etkinliklerde ise mekâna toplu taşımayla nasıl ulaşılacağı, en yakın metro veya vapur durağı ve otopark seçenekleri mekân sayfasında yer alır. Şehir dışından geliyorsanız aynı hafta sonu için konaklama önerileri de aynı sayfadan listelenir.'
-    ]
-  },
-  {
-    h: 'Mevsime göre ne yapılır?',
-    p: [
-      'İlkbaharda yayla ve doğa turları, göl çevresi yürüyüşleri ve fotoğraf turları öne çıkar. Yaz aylarında tekne turları, açık hava konserleri, festivaller ve dalış programları yoğunlaşır. Sonbahar; gastronomi turları, bağ bozumu etkinlikleri ve termal tatil için en dengeli dönemdir.',
-      'Kış mevsiminde Uludağ, Palandöken ve Kartalkaya çevresindeki kayak paketleri ile bungalov ve şömineli doğa evleri en çok aranan başlıklar arasına girer. Yılbaşı, sömestr ve bayram tatili gibi yoğun dönemlerde erken rezervasyon hem fiyat hem de yer bulma açısından belirgin avantaj sağlar.',
-      'Hangi mevsimde olursanız olun, ana sayfadaki koleksiyonlar o döneme uygun planları öne çıkaracak şekilde güncellenir; ayrıca arama yaparken tarih filtresini kullanarak yalnızca gitmeyi düşündüğünüz aralığa bakabilirsiniz.'
-    ]
-  },
-  {
-    h: 'Fırsatlar, kuponlar ve bildirimler',
-    p: [
-      'Son dakika fırsatları, erken rezervasyon indirimleri ve döneme özel kampanyalar Fırsatlar bölümünde toplanır. Kupon kodları ödeme adımında uygulanır ve indirim tutarı onaydan önce görünür.',
-      'Takip ettiğiniz şehir, kategori veya mekân için yeni bir program açıldığında ya da favorilediğiniz bir turda yer azaldığında bildirim alırsınız. Bildirim tercihlerinizi hesabınızdan istediğiniz zaman değiştirebilirsiniz.'
+      'İlkbaharda yayla ve doğa turları, göl çevresi yürüyüşleri ve fotoğraf turları öne çıkar; Abant, Sapanca, İznik ve Karadeniz yaylaları bu dönemde en çok aranan yerlerdir.',
+      'Yazın tekne turları, açık hava konserleri, festivaller ve dalış programları yoğunlaşır. Bodrum, Fethiye Ölüdeniz, Ayvalık Cunda ve Çeşme Alaçatı yaz aylarının merkezidir.',
+      'Sonbahar gastronomi turları, bağ bozumu etkinlikleri ve termal tatil için en dengeli dönemdir; Pamukkale, Yalova Termal ve Denizli Karahayıt kalabalığın azaldığı bu aylarda daha rahat gezilir.',
+      'Kışın Uludağ, Erciyes, Palandöken ve Kartalkaya kayak paketleri ile şömineli bungalov evleri öne çıkar. Yılbaşı, sömestr ve bayram tatili gibi yoğun dönemlerde erken rezervasyon hem fiyat hem yer bulma açısından belirgin avantaj sağlar; ana sayfadaki koleksiyonlar da o döneme uygun planlara göre güncellenir.',
+      'Hangi mevsimde olursanız olun tarih filtresiyle yalnızca gitmeyi düşündüğünüz aralığa bakabilir, Yaklaşan Planlar şeridinden o hafta içindeki programları hızla tarayabilirsiniz.'
     ]
   }
 ];
