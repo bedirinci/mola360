@@ -16,11 +16,14 @@ const HOME_BLOCK_PLACEMENT = {
 /* ---- Yaklasan Etkinlikler seridideki zaman filtreleri ----
    Ilk siradaki secenek varsayilan olarak acilir. */
 const UPCOMING_FILTERS = [
-  { key: 'enyakin',   label: 'En yakın' },
-  { key: 'ucgun',     label: '3 gün içinde' },
+  { key: 'tumu',      label: 'Tümü' },
+  { key: 'cuma',      label: 'Bu Cuma' },
   { key: 'cumartesi', label: 'Bu Cumartesi' },
   { key: 'pazar',     label: 'Bu Pazar' }
 ];
+
+/* Gun filtreleri: kayittaki dayKey bu anahtarlarla eslesir. */
+const UPCOMING_DAY_KEYS = ['cuma', 'cumartesi', 'pazar'];
 
 /* ---- Temaya göre koleksiyonlar (yatay şerit) ---- */
 const THEME_COLLECTIONS = [
@@ -77,9 +80,9 @@ const WHATSAPP_ICON_PATH = 'M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4
 function filterUpcomingItems(items, key) {
   const list = Array.isArray(items) ? items : [];
   const byDistance = (a, b) => (Number(a.inDays) || 0) - (Number(b.inDays) || 0);
-  let sonuc = list;
-  if (key === 'ucgun') sonuc = list.filter(item => (Number(item.inDays) || 0) <= 3);
-  else if (key === 'cumartesi' || key === 'pazar') sonuc = list.filter(item => item.dayKey === key);
+  const sonuc = UPCOMING_DAY_KEYS.includes(key)
+    ? list.filter(item => item.dayKey === key)
+    : list;
   return sonuc.slice().sort(byDistance);
 }
 
@@ -231,6 +234,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     HOME_BLOCK_PLACEMENT,
     UPCOMING_FILTERS,
+    UPCOMING_DAY_KEYS,
     THEME_COLLECTIONS,
     GRID_COLLECTIONS,
     VENUES,

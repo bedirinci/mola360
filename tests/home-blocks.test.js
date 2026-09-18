@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   HOME_BLOCK_PLACEMENT,
   UPCOMING_FILTERS,
+  UPCOMING_DAY_KEYS,
   THEME_COLLECTIONS,
   GRID_COLLECTIONS,
   VENUES,
@@ -14,39 +15,41 @@ import {
 const ornek = [
   { title: 'Uzak',      inDays: 12 },
   { title: 'Cumartesi', inDays: 1, dayKey: 'cumartesi' },
-  { title: 'Bugün',     inDays: 0 },
+  { title: 'Cuma',      inDays: 0, dayKey: 'cuma' },
   { title: 'Pazar',     inDays: 2, dayKey: 'pazar' },
   { title: 'Üç gün',    inDays: 3 },
 ];
 
 describe('filterUpcomingItems', () => {
-  it('"en yakın" tümünü en yakın tarihten uzağa sıralar', () => {
-    expect(filterUpcomingItems(ornek, 'enyakin').map(i => i.title))
-      .toEqual(['Bugün', 'Cumartesi', 'Pazar', 'Üç gün', 'Uzak']);
+  it('"tümü" listenin tamamını en yakın tarihten uzağa sıralar', () => {
+    expect(filterUpcomingItems(ornek, 'tumu').map(i => i.title))
+      .toEqual(['Cuma', 'Cumartesi', 'Pazar', 'Üç gün', 'Uzak']);
   });
 
   it('bilinmeyen anahtar da tüm listeyi sıralı döndürür', () => {
     expect(filterUpcomingItems(ornek, 'yok')).toHaveLength(5);
   });
 
-  it('"3 gün içinde" yalnızca 3 gün ve altını alır', () => {
-    expect(filterUpcomingItems(ornek, 'ucgun').map(i => i.title))
-      .toEqual(['Bugün', 'Cumartesi', 'Pazar', 'Üç gün']);
-  });
-
   it('gün filtreleri yalnızca o günün kayıtlarını alır', () => {
+    expect(filterUpcomingItems(ornek, 'cuma').map(i => i.title)).toEqual(['Cuma']);
     expect(filterUpcomingItems(ornek, 'cumartesi').map(i => i.title)).toEqual(['Cumartesi']);
     expect(filterUpcomingItems(ornek, 'pazar').map(i => i.title)).toEqual(['Pazar']);
   });
 
+  it('günü olmayan kayıtlar gün filtrelerine düşmez', () => {
+    UPCOMING_DAY_KEYS.forEach(gun => {
+      filterUpcomingItems(ornek, gun).forEach(item => expect(item.dayKey).toBe(gun));
+    });
+  });
+
   it('kaynağı değiştirmez', () => {
-    filterUpcomingItems(ornek, 'enyakin').pop();
+    filterUpcomingItems(ornek, 'tumu').pop();
     expect(ornek).toHaveLength(5);
     expect(ornek[0].title).toBe('Uzak');
   });
 
   it('geçersiz girdide boş liste döndürür', () => {
-    expect(filterUpcomingItems(null, 'enyakin')).toEqual([]);
+    expect(filterUpcomingItems(null, 'tumu')).toEqual([]);
   });
 });
 
@@ -75,10 +78,15 @@ describe('isValidPhone', () => {
 });
 
 describe('blok verileri', () => {
-  it('filtre listesi "en yakın" ile başlar ve anahtarları tekildir', () => {
+  it('filtre listesi "tümü" ile başlar ve anahtarları tekildir', () => {
     const anahtarlar = UPCOMING_FILTERS.map(f => f.key);
-    expect(anahtarlar[0]).toBe('enyakin');
+    expect(anahtarlar[0]).toBe('tumu');
     expect(new Set(anahtarlar).size).toBe(anahtarlar.length);
+  });
+
+  it('gün filtreleri listedeki anahtarlarla birebir örtüşür', () => {
+    const gunler = UPCOMING_FILTERS.slice(1).map(f => f.key);
+    expect(gunler).toEqual(UPCOMING_DAY_KEYS);
   });
 
   it('kaldırılan bloklar yerleşim haritasında yok', () => {
