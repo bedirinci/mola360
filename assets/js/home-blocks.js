@@ -11,7 +11,7 @@ const HOME_BLOCK_PLACEMENT = {
   'Yaklaşan Planlar': ['promo'],
   'Günübirlik Turlar': ['themes'],
   'Aktiviteler': ['venues'],
-  'Oteller': ['collectionGrid', 'newsletter', 'support']
+  'Oteller': ['collectionGrid', 'newsletter', 'support', 'seo']
 };
 
 /* ---- Yaklasan Etkinlikler seridideki zaman filtreleri ----
@@ -128,6 +128,287 @@ function homeSectionHead(title, link, subtitle) {
     ? `<div class="section-head-text"><h2>${title}</h2><p class="section-subtitle">${subtitle}</p></div>`
     : `<h2>${title}</h2>`;
   return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
+}
+
+/* =======================================================================
+   ANASAYFA ALT SEO BLOGU
+   Iki isi birden yapar:
+   1) Uzun, baslikli tanitim metni (klasik "alt SEO yazisi").
+   2) Yogun ic baglanti agi: her sehir/kategori/tema/donem kombinasyonu
+      kendi hub sayfasina gider. Uzun kuyruk trafigi metinden degil bu
+      agdan gelir; metin tek basina siralama getirmez.
+   Baglantilar simdilik hash rotalari; gercek SEO degeri icin her birinin
+   sunucu tarafindan servis edilen, taranabilir bir URL'e donmesi gerekir.
+   ======================================================================= */
+
+/* Ic baglanti agi. Her grup bir sutun olur; tek tek satir silinerek
+   veya eklenerek buyutulup kucultulebilir. */
+const SEO_LINK_GROUPS = [
+  {
+    title: 'Şehre göre',
+    links: [
+      { label: 'İstanbul etkinlikleri',      href: '#/istanbul-etkinlikleri' },
+      { label: 'Bursa etkinlikleri',         href: '#/bursa-etkinlikleri' },
+      { label: 'İzmir turları',              href: '#/izmir-turlari' },
+      { label: 'Ankara konserleri',          href: '#/ankara-konserleri' },
+      { label: 'Antalya otelleri',           href: '#/antalya-otelleri' },
+      { label: 'Muğla tekne turları',        href: '#/mugla-tekne-turlari' },
+      { label: 'Trabzon yayla turları',      href: '#/trabzon-yayla-turlari' },
+      { label: 'Rize yayla turları',         href: '#/rize-yayla-turlari' },
+      { label: 'Nevşehir balon turları',     href: '#/nevsehir-balon-turlari' },
+      { label: 'Çanakkale günübirlik turlar',href: '#/canakkale-gunubirlik-turlar' },
+      { label: 'Denizli termal otelleri',    href: '#/denizli-termal-otelleri' },
+      { label: 'Balıkesir bungalov evleri',  href: '#/balikesir-bungalov' }
+    ]
+  },
+  {
+    title: 'Kategoriye göre',
+    links: [
+      { label: 'Konser biletleri',           href: '#/konser-biletleri' },
+      { label: 'Festival biletleri',         href: '#/festival-biletleri' },
+      { label: 'Tiyatro biletleri',          href: '#/tiyatro-biletleri' },
+      { label: 'Stand up biletleri',         href: '#/stand-up-biletleri' },
+      { label: 'Günübirlik turlar',          href: '#/gunubirlik-turlar' },
+      { label: 'Yurt içi turlar',            href: '#/yurt-ici-turlar' },
+      { label: 'Kültür turları',             href: '#/kultur-turlari' },
+      { label: 'Butik oteller',              href: '#/butik-oteller' },
+      { label: 'Termal oteller',             href: '#/termal-oteller' },
+      { label: 'Bungalov & doğa evleri',     href: '#/bungalov-doga-evleri' },
+      { label: 'Aktiviteler & atölyeler',    href: '#/aktiviteler' },
+      { label: 'Müze ve ören yerleri',       href: '#/muze-oren-yerleri' }
+    ]
+  },
+  {
+    title: 'Temaya göre',
+    links: [
+      { label: 'Doğa & yayla turları',       href: '#/doga-yayla-turlari' },
+      { label: 'Kültür & tarih turları',     href: '#/kultur-tarih-turlari' },
+      { label: 'Deniz & tekne turları',      href: '#/deniz-tekne-turlari' },
+      { label: 'Kış sporları & kayak',       href: '#/kis-sporlari-kayak' },
+      { label: 'Gastronomi turları',         href: '#/gastronomi-turlari' },
+      { label: 'Macera & adrenalin',         href: '#/macera-adrenalin' },
+      { label: 'Yamaç paraşütü',             href: '#/yamac-parasutu' },
+      { label: 'Sıcak hava balonu',          href: '#/sicak-hava-balonu' },
+      { label: 'Rafting turları',            href: '#/rafting-turlari' },
+      { label: 'Dalış turları',              href: '#/dalis-turlari' },
+      { label: 'Fotoğraf turları',           href: '#/fotograf-turlari' },
+      { label: 'Kamp & karavan',             href: '#/kamp-karavan' }
+    ]
+  },
+  {
+    title: 'Plana göre',
+    links: [
+      { label: 'Bu hafta sonu ne var?',      href: '#/bu-hafta-sonu' },
+      { label: 'Bu Cuma',                    href: '#/bu-cuma' },
+      { label: 'Bu Cumartesi',               href: '#/bu-cumartesi' },
+      { label: 'Bu Pazar',                   href: '#/bu-pazar' },
+      { label: 'Son dakika fırsatları',      href: '#/son-dakika-firsatlari' },
+      { label: 'Uzun hafta sonu planları',   href: '#/uzun-hafta-sonu' },
+      { label: 'Ailece gezilecek yerler',    href: '#/ailece' },
+      { label: 'Romantik kaçamaklar',        href: '#/romantik-kacamaklar' },
+      { label: 'Bütçe dostu planlar',        href: '#/butce-dostu' },
+      { label: 'Tek başına seyahat',         href: '#/tek-basina-seyahat' },
+      { label: 'Arkadaş grubuyla',           href: '#/arkadas-grubu' },
+      { label: 'Yeni başlayanlar için',      href: '#/yeni-baslayanlar' }
+    ]
+  }
+];
+
+/* Uzun kuyruk arama ifadeleri. Kullanicinin gercekte aradigi cumleler;
+   her biri bir hub sayfasina baglanir. */
+const SEO_RELATED_SEARCHES = [
+  { label: 'kapadokya balon turu fiyatları',      href: '#/kapadokya-balon-turu-fiyatlari' },
+  { label: 'bursa hafta sonu kaçamağı',           href: '#/bursa-hafta-sonu-kacamagi' },
+  { label: 'istanbul yakınında günübirlik turlar',href: '#/istanbul-gunubirlik-turlar' },
+  { label: 'uludağ kayak paketi',                 href: '#/uludag-kayak-paketi' },
+  { label: 'ayder yaylası turu',                  href: '#/ayder-yaylasi-turu' },
+  { label: 'pamukkale termal tatili',             href: '#/pamukkale-termal-tatili' },
+  { label: 'bodrum tekne turu günübirlik',        href: '#/bodrum-tekne-turu' },
+  { label: 'efes antik kent turu',                href: '#/efes-antik-kent-turu' },
+  { label: 'fethiye yamaç paraşütü',              href: '#/fethiye-yamac-parasutu' },
+  { label: 'çeşme konser takvimi',                href: '#/cesme-konser-takvimi' },
+  { label: 'ucuz konser bileti',                  href: '#/ucuz-konser-bileti' },
+  { label: 'çocuklu aileler için gezi',           href: '#/cocuklu-aileler-icin-gezi' },
+  { label: 'sevgililer günü kaçamağı',            href: '#/sevgililer-gunu' },
+  { label: 'bayram tatili turları',               href: '#/bayram-tatili-turlari' },
+  { label: 'doğada bungalov tatili',              href: '#/bungalov-tatili' },
+  { label: 'İzmir çevresi gezilecek yerler',      href: '#/izmir-cevresi-gezilecek-yerler' },
+  { label: 'karadeniz yayla turu 3 gün',          href: '#/karadeniz-yayla-turu' },
+  { label: 'son dakika otel fırsatı',             href: '#/son-dakika-otel' },
+  { label: 'açık hava sineması etkinlikleri',     href: '#/acik-hava-sinemasi' },
+  { label: 'kahve ve gastronomi festivali',       href: '#/gastronomi-festivali' }
+];
+
+/* Uzun tanitim metni. Ilk bolum acilista gorunur, geri kalani
+   "Devamını oku" ile acilir; metnin tamami her zaman DOM'da durur
+   ki arama motoru gizlenmis icerik gormesin. */
+const SEO_ARTICLE = [
+  {
+    h: 'mola360 nedir?',
+    p: [
+      'mola360, Türkiye genelindeki etkinlikleri, günübirlik turları, otelleri, aktiviteleri ve mekanları tek bir yerde toplayan bir gezi ve rezervasyon platformudur. Konser biletinden yayla turuna, termal otelden atölye çalışmasına kadar bir hafta sonunu dolduracak her planı aynı arama kutusundan bulabilir; tarihe, bölgeye, temaya ve bütçeye göre filtreleyerek saniyeler içinde rezervasyon yapabilirsiniz.',
+      'Amacımız, "bu hafta sonu ne yapsak?" sorusunu onlarca sekme açmadan yanıtlamak. Bunun için etkinlik takvimini, tur programlarını ve konaklama seçeneklerini aynı listede yan yana getiriyor; her planın tarihini, süresini, kalkış noktasını ve fiyatını ilk bakışta görebileceğiniz şekilde sunuyoruz.',
+      'Platformda yer alan her tur, etkinlik ve tesis; program içeriği, iptal koşulları ve iletişim bilgileri kontrol edildikten sonra yayına alınır. Kullanıcı puanları ve yorumları yalnızca o planı gerçekten satın almış kişilerden toplanır; böylece listelerdeki 4,5 ve üzeri puanlar gerçek deneyimi yansıtır.'
+    ]
+  },
+  {
+    h: 'Etkinlik ve konser bileti',
+    p: [
+      'Konser, festival, tiyatro, stand up ve açık hava etkinlikleri için biletler mola360 üzerinden dakikalar içinde alınır. Etkinlik biletleri satın alma sonrasında karekodlu e-bilet olarak hesabınıza düşer; telefonunuzdan göstermeniz yeterlidir, çıktı almanız gerekmez.',
+      'Şehir bazlı etkinlik takvimleri sayesinde İstanbul etkinlikleri, Bursa etkinlikleri veya Ankara konserleri gibi aramalarda o hafta sahne alan tüm programları tek sayfada görebilirsiniz. Yaklaşan planlar listesini "Bu Cuma", "Bu Cumartesi" ve "Bu Pazar" filtreleriyle daraltarak yalnızca uygun olduğunuz güne bakmanız da mümkün.',
+      'Bilet fiyatları kategori ve sahne konumuna göre değişir; her etkinlik sayfasında salon yerleşimi, kapı açılış saati ve yaş sınırı gibi bilgiler ayrı ayrı belirtilir. Popüler konserlerde kontenjan hızla dolduğu için favorilerinize eklediğiniz etkinliklerde son biletlere yaklaşıldığında bildirim gönderilir.'
+    ]
+  },
+  {
+    h: 'Günübirlik turlar ve yurt içi turlar',
+    p: [
+      'Günübirlik turlar, tek güne sığan ama şehirden tamamen uzaklaştıran planlardır. Sabah kalkış, akşam dönüş; ulaşım, rehberlik ve çoğu programda öğle yemeği dahildir. İstanbul çevresi günübirlik turlar, Çanakkale günübirlik turlar ve İzmir çevresi gezilecek yerler en çok tercih edilen başlıkların başında gelir.',
+      'Daha uzun programlar arayanlar için yurt içi turlar ve kültür turları bölümü, iki ile beş gün arasında değişen rotalar sunar. Karadeniz yayla turu, Kapadokya balon turu, Efes antik kent turu ve Pamukkale termal tatili gibi klasikleşmiş rotaların yanında, kalabalıktan uzak alternatif güzergâhlar da listelenir.',
+      'Kültür turlarında rota, ziyaret edilecek ören yerleri ve müzeler gün gün açıklanır; yürüyüş mesafeleri ve rakım bilgisi verilir. Böylece programın temposunun size ve yanınızda gelen kişilere uygun olup olmadığına rezervasyondan önce karar verebilirsiniz. Turların büyük bölümünde birden fazla kalkış noktası bulunur; size en yakın binme noktasını seçerek yola daha geç çıkabilirsiniz.'
+    ]
+  },
+  {
+    h: 'Otel, bungalov ve termal konaklama',
+    p: [
+      'Konaklama tarafında butik oteller, termal oteller, bungalov ve doğa evleri ile kamp & karavan alanları aynı listede karşılaştırılır. Fiyatlar vergiler dahil gösterilir; gizli ücret eklenmez.',
+      'Termal otel arayanlar için Denizli, Afyon ve Bursa bölgesindeki tesisler; doğada konaklamak isteyenler için Balıkesir, Bolu ve Karadeniz çevresindeki bungalov evleri öne çıkar. Hafta sonu kaçamağı planlarken turu ve konaklamayı aynı sepette birleştirebilirsiniz.',
+      'Tesis sayfalarında oda tipleri, kahvaltı ve yemek düzeni, evcil hayvan kabulü, otopark ve çocuk politikası gibi başlıklar standart bir düzende listelenir. Aynı bölgedeki tesisleri yan yana karşılaştırırken bu başlıkların hepsi aynı yerde durduğu için, sayfalar arasında gidip gelmeden karar verebilirsiniz.'
+    ]
+  },
+  {
+    h: 'Aktiviteler, atölyeler ve deneyimler',
+    p: [
+      'Yamaç paraşütü, sıcak hava balonu, rafting, dalış, fotoğraf turları ve gastronomi atölyeleri gibi deneyimler "Aktiviteler" başlığı altında toplanır. Her aktivitede süre, zorluk seviyesi, yaş sınırı ve hava koşuluna bağlı iptal kuralı ilan edilir; sürpriz olmaz.',
+      'Yeni başlayanlar için hazırlanmış rehberli programlar ayrı bir koleksiyonda listelenir. Daha önce hiç denemediğiniz bir aktiviteye ilk kez katılacaksanız bu listeden başlamanız önerilir.',
+      'Aktivitelerin çoğunda ekipman fiyata dahildir; dahil olmayan durumlarda kiralama ücreti ürün sayfasında ayrıca gösterilir. Hava koşulu nedeniyle yapılamayan yamaç paraşütü, balon ve dalış gibi programlarda alternatif tarih veya tam iade seçeneği sunulur.'
+    ]
+  },
+  {
+    h: 'Mekanlar: sahneler, müzeler ve açık hava alanları',
+    p: [
+      'Mekanlar bölümü, etkinliklerin gerçekleştiği sahneleri, kültür merkezlerini, müzeleri ve açık hava alanlarını tanıtır. Bir mekânın sayfasından o mekânda yaklaşan tüm etkinliklere, ulaşım bilgisine ve kapasite detayına ulaşabilirsiniz.',
+      'Sık gittiğiniz mekanları favorilerinize ekleyerek yeni etkinlik eklendiğinde bildirim almayı tercih edebilirsiniz.',
+      'Mekân sayfaları aynı zamanda çevredeki kafe, restoran ve konaklama önerilerini de içerir. Bir konser öncesinde nerede buluşacağınızı ya da etkinlik sonrası nerede kalacağınızı aynı sayfadan planlayabilirsiniz.'
+    ]
+  },
+  {
+    h: 'Tarihe, bölgeye ve bütçeye göre filtreleme',
+    p: [
+      'Listeleme sayfalarındaki filtre çubuğu sıralama, tarih, süre, bölge, tema ve maksimum tutar seçeneklerini birlikte çalıştırır. Örneğin "bu hafta sonu, Marmara bölgesi, doğa & yayla teması, 1.500 TL altı" gibi bir kombinasyonu tek seferde uygulayabilirsiniz.',
+      'Seçtiğiniz filtreler etiket olarak üstte görünür; tek tıkla kaldırılabilir. Böylece aramayı sıfırdan kurmak zorunda kalmadan daraltıp genişletebilirsiniz.',
+      'Sıralama seçenekleri arasında en popüler, en yeni, fiyata göre artan ve azalan ile puana göre yüksek bulunur. Sonuç sayısı listenin üstünde anlık olarak güncellenir; bu sayede filtreyi fazla daralttığınızda hemen fark eder, bir kademe geri alabilirsiniz.'
+    ]
+  },
+  {
+    h: 'Güvenli ödeme, e-bilet ve iptal koşulları',
+    p: [
+      'Ödemeler 3D Secure ile korunan altyapı üzerinden alınır; kart bilgileriniz saklanmaz. Satın alma tamamlandığı anda e-bilet veya rezervasyon onayı hem e-postanıza hem de uygulamadaki "Biletlerim" bölümüne düşer.',
+      'İptal ve değişiklik koşulları her ürünün kendi sayfasında açıkça belirtilir. Etkinlik organizatör tarafından iptal edilir veya ertelenirse, ödeme iadeniz ek işlem yapmanıza gerek kalmadan başlatılır.'
+    ]
+  },
+  {
+    h: 'Hafta sonu kaçamağı nasıl planlanır?',
+    p: [
+      'İyi bir hafta sonu planı genellikle üç soruyla kurulur: ne kadar zamanım var, ne kadar uzağa gidebilirim ve bütçem ne? mola360 bu üç soruyu filtrelerle doğrudan karşılar. "Bu Cumartesi" filtresiyle güne, bölge filtresiyle mesafeye, maksimum tutar filtresiyle bütçeye göre daraltma yaparsınız.',
+      'Kararsız kalanlar için hazır koleksiyonlar vardır: ailece gezilecek yerler, romantik kaçamaklar, bütçe dostu planlar, tek başına seyahat ve arkadaş grubuyla yapılacaklar. Her koleksiyon, o profile uyan turları, etkinlikleri ve konaklamaları bir arada gösterir.'
+    ]
+  },
+  {
+    h: 'Ulaşım, buluşma noktası ve zaman planlaması',
+    p: [
+      'Günübirlik turlarda en çok merak edilen konu ulaşımdır. Her turun sayfasında kalkış saati, buluşma noktasının tam adresi ve haritadaki konumu, tahmini dönüş saati ve yolculuk süresi açıkça yazar. Araç tipi ve kapasitesi de belirtilir; kalabalık bir grupla mı yoksa küçük bir grupla mı yola çıkacağınızı önceden bilirsiniz.',
+      'Etkinliklerde ise mekâna toplu taşımayla nasıl ulaşılacağı, en yakın metro veya vapur durağı ve otopark seçenekleri mekân sayfasında yer alır. Şehir dışından geliyorsanız aynı hafta sonu için konaklama önerileri de aynı sayfadan listelenir.'
+    ]
+  },
+  {
+    h: 'Mevsime göre ne yapılır?',
+    p: [
+      'İlkbaharda yayla ve doğa turları, göl çevresi yürüyüşleri ve fotoğraf turları öne çıkar. Yaz aylarında tekne turları, açık hava konserleri, festivaller ve dalış programları yoğunlaşır. Sonbahar; gastronomi turları, bağ bozumu etkinlikleri ve termal tatil için en dengeli dönemdir.',
+      'Kış mevsiminde Uludağ, Palandöken ve Kartalkaya çevresindeki kayak paketleri ile bungalov ve şömineli doğa evleri en çok aranan başlıklar arasına girer. Yılbaşı, sömestr ve bayram tatili gibi yoğun dönemlerde erken rezervasyon hem fiyat hem de yer bulma açısından belirgin avantaj sağlar.',
+      'Hangi mevsimde olursanız olun, ana sayfadaki koleksiyonlar o döneme uygun planları öne çıkaracak şekilde güncellenir; ayrıca arama yaparken tarih filtresini kullanarak yalnızca gitmeyi düşündüğünüz aralığa bakabilirsiniz.'
+    ]
+  },
+  {
+    h: 'Fırsatlar, kuponlar ve bildirimler',
+    p: [
+      'Son dakika fırsatları, erken rezervasyon indirimleri ve döneme özel kampanyalar Fırsatlar bölümünde toplanır. Kupon kodları ödeme adımında uygulanır ve indirim tutarı onaydan önce görünür.',
+      'Takip ettiğiniz şehir, kategori veya mekân için yeni bir program açıldığında ya da favorilediğiniz bir turda yer azaldığında bildirim alırsınız. Bildirim tercihlerinizi hesabınızdan istediğiniz zaman değiştirebilirsiniz.'
+    ]
+  }
+];
+
+/* SSS. Buradaki sorular index.html icindeki FAQPage yapisal verisiyle
+   birebir ayni olmalidir; testler bunu dogrular. */
+const SEO_FAQ = [
+  {
+    q: 'mola360 üzerinden bilet nasıl satın alınır?',
+    a: 'Aramak istediğiniz etkinliği, turu veya oteli arama kutusundan ya da kategori sayfalarından bulun, tarih ve kişi sayısını seçip sepete ekleyin. Ödeme adımında varsa kupon kodunuzu uygulayın ve 3D Secure ile ödemeyi tamamlayın. Onay ekranının ardından e-biletiniz oluşturulur.'
+  },
+  {
+    q: 'Satın aldığım bileti nereden görüntülerim?',
+    a: 'Tüm biletleriniz ve rezervasyonlarınız hesabınızdaki Biletlerim bölümünde karekodlu olarak durur. Aynı bilet satın alma sırasında verdiğiniz e-posta adresine de gönderilir. Etkinlik girişinde telefonunuzdaki karekodu göstermeniz yeterlidir.'
+  },
+  {
+    q: 'Rezervasyonumu iptal edebilir miyim, ücret iadesi nasıl işler?',
+    a: 'İptal ve iade koşulları her ürünün kendi sayfasında ayrıca belirtilir; tur, etkinlik ve konaklamada koşullar farklılık gösterebilir. Ürün sayfasındaki koşullar kapsamında iptal talebinizi Biletlerim bölümünden oluşturabilir, süreci aynı ekrandan takip edebilirsiniz.'
+  },
+  {
+    q: 'Günübirlik tur fiyatına neler dahil?',
+    a: 'Günübirlik turlarda ulaşım ve rehberlik hizmeti standart olarak fiyata dahildir. Öğle yemeği, müze ve ören yeri giriş ücretleri ile isteğe bağlı aktiviteler programdan programa değişir; her turun sayfasında "Fiyata dahil olanlar" ve "Dahil olmayanlar" başlıkları ayrı ayrı listelenir.'
+  },
+  {
+    q: 'Etkinlik iptal edilir veya ertelenirse ne oluyor?',
+    a: 'Etkinlik organizatör tarafından iptal edilirse ödemeniz ek bir işlem yapmanıza gerek kalmadan iade sürecine alınır ve bilgilendirme bildirimi gönderilir. Etkinlik ertelenirse biletiniz yeni tarih için geçerli olmaya devam eder; yeni tarih size uymuyorsa iade talebinde bulunabilirsiniz.'
+  },
+  {
+    q: 'Otel rezervasyonunda ödemeyi ne zaman yapıyorum?',
+    a: 'Tesise ve seçtiğiniz tarifeye göre iki seçenek sunulur: rezervasyon anında tam ödeme veya tesiste ödeme. Hangisinin geçerli olduğu fiyatın hemen yanında yazar; ödeme adımına geçmeden önce görebilirsiniz.'
+  },
+  {
+    q: 'Kupon kodunu nerede kullanabilirim?',
+    a: 'Kupon kodları ödeme adımındaki "Kupon kodu" alanına yazılır. Kod geçerliyse indirim tutarı toplam fiyatın altında anında güncellenir. Kuponlarınızı ve son kullanma tarihlerini hesabınızdaki Kuponlarım bölümünden görebilirsiniz.'
+  },
+  {
+    q: 'Grup veya kurumsal rezervasyon yapabilir miyim?',
+    a: 'Evet. Belirli bir kişi sayısının üzerindeki gruplar ve şirket organizasyonları için özel fiyatlandırma yapılabilir. Talebinizi WhatsApp canlı destek üzerinden veya Beni Ara formunu doldurarak iletebilirsiniz; ekibimiz size özel bir program hazırlar.'
+  },
+  {
+    q: 'Fiyatlara vergiler dahil mi?',
+    a: 'Listelerde ve ürün sayfalarında gördüğünüz fiyatlar vergiler dahil tutarlardır. Ödeme adımında sürpriz bir ek ücret eklenmez; varsa isteğe bağlı ek hizmetler ayrıca ve açıkça gösterilir.'
+  },
+  {
+    q: 'Müşteri hizmetlerine nasıl ulaşırım?',
+    a: 'Yukarıdaki Yardım bölümünden telefonla arayabilir, WhatsApp canlı destek hattından yazabilir veya Beni Ara formuna numaranızı bırakabilirsiniz. Çalışma saatleri içinde bıraktığınız numaralara kısa süre içinde dönüş yapılır.'
+  }
+];
+
+/* ---- SEO blogu isaretlemesi ---- */
+function seoLinkGroupMarkup(group) {
+  const links = group.links
+    .map(l => `<li><a href="${l.href}">${l.label}</a></li>`)
+    .join('');
+  return `
+    <div class="seo-link-group">
+      <h3 class="seo-link-title">${group.title}</h3>
+      <ul class="seo-link-list">${links}</ul>
+    </div>`;
+}
+
+function seoArticleMarkup(section, index) {
+  const govde = section.p.map(metin => `<p>${metin}</p>`).join('');
+  return `
+    <div class="seo-article-part${index === 0 ? ' is-lead' : ''}">
+      <h3>${section.h}</h3>
+      ${govde}
+    </div>`;
+}
+
+function seoFaqMarkup(item, index) {
+  return `
+    <details class="seo-faq-item"${index === 0 ? ' open' : ''}>
+      <summary><span>${item.q}</span><span class="icon seo-faq-chev">${svg('chevDown')}</span></summary>
+      <p>${item.a}</p>
+    </details>`;
 }
 
 const HOME_BLOCK_MARKUP = {
@@ -270,6 +551,50 @@ const HOME_BLOCK_MARKUP = {
         </form>
       </div>
     </section>`
+  ,
+
+  /* Alt SEO blogu: ic baglanti agi + uzun metin + SSS.
+     Metnin tamami DOM'da durur; "Devamını oku" yalnizca gorunur
+     yuksekligi acar (display:none ile gizlenmez). */
+  seo: () => `
+    <section class="section home-seo-section" aria-labelledby="homeSeoHeading">
+      <div class="home-seo">
+
+        <div class="seo-links">
+          <h2 class="seo-links-heading">Popüler kategoriler ve aramalar</h2>
+          <div class="seo-link-groups">
+            ${SEO_LINK_GROUPS.map(seoLinkGroupMarkup).join('')}
+          </div>
+
+          <div class="seo-related">
+            <h3 class="seo-link-title">İlgili aramalar</h3>
+            <ul class="seo-chip-list">
+              ${SEO_RELATED_SEARCHES.map(a => `<li><a class="seo-chip" href="${a.href}">${a.label}</a></li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <div class="seo-article">
+          <h2 id="homeSeoHeading">Türkiye'nin gezi, etkinlik ve konaklama rehberi</h2>
+          <div class="seo-article-body" id="homeSeoBody">
+            ${SEO_ARTICLE.map(seoArticleMarkup).join('')}
+          </div>
+          <button class="seo-article-toggle" type="button" id="homeSeoToggle"
+                  aria-expanded="false" aria-controls="homeSeoBody">
+            <span class="seo-toggle-label">Devamını oku</span>
+            <span class="icon seo-toggle-chev">${svg('chevDown')}</span>
+          </button>
+        </div>
+
+        <div class="seo-faq">
+          <h2>Sık sorulan sorular</h2>
+          <div class="seo-faq-list">
+            ${SEO_FAQ.map(seoFaqMarkup).join('')}
+          </div>
+        </div>
+
+      </div>
+    </section>`
 };
 
 /* Bir kart seridinden sonra gelecek bloklarin isaretlemesi. */
@@ -290,6 +615,10 @@ if (typeof module !== 'undefined' && module.exports) {
     PROMO_BANDS,
     NEWSLETTER_PERKS,
     CONTACT,
+    SEO_LINK_GROUPS,
+    SEO_RELATED_SEARCHES,
+    SEO_ARTICLE,
+    SEO_FAQ,
     filterUpcomingItems,
     isValidEmail,
     isValidPhone

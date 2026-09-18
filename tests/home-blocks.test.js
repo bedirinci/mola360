@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   HOME_BLOCK_PLACEMENT,
   UPCOMING_FILTERS,
@@ -9,6 +10,10 @@ import {
   PROMO_BANDS,
   NEWSLETTER_PERKS,
   CONTACT,
+  SEO_LINK_GROUPS,
+  SEO_RELATED_SEARCHES,
+  SEO_ARTICLE,
+  SEO_FAQ,
   filterUpcomingItems,
   isValidEmail,
   isValidPhone,
@@ -149,5 +154,68 @@ describe('blok verileri', () => {
   it('iletişim bağlantıları doğru biçimde', () => {
     expect(CONTACT.phoneHref.startsWith('tel:')).toBe(true);
     expect(CONTACT.whatsappHref.startsWith('https://wa.me/')).toBe(true);
+  });
+  /* ---- alt SEO blogu ---- */
+
+  it('SEO bloğu destek kartından sonra yerleşir', () => {
+    const otelAltinda = HOME_BLOCK_PLACEMENT['Oteller'];
+    expect(otelAltinda).toContain('seo');
+    expect(otelAltinda.indexOf('seo')).toBeGreaterThan(otelAltinda.indexOf('support'));
+  });
+
+  it('iç bağlantı ağı yeterince geniş ve bağlantılar geçerli', () => {
+    expect(SEO_LINK_GROUPS.length).toBeGreaterThanOrEqual(4);
+    const tumu = SEO_LINK_GROUPS.flatMap(g => g.links).concat(SEO_RELATED_SEARCHES);
+    expect(tumu.length).toBeGreaterThanOrEqual(60);
+    tumu.forEach(bag => {
+      expect(bag.label.trim()).not.toBe('');
+      expect(bag.href.startsWith('#/')).toBe(true);
+    });
+  });
+
+  it('aynı hedefe iki kez bağlanılmaz', () => {
+    const hedefler = SEO_LINK_GROUPS.flatMap(g => g.links)
+      .concat(SEO_RELATED_SEARCHES)
+      .map(b => b.href);
+    expect(new Set(hedefler).size).toBe(hedefler.length);
+  });
+
+  it('SEO metni başlıklı ve uzun', () => {
+    expect(SEO_ARTICLE.length).toBeGreaterThanOrEqual(8);
+    SEO_ARTICLE.forEach(bolum => {
+      expect(bolum.h.trim()).not.toBe('');
+      expect(bolum.p.length).toBeGreaterThan(0);
+    });
+    const kelime = SEO_ARTICLE
+      .flatMap(b => b.p)
+      .join(' ')
+      .split(/\s+/)
+      .filter(Boolean).length;
+    expect(kelime).toBeGreaterThan(700);
+  });
+
+  it('SSS soruları ve cevapları dolu', () => {
+    expect(SEO_FAQ.length).toBeGreaterThanOrEqual(8);
+    SEO_FAQ.forEach(sss => {
+      expect(sss.q.trim()).not.toBe('');
+      expect(sss.a.length).toBeGreaterThan(60);
+    });
+  });
+
+  it('index.html içindeki FAQPage yapısal verisi SSS ile birebir aynı', () => {
+    const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+    const bloklar = [...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
+    )].map(m => JSON.parse(m[1]));
+
+    const faq = bloklar.find(b => b['@type'] === 'FAQPage');
+    expect(faq).toBeTruthy();
+
+    const htmlSorular = faq.mainEntity.map(s => s.name);
+    const veriSorular = SEO_FAQ.map(s => s.q);
+    expect(htmlSorular).toEqual(veriSorular);
+
+    const htmlCevaplar = faq.mainEntity.map(s => s.acceptedAnswer.text);
+    expect(htmlCevaplar).toEqual(SEO_FAQ.map(s => s.a));
   });
 });

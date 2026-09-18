@@ -5456,3 +5456,211 @@ ul {
 .auth-modal:focus {
   outline: none;
 }
+
+/* =====================================================
+   ALT SEO BLOGU
+   Uc parca: ic baglanti agi, uzun metin, SSS.
+   Metin "Devamını oku" ile acilir; kapaliyken bile tam
+   metin DOM'da durur, yalnizca gorunur yukseklik kisilir.
+   ===================================================== */
+.home-seo-section { padding-top: 4px; }
+
+.home-seo {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 18px);
+  padding: 18px 16px 20px;
+}
+
+/* ---- ic baglanti agi ---- */
+.seo-links-heading,
+.seo-article h2,
+.seo-faq h2 {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 0 0 12px;
+}
+
+.seo-link-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 12px;
+}
+
+.seo-link-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+.seo-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.seo-link-list a,
+.seo-chip {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.seo-link-list a:hover,
+.seo-chip:hover { color: var(--green-dark); text-decoration: underline; }
+
+/* ---- ilgili aramalar (cip bulutu) ---- */
+.seo-related { margin-top: 18px; }
+
+.seo-chip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seo-chip {
+  display: inline-block;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg, #f6f7fb);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.seo-chip:hover { border-color: var(--green); text-decoration: none; }
+
+/* ---- uzun metin ---- */
+.seo-article { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+.seo-article-body {
+  position: relative;
+  max-height: 168px;
+  overflow: hidden;
+}
+
+/* Kapaliyken alt kenarda okumaya davet eden solma. */
+.seo-article-body::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), var(--card));
+  pointer-events: none;
+}
+
+.seo-article-body.is-expanded { max-height: none; }
+.seo-article-body.is-expanded::after { display: none; }
+
+.seo-article-part + .seo-article-part { margin-top: 16px; }
+
+.seo-article-part h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.seo-article-part p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.seo-article-part p:last-child { margin-bottom: 0; }
+
+.seo-article-toggle {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seo-article-toggle:hover { border-color: var(--green); }
+
+.seo-toggle-chev { width: 16px; height: 16px; transition: transform .2s ease; }
+.seo-article-toggle[aria-expanded="true"] .seo-toggle-chev { transform: rotate(180deg); }
+
+/* ---- SSS ---- */
+.seo-faq { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+.seo-faq-list { display: grid; gap: 8px; }
+
+.seo-faq-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: var(--bg, #f6f7fb);
+}
+
+.seo-faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  list-style: none;
+}
+
+.seo-faq-item summary::-webkit-details-marker { display: none; }
+
+.seo-faq-chev { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-muted); transition: transform .2s ease; }
+.seo-faq-item[open] .seo-faq-chev { transform: rotate(180deg); }
+
+.seo-faq-item p {
+  margin: 0;
+  padding: 0 0 13px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* ---- tablet ve masaustu ---- */
+@media (min-width: 681px) {
+  .home-seo { padding: 24px 22px 26px; }
+  .seo-link-groups { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 18px; }
+  .seo-links-heading, .seo-article h2, .seo-faq h2 { font-size: 19px; }
+  .seo-article-body { max-height: 196px; }
+  .seo-article-part h3 { font-size: 15.5px; }
+  .seo-article-part p { font-size: 14px; }
+  .seo-faq-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+
+@media (min-width: 1025px) {
+  .home-seo { padding: 28px 26px 30px; }
+  .seo-article-body.is-expanded { column-count: 2; column-gap: 32px; }
+  .seo-article-part { break-inside: avoid; }
+}
+
+/* Koyu tema: solma efekti kart rengiyle eslessin. */
+@media (prefers-color-scheme: dark) {
+  .seo-article-body::after {
+    background: linear-gradient(to bottom, rgba(0,0,0,0), var(--card));
+  }
+}
