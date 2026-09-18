@@ -639,9 +639,61 @@ document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
     <button class="hscroll-arrow left" type="button" data-dir="left" aria-label="Geri"><span class="icon">${svg('chevLeft')}</span></button>
     <button class="hscroll-arrow right" type="button" data-dir="right" aria-label="İleri"><span class="icon">${svg('chevRight')}</span></button>
     </div>
-  </section>`).join('');
+  </section>
+  ${homeBlocksAfter(sec.title)}`).join('');
 
 initHscrollArrows();
+initHomeBlocks();
+
+/* ---------------- anasayfa ara bloklarının etkileşimleri ----------------
+   Blokların verisi ve işaretlemesi home-blocks.js'te; burada yalnızca
+   yerleştirildikten sonraki davranışları bağlanır. Bir blok
+   HOME_BLOCK_PLACEMENT'tan çıkarılırsa buradaki kod sessizce atlanır. */
+function initHomeBlocks(){
+  /* Bu hafta sonu: gün seçimi listeyi yeniden çizer. */
+  const days = document.getElementById('weekendDays');
+  const list = document.getElementById('weekendList');
+  if (days && list) {
+    days.addEventListener('click', (e)=>{
+      const btn = e.target.closest('[data-weekend-day]');
+      if (!btn || btn.classList.contains('active')) return;
+      days.querySelectorAll('[data-weekend-day]').forEach(el => {
+        const secili = el === btn;
+        el.classList.toggle('active', secili);
+        el.setAttribute('aria-selected', String(secili));
+      });
+      list.innerHTML = weekendCardsMarkup(btn.dataset.weekendDay);
+      list.scrollLeft = 0;
+    });
+  }
+
+  /* E-bülten: arka uç yok; geçerli adreste form yerini teşekkür mesajı alır. */
+  const form = document.getElementById('homeNewsletterForm');
+  const note = document.getElementById('homeNewsletterNote');
+  if (form) {
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const input = document.getElementById('homeNewsletterEmail');
+      const deger = input ? input.value : '';
+      if (!isValidEmail(deger)) {
+        form.classList.add('has-error');
+        if (note) {
+          note.textContent = 'Geçerli bir e-posta adresi gir.';
+          note.classList.add('is-error');
+        }
+        if (input) input.focus({preventScroll:true});
+        return;
+      }
+      form.classList.remove('has-error');
+      form.remove();
+      if (note) {
+        note.textContent = 'Kaydın alındı. Fırsatlar artık e-postana gelecek.';
+        note.classList.remove('is-error');
+        note.classList.add('is-success');
+      }
+    });
+  }
+}
 
 /* ---------------- mouse / touch drag ile yatay kaydırma ----------------
    Tüm yatay kaydırılabilir alanlarda kartın/şeridin üzerine basılı tutup
