@@ -252,7 +252,7 @@
   </aside>
 
   <div class="auth-modal-overlay" id="authModalOverlay">
-    <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Giriş yap">
+    <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-label="Giriş yap" tabindex="-1">
       <button class="auth-modal-close" id="authModalCloseBtn" aria-label="Kapat"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span></button>
       <!-- Mobilde tam ekran acilan giris ekraninin lacivert basligi.
            Masaustunde gizlenir; orada sag ustteki kapatma butonu kullanilir. -->
@@ -373,7 +373,7 @@
        uretilir; filtreleme/gruplama notif-utils.js'teki saf fonksiyonlarla
        hesaplanir. Header disinda durur ki tam ekran overlay z-index
        zincirinin (bottom-tab-bar dahil) uzerinde kalsin. -->
-  <div class="notif-panel" id="notifPanel" role="dialog" aria-modal="true" aria-label="Bildirimler">
+  <div class="notif-panel" id="notifPanel" role="dialog" aria-modal="true" aria-label="Bildirimler" tabindex="-1">
     <div class="notif-panel-inner">
       <div class="notif-panel-header">
         <button class="notif-panel-back" id="notifPanelBack" type="button" aria-label="Geri">

@@ -1505,7 +1505,11 @@ notifBtn.addEventListener('click', (e)=>{
     notifBtn.setAttribute('aria-expanded','true');
     document.body.classList.add('notif-modal-open');
     refreshScrollLock();
-    if (isMobileViewport() && notifBackBtn) notifBackBtn.focus({preventScroll:true});
+    /* Odak, geri butonuna değil diyalog kapsayıcısına taşınır: buton
+       odaklandığında iOS Safari butonun çevresine kendi mavi odak halkasını
+       çiziyordu. Kapsayıcı görsel bir kontrol olmadığı için halkası CSS'te
+       kapatılabiliyor; ekran okuyucu yine diyaloğun içine giriyor. */
+    if (isMobileViewport()) notifPanel.focus({preventScroll:true});
   }
 });
 notifPanelInner.addEventListener('click', (e)=> e.stopPropagation());
@@ -2300,10 +2304,11 @@ function openAuthModal(tab){
     authOverlay.classList.add('open');
     document.body.classList.add('auth-modal-open');
     refreshScrollLock();
-    /* Mobilde ekran tam sayfa açıldığı için odak, klavyeyi açmayan geri
-       butonuna taşınır; kullanıcı ilk dokunuşta çıkışı bulabilsin. */
-    const backBtn = document.getElementById('authModalBackBtn');
-    if (backBtn && isMobileViewport()) backBtn.focus({preventScroll:true});
+    /* Mobilde ekran tam sayfa açıldığı için odak diyaloğun kendisine taşınır;
+       böylece klavye açılmaz, ekran okuyucu diyaloğun içine girer ve iOS
+       Safari geri butonunun çevresine odak halkası çizmez. */
+    const dialog = document.getElementById('authModal');
+    if (dialog && isMobileViewport()) dialog.focus({preventScroll:true});
   }
   setAuthTab(tab || 'login');
 }
