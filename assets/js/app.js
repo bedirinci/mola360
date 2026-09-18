@@ -571,11 +571,31 @@ function initHscrollArrows() {
       rightBtn.classList.toggle('is-visible', !atEnd);
     }
 
+    /* Bir tıklamada ne kadar kayacağı: kart genişliğinin katı olarak
+       hesaplanır, böylece kaydırma kartların kenarında biter.
+       Snap'li şeritlerde (kampanyalar) tıklama başına tam bir kart kayar;
+       sabit oranla kaydırınca bir tıklamada iki kart atlanıyordu. */
+    function adimGenisligi() {
+      const kart = track.firstElementChild;
+      if (!kart) return track.clientWidth * 0.8;
+      const stil = getComputedStyle(track);
+      const bosluk = parseFloat(stil.columnGap || stil.gap) || 0;
+      const kartAdimi = kart.getBoundingClientRect().width + bosluk;
+      if (!kartAdimi) return track.clientWidth * 0.8;
+
+      const snapTuru = stil.scrollSnapType || 'none';
+      if (snapTuru !== 'none' && snapTuru.indexOf('x') === 0) return kartAdimi;
+
+      /* Snap yoksa ekrana tam sığan kart sayısı kadar kaydır. */
+      const siganKart = Math.max(1, Math.floor((track.clientWidth + bosluk) / kartAdimi));
+      return siganKart * kartAdimi;
+    }
+
     leftBtn.addEventListener('click', () => {
-      track.scrollBy({ left: -track.clientWidth * 0.8, behavior: 'smooth' });
+      track.scrollBy({ left: -adimGenisligi(), behavior: 'smooth' });
     });
     rightBtn.addEventListener('click', () => {
-      track.scrollBy({ left: track.clientWidth * 0.8, behavior: 'smooth' });
+      track.scrollBy({ left: adimGenisligi(), behavior: 'smooth' });
     });
 
     track.addEventListener('scroll', update, {passive:true});

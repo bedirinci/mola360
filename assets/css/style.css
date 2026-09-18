@@ -4928,13 +4928,19 @@ ul {
 .theme-scroll::-webkit-scrollbar { display: none; }
 .promo-scroll {
   scroll-snap-type: x mandatory;
+  /* Snap noktaları içerik kenarıyla hizalansın; yoksa ilk tıklama yan
+     boşluk kadar fazla kayıyor. */
+  scroll-padding-left: var(--page-gutter);
+  scroll-padding-right: var(--page-gutter);
 }
 .home-promo {
   position: relative;
   display: block;
   flex: 0 0 86%;
   height: 190px;
-  scroll-snap-align: center;
+  /* Kartın SOL kenarı hizalanır: ok ile kaydırırken hareket tahmin
+     edilebilir olur, ilk kart da açılışta ortaya kaçmaz. */
+  scroll-snap-align: start;
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
