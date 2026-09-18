@@ -8,8 +8,8 @@
    Bir blogu kaldirmak icin buradaki satirini silmek yeterli. */
 
 const HOME_BLOCK_PLACEMENT = {
-  'Yaklaşan Etkinlikler': ['promo'],
-  'Günübirlik Turlar': ['themes'],
+  'Günübirlik Turlar': ['promo', 'themes'],
+  'Aktiviteler': ['venues'],
   'Oteller': ['collectionGrid', 'newsletter']
 };
 
@@ -38,6 +38,17 @@ const GRID_COLLECTIONS = [
   { img:'assos',      title:'Romantik',    text:'İki kişilik kaçamaklar' },
   { img:'market1',    title:'Bütçe Dostu', text:'500 TL altı seçenekler' },
   { img:'paraglide3', title:'Adrenalin',   text:'Cesaret isteyenlere' }
+];
+
+/* ---- Mekanlar ----
+   Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
+   open:true olan mekan "Açık" rozetiyle isaretlenir. */
+const VENUES = [
+  { img:'coffee1',  type:'Kahvaltı',     title:'Cumalıkızık Köy Kahvaltısı', area:'Cumalıkızık, Yıldırım', rating:'4.7', reviews:'320+', hours:'08:00 – 18:00', open:true },
+  { img:'uludag',   type:'Gezi Noktası', title:'Uludağ Teleferik',           area:'Teferrüç, Osmangazi',   rating:'4.8', reviews:'1,2b+', hours:'09:00 – 20:00', open:true },
+  { img:'theatre1', type:'Müze',         title:'Bursa Kent Müzesi',          area:'Heykel, Osmangazi',     rating:'4.6', reviews:'180+',  hours:'09:00 – 17:00', open:false },
+  { img:'market1',  type:'Çarşı',        title:'Kapalıçarşı ve Koza Han',    area:'Osmangazi',             rating:'4.7', reviews:'640+',  hours:'10:00 – 19:00', open:true },
+  { img:'iznik',    type:'Tarihi Doku',  title:'İnkaya Çınarı',              area:'Çekirge, Osmangazi',    rating:'4.5', reviews:'90+',   hours:'Her zaman açık', open:true }
 ];
 
 /* ---- Kampanya bandı ---- */
@@ -97,6 +108,30 @@ function homeSectionHead(title, link) {
 }
 
 const HOME_BLOCK_MARKUP = {
+  /* Mekanlar: yatay kaydirma yok; her mekan tam genislikte bir satir. */
+  venues: () => `
+    <section class="section home-venues">
+      ${homeSectionHead('Mekanlar', 'Tümünü Gör')}
+      <div class="venue-list">
+        ${VENUES.map(v => `
+          <a class="venue-card" href="#">
+            <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
+            <span class="venue-body">
+              <span class="venue-top">
+                <span class="venue-type">${v.type}</span>
+                <span class="venue-status${v.open ? ' is-open' : ''}">${v.open ? 'Açık' : 'Kapalı'}</span>
+              </span>
+              <strong class="venue-title">${v.title}</strong>
+              <span class="venue-meta"><span class="icon">${svg('mapPin')}</span>${v.area}</span>
+              <span class="venue-foot">
+                <span class="venue-rating"><span class="icon">${svg('star')}</span>${v.rating}<span class="venue-reviews">(${v.reviews})</span></span>
+                <span class="venue-hours"><span class="icon">${svg('clock')}</span>${v.hours}</span>
+              </span>
+            </span>
+          </a>`).join('')}
+      </div>
+    </section>`,
+
   promo: () => `
     <section class="section home-promo-section">
       <a class="home-promo" href="#">
@@ -198,6 +233,7 @@ if (typeof module !== 'undefined' && module.exports) {
     UPCOMING_FILTERS,
     THEME_COLLECTIONS,
     GRID_COLLECTIONS,
+    VENUES,
     CONTACT,
     filterUpcomingItems,
     isValidEmail,

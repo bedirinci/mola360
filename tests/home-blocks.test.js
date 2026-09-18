@@ -4,6 +4,7 @@ import {
   UPCOMING_FILTERS,
   THEME_COLLECTIONS,
   GRID_COLLECTIONS,
+  VENUES,
   CONTACT,
   filterUpcomingItems,
   isValidEmail,
@@ -89,6 +90,23 @@ describe('blok verileri', () => {
   it('koleksiyon blokları boş değil', () => {
     expect(THEME_COLLECTIONS.length).toBeGreaterThan(0);
     expect(GRID_COLLECTIONS.length).toBeGreaterThan(0);
+  });
+
+  it('mekan kayıtlarında gerekli alanlar var ve başlıklar tekil', () => {
+    expect(VENUES.length).toBeGreaterThan(0);
+    VENUES.forEach(mekan => {
+      ['img', 'type', 'title', 'area', 'rating', 'reviews', 'hours'].forEach(alan => {
+        expect(String(mekan[alan] || '')).not.toBe('');
+      });
+      expect(typeof mekan.open).toBe('boolean');
+    });
+    const basliklar = VENUES.map(m => m.title);
+    expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('kampanya bandı günübirlik turlardan sonra geliyor', () => {
+    expect(HOME_BLOCK_PLACEMENT['Günübirlik Turlar'][0]).toBe('promo');
+    expect(HOME_BLOCK_PLACEMENT['Yaklaşan Etkinlikler']).toBeUndefined();
   });
 
   it('iletişim bağlantıları doğru biçimde', () => {
