@@ -10,7 +10,7 @@
 const HOME_BLOCK_PLACEMENT = {
   'Günübirlik Turlar': ['promo', 'themes'],
   'Aktiviteler': ['venues'],
-  'Oteller': ['collectionGrid', 'newsletter']
+  'Oteller': ['collectionGrid', 'newsletter', 'support']
 };
 
 /* ---- Yaklasan Etkinlikler seridideki zaman filtreleri ----
@@ -54,14 +54,20 @@ const VENUES = [
   { img:'iznik',    type:'Tarihi Doku',  title:'İnkaya Çınarı',              area:'Çekirge, Osmangazi',    rating:'4.5', reviews:'90+',   hours:'Her zaman açık', open:true }
 ];
 
-/* ---- Kampanya bandı ---- */
-const PROMO_BAND = {
-  img: 'karadeniz2',
-  badge: 'Son 3 gün',
-  title: 'Yayla ve doğa turlarında %40\'a varan indirim',
-  text: 'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.',
-  cta: 'Fırsatları gör'
-};
+/* ---- Kampanyalar (yatay kaydirilabilir) ---- */
+const PROMO_BANDS = [
+  { img:'karadeniz2', badge:'Son 3 gün',         title:'Yayla ve doğa turlarında %40\'a varan indirim', text:'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.', cta:'Fırsatları gör' },
+  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',           text:'30 gün öncesinden alan herkese, tüm kalkışlarda.',        cta:'Turları gör' },
+  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',              text:'Seçili termal ve şehir otellerinde geçerli.',             cta:'Otelleri gör' },
+  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',                 text:'Üye ol, indirim kodu e-postana gelsin.',                  cta:'Üye ol' }
+];
+
+/* ---- Bulten karti: kisa fayda listesi ---- */
+const NEWSLETTER_PERKS = [
+  'Üyelere özel indirim kodları',
+  'Haftada tek e-posta, spam yok',
+  'Tek tıkla çıkış'
+];
 
 /* ---- Iletisim bilgileri (tek yerden degistirilir) ---- */
 const CONTACT = {
@@ -135,18 +141,23 @@ const HOME_BLOCK_MARKUP = {
       </div>
     </section>`,
 
+  /* Kampanyalar: kart seritleri gibi yatay kaydirilir, kenar bosluklarinin
+     uzerine tasar. */
   promo: () => `
     <section class="section home-promo-section">
-      <a class="home-promo" href="#">
-        <img src="${homeBlockImage(PROMO_BAND.img)}" alt="" loading="lazy">
-        <span class="home-promo-shade"></span>
-        <span class="home-promo-content">
-          <span class="home-promo-badge">${PROMO_BAND.badge}</span>
-          <strong>${PROMO_BAND.title}</strong>
-          <span class="home-promo-text">${PROMO_BAND.text}</span>
-          <span class="home-promo-cta">${PROMO_BAND.cta} <span class="icon">${svg('chevRight')}</span></span>
-        </span>
-      </a>
+      <div class="promo-scroll">
+        ${PROMO_BANDS.map(p => `
+          <a class="home-promo" href="#">
+            <img src="${homeBlockImage(p.img)}" alt="" loading="lazy">
+            <span class="home-promo-shade"></span>
+            <span class="home-promo-content">
+              <span class="home-promo-badge">${p.badge}</span>
+              <strong>${p.title}</strong>
+              <span class="home-promo-text">${p.text}</span>
+              <span class="home-promo-cta">${p.cta} <span class="icon">${svg('chevRight')}</span></span>
+            </span>
+          </a>`).join('')}
+      </div>
     </section>`,
 
   themes: () => `
@@ -175,21 +186,35 @@ const HOME_BLOCK_MARKUP = {
       </div>
     </section>`,
 
-  /* E-bulten + iletisim: ust yarida kayit, alt yarida telefon, WhatsApp ve
-     geri arama talebi. */
+  /* E-bulten: lacivert vurgu karti. */
   newsletter: () => `
-    <section class="section home-support-section">
-      <div class="home-support">
-        <span class="home-support-icon">${svg('percent')}</span>
-        <h2>Fırsatları ilk sen öğren</h2>
-        <p class="home-support-lead">Haftada bir e-posta: sadece seçili indirimler ve yeni eklenen turlar.</p>
+    <section class="section home-newsletter-section">
+      <div class="home-newsletter">
+        <span class="home-newsletter-badge"><span class="icon">${svg('percent')}</span>Bülten</span>
+        <h2>Fırsatları herkesten önce gör</h2>
+        <p class="home-newsletter-lead">Haftada bir e-posta: seçili indirimler, yeni eklenen turlar ve son dakika fırsatları.</p>
         <form class="home-newsletter-form" id="homeNewsletterForm" novalidate>
           <input type="email" id="homeNewsletterEmail" placeholder="ornek@eposta.com" autocomplete="email" aria-label="E-posta adresin">
           <button class="btn-primary" type="submit">Kaydol</button>
         </form>
         <p class="home-newsletter-note" id="homeNewsletterNote">İstediğin zaman tek tıkla çıkabilirsin.</p>
+        <ul class="home-newsletter-perks">
+          ${NEWSLETTER_PERKS.map(perk => `<li><span class="icon">${svg('check')}</span>${perk}</li>`).join('')}
+        </ul>
+      </div>
+    </section>`,
 
-        <div class="home-support-divider"><span>Yardıma mı ihtiyacın var?</span></div>
+  /* Iletisim: telefon, WhatsApp ve geri arama talebi. */
+  support: () => `
+    <section class="section home-support-section">
+      <div class="home-support">
+        <div class="home-support-head">
+          <span class="home-support-icon">${svg('headset')}</span>
+          <div class="home-support-head-text">
+            <h2>Yardıma mı ihtiyacın var?</h2>
+            <p>Rezervasyon, iptal ya da öneri — her konuda buradayız.</p>
+          </div>
+        </div>
 
         <a class="home-support-phone" href="${CONTACT.phoneHref}">
           <span class="home-support-phone-icon">${svg('phone')}</span>
@@ -238,6 +263,8 @@ if (typeof module !== 'undefined' && module.exports) {
     THEME_COLLECTIONS,
     GRID_COLLECTIONS,
     VENUES,
+    PROMO_BANDS,
+    NEWSLETTER_PERKS,
     CONTACT,
     filterUpcomingItems,
     isValidEmail,
