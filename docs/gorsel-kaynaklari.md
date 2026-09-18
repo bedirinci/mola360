@@ -73,3 +73,75 @@ dikey çekilmiş fotoğraflar yatay kartlarda kötü kırpılabilir.
 Unsplash'ten gelen diğer kayıtlar olduğu gibi duruyor; hangi anahtarın
 hangi konuyu göstermesi gerektiği `docs/gorsel-ihtiyaclari.md` içinde
 yazılı. Onlar da aynı yöntemle tek tek değiştirilebilir.
+
+
+## İkinci tur: ölü URL'ler ve yedek mekanizma hatası
+
+Kullanıcı ekran görüntüsü gönderdi ve iki kart tarayıcının kırık görsel
+simgesiyle ("?") görünüyordu. Bu, tahmin değil **kanıt**:
+
+| Anahtar | Kart | Durum |
+|---|---|---|
+| `standup1` | Stand Up Gecesi | Unsplash URL'i ölü |
+| `sile` | Şile Kamp Deneyimi | Unsplash URL'i ölü |
+
+### Asıl hata: yedek mekanizma hiç çalışmıyordu
+
+`ui.js` içindeki yedek, dinleyicileri `DOMContentLoaded` anında tek tek
+her `<img>` etiketine bağlıyordu. İki kusuru vardı:
+
+1. **Yarış durumu.** 404 yanıtı çoğu zaman `DOMContentLoaded`'dan önce
+   döner. Dinleyici takıldığında hata çoktan geçmiştir, bir daha
+   tetiklenmez — kart kırık simgeyle kalır. Ekran görüntüsündeki durum
+   tam olarak budur.
+2. **Sonradan üretilen kartlar.** JS ile sonradan eklenen `<img>`
+   etiketlerine dinleyici hiç bağlanmıyordu.
+
+**Çözüm:** `document` üzerinde **yakalama (capture) aşamasında** tek bir
+dinleyici. `error` olayı baloncuklanmaz ama capture aşamasında
+`document`'e ulaşır, böylece sonradan eklenen görseller de kapsanır.
+Ayrıca sayfa yüklendiğinde `img.complete && img.naturalWidth === 0`
+olanlar taranarak dinleyici bağlanmadan önce bozulmuş olanlar yakalanır.
+
+**Yedek görsel değişti.** Eskiden ölü bir URL'in yerine uzaktaki genel
+bir seyahat fotoğrafı konuyordu. Bu, sorunu çözmüyor **gizliyordu**:
+alakasız bir fotoğraf gösteriliyor, kimse bir şeyin bozuk olduğunu fark
+etmiyordu. Artık yerel, gömülü (data URI) ve nötr bir yer tutucu var —
+asla 404 vermez ve gerçek fotoğraf gibi durmaz.
+
+Ölçüm (390×844, bu ortamda tüm uzak görseller başarısız): 104 görselin
+**0'ı kırık**, 82'si yer tutucuya düşüyor. Düzeltmeden önce bu 82'si
+tarayıcının kırık simgesiyle görünürdü.
+
+### Bu turda değiştirilen görseller
+
+Ölü olanlar ve adı geçen yerler Commons'a taşındı:
+
+| Anahtar | Dosya |
+|---|---|
+| `sile` | Şile sahil panorama.jpg |
+| `standup1` | Stand-up comedy - Stage.jpg |
+| `pamukkale` | Pamukkale Travertines.jpg |
+| `bodrum` | Bodrum Hafen.jpg |
+| `kapadokya` | Hot air balloons in Cappadocia.jpg |
+| `balloon3` | Hot air balloon ride at sunrise in Cappadocia 2.JPG |
+| `ayder` | Ayder Yaylasi @ Rize-Turkey.JPG |
+| `bogaz` | Bosphorus Bridge, Istanbul - Turkey.jpg |
+| `abant2` | Abant Bolu Province.jpg |
+| `uludag` | View of Bursa from the hills of Mount Uludag.jpg |
+
+Bilinen lisanslar: `Stand-up comedy - Stage.jpg` — Carlos Delgado,
+CC BY-SA 3.0. `Kemeraltı market 02.jpg` — Francisco Anzola, CC BY 2.0.
+Diğerleri yayına almadan önce doğrulanmalı.
+
+### Hâlâ Unsplash'te kalanlar
+
+`efes` dışındaki antik/doğa görselleri değişti; geriye kalanlar:
+`concert1`, `concert2`, `festival1`, `theatre1`, `market1`, `run1`,
+`coffee1`, `assos`, `iznik`, `iznik2`, `kapadokya2`, `karadeniz2`,
+`ege2`, `dogu2`, `sapanca2`, `cunda2`, `rafting3`, `paraglide3`,
+`kayak3`, `hotel4`–`hotel7`.
+
+Bunlar ekran görüntüsünde bozuk görünmüyordu, yani URL'leri çalışıyor.
+Konu uyumu doğrulanamadı; biri yanlışsa anahtarını söylemek yeterli,
+aynı yöntemle Commons'tan değiştirilir.
