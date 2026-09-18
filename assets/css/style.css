@@ -5377,20 +5377,21 @@ ul {
   }
   .home-support { padding: 24px; }
   .home-support-head-text h2 { font-size: 19px; }
-  /* Telefon satırı ve iki buton tek sırada. */
+  /* Telefon satırı ve iki buton tek sırada, üçü de eşit genişlikte.
+     display:contents ile butonlar satırın doğrudan öğesi olur; böylece
+     aradaki boşluklar da eşit dağılır. */
   .home-support-row {
     flex-direction: row;
     align-items: stretch;
     gap: 10px;
   }
-  .home-support-phone {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
   .home-support-actions {
-    flex: 0 1 auto;
-    flex-direction: row;
-    width: auto;
+    display: contents;
+  }
+  .home-support-phone,
+  .home-support-row .home-support-btn {
+    flex: 1 1 0;
+    min-width: 0;
   }
   .home-support-btn {
     white-space: nowrap;
