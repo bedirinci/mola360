@@ -4556,3 +4556,413 @@ ul {
     opacity: 0 !important;
   }
 }
+/* =====================================================
+   ANASAYFA ARA BLOKLARI
+   Kart şeritlerinin arasına giren bloklar. Yerleşim
+   home-blocks.js'teki HOME_BLOCK_PLACEMENT ile belirlenir;
+   bir blok oradan çıkarılırsa buradaki kurallar da atıl kalır.
+   ===================================================== */
+
+/* ---- Bu hafta sonu ne var? ---- */
+.weekend-days {
+  display: flex;
+  gap: 8px;
+  margin: -4px 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.weekend-days::-webkit-scrollbar { display: none; }
+.weekend-day {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.weekend-day:hover { border-color: #D6DAE4; }
+.weekend-day.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.weekend-list {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+}
+.weekend-list::-webkit-scrollbar { display: none; }
+.weekend-card {
+  flex: 0 0 200px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+.weekend-card-media {
+  position: relative;
+  height: 110px;
+}
+.weekend-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.weekend-card-time {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(11,18,48,.72);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.weekend-card-time .icon { width: 13px; height: 13px; }
+.weekend-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 12px;
+}
+.weekend-card-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--green-dark);
+}
+.weekend-card-body h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text);
+  /* Başlık iki satırda kesilir; kartların yüksekliği eşit kalsın. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.weekend-card-body p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.weekend-card-body p .icon { width: 13px; height: 13px; flex-shrink: 0; }
+.weekend-card-price {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.weekend-empty {
+  padding: 18px 2px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---- Kampanya bandı ---- */
+.home-promo {
+  position: relative;
+  display: block;
+  height: 190px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+.home-promo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-promo-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(11,18,48,.92) 0%, rgba(11,18,48,.75) 48%, rgba(11,18,48,.25) 100%);
+}
+.home-promo-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  max-width: 80%;
+  padding: 18px 16px;
+  color: #fff;
+}
+.home-promo-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--navy-deep);
+  font-size: 11px;
+  font-weight: 700;
+}
+.home-promo-content strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: -.3px;
+}
+.home-promo-text {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.8);
+}
+.home-promo-cta {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+.home-promo-cta .icon { width: 15px; height: 15px; }
+
+/* ---- Temaya göre keşfet (yatay şerit) ---- */
+.theme-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.theme-scroll::-webkit-scrollbar { display: none; }
+.theme-card {
+  position: relative;
+  display: block;
+  flex: 0 0 150px;
+  height: 180px;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.theme-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-card-shade,
+.collection-tile-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11,18,48,0) 30%, rgba(11,18,48,.88) 100%);
+}
+.theme-card-text,
+.collection-tile-text {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #fff;
+}
+.theme-card-text strong,
+.collection-tile-text strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.theme-card-text span,
+.collection-tile-text span {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.75);
+}
+
+/* ---- Neden mola360 / güven şeridi ---- */
+.home-trust {
+  margin-top: 24px;
+  padding: 26px 16px;
+  background: var(--navy);
+  color: #fff;
+}
+.home-trust-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.home-trust h2 {
+  margin-bottom: 18px;
+  font-size: 18px;
+  color: #fff;
+}
+.home-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 12px;
+}
+.home-trust-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.home-trust-icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 3px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.1);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-trust-icon svg { width: 18px; height: 18px; }
+.home-trust-item strong {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.home-trust-item p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.7);
+}
+
+/* ---- Koleksiyon ızgarası ---- */
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.collection-tile {
+  position: relative;
+  display: block;
+  height: 140px;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.collection-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- E-bülten / fırsat bildirimi ---- */
+.home-newsletter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 18px;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.home-newsletter-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(140,198,63,.16);
+  color: var(--green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-newsletter-icon svg { width: 22px; height: 22px; }
+.home-newsletter h2 { font-size: 17px; }
+.home-newsletter > p {
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.home-newsletter-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 6px;
+}
+.home-newsletter-form input {
+  flex: 1;
+  min-width: 0;
+  height: 43px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+}
+.home-newsletter-form input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: var(--card);
+}
+.home-newsletter-form.has-error input { border-color: #E4483C; }
+.home-newsletter-form .btn-primary {
+  flex-shrink: 0;
+  height: 43px;
+  padding: 0 18px;
+}
+.home-newsletter-note {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.home-newsletter-note.is-error { color: #E4483C; }
+.home-newsletter-note.is-success {
+  color: var(--green-dark);
+  font-weight: 600;
+}
+
+/* ---- masaüstü / tablet ---- */
+@media (min-width: 681px) {
+  .weekend-card { flex-basis: 230px; }
+  .weekend-card-media { height: 130px; }
+  .theme-card { flex: 0 0 190px; height: 210px; }
+  .collection-grid { grid-template-columns: repeat(4, 1fr); }
+  .collection-tile { height: 170px; }
+  .home-trust {
+    margin-top: 30px;
+    padding: 32px 24px;
+  }
+  .home-trust h2 { font-size: 20px; }
+  .home-trust-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+  }
+  .home-promo { height: 230px; }
+  .home-promo-content {
+    max-width: 58%;
+    padding: 26px 28px;
+  }
+  .home-promo-content strong { font-size: 24px; }
+  .home-promo-text { font-size: 13.5px; }
+  .home-newsletter { padding: 30px 24px; }
+  .home-newsletter h2 { font-size: 19px; }
+}
