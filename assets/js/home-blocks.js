@@ -8,7 +8,8 @@
    Bir blogu kaldirmak icin buradaki satirini silmek yeterli. */
 
 const HOME_BLOCK_PLACEMENT = {
-  'Günübirlik Turlar': ['promo', 'themes'],
+  'Yaklaşan Planlar': ['promo'],
+  'Günübirlik Turlar': ['themes'],
   'Aktiviteler': ['venues'],
   'Oteller': ['collectionGrid', 'newsletter', 'support']
 };
@@ -145,6 +146,7 @@ const HOME_BLOCK_MARKUP = {
      uzerine tasar. */
   promo: () => `
     <section class="section home-promo-section">
+      <div class="hscroll-wrap">
       <div class="promo-scroll">
         ${PROMO_BANDS.map(p => `
           <a class="home-promo" href="#">
@@ -158,11 +160,15 @@ const HOME_BLOCK_MARKUP = {
             </span>
           </a>`).join('')}
       </div>
+        <button class="hscroll-arrow left" type="button" data-dir="left" aria-label="Geri"><span class="icon">${svg('chevLeft')}</span></button>
+        <button class="hscroll-arrow right" type="button" data-dir="right" aria-label="İleri"><span class="icon">${svg('chevRight')}</span></button>
+      </div>
     </section>`,
 
   themes: () => `
     <section class="section home-themes">
       ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör')}
+      <div class="hscroll-wrap">
       <div class="theme-scroll">
         ${THEME_COLLECTIONS.map(c => `
           <a class="theme-card" href="#">
@@ -170,6 +176,9 @@ const HOME_BLOCK_MARKUP = {
             <span class="theme-card-shade"></span>
             <span class="theme-card-text"><strong>${c.title}</strong><span>${c.count}</span></span>
           </a>`).join('')}
+      </div>
+        <button class="hscroll-arrow left" type="button" data-dir="left" aria-label="Geri"><span class="icon">${svg('chevLeft')}</span></button>
+        <button class="hscroll-arrow right" type="button" data-dir="right" aria-label="İleri"><span class="icon">${svg('chevRight')}</span></button>
       </div>
     </section>`,
 
@@ -216,6 +225,7 @@ const HOME_BLOCK_MARKUP = {
           </div>
         </div>
 
+        <div class="home-support-row">
         <a class="home-support-phone" href="${CONTACT.phoneHref}">
           <span class="home-support-phone-icon">${svg('phone')}</span>
           <span class="home-support-phone-text">
@@ -234,6 +244,7 @@ const HOME_BLOCK_MARKUP = {
             <span class="icon">${svg('phone')}</span>
             Beni ara
           </button>
+        </div>
         </div>
 
         <form class="home-callback-form" id="homeCallbackForm" novalidate hidden>

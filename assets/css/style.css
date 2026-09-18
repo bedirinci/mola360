@@ -3249,11 +3249,17 @@ ul {
   .hscroll-arrow.right { right: -6px; }
   .hscroll-arrow .icon { width: 18px; height: 18px; }
   .hscroll-wrap.is-scrollable .h-scroll,
+  .hscroll-wrap.is-scrollable .promo-scroll,
+  .hscroll-wrap.is-scrollable .theme-scroll,
   .h-scroll.is-drag-scrollable,
   .cat-scroll.is-drag-scrollable,
+  .promo-scroll.is-drag-scrollable,
+  .theme-scroll.is-drag-scrollable,
   .filter-group.is-drag-scrollable { cursor: grab; }
   .h-scroll.is-dragging,
   .cat-scroll.is-dragging,
+  .promo-scroll.is-dragging,
+  .theme-scroll.is-dragging,
   .filter-group.is-dragging { cursor: grabbing; }
 }
 
@@ -5236,6 +5242,12 @@ ul {
   height: 18px;
   color: var(--text-faint);
 }
+.home-support-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
 .home-support-actions {
   display: flex;
   flex-direction: column;
@@ -5365,7 +5377,22 @@ ul {
   }
   .home-support { padding: 24px; }
   .home-support-head-text h2 { font-size: 19px; }
-  .home-support-actions {
+  /* Telefon satırı ve iki buton tek sırada. */
+  .home-support-row {
     flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .home-support-phone {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .home-support-actions {
+    flex: 0 1 auto;
+    flex-direction: row;
+    width: auto;
+  }
+  .home-support-btn {
+    white-space: nowrap;
   }
 }
