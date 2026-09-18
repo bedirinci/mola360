@@ -510,17 +510,58 @@ window.m360AutoHideThumb = function (thumb, options) {
   start();
 })();
 
-/* ===== image-fallback ===== */
-document.addEventListener('DOMContentLoaded',()=>{
- const fallback='https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&q=80&auto=format&fit=crop';
- document.querySelectorAll('img').forEach(img=>{
-   img.addEventListener('error',function(){
-      if(this.dataset.fallbackApplied) return;
-      this.dataset.fallbackApplied='1';
-      this.src=fallback;
-   });
- });
-});
+/* ===== image-fallback =====
+   Onceki surum dinleyicileri DOMContentLoaded'da tek tek her <img>'e
+   bagliyordu. Iki sorunu vardi:
+     1) 404 yaniti cogu zaman DOMContentLoaded'dan ONCE donuyor; dinleyici
+        takildiginda hata coktan gecmis oluyor ve kart tarayicinin kirik
+        gorsel simgesiyle kaliyordu.
+     2) Kartlarin bir kismi JS ile sonradan uretiliyor; o <img>'lere
+        dinleyici hic baglanmiyordu.
+   Cozum: yakalama (capture) asamasinda TEK bir dinleyici. error olayi
+   baloncuklanmaz ama capture asamasinda document'e ulasir; bu sayede
+   sonradan eklenen gorseller de kapsanir. Ayrica sayfa yuklendiginde
+   zaten bozulmus olanlar taranir.
+
+   Yedek gorsel artik uzaktaki bir fotograf degil, yerel ve notr bir
+   yer tutucu: olu bir URL'in yerine alakasiz bir fotograf koymak
+   sorunu gizliyordu. */
+(function () {
+  const PLACEHOLDER =
+    'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#eef1f7"/><stop offset="1" stop-color="#dfe4ee"/>' +
+      '</linearGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#g)"/>' +
+      '<g fill="none" stroke="#9aa5bd" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="152" y="116" width="96" height="72" rx="8"/>' +
+      '<circle cx="176" cy="140" r="8"/>' +
+      '<path d="M152 172l28-24 20 16 16-12 32 24"/>' +
+      '</g></svg>'
+    );
+
+  function uygula(img) {
+    if (!img || img.dataset.fallbackApplied) return;
+    img.dataset.fallbackApplied = '1';
+    img.src = PLACEHOLDER;
+  }
+
+  /* error baloncuklanmaz; capture asamasinda yakalanir. */
+  document.addEventListener('error', function (event) {
+    const hedef = event.target;
+    if (hedef && hedef.tagName === 'IMG') uygula(hedef);
+  }, true);
+
+  /* Dinleyici baglanmadan once bozulmus olanlari topla. */
+  function taramaYap() {
+    document.querySelectorAll('img').forEach(img => {
+      if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) uygula(img);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', taramaYap);
+  window.addEventListener('load', taramaYap);
+})();
 
 /* ===== filter-sheet-drag ===== */
 (function () {
