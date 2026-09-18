@@ -460,7 +460,7 @@ const cardSections = [
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
-  {title:'Yaklaşan Etkinlikler', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Etkinlik:', filterKey:'upcoming', items:[
+  {title:'Yaklaşan Etkinlikler', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Etkinlik:', filterKey:'upcoming', cardStyle:'compact', items:[
     {img:'run1', badges:['Spor'], rating:'4.6', reviews:'30+', title:'Bursa Gece Koşusu', meta1:'İznik Gölü Kıyısı · 19:00', meta2:'Bugün', priceMain:'150', inDays:0},
     {img:'theatre1', badges:['Tiyatro'], rating:'4.7', reviews:'96+', title:'7 Kocalı Hürmüz Müzikali', meta1:'Açıkhava Tiyatrosu · 20:00', meta2:'Bu Cumartesi', priceMain:'1150', inDays:1, dayKey:'cumartesi'},
     {img:'concert2', badges:['Konser'], rating:'4.9', reviews:'52+', title:'Sonbahar Caz Akşamları', meta1:'Merinos AKM · 20:00', meta2:'Bu Cumartesi', priceMain:'400', inDays:1, dayKey:'cumartesi'},
@@ -645,11 +645,36 @@ function poiCardMarkup(sec, it){
         </article>`;
 }
 
+/* Kompakt kart: gorsel uzerinde tarih rozeti, altinda tur etiketi, baslik,
+   yer ve fiyat. cardStyle:'compact' tasiyan seritlerde kullanilir. */
+function compactCardMarkup(sec, it){
+  return `
+        <article class="compact-card">
+          <div class="compact-card-media">
+            <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="" loading="lazy">
+            <span class="compact-card-when"><span class="icon">${svg('calendar')}</span>${it.meta2}</span>
+            <button class="poi-fav-btn compact-card-fav" type="button" aria-label="Favorilere ekle"><span class="icon">${svg('heart')}</span></button>
+          </div>
+          <div class="compact-card-body">
+            <div class="compact-card-top">
+              <span class="compact-card-tag">${(it.badges && it.badges[0]) || ''}</span>
+              ${it.sponsored
+                ? `<span class="compact-card-sponsored">Sponsorlu</span>`
+                : `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>`}
+            </div>
+            <h3 class="compact-card-title">${it.title}</h3>
+            <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>
+            <span class="compact-card-price">${it.priceMain} TL</span>
+          </div>
+        </article>`;
+}
+
 /* Seritteki kartlar. filterKey tasiyan seritlerde secime gore suzulur. */
 function sectionCardsMarkup(sec, filterKey){
   const items = sec.filterKey ? filterUpcomingItems(sec.items, filterKey) : sec.items;
   if (!items.length) return '<p class="section-empty">Bu seçim için uygun etkinlik yok.</p>';
-  return items.map(it => poiCardMarkup(sec, it)).join('');
+  const kart = sec.cardStyle === 'compact' ? compactCardMarkup : poiCardMarkup;
+  return items.map(it => kart(sec, it)).join('');
 }
 
 /* Baslik altindaki zaman filtresi cipleri. */
