@@ -47,22 +47,6 @@
    mobilde bu. Böylece ikisi birbirinin kurallarını ezmiyor. */
 .tour-mobile-header { display: none; }
 
-/* Sağdaki eylem ikon: geri okuyla aynı çap, böylece başlığın iki ucu
-   dengeli duruyor. Zemin ve hover ortak tanımdan geliyor. */
-.tour-mobile-action {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-.tour-mobile-action .icon,
-.tour-mobile-action svg {
-  width: 19px;
-  height: 19px;
-}
-
 @media (max-width: 680px) {
   /* Ortak site başlığı mobilde tur sayfasında hiç görünmez; yerini
      aşağıdaki tur başlığı alır. Bildirim/arama/profil katmanları
@@ -95,15 +79,6 @@
   /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;
      görünen alan eskisiyle aynı kalsın. */
   .tour-body .tour-gallery-cell { aspect-ratio: 4 / 3.6; }
-
-  /* Banner'daki paylaş mobilde gizli: paylaş zaten mobil başlıkta
-     sağdaki düğmede duruyor, ikincisi fazlalık. Favori banner'da
-     kalıyor -- mobilde asıl yeri orası.
-
-     .tour-gallery-share temel kuralı (display: flex) bu bloktan SONRA
-     geliyor ve aynı ağırlıkta; ezilmemek için .tour-body ile bir
-     basamak yükseltildi. */
-  .tour-body .tour-gallery-share { display: none; }
 
   /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
      kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez

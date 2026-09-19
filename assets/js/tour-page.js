@@ -106,10 +106,10 @@
           </button>`).join('')}
       </div>
       <div class="tour-gallery-actions">
-        <button class="tour-gallery-share" type="button" id="tourGalleryShare"
-                aria-label="Turu paylaş">${ic('share')}</button>
         <button class="tour-gallery-fav" type="button" id="tourGalleryFav"
                 aria-pressed="false" aria-label="Favorilere ekle">${ic('heart')}</button>
+        <button class="tour-gallery-share" type="button" id="tourGalleryShare"
+                aria-label="Turu paylaş">${ic('share')}</button>
       </div>
       <span class="tour-gallery-count" id="tourGalleryCount" aria-hidden="true"></span>
       <button class="tour-gallery-all" type="button" data-photo="0">
@@ -1238,10 +1238,9 @@
     }
     syncFav();
 
-    /* Paylaş iki yerde: banner'ın sağ üst köşesinde favorinin yanında
-       (masaüstü) ve mobil başlıkta sağdaki düğmede (mobil). Aynı anda
-       yalnızca biri görünür -- ikisi de aynı işi yapar, davranış tek
-       fonksiyonda. */
+    /* Paylaş tek yerde: banner'ın sağ üst köşesinde, favorinin sağında.
+       Her iki ekran boyutunda da orada; mobil başlıktaki ikinci düğme
+       kaldırıldı. */
     function paylas() {
       const veri = { title: tour.title, text: tour.tagline, url: window.location.href };
       if (navigator.share) {
@@ -1257,10 +1256,8 @@
       toast('Bu tarayıcı paylaşmayı desteklemiyor');
     }
 
-    ['tourGalleryShare', 'tourHeaderShare'].forEach(id => {
-      const btn = document.getElementById(id);
-      if (btn) btn.addEventListener('click', paylas);
-    });
+    const shareBtn = document.getElementById('tourGalleryShare');
+    if (shareBtn) shareBtn.addEventListener('click', paylas);
 
     /* Rezervasyon kartı: tek delege dinleyici, kart yeniden çizilse de
        bağlı kalır. */
