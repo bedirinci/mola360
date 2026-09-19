@@ -28,23 +28,42 @@ import {
   nextDepartureDates,
   seatsLeft,
   clampParty,
+  calcDailyTotal,
+  calcStayTotal,
+  stayRoomPlan,
+  departureCity,
   calcTotal,
+  basePrice,
+  baseListPrice,
+  stayReturnDate,
   discountPercent,
   refundTier,
   refundAmount,
   ratingSummary,
   filterReviews,
   reviewerInitials,
+  tourSlugFromPath,
   tourSlugFromQuery,
   resolveTour,
 } from '../assets/js/tour-data.js';
 
-const sayfa = readFileSync(new URL('../tur.html', import.meta.url), 'utf8');
 const sayfaJs = readFileSync(new URL('../assets/js/tour-page.js', import.meta.url), 'utf8');
 const veriJs = readFileSync(new URL('../assets/js/tour-data.js', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../assets/js/app.js', import.meta.url), 'utf8');
+const yonlendirme = readFileSync(new URL('../tur.html', import.meta.url), 'utf8');
+
+/* Her turun kendi HTML dosyası var: /tur/<slug>/index.html. Statik
+   bilgiler (H1, sekme başlığı, kırılma noktaları) elle yazıldığı için
+   aşağıdaki testler her sayfayı kendi tur kaydıyla karşılaştırır. */
+const sayfalar = Object.keys(TOURS).map(slug => ({
+  slug,
+  tur: TOURS[slug],
+  html: readFileSync(new URL('../tur/' + slug + '/index.html', import.meta.url), 'utf8')
+}));
 
 const tur = TOURS[DEFAULT_TOUR_SLUG];
+const konaklamali = TOURS['kapadokya-3-gece'];
+const sayfa = sayfalar.find(s => s.slug === DEFAULT_TOUR_SLUG).html;
 
 /* ---------------- sayi ve tarih ---------------- */
 describe('biçimlendirme', () => {
@@ -511,106 +530,179 @@ describe('tur içeriği', () => {
 });
 
 /* ---------------- sayfa ile veri arasındaki bağlar ---------------- */
-describe('tur.html ile veri bağı', () => {
+describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
   it('H1 ve alt başlık veriyle birebir aynı', () => {
-    /* Sayfada elle yazili baslik ile veri ayrisirsa arama sonucu bir sey,
-       sayfa baska bir sey soyler. */
-    expect(sayfa).toContain('<h1>' + tur.title + '</h1>');
-    expect(sayfa).toContain('<p class="tour-lead">' + tur.tagline + '</p>');
+    /* Sayfada elle yazılı başlık ile veri ayrışırsa arama sonucu bir şey,
+       sayfa başka bir şey söyler. */
+    expect(html).toContain('<h1>' + t.title + '</h1>');
+    expect(html).toContain('<p class="tour-lead">' + t.tagline + '</p>');
   });
 
   it('sekme başlığı ve açıklama dolu, tur adını taşıyor', () => {
-    const baslik = sayfa.match(/<title>([^<]+)<\/title>/)[1];
-    expect(baslik).toContain(tur.title);
-    const aciklama = sayfa.match(/<meta name="description" content="([^"]+)">/)[1];
+    const baslik = html.match(/<title>([^<]+)<\/title>/)[1];
+    expect(baslik).toContain(t.title);
+    const aciklama = html.match(/<meta name="description" content="([^"]+)">/)[1];
     expect(aciklama.length).toBeGreaterThan(80);
-    expect(aciklama.length).toBeLessThan(320);
+    expect(aciklama.length).toBeLessThan(340);
   });
 
-  it('kırılma noktası (breadcrumb) yapısal verisi sayfadaki yolla aynı', () => {
-    const ldBlok = sayfa.match(/"@type": "BreadcrumbList"[\s\S]*?\n  <\/script>/)[0];
+  it('kanonik adres ve OG adresi /tur/<slug>/ biçiminde', () => {
+    const hedef = 'https://bedirinci.github.io/mola360/tur/' + slug + '/';
+    expect(html).toContain('<link rel="canonical" href="' + hedef + '">');
+    expect(html).toContain('<meta property="og:url" content="' + hedef + '">');
+  });
+
+  it('kırılma noktası yapısal verisi görünür yolla aynı', () => {
+    const ldBlok = html.match(/"@type": "BreadcrumbList"[\s\S]*?\n  <\/script>/)[0];
     expect(ldBlok).toContain('"name": "Anasayfa"');
-    expect(ldBlok).toContain('"name": "' + tur.category + 'lar"');
-    expect(ldBlok).toContain('"name": "' + tur.title + '"');
-    /* Gorunur yol da ayni adimlari tasir. */
-    const yol = sayfa.match(/<nav class="tour-crumbs"[\s\S]*?<\/nav>/)[0];
+    expect(ldBlok).toContain('"name": "' + t.categoryPlural + '"');
+    expect(ldBlok).toContain('"name": "' + t.title + '"');
+    expect(ldBlok).toContain('/tur/' + slug + '/');
+
+    const yol = html.match(/<nav class="tour-crumbs"[\s\S]*?<\/nav>/)[0];
     expect(yol).toContain('Anasayfa');
-    expect(yol).toContain(tur.title);
+    expect(yol).toContain(t.categoryPlural);
+    expect(yol).toContain(t.title);
+    /* Orta adım anasayfadaki şeridin gerçek çapasına gider. */
+    expect(yol).toContain('#' + t.categoryAnchor);
   });
 
   it('uydurma envanter yapısal veriyle işaretlenmez', () => {
-    /* Gercek fiyat ve stok baglanana kadar Product/Offer/AggregateRating
-       eklenmemeli; gerekcesi docs/tur-sayfasi.md ve tur.html'deki not. */
-    expect(sayfa).not.toContain('"@type": "Offer"');
-    expect(sayfa).not.toContain('"@type": "AggregateRating"');
-    expect(sayfa).not.toContain('"@type": "Product"');
+    /* Gerçek fiyat ve stok bağlanana kadar Product/Offer/AggregateRating
+       eklenmemeli; gerekçesi docs/tur-sayfasi.md ve sayfadaki not. */
+    expect(html).not.toContain('"@type": "Offer"');
+    expect(html).not.toContain('"@type": "AggregateRating"');
+    expect(html).not.toContain('"@type": "Product"');
   });
 
   it('JSON-LD blokları geçerli JSON', () => {
-    const bloklar = [...sayfa.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    const bloklar = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
     expect(bloklar.length).toBeGreaterThan(0);
     bloklar.forEach(b => expect(() => JSON.parse(b[1])).not.toThrow());
-  });
-
-  it('bölüm menüsündeki her sekmenin sayfada hedefi var', () => {
-    const blok = sayfaJs.match(/const SECTIONS = \[([\s\S]*?)\n  \];/)[1];
-    const idler = [...blok.matchAll(/id:\s*'([a-z-]+)'/g)].map(m => m[1]);
-    expect(idler.length).toBeGreaterThan(4);
-    idler.forEach(id => expect(sayfa, id + ' bölümü tur.html içinde yok').toContain('id="' + id + '"'));
   });
 
   it('JS’in doldurduğu her kabın sayfada karşılığı var', () => {
     const kaplar = [...sayfaJs.matchAll(/fill\('([a-zA-Z-]+)'/g)].map(m => m[1]);
     expect(kaplar.length).toBeGreaterThan(10);
-    kaplar.forEach(id => expect(sayfa, id + ' kabı tur.html içinde yok').toContain('id="' + id + '"'));
+    /* konaklama kabı yalnızca konaklamalı turda bulunur; tour-page.js
+       sayfada karşılığı olmayan bölümü menüden de düşürür. */
+    kaplar
+      .filter(id => id !== 'konaklama' || t.type === 'stay')
+      .forEach(id => expect(html, id + ' kabı ' + slug + ' sayfasında yok').toContain('id="' + id + '"'));
+  });
+
+  it('tur tipinin gerektirdiği bölümler sayfada', () => {
+    const ortak = ['genel-bakis', 'program', 'dahil-olanlar', 'bulusma', 'bilgiler', 'yorumlar', 'sss'];
+    ortak.forEach(id => expect(html, id + ' yok').toContain('id="' + id + '"'));
+    if (t.type === 'stay') {
+      expect(html, 'konaklamalı turda konaklama bölümü yok').toContain('id="konaklama"');
+    } else {
+      expect(html, 'günübirlik turda konaklama bölümü olmamalı').not.toContain('id="konaklama"');
+    }
+  });
+
+  it('bölüm menüsündeki her sekme bir bölüm listesinden gelir', () => {
+    const blok = sayfaJs.match(/const TUM_SECTIONS = \[([\s\S]*?)\n  \];/)[1];
+    const idler = [...blok.matchAll(/id:\s*'([a-z-]+)'/g)].map(m => m[1]);
+    expect(idler.length).toBeGreaterThan(4);
+    /* Sayfada bulunan her bölüm listede olmalı, aksi hâlde menüde hiç
+       görünmez. */
+    const sayfadakiler = [...html.matchAll(/<section class="tour-block" id="([a-z-]+)"/g)].map(m => m[1]);
+    sayfadakiler.forEach(id => {
+      if (id === 'operator') return; /* menüde yer almayan blok */
+      expect(idler, id + ' TUM_SECTIONS içinde yok').toContain(id);
+    });
   });
 
   it('rezervasyon kartının iki yuvası da sayfada', () => {
-    expect(sayfa).toContain('id="tourBookingMobile"');
-    expect(sayfa).toContain('id="tourBookingDesktop"');
+    expect(html).toContain('id="tourBookingMobile"');
+    expect(html).toContain('id="tourBookingDesktop"');
+  });
+
+  it('sayfa kökü tanımlı ve varlıklar iki dizin yukarıdan geliyor', () => {
+    /* /tur/<slug>/index.html iki dizin içeride; bağlantılar bu değerden
+       kurulur, tahmin edilmez. */
+    expect(html).toContain('data-root="../../"');
+    expect(html).not.toMatch(/(?:href|src)="assets\//);
+    expect(html).not.toMatch(/href="index\.html/);
   });
 
   it('gereken betikler yüklü, anasayfaya ait olan yüklenmiyor', () => {
-    ['assets/js/home-blocks.js', 'assets/js/tour-data.js', 'assets/js/tour-page.js', 'assets/js/ui.js']
-      .forEach(src => expect(sayfa, src + ' yüklenmiyor').toContain('src="' + src + '"'));
-    /* app.js ilk satirinda anasayfanin DOM'unu arar; burada patlar. */
-    expect(sayfa).not.toContain('src="assets/js/app.js"');
+    ['home-blocks.js', 'tour-data.js', 'tour-page.js', 'ui.js']
+      .forEach(ad => expect(html, ad + ' yüklenmiyor').toContain('src="../../assets/js/' + ad + '"'));
+    /* app.js ilk satırında anasayfanın DOM'unu arar; burada patlar. */
+    expect(html).not.toContain('assets/js/app.js');
   });
 
   it('sayfa kendi stil dosyasını ve ortak stili yükler', () => {
-    expect(sayfa).toContain('href="assets/css/style.css"');
-    expect(sayfa).toContain('href="assets/css/tour.css"');
+    expect(html).toContain('href="../../assets/css/style.css"');
+    expect(html).toContain('href="../../assets/css/tour.css"');
+  });
+});
+
+describe('eski tur.html adresi', () => {
+  it('yönlendirme sayfası, içerik sayfası değil', () => {
+    expect(yonlendirme).toContain('http-equiv="refresh"');
+    expect(yonlendirme).toContain('tur/efes-sirince/');
+    expect(yonlendirme).toContain('rel="canonical"');
+    expect(yonlendirme).toContain('noindex');
+    /* İçerik sayfası olmadığından kapları da olmamalı. */
+    expect(yonlendirme).not.toContain('id="tourGallery"');
+  });
+
+  it('slug taşıyan eski adres o turun yeni adresine gider', () => {
+    /* tur.html?tur=kapadokya-3-gece -> tur/kapadokya-3-gece/ */
+    expect(yonlendirme).toMatch(/tur=\(\[\^&#\]\*\)|\[\?&\]tur=/);
+    expect(yonlendirme).toContain("window.location.replace('tur/' + slug + '/')");
   });
 });
 
 describe('anasayfa bağlantısı', () => {
-  it('tur şeridinin gerçek bir bağ hedefi var', () => {
-    expect(app).toContain("anchor:'turlar'");
-    expect(app).toContain('${sec.anchor ? ` id="${sec.anchor}"` : \'\'}');
-    expect(sayfa).toContain('index.html#turlar');
-  });
+  const kartBloku = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
+  const bagliSatirlar = kartBloku.split('\n').filter(satir => satir.includes("href:'"));
 
-  it('şerit bağ hedefleri tekil', () => {
-    const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-    const ankrajlar = [...blok.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);
+  it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
+    const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);
     expect(ankrajlar.length).toBeGreaterThan(3);
     expect(new Set(ankrajlar).size).toBe(ankrajlar.length);
+    expect(app).toContain('${sec.anchor ? ` id="${sec.anchor}"` : \'\'}');
+
+    /* Her turun kirilma noktasindaki capa anasayfada gercekten var. */
+    Object.values(TOURS).forEach(t => {
+      expect(ankrajlar, t.slug + ' için ' + t.categoryAnchor + ' çapası yok')
+        .toContain(t.categoryAnchor);
+    });
   });
 
-  it('içerik sayfasına bağlanan kart tur.html’i gösterir', () => {
-    const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-    const baglar = [...blok.matchAll(/href:'([^']+)'/g)].map(m => m[1]);
-    expect(baglar).toContain('tur.html');
-    baglar.forEach(h => expect(h).toBe('tur.html'));
+  it('her içerik sayfası anasayfadan bağlanıyor', () => {
+    const baglar = bagliSatirlar.map(satir => satir.match(/href:'([^']+)'/)[1]);
+    Object.keys(TOURS).forEach(slug => {
+      expect(baglar, slug + ' anasayfadan bağlanmıyor').toContain('tur/' + slug + '/');
+    });
+    expect(baglar).toHaveLength(Object.keys(TOURS).length);
+  });
+
+  it('bağlar /tur/<slug>/ biçiminde ve slug gerçek bir tur', () => {
+    bagliSatirlar.forEach(satir => {
+      const href = satir.match(/href:'([^']+)'/)[1];
+      expect(href, href + ' /tur/<slug>/ biçiminde değil').toMatch(/^tur\/[a-z0-9-]+\/$/);
+      const slug = href.replace(/^tur\//, '').replace(/\/$/, '');
+      expect(TOURS[slug], slug + ' TOURS içinde yok').toBeTruthy();
+      /* Adresteki slug, tur kaydındaki slug ile aynı olmalı. */
+      expect(TOURS[slug].slug).toBe(slug);
+    });
   });
 
   it('anasayfadaki fiyat tur sayfasındaki fiyatla aynı', () => {
-    /* Listede bir fiyat, detayda baska bir fiyat gormek guveni bitirir. */
-    const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-    const kart = blok.split('\n').find(satir => satir.includes("href:'tur.html'"));
-    expect(kart).toBeTruthy();
-    const fiyat = kart.match(/priceMain:'(\d+)'/)[1];
-    expect(Number(fiyat)).toBe(tur.pricing.adult);
+    /* Listede bir fiyat, detayda başka bir fiyat görmek güveni bitirir.
+       basePrice() tur tipini bilir: günübirlikte yetişkin tarifesi,
+       konaklamalıda iki kişilik odada kişi başı. */
+    bagliSatirlar.forEach(satir => {
+      const slug = satir.match(/href:'tur\/([^/]+)\//)[1];
+      const fiyat = Number(satir.match(/priceMain:'(\d+)'/)[1]);
+      expect(fiyat, slug + ' kart fiyatı tur fiyatıyla aynı değil')
+        .toBe(basePrice(TOURS[slug]));
+    });
   });
 
   it('kart başlığı bağ varken gerçek bir <a> olur', () => {
@@ -627,5 +719,325 @@ describe('anasayfa bağlantısı', () => {
     expect(basma).not.toContain('setPointerCapture');
     const hareket = app.match(/track\.addEventListener\('pointermove'[\s\S]*?\n    \}\);/)[0];
     expect(hareket).toContain('setPointerCapture');
+  });
+});
+
+/* ---------------- konaklamalı tur ---------------- */
+describe('tourSlugFromPath', () => {
+  it('/tur/<slug>/ adresinden slug okur', () => {
+    expect(tourSlugFromPath('/tur/efes-sirince/')).toBe('efes-sirince');
+    expect(tourSlugFromPath('/mola360/tur/kapadokya-3-gece/')).toBe('kapadokya-3-gece');
+    expect(tourSlugFromPath('/tur/efes-sirince/index.html')).toBe('efes-sirince');
+    expect(tourSlugFromPath('/tur/EFES-SIRINCE/')).toBe('efes-sirince');
+  });
+
+  it('tur sayfası olmayan adreslerde boş döner', () => {
+    expect(tourSlugFromPath('/mola360/index.html')).toBe('');
+    expect(tourSlugFromPath('/tur.html')).toBe('');
+    expect(tourSlugFromPath('/tur/index.html')).toBe('');
+    expect(tourSlugFromPath('')).toBe('');
+    expect(tourSlugFromPath(null)).toBe('');
+  });
+
+  it('adres slug taşımıyorsa sorgu dizisi yedeğe düşer', () => {
+    /* tour-page.js önce adrese, sonra sorguya bakar. */
+    expect(sayfaJs).toContain('tourSlugFromPath(window.location.pathname) || tourSlugFromQuery(window.location.search)');
+  });
+});
+
+describe('basePrice / baseListPrice', () => {
+  it('tur tipine göre doğru tarifeyi verir', () => {
+    expect(basePrice(tur)).toBe(tur.pricing.adult);
+    expect(baseListPrice(tur)).toBe(tur.pricing.adultList);
+    expect(basePrice(konaklamali)).toBe(konaklamali.pricing.perPerson);
+    expect(baseListPrice(konaklamali)).toBe(konaklamali.pricing.perPersonList);
+  });
+
+  it('eksik veride sıfıra düşer', () => {
+    expect(basePrice(null)).toBe(0);
+    expect(basePrice({ type: 'stay', pricing: {} })).toBe(0);
+  });
+});
+
+describe('stayReturnDate', () => {
+  it('kalkış tarihine gece sayısı eklenir', () => {
+    expect(stayReturnDate(konaklamali, '2026-10-05')).toBe('2026-10-08');
+    /* Ay sınırını geçer. */
+    expect(stayReturnDate(konaklamali, '2026-10-30')).toBe('2026-11-02');
+  });
+
+  it('günübirlik turda dönüş tarihi yok', () => {
+    expect(stayReturnDate(tur, '2026-10-05')).toBe('');
+  });
+
+  it('bozuk tarihte boş döner', () => {
+    expect(stayReturnDate(konaklamali, '')).toBe('');
+    expect(stayReturnDate(konaklamali, 'abc')).toBe('');
+  });
+});
+
+describe('departureCity', () => {
+  it('seçilen şehri döndürür', () => {
+    expect(departureCity(konaklamali, 'izm').label).toBe('İzmir');
+  });
+
+  it('seçim yok veya tanınmıyorsa ilk şehir', () => {
+    expect(departureCity(konaklamali, '').id).toBe(konaklamali.departureCities[0].id);
+    expect(departureCity(konaklamali, 'yok').id).toBe(konaklamali.departureCities[0].id);
+  });
+
+  it('şehir listesi olmayan turda null', () => {
+    expect(departureCity(tur, 'ist')).toBe(null);
+  });
+});
+
+describe('stayRoomPlan', () => {
+  it('tek yetişkinde tek kişilik oda zorunlu', () => {
+    const plan = stayRoomPlan(konaklamali, { adults: 1 });
+    expect(plan.singleRoom).toBe(true);
+    expect(plan.singleForced).toBe(true);
+    expect(plan.singleRooms).toBe(1);
+  });
+
+  it('iki yetişkinde varsayılan iki kişilik oda', () => {
+    const plan = stayRoomPlan(konaklamali, { adults: 2 });
+    expect(plan.singleRoom).toBe(false);
+    expect(plan.singleForced).toBe(false);
+    expect(plan.singleRooms).toBe(0);
+  });
+
+  it('3. kişi indirimi yalnızca üç yetişkin ve paylaşımlı odada', () => {
+    expect(stayRoomPlan(konaklamali, { adults: 3 }).thirdAdults).toBe(1);
+    expect(stayRoomPlan(konaklamali, { adults: 2 }).thirdAdults).toBe(0);
+    expect(stayRoomPlan(konaklamali, { adults: 4 }).thirdAdults).toBe(0);
+    /* Tek kişilik oda seçilirse oda paylaşımı yok, indirim de yok. */
+    expect(stayRoomPlan(konaklamali, { adults: 3, singleRoom: true }).thirdAdults).toBe(0);
+  });
+
+  it('standart ve indirimli yetişkin sayısı toplamı yetişkin sayısı', () => {
+    [1, 2, 3, 4, 5, 6].forEach(n => {
+      const plan = stayRoomPlan(konaklamali, { adults: n });
+      expect(plan.standardAdults + plan.thirdAdults).toBe(plan.adults);
+    });
+  });
+});
+
+describe('calcStayTotal', () => {
+  const p = () => konaklamali.pricing;
+
+  it('iki kişilik odada kişi başı tarifeden toplanır', () => {
+    const h = calcStayTotal(konaklamali, { adults: 2, city: 'ist' });
+    expect(h.total).toBe(2 * p().perPerson);
+    expect(h.singleTotal).toBe(0);
+    expect(h.cityTotal).toBe(0);
+  });
+
+  it('tek yetişkine oda farkı kendiliğinden eklenir', () => {
+    const h = calcStayTotal(konaklamali, { adults: 1, city: 'ist' });
+    expect(h.total).toBe(p().perPerson + p().singleSupplement);
+    expect(h.singleForced).toBe(true);
+  });
+
+  it('tek kişilik oda seçilince her yetişkine fark eklenir', () => {
+    const h = calcStayTotal(konaklamali, { adults: 3, city: 'ist', singleRoom: true });
+    expect(h.singleRooms).toBe(3);
+    expect(h.singleTotal).toBe(3 * p().singleSupplement);
+    /* Oda paylaşımı olmadığı için 3. kişi indirimi uygulanmaz. */
+    expect(h.thirdAdults).toBe(0);
+    expect(h.total).toBe(3 * p().perPerson + 3 * p().singleSupplement);
+  });
+
+  it('üç yetişkinde 3. kişi indirimli tarifeden', () => {
+    const h = calcStayTotal(konaklamali, { adults: 3, city: 'ist' });
+    expect(h.thirdAdults).toBe(1);
+    expect(h.total).toBe(2 * p().perPerson + p().thirdAdult);
+    expect(h.total).toBeLessThan(3 * p().perPerson);
+  });
+
+  it('çocuk indirimli, bebek ücretsiz', () => {
+    const h = calcStayTotal(konaklamali, { adults: 2, children: 1, infants: 1, city: 'ist' });
+    expect(h.childTotal).toBe(p().child);
+    expect(h.total).toBe(2 * p().perPerson + p().child);
+    expect(h.payingGuests).toBe(3);
+    expect(h.guests).toBe(4);
+  });
+
+  it('kalkış şehri farkı ücretli kişi başına eklenir', () => {
+    const h = calcStayTotal(konaklamali, { adults: 2, children: 1, city: 'izm' });
+    const fark = departureCity(konaklamali, 'izm').fee;
+    expect(h.cityTotal).toBe(3 * fark);
+    expect(h.city.label).toBe('İzmir');
+    /* Farkı olmayan şehirde satır hiç oluşmaz. */
+    const ist = calcStayTotal(konaklamali, { adults: 2, city: 'ist' });
+    expect(ist.lines.some(l => l.kind === 'fee')).toBe(false);
+  });
+
+  it('ek seçenekler kişi başı ve rezervasyon başı doğru çarpılır', () => {
+    const kisiBasi = konaklamali.addons.find(a => a.per === 'guest');
+    const rezervasyon = konaklamali.addons.find(a => a.per === 'booking');
+    const h = calcStayTotal(konaklamali, {
+      adults: 2, children: 1, city: 'ist', addons: [kisiBasi.id, rezervasyon.id]
+    });
+    expect(h.addonsTotal).toBe(kisiBasi.price * 3 + rezervasyon.price);
+  });
+
+  it('avantaj yalnızca indirime konu kalemlerden hesaplanır', () => {
+    /* Tek kişilik oda farkı ve şehir farkı birer ek ücret; liste fiyatı
+       karşılaştırmasına girmemeli, yoksa "avantaj" şişer. */
+    const sade = calcStayTotal(konaklamali, { adults: 2, city: 'ist' });
+    const farkli = calcStayTotal(konaklamali, { adults: 2, city: 'izm', singleRoom: true });
+    expect(farkli.saving).toBe(sade.saving);
+    expect(sade.saving).toBe(2 * (p().perPersonList - p().perPerson));
+  });
+
+  it('özet satırları toplamla tutarlı', () => {
+    const h = calcStayTotal(konaklamali, {
+      adults: 3, children: 1, infants: 1, city: 'izm', addons: ['balon', 'ozelTransfer']
+    });
+    const satirToplam = h.lines.reduce((t, l) => t + l.amount, 0);
+    expect(satirToplam).toBe(h.total);
+    expect(h.lines.every(l => l.label && typeof l.amount === 'number')).toBe(true);
+    expect(h.lines.map(l => l.kind).every(k => ['base', 'free', 'fee', 'addon'].includes(k))).toBe(true);
+  });
+
+  it('kişi sınırı konaklamalı turda da uygulanır', () => {
+    const h = calcStayTotal(konaklamali, { adults: 99, children: 99, city: 'ist' });
+    expect(h.adults + h.children).toBe(konaklamali.pricing.maxGuests);
+  });
+});
+
+describe('calcTotal tipe göre dağıtır', () => {
+  it('günübirlik tur günübirlik hesabı kullanır', () => {
+    const h = calcTotal(tur, { adults: 2 });
+    expect(h.type).toBe('daily');
+    expect(h.total).toBe(calcDailyTotal(tur, { adults: 2 }).total);
+  });
+
+  it('konaklamalı tur konaklamalı hesabı kullanır', () => {
+    const h = calcTotal(konaklamali, { adults: 2, city: 'ist' });
+    expect(h.type).toBe('stay');
+    expect(h.total).toBe(calcStayTotal(konaklamali, { adults: 2, city: 'ist' }).total);
+  });
+
+  it('iki tipte de ortak alanlar dolu', () => {
+    [tur, konaklamali].forEach(t => {
+      const h = calcTotal(t, { adults: 2 });
+      ['lines', 'subtotal', 'listSubtotal', 'saving', 'addons', 'addonsTotal', 'total', 'guests']
+        .forEach(alan => expect(h[alan], t.slug + ' -> ' + alan).not.toBe(undefined));
+      const satirToplam = h.lines.reduce((toplam, l) => toplam + l.amount, 0);
+      expect(satirToplam, t.slug + ' satır toplamı').toBe(h.total);
+    });
+  });
+});
+
+describe('konaklamalı tur içeriği', () => {
+  it('gün sayısı, gece sayısı ve program tutarlı', () => {
+    expect(konaklamali.nights).toBe(konaklamali.days - 1);
+    expect(konaklamali.program).toHaveLength(konaklamali.days);
+    konaklamali.program.forEach((gun, i) => {
+      expect(gun.day, 'gün numarası sıralı değil').toBe(i + 1);
+      expect(gun.title).toBeTruthy();
+      expect(gun.text.length).toBeGreaterThan(80);
+      expect(Array.isArray(gun.meals)).toBe(true);
+    });
+  });
+
+  it('son gün dönüş günü, diğer günler konaklamalı', () => {
+    const son = konaklamali.program[konaklamali.program.length - 1];
+    expect(son.overnight).toBe('—');
+    konaklamali.program.slice(0, -1).forEach(gun => expect(gun.overnight).not.toBe('—'));
+  });
+
+  it('konaklama bilgisi eksiksiz', () => {
+    const k = konaklamali.accommodation;
+    expect(k.board).toBeTruthy();
+    expect(k.boardNote).toBeTruthy();
+    expect(k.checkIn).toMatch(/^\d{2}:\d{2}$/);
+    expect(k.checkOut).toMatch(/^\d{2}:\d{2}$/);
+    expect(k.hotels.length).toBeGreaterThan(0);
+    /* Otellerde geçirilen gece sayısı turun gece sayısına eşit. */
+    const geceler = k.hotels.reduce((t, h) => t + h.nights, 0);
+    expect(geceler).toBe(konaklamali.nights);
+    k.hotels.forEach(h => {
+      expect(h.stars).toBeGreaterThanOrEqual(1);
+      expect(h.stars).toBeLessThanOrEqual(5);
+      expect(h.name && h.area && h.note).toBeTruthy();
+    });
+    expect(k.rooms.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('kalkış şehirlerinin kimliği tekil, farkı negatif değil', () => {
+    const idler = konaklamali.departureCities.map(c => c.id);
+    expect(new Set(idler).size).toBe(idler.length);
+    konaklamali.departureCities.forEach(c => {
+      expect(c.label).toBeTruthy();
+      expect(c.note).toBeTruthy();
+      expect(c.fee).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  it('konaklamalı fiyat kademeleri mantıklı', () => {
+    const p = konaklamali.pricing;
+    expect(p.thirdAdult).toBeLessThan(p.perPerson);
+    expect(p.child).toBeLessThan(p.thirdAdult);
+    expect(p.perPersonList).toBeGreaterThan(p.perPerson);
+    expect(p.singleSupplement).toBeGreaterThan(0);
+    expect(p.infant).toBe(0);
+    /* Konaklamalı turda bugün satılmaz: hazırlık süresi gerekiyor. */
+    expect(p.leadDays).toBeGreaterThan(1);
+  });
+
+  it('iptal basamakları günübirlikten daha uzun vadeli', () => {
+    const enUzun = Math.max.apply(null, konaklamali.cancellation.tiers.map(t => t.minHours));
+    const gunubirlik = Math.max.apply(null, tur.cancellation.tiers.map(t => t.minHours));
+    expect(enUzun).toBeGreaterThan(gunubirlik);
+  });
+
+  it('kategori bilgisi günübirlikten ayrı', () => {
+    expect(konaklamali.type).toBe('stay');
+    expect(tur.type).toBe('daily');
+    expect(konaklamali.categoryAnchor).not.toBe(tur.categoryAnchor);
+  });
+});
+
+describe('her turun ortak alanları', () => {
+  it('slug, tip, kategori ve süre etiketi dolu', () => {
+    Object.entries(TOURS).forEach(([anahtar, t]) => {
+      expect(t.slug, anahtar + ' slug anahtarla aynı değil').toBe(anahtar);
+      expect(['daily', 'stay'], anahtar).toContain(t.type);
+      ['title', 'tagline', 'category', 'categoryPlural', 'categoryAnchor', 'durationLabel', 'code']
+        .forEach(alan => expect(String(t[alan] || '').length, anahtar + '.' + alan + ' boş').toBeGreaterThan(0));
+      expect(t.pricing.departureNote, anahtar + ' kalkış notu yok').toBeTruthy();
+    });
+  });
+
+  it('tur kodları tekil', () => {
+    const kodlar = Object.values(TOURS).map(t => t.code);
+    expect(new Set(kodlar).size).toBe(kodlar.length);
+  });
+
+  it('her turun görsel anahtarları kayıtlı', () => {
+    Object.entries(TOURS).forEach(([anahtar, t]) => {
+      const kullanilan = t.gallery.map(g => g.key).concat(t.similar.map(x => x.key));
+      const eksik = kullanilan.filter(k => !TOUR_IMAGE_FILES[k]);
+      expect(eksik, anahtar + ' kayıtsız görsel: ' + eksik.join(', ')).toEqual([]);
+    });
+  });
+
+  it('benzer turlardaki slug gerçek bir tur ve kendisi değil', () => {
+    Object.entries(TOURS).forEach(([anahtar, t]) => {
+      t.similar.filter(x => x.slug).forEach(x => {
+        expect(TOURS[x.slug], anahtar + ' -> ' + x.slug + ' yok').toBeTruthy();
+        expect(x.slug, anahtar + ' kendine benzer tur olarak bağlanmış').not.toBe(anahtar);
+        /* Kart fiyatı hedef turun fiyatıyla aynı olmalı. */
+        expect(x.price, anahtar + ' -> ' + x.slug + ' fiyatı tutmuyor').toBe(basePrice(TOURS[x.slug]));
+      });
+    });
+  });
+
+  it('turlar birbirine bağlı (çapraz bağlantı var)', () => {
+    Object.values(TOURS).forEach(t => {
+      expect(t.similar.some(x => x.slug), t.slug + ' başka bir tur sayfasına hiç bağlanmıyor').toBe(true);
+    });
   });
 });

@@ -25,6 +25,13 @@ const TOUR_IMAGE_FILES = {
   meryemAna:      { dosya: 'House of the Virgin Mary Ephesus.jpg', ad: 'Meryem Ana Evi' },
   artemis:        { dosya: 'Temple of Artemis Ephesus.jpg',        ad: 'Artemis Tapınağı' },
   sirince:        { dosya: 'Sirince Izmir Turkey.jpg',             ad: 'Şirince Köyü' },
+  /* Kapadokya turu */
+  kapadokyaBalon: { dosya: 'Hot air balloons in Cappadocia.jpg',   ad: 'Kapadokya — sabah balonları' },
+  balonUcus:      { dosya: 'Hot air balloon ride at sunrise in Cappadocia 2.JPG', ad: 'Gün doğumunda balon uçuşu' },
+  goreme:         { dosya: 'Goreme Open Air Museum.jpg',           ad: 'Göreme Açık Hava Müzesi' },
+  ihlara:         { dosya: 'Ihlara Valley.jpg',                    ad: 'Ihlara Vadisi' },
+  derinkuyu:      { dosya: 'Derinkuyu Underground City.jpg',       ad: 'Derinkuyu Yeraltı Şehri' },
+  uchisar:        { dosya: 'Uchisar Castle Cappadocia.jpg',        ad: 'Uçhisar Kalesi' },
   /* Benzer turlar şeridi: dosya adları cardImages'tekilerle birebir aynı. */
   pamukkale:      { dosya: 'Pamukkale Travertines.jpg',            ad: 'Pamukkale travertenleri' },
   alacati:        { dosya: 'Alaçatı değirmenler 01.jpg',           ad: 'Alaçatı değirmenleri' },
@@ -64,6 +71,9 @@ const TOUR_ICONS = {
   star:       '<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"/>',
   heart:      '<path d="M12 20.5s-7.5-4.6-10-9.3C0.4 8 2 4.5 5.6 4c2.1-0.3 4 0.7 6.4 3 2.4-2.3 4.3-3.3 6.4-3C21.9 4.5 23.6 8 22 11.2c-2.5 4.7-10 9.3-10 9.3z"/>',
   mapPin:     '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.6"/>',
+  /* home: konaklama kavramina ait (otel, oda duzeni, o gece nerede
+     kalindigi). Anasayfadaki "Oteller" seridiyle ayni cizim. */
+  home:       '<path d="M3.5 11 12 3.5 20.5 11"/><path d="M5.5 9.8V20h13V9.8"/>',
   clock:      '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>',
   calendar:   '<rect x="3" y="5" width="18" height="16" rx="2.5"/><line x1="8" y1="3" x2="8" y2="7.5"/><line x1="16" y1="3" x2="16" y2="7.5"/><line x1="3" y1="10" x2="21" y2="10"/>',
   users:      '<circle cx="9" cy="8" r="3.6"/><path d="M2.5 20c0-3.6 3-5.6 6.5-5.6s6.5 2 6.5 5.6"/><path d="M16.4 5.3a3.4 3.4 0 0 1 0 6.5"/><path d="M18 14.7c2.1.6 3.5 2.3 3.5 5.3"/>',
@@ -210,12 +220,25 @@ function clampParty(tour, party) {
   return { adults: yetiskin, children: cocuk, infants: bebek };
 }
 
-/* Ek seçenek "guest" ise ücretli kişi sayısıyla, "booking" ise bir kez
-   çarpılır. Bebekler ücretli sayılmaz. */
-function calcTotal(tour, secim) {
+/* Seçili ek seçenekleri tutara çevirir: "guest" ücretli kişi sayısıyla,
+   "booking" bir kez çarpılır. İki tur tipi de aynı kuralı kullanıyor. */
+function addonLines(tour, secim, payingGuests) {
+  const secilen = Array.isArray(secim && secim.addons) ? secim.addons : [];
+  return ((tour && tour.addons) || [])
+    .filter(a => secilen.indexOf(a.id) !== -1)
+    .map(a => ({
+      id: a.id,
+      label: a.label,
+      kind: 'addon',
+      amount: a.per === 'guest' ? (Number(a.price) || 0) * payingGuests : (Number(a.price) || 0)
+    }));
+}
+
+/* Günübirlik tur: kişi başı tek tarife, oda yok.
+   Bebekler ücretli sayılmaz. */
+function calcDailyTotal(tour, secim) {
   const p = (tour && tour.pricing) || {};
   const party = clampParty(tour, secim);
-  const secilen = Array.isArray(secim && secim.addons) ? secim.addons : [];
   const ucretliKisi = party.adults + party.children;
 
   const yetiskinToplam = party.adults * (Number(p.adult) || 0);
@@ -225,16 +248,24 @@ function calcTotal(tour, secim) {
   const listeToplam = party.adults * (Number(p.adultList) || Number(p.adult) || 0)
     + party.children * (Number(p.childList) || Number(p.child) || 0);
 
-  const ekler = ((tour && tour.addons) || [])
-    .filter(a => secilen.indexOf(a.id) !== -1)
-    .map(a => ({
-      id: a.id,
-      label: a.label,
-      amount: a.per === 'guest' ? (Number(a.price) || 0) * ucretliKisi : (Number(a.price) || 0)
-    }));
+  const ekler = addonLines(tour, secim, ucretliKisi);
   const eklerToplam = ekler.reduce((toplam, a) => toplam + a.amount, 0);
 
+  /* Ozet satirlari burada kurulur, isaretlemede degil: ekranda gorunen
+     dokum ile hesaplanan tutar ayni kaynaktan gelsin. */
+  const satirlar = [
+    { label: 'Yetişkin × ' + party.adults, amount: yetiskinToplam, kind: 'base' }
+  ];
+  if (party.children) {
+    satirlar.push({ label: 'Çocuk × ' + party.children, amount: cocukToplam, kind: 'base' });
+  }
+  if (party.infants) {
+    satirlar.push({ label: 'Bebek × ' + party.infants, amount: 0, kind: 'free' });
+  }
+  ekler.forEach(a => satirlar.push(a));
+
   return {
+    type: 'daily',
     adults: party.adults,
     children: party.children,
     infants: party.infants,
@@ -247,8 +278,178 @@ function calcTotal(tour, secim) {
     saving: Math.max(0, listeToplam - araToplam),
     addons: ekler,
     addonsTotal: eklerToplam,
+    lines: satirlar,
     total: araToplam + eklerToplam
   };
+}
+
+/* ---------------- konaklamalı tur fiyatı ----------------
+   Bu turlar kişi başı DEĞİL, "iki kişilik odada kişi başı" satılıyor.
+   Dört kural var ve her biri ayrı ayrı test ediliyor:
+
+   perPerson        iki kişilik odada kişi başı temel fiyat
+   singleSupplement tek kişilik odada kalan her yetişkin için ek
+   thirdAdult       üç kişilik odadaki 3. yetişkinin indirimli fiyatı
+   child            ailesiyle aynı odada kalan çocuk (yatak ilavesi)
+
+   Kalkış şehri farkı (cityFee) ücretli kişi başına eklenir. */
+
+/* Oda düzeni tek yerde hesaplanır: hem rezervasyon kartındaki açıklama
+   hem tutar bu fonksiyondan besleniyor. */
+function stayRoomPlan(tour, secim) {
+  const party = clampParty(tour, secim);
+  /* Tek yetişkin tek kişilik odada kalır; bu bir tercih değil, sonuç.
+     Arayüzde onay kutusu bu durumda işaretli ve pasif görünür. */
+  const zorunlu = party.adults === 1;
+  const tekOda = zorunlu || !!(secim && secim.singleRoom);
+  /* 3. kişi indirimi yalnızca tek bir üç kişilik odada geçerli. Herkes
+     tek kişilik odada kalıyorsa oda paylaşımı yok, indirim de yok. */
+  const ucuncu = (!tekOda && party.adults === 3) ? 1 : 0;
+
+  return {
+    adults: party.adults,
+    children: party.children,
+    infants: party.infants,
+    singleRoom: tekOda,
+    singleForced: zorunlu,
+    singleRooms: tekOda ? party.adults : 0,
+    thirdAdults: ucuncu,
+    standardAdults: party.adults - ucuncu
+  };
+}
+
+/* Seçili kalkış şehri kaydı; seçim yoksa veya tanınmıyorsa ilk şehir. */
+function departureCity(tour, cityId) {
+  const liste = (tour && tour.departureCities) || [];
+  if (!liste.length) return null;
+  const id = String(cityId || '');
+  for (let i = 0; i < liste.length; i++) {
+    if (liste[i].id === id) return liste[i];
+  }
+  return liste[0];
+}
+
+function calcStayTotal(tour, secim) {
+  const p = (tour && tour.pricing) || {};
+  const oda = stayRoomPlan(tour, secim);
+  const ucretliKisi = oda.adults + oda.children;
+  const sehir = departureCity(tour, secim && secim.city);
+  const sehirFarki = sehir ? (Number(sehir.fee) || 0) : 0;
+
+  const temelYetiskin = oda.standardAdults * (Number(p.perPerson) || 0);
+  const ucuncuToplam = oda.thirdAdults * (Number(p.thirdAdult) || Number(p.perPerson) || 0);
+  const cocukToplam = oda.children * (Number(p.child) || 0);
+  const tekOdaToplam = oda.singleRooms * (Number(p.singleSupplement) || 0);
+  const sehirToplam = ucretliKisi * sehirFarki;
+
+  const araToplam = temelYetiskin + ucuncuToplam + cocukToplam + tekOdaToplam + sehirToplam;
+
+  /* Liste fiyatı karşılaştırması yalnızca indirime konu olan kalemler
+     üzerinden yapılır; tek kişilik oda farkı ve şehir farkı birer ek
+     ücret, indirimli fiyat değil. */
+  const listeToplam = oda.standardAdults * (Number(p.perPersonList) || Number(p.perPerson) || 0)
+    + oda.thirdAdults * (Number(p.thirdAdultList) || Number(p.thirdAdult) || 0)
+    + oda.children * (Number(p.childList) || Number(p.child) || 0);
+  const indirimeKonu = temelYetiskin + ucuncuToplam + cocukToplam;
+
+  const ekler = addonLines(tour, secim, ucretliKisi);
+  const eklerToplam = ekler.reduce((toplam, a) => toplam + a.amount, 0);
+
+  const satirlar = [];
+  if (oda.standardAdults) {
+    satirlar.push({
+      label: 'Yetişkin × ' + oda.standardAdults
+        + (oda.singleRoom ? ' (tek kişilik oda)' : ' (2 kişilik oda)'),
+      amount: temelYetiskin,
+      kind: 'base'
+    });
+  }
+  if (oda.thirdAdults) {
+    satirlar.push({ label: '3. kişi (3 kişilik oda, indirimli)', amount: ucuncuToplam, kind: 'base' });
+  }
+  if (oda.children) {
+    satirlar.push({
+      label: 'Çocuk × ' + oda.children + ' (ailesiyle aynı oda)',
+      amount: cocukToplam,
+      kind: 'base'
+    });
+  }
+  if (oda.infants) {
+    satirlar.push({ label: 'Bebek × ' + oda.infants, amount: 0, kind: 'free' });
+  }
+  if (tekOdaToplam) {
+    satirlar.push({
+      label: 'Tek kişilik oda farkı × ' + oda.singleRooms,
+      amount: tekOdaToplam,
+      kind: 'fee'
+    });
+  }
+  if (sehirToplam) {
+    satirlar.push({
+      label: sehir.label + ' çıkışı farkı × ' + ucretliKisi,
+      amount: sehirToplam,
+      kind: 'fee'
+    });
+  }
+  ekler.forEach(a => satirlar.push(a));
+
+  return {
+    type: 'stay',
+    adults: oda.adults,
+    children: oda.children,
+    infants: oda.infants,
+    payingGuests: ucretliKisi,
+    guests: ucretliKisi + oda.infants,
+    singleRoom: oda.singleRoom,
+    singleForced: oda.singleForced,
+    singleRooms: oda.singleRooms,
+    thirdAdults: oda.thirdAdults,
+    standardAdults: oda.standardAdults,
+    city: sehir,
+    adultTotal: temelYetiskin + ucuncuToplam,
+    childTotal: cocukToplam,
+    singleTotal: tekOdaToplam,
+    cityTotal: sehirToplam,
+    subtotal: araToplam,
+    listSubtotal: listeToplam,
+    saving: Math.max(0, listeToplam - indirimeKonu),
+    addons: ekler,
+    addonsTotal: eklerToplam,
+    lines: satirlar,
+    total: araToplam + eklerToplam
+  };
+}
+
+/* Tek giriş noktası: işaretleme hangi tur tipiyle çalıştığını bilmek
+   zorunda kalmaz, dönen nesnenin ortak alanları (lines, subtotal,
+   saving, total, guests) iki tipte de aynı. */
+function calcTotal(tour, secim) {
+  return (tour && tour.type === 'stay')
+    ? calcStayTotal(tour, secim)
+    : calcDailyTotal(tour, secim);
+}
+
+/* Kartlarda ve rezervasyon kartinda gorunen buyuk fiyat. Gunubirlikte
+   yetiskin tarifesi, konaklamalida iki kisilik odada kisi basi; cagiran
+   taraf tur tipini bilmek zorunda kalmasin. */
+function basePrice(tour) {
+  const p = (tour && tour.pricing) || {};
+  return Number(tour && tour.type === 'stay' ? p.perPerson : p.adult) || 0;
+}
+
+function baseListPrice(tour) {
+  const p = (tour && tour.pricing) || {};
+  return Number(tour && tour.type === 'stay' ? p.perPersonList : p.adultList) || 0;
+}
+
+/* Konaklamali turda kalkis tarihinden donus tarihi: gece sayisi kadar
+   sonrasi. Gunubirlik turda donus ayni gun oldugu icin bos doner. */
+function stayReturnDate(tour, iso) {
+  if (!tour || tour.type !== 'stay') return '';
+  const d = asDate(iso);
+  if (!d) return '';
+  const gece = Math.max(0, Math.round(Number(tour.nights) || 0));
+  return toISODate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + gece));
 }
 
 function discountPercent(listPrice, price) {
@@ -317,8 +518,25 @@ function reviewerInitials(name) {
     .join('');
 }
 
-/* ?tur=efes-sirince -> "efes-sirince". URLSearchParams yerine düz regex:
-   fonksiyon saf kalıyor, test için tarayıcı nesnesi gerekmiyor. */
+/* /mola360/tur/kapadokya-3-gece/ -> "kapadokya-3-gece"
+   Sayfalar artık /tur/<slug>/ adresinde duruyor; slug adresin kendisinden
+   okunuyor. Depo adı, alt dizin veya sondaki index.html fark etmiyor. */
+function tourSlugFromPath(pathname) {
+  const m = String(pathname || '').match(/\/tur\/([^/?#]+)/);
+  if (!m) return '';
+  const parca = m[1];
+  /* /tur/index.html gibi bir adres tur slug'ı değildir. */
+  if (/\.html?$/i.test(parca)) return '';
+  try {
+    return decodeURIComponent(parca).trim().toLowerCase();
+  } catch (_) {
+    return '';
+  }
+}
+
+/* ?tur=efes-sirince -> "efes-sirince". Eski adresler (tur.html?tur=...)
+   için duruyor. URLSearchParams yerine düz regex: fonksiyon saf kalıyor,
+   test için tarayıcı nesnesi gerekmiyor. */
 function tourSlugFromQuery(query) {
   const m = String(query || '').match(/[?&]tur=([^&#]*)/);
   if (!m) return '';
@@ -341,10 +559,15 @@ function tourSlugFromQuery(query) {
 const TOURS = {
   'efes-sirince': {
     slug: 'efes-sirince',
+    type: 'daily',
     title: 'Efes Antik Kenti, Meryem Ana Evi ve Şirince Turu',
     tagline: 'İzmir çıkışlı tam gün, küçük grup, lisanslı rehber',
     category: 'Günübirlik Tur',
-    categoryHref: 'index.html#turlar',
+    categoryPlural: 'Günübirlik Turlar',
+    categoryAnchor: 'turlar',
+    /* Baslik satirinda ve program basliginda gecen sure metni. Daha once
+       facts[0].value okunuyordu; sira degisince kirilmasin diye ayri. */
+    durationLabel: '9 saat',
     area: 'Selçuk, İzmir',
     region: 'Ege',
     code: 'MLA-EFS-01',
@@ -488,7 +711,9 @@ const TOURS = {
       /* Date.getDay(): 0 pazar, 2 salı, 4 perşembe, 6 cumartesi */
       departureDays: [2, 4, 6, 0],
       leadDays: 1,
-      startTime: '08:15'
+      startTime: '08:15',
+      /* Tarih alaninin altinda gorunen kalkis notu. */
+      departureNote: 'Salı, Perşembe, Cumartesi, Pazar'
     },
 
     addons: [
@@ -570,11 +795,285 @@ const TOURS = {
       about: 'İzmir merkezli, yalnızca Ege rotalarında çalışan küçük grup operatörü. Rehberlerin tamamı profesyonel turist rehberi belgesine sahiptir.'
     },
 
+    /* slug tasiyan kayit gercek bir icerik sayfasina gider; tasimayan
+       kayit anasayfaya. Yeni sayfa yazildikca slug eklenir. */
     similar: [
+      { key: 'kapadokyaBalon', slug: 'kapadokya-3-gece', title: 'Kapadokya Turu — 3 Gece 4 Gün', meta: 'Uçaklı · 3 gece', rating: '4.7', price: 8990 },
       { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
       { key: 'alacati',   title: 'Alaçatı ve Çeşme Turu',        meta: 'İzmir çıkışlı · 8 saat',  rating: '4.6', price: 990 },
-      { key: 'bodrum',    title: 'Bodrum Tekne Turu',            meta: 'Bodrum çıkışlı · 6 saat', rating: '4.8', price: 1150 },
-      { key: 'kemeralti', title: 'İzmir Şehir Turu: Kemeraltı ve Konak', meta: 'İzmir çıkışlı · 5 saat', rating: '4.5', price: 690 }
+      { key: 'bodrum',    title: 'Bodrum Tekne Turu',            meta: 'Bodrum çıkışlı · 6 saat', rating: '4.8', price: 1150 }
+    ]
+  },
+
+  /* ---- Konaklamalı tur ----
+     Günübirlikten farkı yalnızca uzunluk değil: program gün gün akar
+     (itinerary yerine program), konaklama ve pansiyon bilgisi var, fiyat
+     kişi başı değil "iki kişilik odada kişi başı" ve üstüne tek kişilik
+     oda farkı ile kalkış şehri farkı biniyor. Kurallar calcStayTotal
+     içinde, hepsi ayrı ayrı test ediliyor. */
+  'kapadokya-3-gece': {
+    slug: 'kapadokya-3-gece',
+    type: 'stay',
+    title: 'Kapadokya Turu — 3 Gece 4 Gün',
+    tagline: 'Uçaklı, Göreme’de mağara otel, üç tam gün rehberli program',
+    category: 'Konaklamalı Tur',
+    categoryPlural: 'Konaklamalı Turlar',
+    categoryAnchor: 'konaklamali-turlar',
+    durationLabel: '3 gece 4 gün',
+    nights: 3,
+    days: 4,
+    area: 'Göreme, Nevşehir',
+    region: 'İç Anadolu',
+    code: 'MLA-KPD-04',
+
+    badges: [
+      { icon: 'bolt',    label: 'Anında onay' },
+      { icon: 'refresh', label: '21 güne kadar ücretsiz iptal' },
+      { icon: 'users',   label: 'En fazla 18 kişi' },
+      { icon: 'shield',  label: 'Uçak bileti dahil' }
+    ],
+
+    facts: [
+      { icon: 'calendar', label: 'Süre',       value: '3 gece 4 gün',     note: '3 tam gün program' },
+      { icon: 'bus',      label: 'Ulaşım',     value: 'Uçak + klimalı araç', note: 'Transferler dahil' },
+      { icon: 'home',     label: 'Konaklama',  value: 'Mağara otel',      note: 'Göreme merkez, 3 gece' },
+      { icon: 'food',     label: 'Pansiyon',   value: 'Oda + kahvaltı',   note: '1 öğle yemeği dahil' },
+      { icon: 'users',    label: 'Grup',       value: 'En fazla 18 kişi', note: 'Küçük grup' },
+      { icon: 'globe',    label: 'Dil',        value: 'Türkçe, İngilizce', note: 'Lisanslı rehber' }
+    ],
+
+    gallery: [
+      { key: 'kapadokyaBalon', caption: 'Göreme üzerinde sabah balonları' },
+      { key: 'goreme',         caption: 'Göreme Açık Hava Müzesi' },
+      { key: 'ihlara',         caption: 'Ihlara Vadisi’nde ırmak boyu yürüyüş' },
+      { key: 'uchisar',        caption: 'Uçhisar Kalesi' },
+      { key: 'derinkuyu',      caption: 'Derinkuyu Yeraltı Şehri' },
+      { key: 'balonUcus',      caption: 'Gün doğumunda balon uçuşu' }
+    ],
+
+    highlights: [
+      'Üç tam günde Kapadokya’nın kuzeyi ve güneyi: Göreme, Zelve, Ihlara, Derinkuyu',
+      'Kayaya oyulmuş mağara otelde 3 gece — terasından sabah balonları',
+      'Ihlara Vadisi’nde ırmak boyunca 3 kilometre yürüyüş, vadi içinde öğle yemeği',
+      'Derinkuyu Yeraltı Şehri ve Selime Katedrali lisanslı rehberle',
+      'Gidiş-dönüş uçak bileti ve tüm havalimanı transferleri fiyata dahil',
+      'Balon turu, Türk gecesi ve ATV safari isteğe bağlı eklenebilir'
+    ],
+
+    description: [
+      'Kapadokya üç günde gezilebilecek kadar küçük, ama tek günde anlaşılamayacak kadar katmanlı bir yer. Volkanik tüf, milyonlarca yılda rüzgârla oyulmuş; sonra insan gelip aynı kayanın içine kilise, ev ve sekiz katlı şehir kazımış. Bu tur bölgeyi coğrafi olarak ikiye bölüyor: ikinci gün kuzey, üçüncü gün güney. Böylece her gün araçta geçen süre kısa kalıyor, gezilen yerde geçen süre uzuyor.',
+      'Konaklama Göreme merkezde, kayaya oyulmuş odaları olan bir mağara otelde. Bu tercih manzara için değil pratik: balonlar Göreme üzerinden kalkıyor, otelin terası sabah beş buçukta gökyüzü dolduğunda en iyi seyir noktası oluyor. Üç gece aynı otelde kalınıyor, yani bavul bir kez açılıyor.',
+      'Balon turu fiyata dahil değil, bilerek. Uçuşlar hava koşullarına bağlı ve iptal oranı yüksek; pakete gömülü olsaydı iptal hâlinde tüm turun fiyatını yeniden hesaplamak gerekirdi. Ayrı seçenek olarak eklendiğinde uçuş yapılamazsa yalnızca o kalem iade ediliyor, programın kalanı aynen işliyor.'
+    ],
+
+    /* Gün gün program. meals o gün fiyata dahil olan öğünler,
+       overnight o gece nerede kalındığı. */
+    program: [
+      { day: 1, title: 'Uçuş ve Göreme’ye yerleşme',
+        meals: ['—'], overnight: 'Göreme',
+        text: 'Sabah uçuşuyla Kayseri veya Nevşehir’e varış, havalimanından otele transfer. Öğleden sonra Göreme merkezinde serbest zaman; isteyenler Güvercinlik Vadisi’nin seyir terasına yürüyebilir. Akşam rehber otelde toplanıp ertesi günün programını anlatır.' },
+      { day: 2, title: 'Kuzey Kapadokya: Göreme, Zelve, Paşabağ, Avanos',
+        meals: ['Kahvaltı'], overnight: 'Göreme',
+        text: 'Göreme Açık Hava Müzesi’nde fresk kiliseleri, Zelve Vadisi’nin üç kanyonu, Paşabağ’ın peri bacaları ve Devrent Vadisi. Öğleden sonra Avanos’ta çömlek atölyesi ve Kızılırmak kıyısında mola. Akşam isteğe bağlı Türk gecesi programı.' },
+      { day: 3, title: 'Güney Kapadokya: Ihlara, Belisırma, Derinkuyu',
+        meals: ['Kahvaltı', 'Öğle yemeği'], overnight: 'Göreme',
+        text: 'Ihlara Vadisi’ne 400 basamaklı inişin ardından ırmak boyunca 3 kilometrelik yürüyüş, Belisırma’da vadi içinde öğle yemeği. Ardından Derinkuyu Yeraltı Şehri’nin gezilebilen katları ve Selime Katedrali. Dönüşte gün batımı molası.' },
+      { day: 4, title: 'Balon (isteğe bağlı), Uçhisar ve dönüş',
+        meals: ['Kahvaltı'], overnight: '—',
+        text: 'Balon turu alan misafirler gün doğumundan önce otelden alınır. Kahvaltının ardından Uçhisar Kalesi ve Kırmızı Vadi fotoğraf molası; öğleden sonra havalimanına transfer ve dönüş uçuşu.' }
+    ],
+
+    accommodation: {
+      board: 'Oda + kahvaltı',
+      boardNote: 'Üç kahvaltı dahil. Üçüncü gün Ihlara Vadisi’nde öğle yemeği de fiyata dahil; diğer öğünler size ait.',
+      checkIn: '14:00',
+      checkOut: '11:00',
+      hotels: [
+        { name: 'Göreme Mağara Konağı', area: 'Göreme, Nevşehir', stars: 4, nights: 3,
+          note: 'Kayaya oyulmuş odalar, taş avlu ve balon manzaralı teras. Göreme merkezine yürüme mesafesi.' }
+      ],
+      rooms: [
+        { label: '2 kişilik oda', text: 'Fiyatın temeli. Çift kişilik veya iki ayrı yatak, rezervasyon notuyla seçilir.' },
+        { label: '3 kişilik oda', text: 'İlave yatak. 3. yetişkin indirimli tarifeden katılır.' },
+        { label: 'Tek kişilik oda', text: 'Tek kişilik oda farkı uygulanır; tek başına katılanlar için zorunlu.' }
+      ]
+    },
+
+    included: [
+      'Gidiş-dönüş uçak bileti (İstanbul ve İzmir çıkışlı)',
+      'Havalimanı – otel transferleri',
+      'Mağara otelde 3 gece konaklama, oda + kahvaltı',
+      'Lisanslı profesyonel rehber — üç tam gün',
+      'Klimalı araçla tüm tur programı',
+      'Göreme Açık Hava Müzesi, Zelve ve Derinkuyu giriş ücretleri',
+      'Ihlara Vadisi’nde öğle yemeği (3. gün)',
+      'Zorunlu seyahat sigortası'
+    ],
+
+    excluded: [
+      'Sıcak hava balonu turu — rezervasyonda eklenebilir',
+      'Türk gecesi programı ve ATV safari (isteğe bağlı)',
+      'Tek kişilik oda farkı',
+      'Programda yazmayan öğle ve akşam yemekleri',
+      'Kişisel harcamalar, içecekler ve bahşiş'
+    ],
+
+    /* Kalkış şehri farkı ücretli kişi başına eklenir; fee 0 olan şehirde
+       özet satırı hiç görünmez. */
+    departureCities: [
+      { id: 'ist', label: 'İstanbul', fee: 0,   note: 'IST veya SAW, sabah uçuşu' },
+      { id: 'izm', label: 'İzmir',    fee: 350, note: 'ADB, sabah uçuşu' },
+      { id: 'ank', label: 'Ankara',   fee: 0,   note: 'Otobüslü transfer, 4,5 saat' }
+    ],
+
+    meeting: {
+      title: 'Kalkış şehrinizin havalimanı buluşma noktası',
+      address: 'İstanbul Havalimanı, Dış Hatlar Gidiş, F kapısı — mola360 tabelalı buluşma noktası',
+      note: 'Rehber uçuştan iki saat önce buluşma noktasında olur. Kalkış şehrinizi rezervasyonda seçtiğiniz için kesin saat, kapı ve uçuş numarası e-biletinizde ayrıca yazar. Ankara çıkışında buluşma AŞTİ’de, otobüslü transfer olarak yapılır.',
+      mapUrl: 'https://www.google.com/maps/search/?api=1&query=%C4%B0stanbul%20Havaliman%C4%B1%20D%C4%B1%C5%9F%20Hatlar%20Gidi%C5%9F',
+      points: [
+        { time: '04:40', name: 'İstanbul Havalimanı — F kapısı', detail: '06:40 uçuşu için iki saat önce' },
+        { time: '05:10', name: 'İzmir Adnan Menderes — Dış Hatlar', detail: '07:10 uçuşu için' },
+        { time: '06:30', name: 'Ankara AŞTİ — 12 numaralı peron', detail: 'Otobüslü transfer, 4,5 saat' }
+      ],
+      dropoff: 'Dönüş 4. günün akşamı, bindiğiniz havalimanında biter.'
+    },
+
+    bring: [
+      'Yürüyüş için kaygan olmayan tabanlı rahat ayakkabı',
+      'Balon turu alanlar için rüzgâr geçirmeyen bir üstlük (sabah serin)',
+      'Şapka ve güneş kremi — vadilerde gölge az',
+      'Kimlik veya pasaport (uçuş için zorunlu)',
+      'Yeraltı şehri için küçük bir el feneri isteğe bağlı'
+    ],
+
+    important: [
+      'Balon turu tamamen hava koşullarına bağlıdır. Uçuş yapılamazsa yalnızca balon ücreti iade edilir, turun kalanı programa göre işler.',
+      'Ihlara Vadisi’ne iniş 400 basamaktır ve asansör yoktur; hareket kısıtı olan misafirler vadi girişinde bekleyip Belisırma’da gruba katılabilir.',
+      'Derinkuyu Yeraltı Şehri’nde geçitler dar ve basıktır; kapalı alan rahatsızlığı olanlar için uygun değildir.',
+      'Mağara odalar taş yapı olduğu için serin ve nemlidir. Bu bir tercih meselesi; standart oda isteyen misafirler rezervasyon notuna yazabilir.',
+      'Uçak bileti ad soyad üzerine kesilir; rezervasyon sonrası ad değişikliği havayolunun kuralına tabidir ve ek ücretli olabilir.'
+    ],
+
+    cancellation: {
+      tiers: [
+        { minHours: 504, rate: 1,   label: '21 gün ve öncesi',    text: 'Ücretin tamamı iade edilir.' },
+        { minHours: 336, rate: 0.7, label: '14 – 21 gün arası',   text: 'Ücretin %70’i iade edilir.' },
+        { minHours: 168, rate: 0.4, label: '7 – 14 gün arası',    text: 'Ücretin %40’ı iade edilir.' },
+        { minHours: 0,   rate: 0,   label: 'Son 7 gün',           text: 'İade yapılmaz; ad değişikliği için destek hattını arayın.' }
+      ],
+      note: 'Uçuş havayolu tarafından iptal edilir veya tur mola360 tarafından iptal edilirse ücretin tamamı iade edilir; dilerseniz başka bir kalkış tarihine aktarılır.',
+      exampleTotal: 8990
+    },
+
+    pricing: {
+      /* Konaklamalı turda temel fiyat "iki kişilik odada kişi başı". */
+      perPerson: 8990,
+      perPersonList: 10900,
+      thirdAdult: 7490,
+      thirdAdultList: 8900,
+      child: 5990,
+      childList: 7200,
+      infant: 0,
+      singleSupplement: 2400,
+      childAges: '2 – 11 yaş',
+      infantAges: '0 – 1 yaş',
+      maxGuests: 6,
+      maxInfants: 2,
+      unitNote: '2 kişilik odada kişi başı',
+      seatsPerDeparture: 18,
+      /* Pazartesi ve perşembe kalkışlı. */
+      departureDays: [1, 4],
+      leadDays: 3,
+      startTime: '06:40',
+      departureNote: 'Pazartesi ve Perşembe kalkışlı'
+    },
+
+    addons: [
+      { id: 'balon',        per: 'guest',   price: 2990, label: 'Sıcak hava balonu turu',
+        text: 'Gün doğumunda bir saat uçuş, otelden alım, uçuş sertifikası' },
+      { id: 'turkGecesi',   per: 'guest',   price: 650,  label: 'Türk gecesi programı',
+        text: 'Kaya mağarada gösteri, yerel içecekler dahil' },
+      { id: 'atv',          per: 'guest',   price: 750,  label: 'ATV safari — gün batımı',
+        text: 'Kırmızı ve Güvercinlik vadilerinde iki saat' },
+      { id: 'ozelTransfer', per: 'booking', price: 1200, label: 'Özel araç transferi',
+        text: 'Havalimanı transferleri gruptan ayrı, size özel araçla' }
+    ],
+
+    trust: [
+      { icon: 'bolt',    text: 'Anında onay — uçak ve otel aynı gün kesinleşir' },
+      { icon: 'refresh', text: '21 gün öncesine kadar ücretsiz iptal' },
+      { icon: 'shield',  text: 'Güvenli ödeme, 3D Secure' }
+    ],
+
+    social: { viewedLast24h: 84, bookedThisWeek: 26 },
+
+    ratingBreakdown: { 5: 742, 4: 168, 3: 41, 2: 14, 1: 9 },
+
+    ratingAspects: [
+      { label: 'Rehber',             value: 4.8 },
+      { label: 'Otel',               value: 4.6 },
+      { label: 'Program akışı',      value: 4.7 },
+      { label: 'Fiyat / performans', value: 4.5 }
+    ],
+
+    reviews: [
+      { name: 'Serkan Aydemir', date: '2026-09-09', rating: 5, party: 'Çift olarak',
+        title: 'Kuzey–güney ayrımı çok işe yaradı',
+        text: 'Daha önce iki günlük bir Kapadokya turuna gitmiştim ve her şey birbirine karışmıştı. Burada ikinci gün kuzey, üçüncü gün güney olduğu için araçta az, gezerken çok zaman geçiyor. Ihlara yürüyüşü turun en güzel kısmıydı, 400 basamağı da uyardıkları gibi zorlanmadan indik.' },
+      { name: 'Pınar Yalçın', date: '2026-09-04', rating: 5, party: 'Ailece',
+        title: 'Otelin terası tek başına bilet parası ediyor',
+        text: 'Sabah beş buçukta terasa çıktık, gökyüzü balonla doldu. Çocuklar balona binmedi ama seyretmek bile yetti. Otel mağara ama serin dediler diye korkmuştuk, battaniye fazlasıyla vardı. Üç gece aynı yerde kalmak bavulla uğraşmamak demek, bu da ayrı rahatlık.' },
+      { name: 'Hakan Erdoğan', date: '2026-08-27', rating: 4, party: 'Tek başına',
+        title: 'Tek kişilik oda farkı biraz yüksek',
+        text: 'Tur gerçekten iyi kurulmuş, rehber Elif üç gün boyunca hiç sıkmadan anlattı. Tek eleştirim tek kişilik oda farkı; 2.400 TL tek başına gidenler için hissedilir bir tutar. Rezervasyonda açıkça yazması iyi, sürprizle karşılaşmıyorsunuz ama yine de yüksek.' },
+      { name: 'Merve Aksoy', date: '2026-08-21', rating: 5, party: 'Arkadaş grubu',
+        title: 'Balonun ayrı olması doğru karar',
+        text: 'Bizim gün rüzgâr yüzünden uçuş iptal oldu. Sadece balon ücreti hesabımıza döndü, turun kalanı hiç etkilenmedi ve o sabah Uçhisar’a erken gittik. Pakete dahil olsaydı bu iş çok daha karışık olurdu, düşünülmüş.' },
+      { name: 'Emre Çetin', date: '2026-08-14', rating: 4, party: 'Çift olarak',
+        title: 'Derinkuyu dar, önceden bilin',
+        text: 'Yeraltı şehrinde geçitler gerçekten basık ve dar; eşim yarısında çıkmak istedi, rehber çıkışa kadar eşlik etti, sorun olmadı. Uyarı sayfada yazıyor ama ben okumamıştım, okuyun. Onun dışında program, otel ve ulaşım söylendiği gibiydi.' },
+      { name: 'Selin Kaya', date: '2026-08-06', rating: 5, party: 'Ailece',
+        title: 'Uçak ve transferlerin dahil olması çok rahat',
+        text: 'İzmir’den kalktık, havalimanında rehber bizi bekliyordu, varışta araç hazırdı. Hiçbir aşamada taksi aramak, bilet bakmak zorunda kalmadık. İki çocukla seyahatte en yorucu kısım bu olurdu, hiç yaşamadık.' },
+      { name: 'Oğuz Demirci', date: '2026-07-30', rating: 3, party: 'Arkadaş grubu',
+        title: 'Program iyi ama serbest zaman az',
+        text: 'Gezilecek yer çok olduğu için üç gün de dolu geçiyor; Göreme’de dolaşmaya, kafede oturmaya neredeyse hiç zaman kalmıyor. İlk günün öğleden sonrası serbest ama yol yorgunluğuyla geçiyor. Yoğun program isteyen için doğru tur, dinlenmek isteyen için değil.' },
+      { name: 'Ayla Sönmez', date: '2026-07-22', rating: 5, party: 'Çift olarak',
+        title: 'Rehberin anlattıkları farkı yarattı',
+        text: 'Kayaların nasıl oluştuğundan kiliselerin fresklerinin neden kazındığına kadar her durakta bir bağlam vardı. Kendi başımıza gezsek fotoğraf çekip geçerdik. Üç tam gün rehber olması en çok değer verdiğim kısmı oldu.' }
+    ],
+
+    faq: [
+      { q: 'Uçak bileti fiyata dahil mi?',
+        a: 'Evet. İstanbul ve İzmir çıkışlarında gidiş-dönüş uçak bileti ile havalimanı–otel transferleri fiyata dahildir. Ankara çıkışı otobüslü transfer olarak yapılır ve aynı şekilde dahildir. İzmir çıkışında kişi başı 350 TL fark uygulanır, bu fark rezervasyon özetinde ayrı satır olarak görünür.' },
+      { q: 'Balon turu neden fiyata dahil değil?',
+        a: 'Balon uçuşları tamamen hava koşullarına bağlı ve iptal oranı yüksek. Pakete gömülü olsaydı uçuş yapılamadığında tüm turun fiyatını yeniden hesaplamak gerekirdi. Ayrı seçenek olduğunda uçuş iptal edilirse yalnızca balon ücreti iade edilir, programın kalanı aynen işler.' },
+      { q: 'Tek başıma katılırsam ne ödüyorum?',
+        a: 'Fiyatlar iki kişilik odada kişi başı olarak verilir. Tek başına katılıyorsanız tek kişilik odada kalırsınız ve 2.400 TL oda farkı eklenir; rezervasyon kartında bu kutu işaretli ve pasif gelir, çünkü tercih değil sonuçtur. Özet satırında ayrı kalem olarak görürsünüz.' },
+      { q: 'Üç kişi aynı odada kalabilir miyiz?',
+        a: 'Evet. Üç yetişkin tek odada kalırsa üçüncü kişi ilave yatakta ve indirimli tarifeden katılır; rezervasyon kartında kişi sayısını 3 yaptığınızda bu indirim kendiliğinden uygulanır. Tek kişilik oda seçeneğini işaretlerseniz oda paylaşımı olmadığı için indirim de geçerli olmaz.' },
+      { q: 'Çocuk fiyatı nasıl hesaplanıyor?',
+        a: '2-11 yaş çocuklar ailesiyle aynı odada, ilave yatakta indirimli tarifeden katılır. 0-1 yaş bebekler ücretsizdir ve ayrı yatak verilmez. Uçakta bebekler kucakta seyahat eder; bebek koltuğu veya mama talebini rezervasyon notuna eklemeniz yeterli.' },
+      { q: 'Program hava koşullarına göre değişir mi?',
+        a: 'Duraklar aynı kalır, sıra değişebilir. Kışın Ihlara Vadisi’nde zemin kaygan olduğunda yürüyüş kısaltılır, kar yağışında Zelve yerine kapalı alanlar öne alınır. Rehber değişikliği bir akşam önce otelde duyurur. Uçuş iptal edilirse ücretin tamamı iade edilir.' }
+    ],
+
+    operator: {
+      name: 'Anadolu Tur Organizasyon',
+      since: 2011,
+      tours: 54,
+      guests: '19.000+',
+      rating: 4.7,
+      response: 'Mesajlara ortalama 2 saat içinde yanıt veriyor',
+      about: 'Nevşehir merkezli, yalnızca İç Anadolu ve Kapadokya programlarıyla çalışan operatör. Rehberlerin tamamı profesyonel turist rehberi belgesine sahiptir.'
+    },
+
+    similar: [
+      { key: 'efesKutuphane', slug: 'efes-sirince', title: 'Efes Antik Kenti ve Şirince Turu', meta: 'İzmir çıkışlı · 9 saat', rating: '4.8', price: 1290 },
+      { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
+      { key: 'ihlara',    title: 'Ihlara Vadisi Yürüyüş Turu',   meta: 'Nevşehir çıkışlı · 8 saat', rating: '4.6', price: 1150 },
+      { key: 'uchisar',   title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat', rating: '4.7', price: 750 }
     ]
   }
 };
@@ -609,13 +1108,22 @@ if (typeof module !== 'undefined' && module.exports) {
     nextDepartureDates,
     seatsLeft,
     clampParty,
+    addonLines,
+    calcDailyTotal,
+    stayRoomPlan,
+    departureCity,
+    calcStayTotal,
     calcTotal,
+    basePrice,
+    baseListPrice,
+    stayReturnDate,
     discountPercent,
     refundTier,
     refundAmount,
     ratingSummary,
     filterReviews,
     reviewerInitials,
+    tourSlugFromPath,
     tourSlugFromQuery,
     resolveTour
   };

@@ -34,17 +34,20 @@ jobs:
       # tutuyor ve yeni surum yayinlandiginda eski dosyayi gosterebiliyor.
       # Her yayinda dosya adlarina commit'e ozel ?v=... eklenir; adres
       # degistigi icin tarayici dosyayi yeniden indirmek zorunda kalir.
-      # Kok dizindeki her HTML sayfasi damgalanir: yeni bir sayfa
-      # eklendiginde (ornegin tur.html) bu adimi guncellemek gerekmez.
+      # Depodaki her HTML sayfasi damgalanir; yeni sayfa eklendiginde bu
+      # adimi guncellemek gerekmez. Tur sayfalari tur/<slug>/index.html
+      # icinde durup varliklara ../../assets/... ile bagladigi icin desen
+      # bastaki ../ tekrarlarini da kapsar. _backup yedekleri haric.
       - name: Statik dosyalara surum damgasi ekle
         run: |
           VER="${GITHUB_SHA::8}"
           echo "Surum: $VER"
-          for SAYFA in *.html; do
-            sed -E -i 's#(href|src)="(assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
-            echo "--- $SAYFA"
-            grep -nE 'assets/(css|js)/' "$SAYFA"
-          done
+          find . -name '*.html' -not -path './_backup/*' -not -path './node_modules/*' -print0 \
+          | while IFS= read -r -d '' SAYFA; do
+              sed -E -i 's#(href|src)="((\.\./)*assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
+              echo "--- $SAYFA"
+              grep -nE '(\.\./)*assets/(css|js)/' "$SAYFA" || true
+            done
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
