@@ -137,6 +137,35 @@ etiketine `user-scalable=no` yazarak yapmak mümkündü ama o,
 yakınlaştırmayı tümden kapatıp az gören kullanıcıyı dışlıyor — test bunu
 da bekçilik ediyor.
 
+**Asıl işi yapan JS, CSS değil.** İki sürüm boyunca bu yalnızca CSS ile
+çözülmeye çalışıldı ve iOS Safari'de olmadı. Sonunda ölçülen şey şu:
+**anasayfada çift dokunuşun olmamasının sebebi `touch-action` değil**,
+viewport etiketindeki `user-scalable=no`. Tur sayfalarında o etiket yok,
+bu yüzden orada hareket sürüyordu.
+
+| | viewport etiketi | çift dokunuş |
+|---|---|---|
+| `index.html` | `… maximum-scale=1.0, user-scalable=no …` | yok |
+| `tur/<slug>/` | `width=device-width, initial-scale=1.0, viewport-fit=cover` | **vardı** |
+
+O etiketi kopyalamak hareketi kapatırdı ama **iki parmakla yakınlaştırmayı
+da** kapatırdı. Bunun yerine `ui.js` içinde ikinci dokunuşun varsayılan
+davranışı iptal ediliyor: çift dokunuş kapanıyor, pinch aynen çalışıyor.
+
+Dikkat edilen üç şey:
+
+- `{ passive: false }` olmadan `preventDefault` hiçbir şey yapmaz.
+- Ekranda başka parmak varsa dinleyici erken çıkıyor — pinch'e hiç
+  dokunulmuyor.
+- `touchend`'de `preventDefault` o dokunuşun **click'ini de yutar**. Aynı
+  noktaya hızlı iki kez basmanın anlamlı olduğu kontroller (`[data-step]`
+  kişi sayısı tuşları, form alanları, `[aria-pressed]` açık/kapalı
+  düğmeler) bu yüzden dışarıda tutuluyor. Gerçek dokunuşlarla denendi:
+  kişi sayısı iki dokunuşta 2 → 3 → 4.
+
+CSS kuralı yine de duruyor: Android/Chrome'da çift dokunuşu kapatıyor ve
+her yerde ~300ms'lik tıklama gecikmesini kaldırıyor.
+
 **Neden evrensel seçici — bu bir kez yanlış yapıldı.** Kural ilk sürümde
 yalnızca `html`'e verildi ve iOS Safari'de hiç işe yaramadı: kullanıcı
 sağ taraflarda çift dokununca sayfa yakınlaşıp yana kayıyordu.

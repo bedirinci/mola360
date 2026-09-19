@@ -54,6 +54,7 @@ const app = readFileSync(new URL('../assets/js/app.js', import.meta.url), 'utf8'
 const yonlendirme = readFileSync(new URL('../tur.html', import.meta.url), 'utf8');
 const ortakStil = readFileSync(new URL('../assets/css/style.css', import.meta.url), 'utf8');
 const turStil = readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8');
+const arayuz = readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8');
 
 /* Her turun kendi HTML dosyası var: /tur/<slug>/index.html. Statik
    bilgiler (H1, sekme başlığı, kırılma noktaları) elle yazıldığı için
@@ -1432,6 +1433,33 @@ describe('çift dokunuşla yakınlaştırma', () => {
       expect(stil.replace(/\/\*[\s\S]*?\*\//g, ''), ad + ' auto geri vermiş')
         .not.toContain('touch-action: auto');
     });
+  });
+
+  it('ikinci dokunuş JS ile iptal ediliyor', () => {
+    /* ÖLÇÜLDÜ: touch-action: manipulation iOS Safari'de bu hareketi
+       durdurmuyor. Anasayfada hareketin olmamasının sebebi o değil,
+       viewport etiketindeki user-scalable=no -- ama o etiket iki
+       parmakla yakınlaştırmayı da kapatıyor. Bu yüzden tur sayfalarına
+       kopyalanmadı; yerine ikinci dokunuş JS'te iptal ediliyor. */
+    const blok = arayuz.match(/\/\* ===== cift dokunusla yakinlastirma ===== \*\/[\s\S]*$/);
+    expect(blok, 'çift dokunuş koruması yok').toBeTruthy();
+    const kod = blok[0];
+
+    /* passive: false olmadan preventDefault hiçbir şey yapmaz. */
+    expect(kod, 'dinleyici passive').toContain('{ passive: false }');
+    expect(kod).toContain("addEventListener('touchend'");
+    expect(kod).toContain('preventDefault()');
+
+    /* İki parmağa dokunulmamalı: pinch çalışmaya devam etsin. */
+    expect(kod, 'çok parmaklı dokunuş elenmiyor')
+      .toContain('if (olay.touches.length || olay.changedTouches.length !== 1) return;');
+
+    /* touchend'de preventDefault o dokunuşun click'ini de yutar. Aynı
+       noktaya hızlı iki kez basmanın anlamlı olduğu kontroller dışarıda
+       kalmalı, yoksa kişi sayısı tuşları bozulur. */
+    const liste = kod.match(/const TEKRAR = '([^']+)'/)[1];
+    ['input', '[data-step]', '[aria-pressed]']
+      .forEach(sec => expect(liste, sec + ' korunmuyor').toContain(sec));
   });
 
   it('yatay şeritler parmakla kaymaya devam ediyor', () => {
