@@ -130,12 +130,34 @@ Adresler veride **kök-göreli** duruyor ve `KOK` ile önekleniyor;
 
 ### Çift dokunuşla yakınlaştırma
 
-`html { touch-action: manipulation }` ile kapalı. `manipulation` bilerek
+`* { touch-action: manipulation }` ile kapalı. `manipulation` bilerek
 seçildi: kaydırma ve **iki parmakla** yakınlaştırma çalışmaya devam
 ediyor, yalnızca çift dokunuş hareketi kalkıyor. Aynı şeyi viewport
 etiketine `user-scalable=no` yazarak yapmak mümkündü ama o,
 yakınlaştırmayı tümden kapatıp az gören kullanıcıyı dışlıyor — test bunu
 da bekçilik ediyor.
+
+**Neden evrensel seçici — bu bir kez yanlış yapıldı.** Kural ilk sürümde
+yalnızca `html`'e verildi ve iOS Safari'de hiç işe yaramadı: kullanıcı
+sağ taraflarda çift dokununca sayfa yakınlaşıp yana kayıyordu.
+
+Sebep: **`touch-action` kalıtsal bir özellik değil.** Tarayıcı, dokunulan
+elemandan yukarı doğru yalnızca onu kapsayan **kaydırma kabına** kadar
+bakıyor. Bu sayfadaki dört blok — galeri şeridi, rozet şeridi, bölüm
+menüsü, yorum filtresi — kendileri yatay kaydırma kabı olduğu için zincir
+orada bitiyor. Tarayıcıda ölçüldü: dördünün de değeri `auto` idi. Çift
+dokunuş o bloğun **içerik** genişliğine (galeride 2340px) yakınlaşıyor,
+sayfa yana kayıyordu.
+
+Evrensel seçiciyle ölçüm: üç sayfada da `auto` kalan **tek bir eleman
+yok**. Yatay şeritler bundan zarar görmüyor — `manipulation` = `pan-x` +
+`pan-y` + `pinch-zoom`, yana kaydırma dokunmatik olaylarla test edildi ve
+çalışıyor.
+
+Özgül seçicili kurallar (örn. `.promo-scroll { touch-action: pan-y }`)
+evrensel kuralı ezmeye devam eder; `*`'ın ağırlığı sıfır. `auto` dışındaki
+her değer çift dokunuşu kapattığı için onlar da sorun değil — test
+`touch-action: auto` yazan bir kural eklenmesini engelliyor.
 
 **Not:** `index.html`'in viewport etiketinde `maximum-scale=1.0,
 user-scalable=no` **hâlâ duruyor** (bu değişiklikten önce de vardı).

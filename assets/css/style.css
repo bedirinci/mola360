@@ -94,20 +94,34 @@ html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
   overscroll-behavior-y: contain;
-  /* Çift dokunuşla yakınlaştırma kapalı. Kök elemana verildiği için
-     sayfadaki her şeyi kapsıyor.
-
-     "manipulation" bilerek seçildi: kaydırma ve İKİ PARMAKLA
-     yakınlaştırma çalışmaya devam ediyor, yalnızca çift dokunuş
-     hareketi kalkıyor. Aynı şeyi viewport etiketine user-scalable=no
-     yazarak da yapmak mümkündü ama o, yakınlaştırmayı tümden kapatıp
-     az gören kullanıcıyı sayfadan dışlıyor.
-
-     Yan fayda: tarayıcı artık her dokunuşta "acaba çift dokunuş mu
-     gelecek" diye ~300ms beklemiyor, düğmeler daha çabuk tepki
-     veriyor. */
-  touch-action: manipulation;
 }
+
+/* Çift dokunuşla yakınlaştırma kapalı.
+
+   "manipulation" bilerek seçildi: kaydırma ve İKİ PARMAKLA yakınlaştırma
+   çalışmaya devam ediyor, yalnızca çift dokunuş hareketi kalkıyor. Aynı
+   şeyi viewport etiketine user-scalable=no yazarak da yapmak mümkündü
+   ama o, yakınlaştırmayı tümden kapatıp az gören kullanıcıyı dışlıyor.
+
+   NEDEN EVRENSEL SEÇİCİ: touch-action KALITSAL DEĞİL. Kural önce
+   yalnızca html'e verilmişti ve iOS Safari'de işe yaramadı. Sebebi
+   ölçüldü: tarayıcı dokunulan elemandan yukarı doğru yalnızca onu
+   kapsayan KAYDIRMA KABINA kadar bakıyor. Galeri şeridi, rozet şeridi,
+   bölüm menüsü ve yorum filtresi kendileri yatay kaydırma kabı olduğu
+   için zincir orada bitiyor ve değerleri "auto" kalıyordu — çift
+   dokunuş o bloğun İÇERİK genişliğine (galeride 2340px) yakınlaşıyor,
+   sayfa yana kayıyordu. Dördünün de touch-action değeri tarayıcıda
+   "auto" olarak ölçüldü.
+
+   Yatay şeritler bundan zarar görmüyor: "manipulation" = pan-x + pan-y
+   + pinch-zoom, yani parmakla yana kaydırma aynen çalışıyor.
+
+   Yan fayda: tarayıcı artık her dokunuşta "acaba çift dokunuş mu
+   gelecek" diye ~300ms beklemiyor, düğmeler daha çabuk tepki veriyor.
+
+   Özgül seçicili kurallar (örn. .promo-scroll { touch-action: pan-y })
+   bunu ezmeye devam eder; evrensel seçicinin ağırlığı sıfır. */
+* { touch-action: manipulation; }
 /* Mobilde hiç oluşturulmaz; masaüstü kuralları aşağıda. */
 .page-scroll-thumb { display: none; }
 /* Body ASLA kendi başına bir scroll container olmamalı; dikey kaydırmayı

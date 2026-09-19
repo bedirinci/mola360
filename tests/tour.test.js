@@ -1413,9 +1413,36 @@ describe('benzer tur kartları', () => {
 });
 
 describe('çift dokunuşla yakınlaştırma', () => {
-  it('kök elemanda kapalı', () => {
-    const kural = ortakStil.match(/\nhtml \{([\s\S]*?)\}/)[1];
-    expect(kural).toContain('touch-action: manipulation');
+  it('kural EVRENSEL seçiciyle veriliyor', () => {
+    /* touch-action KALITSAL DEĞİL. Kural bir sürüm boyunca yalnızca
+       html'e verildi ve iOS Safari'de hiç işe yaramadı: tarayıcı
+       dokunulan elemandan yukarı doğru yalnızca onu kapsayan KAYDIRMA
+       KABINA kadar bakıyor. Galeri şeridi, rozet şeridi, bölüm menüsü
+       ve yorum filtresi kendileri yatay kaydırma kabı olduğu için
+       zincir orada bitiyor ve değerleri "auto" kalıyordu; çift dokunuş
+       o bloğun içerik genişliğine yakınlaşıp sayfayı yana kaydırıyordu.
+       Kuralı html'e geri daraltmak bu hatayı geri getirir. */
+    expect(ortakStil).toContain('* { touch-action: manipulation; }');
+  });
+
+  it('hiçbir kural touch-action’ı auto’ya geri çevirmiyor', () => {
+    /* "auto" dışındaki her değer çift dokunuşu kapatır; auto onu geri
+       açar. Özgül seçicili pan-x/pan-y kuralları sorun değil. */
+    [['style.css', ortakStil], ['tour.css', turStil]].forEach(([ad, stil]) => {
+      expect(stil.replace(/\/\*[\s\S]*?\*\//g, ''), ad + ' auto geri vermiş')
+        .not.toContain('touch-action: auto');
+    });
+  });
+
+  it('yatay şeritler parmakla kaymaya devam ediyor', () => {
+    /* "manipulation" = pan-x + pan-y + pinch-zoom; yana kaydırma açık
+       kalır. Şeritlere yanlışlıkla "none" verilirse kaydırma ölür. */
+    const stil = ortakStil + turStil;
+    ['.tour-gallery-grid', '.tour-head-chips', '.tour-section-nav', '.h-scroll']
+      .forEach(sec => {
+        const kural = new RegExp(sec.replace('.', '\\.') + '[^{]*\\{[^}]*touch-action: none');
+        expect(stil, sec + ' kaydırması kapatılmış').not.toMatch(kural);
+      });
   });
 
   it('iki parmakla yakınlaştırma tur sayfalarında açık kalıyor', () => {
