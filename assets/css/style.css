@@ -2744,6 +2744,15 @@ ul {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Icerik sayfasi olan kartlarda baslik bir <a>; rengi ve altini cizmemesi
+   basliktan ayrilmasin. Kartin tamami tiklanabilir oldugu icin imlec de
+   isaretci olur (davranisi app.js'teki delege dinleyici saglar). */
+.poi-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.poi-title a:hover { text-decoration: underline; }
+.poi-card[data-href] { cursor: pointer; }
 .poi-meta-row {
   display: flex;
   align-items: center;

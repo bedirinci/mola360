@@ -1,0 +1,1743 @@
+/* =====================================================
+   TUR İÇERİK SAYFASI (tur.html)
+   style.css'ten SONRA yüklenir. Renk, yarıçap, gölge ve yan boşluk
+   değerleri oradaki :root değişkenlerinden gelir; burada yeni bir
+   renk paleti kurulmaz, yalnızca bu sayfaya ait bileşenler tanımlanır.
+
+   Yerleşim: mobilde tek sütun, 1025px üstünde içerik + sağda yapışkan
+   rezervasyon kartı. Kart tek bir DOM düğümü olduğu için (tour-page.js
+   onu taşır) iki yuvadan yalnızca biri aynı anda doludur.
+   ===================================================== */
+
+.tour-body {
+  background: var(--bg);
+}
+
+/* style.css tüm belgede metin seçimini kapatıyor (uzun basınca çıkan
+   tarayıcı menüsünü engellemek için). İçerik sayfasında adres ve saat
+   kopyalanabilmeli; bu yüzden yalnızca metin bloklarında geri açılıyor. */
+.tour-page p,
+.tour-page li,
+.tour-page h1,
+.tour-page h2,
+.tour-page h3,
+.tour-page .tour-fact-value,
+.tour-page .tour-meeting-address {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+.tour-page {
+  --tour-max: 1260px;
+  --tour-gap: 16px;
+  max-width: calc(var(--tour-max) + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter) 28px;
+}
+
+/* ---------------- header uyarlaması ----------------
+   Detay sayfasında arama kutusu bir bağlantı (arama anasayfada açılıyor),
+   input değil; metin rengi input'un placeholder'ı ile aynı kalsın. */
+.tour-header-search {
+  text-decoration: none;
+  cursor: pointer;
+}
+.header-search-text {
+  flex: 1;
+  color: #B7BEDD;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tour-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+  flex-shrink: 0;
+}
+.tour-back:hover { background: rgba(255,255,255,.2); }
+.tour-back .icon { width: 20px; height: 20px; }
+
+/* ---------------- kırılma noktaları ---------------- */
+.tour-crumbs {
+  padding: 14px 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tour-crumbs::-webkit-scrollbar { display: none; }
+.tour-crumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  white-space: nowrap;
+}
+.tour-crumbs li + li::before {
+  content: '›';
+  margin-right: 8px;
+  color: var(--text-faint);
+}
+.tour-crumbs a { color: var(--text-muted); text-decoration: none; }
+.tour-crumbs a:hover { color: var(--navy); text-decoration: underline; }
+.tour-crumbs [aria-current="page"] { color: var(--text); font-weight: 600; }
+
+/* ---------------- galeri ---------------- */
+.tour-gallery {
+  position: relative;
+  margin: 10px 0 18px;
+}
+.tour-gallery-grid {
+  display: grid;
+  gap: 6px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #E9EDF5;
+}
+.tour-gallery-cell {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: #E9EDF5;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.tour-gallery-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .5s ease;
+}
+.tour-gallery-cell:hover img { transform: scale(1.045); }
+.tour-gallery-cell:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+}
+/* Kalan fotoğraf sayısı: fotoğrafı tamamen kapatmayan bir perde —
+   altındaki kare hâlâ seçilebilir bir önizleme olarak görünür. */
+.tour-gallery-more {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(180deg, rgba(11,18,48,.18), rgba(11,18,48,.6));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.tour-gallery-more .icon { width: 18px; height: 18px; }
+.tour-gallery-all {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.95);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(4px);
+}
+.tour-gallery-all:hover { background: #fff; }
+.tour-gallery-all .icon { width: 17px; height: 17px; }
+.tour-gallery-all .count {
+  background: var(--navy);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+}
+.tour-gallery-count { display: none; }
+
+@media (max-width: 680px) {
+  .tour-gallery { margin: 0 0 16px; }
+  /* Mobilde tam genişlikte tek şerit: kenar boşluğunu iptal eder. */
+  .tour-gallery-grid {
+    display: flex;
+    gap: 0;
+    margin: 0 calc(var(--page-gutter) * -1);
+    border-radius: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tour-gallery-grid::-webkit-scrollbar { display: none; }
+  .tour-gallery-cell {
+    flex: 0 0 100%;
+    aspect-ratio: 4 / 3;
+    scroll-snap-align: center;
+    cursor: pointer;
+  }
+  .tour-gallery-more,
+  .tour-gallery-all { display: none; }
+  .tour-gallery-count {
+    display: block;
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(11,18,48,.66);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+}
+
+@media (min-width: 681px) {
+  .tour-gallery-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    height: clamp(300px, 38vw, 430px);
+  }
+  .tour-gallery-cell:first-child { grid-row: span 2; }
+  .tour-gallery-cell.is-extra { display: none; }
+}
+
+/* ---------------- yerleşim ---------------- */
+.tour-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tour-gap);
+  align-items: start;
+}
+.tour-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tour-gap);
+  min-width: 0;
+}
+.tour-aside { display: none; }
+
+@media (min-width: 1025px) {
+  .tour-layout {
+    grid-template-columns: minmax(0, 1fr) 372px;
+    gap: 24px;
+  }
+  .tour-aside { display: block; }
+  .tour-aside-sticky {
+    position: sticky;
+    top: calc(var(--desktop-header-height) + 16px);
+  }
+  /* Kart sağ sütunda; akış içindeki yuva boş kalır. */
+  #tourBookingMobile { display: none; }
+}
+
+/* ---------------- başlık bloğu ---------------- */
+.tour-headline {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+.tour-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.tour-head-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+.tour-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #F7F8FC;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tour-chip .icon { width: 15px; height: 15px; color: var(--green-dark); }
+.tour-chip.solid {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+@media (max-width: 680px) {
+  /* Dar ekranda dört rozet dört satıra yığılıyordu; tek satırda
+     kaydırılabilir şerit hem yer kazandırıyor hem başlığı yukarı alıyor. */
+  .tour-head-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tour-head-chips::-webkit-scrollbar { display: none; }
+}
+.tour-head-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.tour-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-muted);
+}
+.tour-icon-btn:hover { border-color: var(--navy); color: var(--navy); }
+.tour-icon-btn .icon { width: 19px; height: 19px; }
+.tour-icon-btn.on { color: #E0245E; border-color: #F6C3D2; background: #FFF3F7; }
+.tour-icon-btn.on .icon svg { fill: currentColor; }
+
+.tour-headline h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(21px, 3.1vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  color: var(--navy-deep);
+}
+.tour-lead {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+.tour-head-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+.tour-head-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tour-head-meta-item.muted { color: var(--text-faint); }
+.tour-head-meta .icon { width: 16px; height: 16px; color: var(--text-faint); }
+.tour-head-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+.tour-head-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(140,198,63,.16);
+  color: var(--green-dark);
+  font-weight: 800;
+  font-size: 14px;
+}
+.tour-head-score .icon { width: 15px; height: 15px; }
+.tour-head-score .icon svg { fill: currentColor; }
+.tour-head-count { text-decoration: underline; text-decoration-color: var(--border); }
+.tour-head-rating:hover .tour-head-count { text-decoration-color: var(--navy); color: var(--navy); }
+
+/* ---------------- künye kutuları ---------------- */
+.tour-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (min-width: 681px) {
+  .tour-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1025px) {
+  .tour-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.tour-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.tour-fact-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: rgba(21,32,72,.06);
+  color: var(--navy);
+}
+.tour-fact-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; }
+.tour-fact-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tour-fact-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-faint); font-weight: 700; }
+.tour-fact-value { font-size: 14.5px; color: var(--text); line-height: 1.3; }
+.tour-fact-note { font-size: 12.5px; color: var(--text-muted); }
+
+/* ---------------- bölüm menüsü ---------------- */
+.tour-section-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+.tour-section-nav::-webkit-scrollbar { display: none; }
+@media (min-width: 681px) {
+  .tour-section-nav { top: calc(var(--desktop-header-height) + 8px); }
+}
+.tour-nav-link {
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.tour-nav-link:hover { background: #F0F2F8; color: var(--navy); }
+.tour-nav-link.active { background: var(--navy); color: #fff; }
+
+/* ---------------- ortak blok ---------------- */
+.tour-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  scroll-margin-top: 140px;
+}
+.tour-block:empty { display: none; }
+.tour-block-head { margin-bottom: 16px; }
+.tour-block-head h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(17px, 2.1vw, 21px);
+  color: var(--navy-deep);
+  letter-spacing: -.01em;
+}
+.tour-block-head p {
+  margin-top: 5px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+.tour-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #F6F8FC;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tour-note .icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--navy); margin-top: 1px; }
+.tour-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(21,32,72,.25);
+}
+.tour-text-btn:hover { text-decoration-color: var(--navy); }
+.tour-text-btn .icon { width: 16px; height: 16px; }
+.tour-text-btn.small { font-size: 13px; text-decoration: none; color: var(--green-dark); }
+.tour-empty {
+  padding: 22px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ---------------- genel bakış ---------------- */
+.tour-highlights {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin-bottom: 18px;
+}
+@media (min-width: 681px) {
+  .tour-highlights { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; }
+}
+.tour-highlights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.tour-highlights .icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  padding: 3px;
+  border-radius: 50%;
+  background: rgba(140,198,63,.2);
+  color: var(--green-dark);
+}
+.tour-prose p {
+  font-size: 14.8px;
+  line-height: 1.68;
+  color: var(--text);
+}
+.tour-prose p + p,
+.tour-prose-rest p { margin-top: 12px; }
+
+/* ---------------- program ---------------- */
+.tour-timeline { list-style: none; }
+.tour-stop {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  column-gap: 16px;
+}
+.tour-stop-time {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy);
+  padding-top: 1px;
+  letter-spacing: -.01em;
+}
+.tour-stop-body {
+  position: relative;
+  padding: 0 0 22px 22px;
+  border-left: 2px solid var(--border);
+}
+.tour-stop-body::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--card), 0 0 0 5px rgba(140,198,63,.22);
+}
+.tour-stop:last-child .tour-stop-body { border-left-color: transparent; padding-bottom: 0; }
+.tour-stop-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.tour-stop-head h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-deep);
+}
+.tour-stop-duration,
+.tour-stop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tour-stop-duration { background: #F0F2F8; color: var(--text-muted); }
+.tour-stop-badge { background: rgba(140,198,63,.18); color: var(--green-dark); }
+.tour-stop-duration .icon,
+.tour-stop-badge .icon { width: 14px; height: 14px; }
+.tour-stop-body p {
+  font-size: 13.8px;
+  line-height: 1.62;
+  color: var(--text-muted);
+}
+
+/* ---------------- dahil olanlar ---------------- */
+.tour-included-grid {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 681px) {
+  .tour-included-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+}
+.tour-included-col h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 11px;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.tour-included-col h3 .icon {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+}
+.tour-included-col.yes h3 { color: var(--green-dark); }
+.tour-included-col.yes h3 .icon { background: rgba(140,198,63,.2); }
+.tour-included-col.no h3 { color: var(--text-faint); }
+.tour-included-col.no h3 .icon { background: #F0F2F8; }
+.tour-included-col ul { list-style: none; display: grid; gap: 9px; }
+.tour-included-col li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.tour-included-col li .icon { flex-shrink: 0; width: 17px; height: 17px; margin-top: 2px; }
+.tour-included-col.yes li .icon { color: var(--green-dark); }
+.tour-included-col.no li { color: var(--text-muted); }
+.tour-included-col.no li .icon { color: var(--text-faint); }
+
+/* ---------------- buluşma ---------------- */
+.tour-meeting-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(21,32,72,.05), rgba(140,198,63,.09));
+  border: 1px solid var(--border);
+}
+.tour-meeting-pin {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--navy);
+  color: #fff;
+}
+.tour-meeting-pin svg { width: 22px; height: 22px; fill: none; stroke: currentColor; }
+.tour-meeting-body strong {
+  display: block;
+  font-size: 15.5px;
+  color: var(--navy-deep);
+}
+.tour-meeting-address {
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tour-meeting-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 9px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--green-dark);
+  text-decoration: none;
+}
+.tour-meeting-link:hover { text-decoration: underline; }
+.tour-meeting-link .icon { width: 16px; height: 16px; }
+.tour-pickups {
+  list-style: none;
+  margin-top: 16px;
+  display: grid;
+  gap: 2px;
+}
+.tour-pickups li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.tour-pickups li:last-child { border-bottom: 0; }
+.tour-pickup-time {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--navy);
+}
+.tour-pickup-body { display: flex; flex-direction: column; gap: 1px; }
+.tour-pickup-body strong { font-size: 14px; font-weight: 600; }
+.tour-pickup-body span { font-size: 12.5px; color: var(--text-muted); }
+
+/* ---------------- önemli bilgiler ---------------- */
+.tour-info-grid {
+  display: grid;
+  gap: 14px;
+  /* Kartlar içeriği kadar yükseklik alsın: kısa listenin altında boş
+     bir dikdörtgen kalmasın. */
+  align-items: start;
+}
+@media (min-width: 681px) {
+  .tour-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+}
+.tour-info-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #FBFCFE;
+}
+.tour-info-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: var(--navy-deep);
+}
+.tour-info-card h3 .icon { width: 18px; height: 18px; color: var(--navy); }
+.tour-dot-list { list-style: none; display: grid; gap: 9px; }
+.tour-dot-list li {
+  position: relative;
+  padding-left: 15px;
+  font-size: 13.6px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.tour-dot-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.tour-refund { margin-top: 20px; }
+.tour-refund h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--navy-deep);
+}
+.tour-refund h3 .icon { width: 18px; height: 18px; color: var(--navy); }
+.tour-refund-lead {
+  margin: 6px 0 12px;
+  font-size: 13.2px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tour-refund-list { list-style: none; display: grid; gap: 8px; }
+.tour-refund-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--text-faint);
+  background: var(--card);
+}
+.tour-refund-row.full { border-left-color: var(--green); background: rgba(140,198,63,.07); }
+.tour-refund-row.none { border-left-color: #E4A8A0; background: #FDF6F5; }
+.tour-refund-when { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tour-refund-when strong { font-size: 14px; color: var(--navy-deep); }
+.tour-refund-when span { font-size: 12.8px; color: var(--text-muted); }
+.tour-refund-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.tour-refund-amount strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  color: var(--navy-deep);
+}
+.tour-refund-amount span { font-size: 12px; color: var(--text-muted); }
+
+/* ---------------- yorumlar ---------------- */
+.tour-review-summary {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 681px) {
+  .tour-review-summary {
+    grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+.tour-review-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(21,32,72,.045);
+}
+.tour-review-score strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--navy-deep);
+}
+.tour-review-stars { display: flex; gap: 2px; }
+.tour-review-stars .icon { width: 15px; height: 15px; color: #D7DCE8; }
+.tour-review-stars .icon.on { color: #F5B731; }
+.tour-review-stars .icon svg { fill: currentColor; stroke: none; }
+.tour-review-total { font-size: 12.5px; color: var(--text-muted); }
+.tour-review-bars,
+.tour-review-aspects { list-style: none; display: grid; gap: 8px; align-content: start; }
+.tour-review-bars li,
+.tour-review-aspects li {
+  display: grid;
+  /* Etiket sütunu "Fiyat / performans" tek satıra sığacak kadar geniş. */
+  grid-template-columns: 96px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.8px;
+  color: var(--text-muted);
+}
+.tour-review-bars li { grid-template-columns: 38px minmax(0, 1fr) 38px; }
+.tour-bar-label { display: inline-flex; align-items: center; gap: 3px; font-weight: 600; color: var(--text); }
+.tour-bar-label .icon { width: 13px; height: 13px; color: #F5B731; }
+.tour-bar-label .icon svg { fill: currentColor; stroke: none; }
+.tour-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: #EDEFF6;
+  overflow: hidden;
+}
+.tour-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--green), var(--green-dark));
+}
+.tour-bar-value { text-align: right; font-weight: 600; color: var(--text); }
+.tour-aspect-label { font-weight: 600; color: var(--text); }
+@media (max-width: 460px) {
+  /* Dar ekranda "Fiyat / performans" gibi uzun etiketler iki satira
+     kiriliyor ve satir yuksekligi bozuluyordu; etiket cubugun ustune
+     kendi satirina cikiyor. */
+  .tour-review-aspects li {
+    grid-template-columns: minmax(0, 1fr) 34px;
+    gap: 3px 10px;
+  }
+  .tour-aspect-label { grid-column: 1 / -1; }
+}
+
+.tour-review-filter {
+  display: flex;
+  gap: 7px;
+  margin: 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tour-review-filter::-webkit-scrollbar { display: none; }
+.tour-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tour-filter-chip:hover { border-color: var(--navy); color: var(--navy); }
+.tour-filter-chip.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.tour-filter-chip .count {
+  font-size: 11.5px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #F0F2F8;
+  color: var(--text-muted);
+}
+.tour-filter-chip.active .count { background: rgba(255,255,255,.2); color: #fff; }
+
+.tour-review-list { display: grid; gap: 12px; }
+.tour-review {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #FBFCFE;
+}
+.tour-review-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+}
+.tour-review-avatar {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.tour-review-who { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.tour-review-who strong { font-size: 14.2px; }
+.tour-review-who span { font-size: 12.3px; color: var(--text-muted); }
+.tour-review-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(245,183,49,.16);
+  color: #9A6A05;
+  font-size: 13px;
+  font-weight: 800;
+}
+.tour-review-rating .icon { width: 14px; height: 14px; color: #F5B731; }
+.tour-review-rating .icon svg { fill: currentColor; stroke: none; }
+.tour-review-title { font-size: 14.5px; color: var(--navy-deep); margin-bottom: 5px; }
+.tour-review-text { font-size: 13.8px; line-height: 1.62; color: var(--text-muted); }
+.tour-review-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+.tour-review-verified .icon { width: 14px; height: 14px; }
+.tour-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.tour-more-btn:hover { background: #F6F8FC; border-color: var(--navy); }
+.tour-more-btn .icon { width: 17px; height: 17px; }
+
+/* ---------------- SSS ---------------- */
+.tour-faq { border-top: 1px solid var(--border); }
+.tour-faq-item { border-bottom: 1px solid var(--border); }
+.tour-faq-q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  font-size: 14.8px;
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+.tour-faq-q:hover { color: var(--green-dark); }
+.tour-faq-q .icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  transition: transform .22s ease;
+}
+.tour-faq-q[aria-expanded="true"] .icon { transform: rotate(180deg); color: var(--navy); }
+.tour-faq-a { padding: 0 0 16px; }
+.tour-faq-a p {
+  font-size: 13.9px;
+  line-height: 1.66;
+  color: var(--text-muted);
+  max-width: 68ch;
+}
+
+/* ---------------- operatör ---------------- */
+.tour-operator { display: flex; gap: 14px; }
+.tour-operator-avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-2));
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+}
+.tour-operator-label {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.tour-operator-body > strong {
+  display: block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  color: var(--navy-deep);
+  margin: 2px 0 6px;
+}
+.tour-operator-body > p { font-size: 13.8px; line-height: 1.6; color: var(--text-muted); }
+.tour-operator-stats {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 10px;
+}
+@media (min-width: 681px) {
+  .tour-operator-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.tour-operator-stats li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #F6F8FC;
+  display: flex;
+  flex-direction: column;
+}
+.tour-operator-stats strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  color: var(--navy-deep);
+}
+.tour-operator-stats span { font-size: 11.8px; color: var(--text-muted); }
+.tour-operator-response {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--green-dark);
+  font-weight: 600;
+}
+.tour-operator-response .icon { width: 16px; height: 16px; }
+
+/* ---------------- benzer turlar ---------------- */
+.tour-similar { margin-top: var(--tour-gap); }
+.tour-similar-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 681px) {
+  .tour-similar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.tour-similar-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.tour-similar-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.tour-similar-media { position: relative; display: block; aspect-ratio: 4 / 3; background: #E9EDF5; }
+.tour-similar-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tour-similar-rating {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.94);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--navy-deep);
+}
+.tour-similar-rating .icon { width: 13px; height: 13px; color: #F5B731; }
+.tour-similar-rating .icon svg { fill: currentColor; stroke: none; }
+.tour-similar-body { display: flex; flex-direction: column; gap: 4px; padding: 12px; }
+.tour-similar-body strong { font-size: 14px; line-height: 1.35; color: var(--navy-deep); }
+.tour-similar-meta { font-size: 12.3px; color: var(--text-muted); }
+.tour-similar-price {
+  margin-top: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--navy-deep);
+}
+.tour-similar-price span { font-size: 11.5px; font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+
+/* ---------------- rezervasyon kartı ---------------- */
+.tour-booking {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+}
+.tour-booking-top { display: flex; flex-direction: column; gap: 8px; }
+.tour-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tour-price-was {
+  font-size: 14px;
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+.tour-price-now {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--navy-deep);
+}
+.tour-price-unit { font-size: 13px; color: var(--text-muted); }
+.tour-price-off {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #FFF1E6;
+  color: #B4530A;
+  font-size: 12px;
+  font-weight: 800;
+}
+.tour-booking-social {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.3px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.tour-booking-social .icon { width: 15px; height: 15px; flex-shrink: 0; color: var(--green-dark); margin-top: 1px; }
+
+.tour-booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+.tour-field-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tour-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-muted);
+}
+.tour-field-label .icon { width: 16px; height: 16px; color: var(--navy); }
+
+/* Tarih çipleri: 3 sütunlu ızgara — dar sütunda da taşmaz. */
+.tour-date-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.tour-date-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 9px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-muted);
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.tour-date-chip strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--navy-deep);
+}
+.tour-date-day { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.tour-date-month { font-size: 11.5px; }
+.tour-date-chip:hover { border-color: var(--navy); }
+.tour-date-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #D8DEF5;
+}
+.tour-date-chip.active strong { color: #fff; }
+.tour-date-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.3px;
+  color: var(--text-muted);
+}
+.tour-date-note .icon { width: 15px; height: 15px; flex-shrink: 0; }
+
+.tour-seats { display: flex; flex-direction: column; gap: 6px; }
+.tour-seats-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #EDEFF6;
+  overflow: hidden;
+}
+.tour-seats-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--green);
+  transition: width .3s ease;
+}
+.tour-seats-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.tour-seats-text .icon { width: 15px; height: 15px; }
+.tour-seats-text strong { color: var(--navy-deep); }
+.tour-seats.is-low .tour-seats-fill { background: #E8883A; }
+.tour-seats.is-low .tour-seats-text,
+.tour-seats.is-low .tour-seats-text strong { color: #B4530A; }
+
+/* Kişi sayacı */
+.tour-party { display: grid; gap: 4px; }
+.tour-party-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.tour-party-row:last-child { border-bottom: 0; }
+.tour-party-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tour-party-body strong { font-size: 14px; }
+.tour-party-body span { font-size: 12px; color: var(--text-muted); }
+.tour-stepper { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.tour-step-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--navy);
+}
+.tour-step-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.tour-step-btn:hover:not(:disabled) { border-color: var(--navy); background: #F6F8FC; }
+.tour-step-btn:disabled { opacity: .35; cursor: not-allowed; }
+.tour-step-value {
+  min-width: 26px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tour-party-limit { font-size: 11.8px; color: var(--text-faint); line-height: 1.45; }
+
+/* Ek seçenekler */
+.tour-addons { display: grid; gap: 8px; }
+.tour-addon {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.tour-addon:hover { border-color: var(--navy); }
+.tour-addon input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.tour-addon-box {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1.6px solid var(--border);
+  background: var(--card);
+  color: transparent;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.tour-addon-box svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; }
+.tour-addon input:checked ~ .tour-addon-box {
+  background: var(--green);
+  border-color: var(--green-dark);
+  color: #fff;
+}
+.tour-addon input:checked ~ .tour-addon-body strong { color: var(--green-dark); }
+.tour-addon:has(input:checked) { border-color: var(--green-dark); background: rgba(140,198,63,.07); }
+.tour-addon input:focus-visible ~ .tour-addon-box { outline: 2px solid var(--navy); outline-offset: 2px; }
+.tour-addon-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.tour-addon-body strong { font-size: 13.6px; }
+.tour-addon-body span { font-size: 12px; line-height: 1.45; color: var(--text-muted); }
+.tour-addon-price {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13.2px;
+  font-weight: 700;
+  color: var(--navy-deep);
+}
+.tour-addon-price span { font-size: 11px; font-weight: 500; color: var(--text-muted); }
+
+/* Özet ve ana buton */
+.tour-summary {
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+.tour-sum-lines { list-style: none; display: grid; gap: 7px; }
+.tour-sum-lines li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.4px;
+  color: var(--text-muted);
+}
+.tour-sum-lines li span:last-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+.tour-sum-lines li.muted span:last-child { color: var(--green-dark); }
+.tour-sum-lines li.addon span:first-child { color: var(--green-dark); }
+.tour-sum-save {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: rgba(140,198,63,.13);
+  color: var(--green-dark);
+  font-size: 12.5px;
+}
+.tour-sum-save .icon { width: 15px; height: 15px; flex-shrink: 0; }
+.tour-sum-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.tour-sum-total span { font-size: 14px; font-weight: 700; color: var(--text); }
+.tour-sum-total strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--navy-deep);
+}
+.tour-sum-note { margin-top: 5px; font-size: 11.8px; color: var(--text-faint); line-height: 1.45; }
+
+.tour-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--green);
+  color: #183008;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(140,198,63,.32);
+  transition: background .18s ease, color .18s ease, transform .12s ease;
+}
+.tour-cta:hover { background: var(--green-dark); color: #fff; }
+.tour-cta:active { transform: translateY(1px); }
+.tour-cta .icon { width: 19px; height: 19px; }
+.tour-cta.small { min-height: 46px; width: auto; padding: 12px 20px; font-size: 15px; border-radius: 12px; }
+.tour-cta.ghost {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--navy);
+  box-shadow: none;
+}
+.tour-cta.ghost:hover { background: #F6F8FC; border-color: var(--navy); color: var(--navy); }
+
+.tour-booking-trust { list-style: none; display: grid; gap: 7px; }
+.tour-booking-trust li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.6px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.tour-booking-trust .icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--green-dark); margin-top: 1px; }
+.tour-booking-help {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #F6F8FC;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+}
+.tour-booking-help:hover { border-color: var(--navy); }
+.tour-booking-help .icon { width: 18px; height: 18px; color: var(--navy); }
+.tour-booking-help span { display: flex; flex-direction: column; font-size: 11.8px; color: var(--text-muted); }
+.tour-booking-help strong { font-size: 14px; color: var(--navy-deep); }
+
+/* ---------------- mobil yapışkan şerit ---------------- */
+.tour-sticky-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px var(--page-gutter) calc(11px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,.97);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 20px rgba(21,32,72,.1);
+  backdrop-filter: blur(8px);
+  transform: translateY(115%);
+  transition: transform .26s ease;
+}
+.tour-sticky-bar.is-visible { transform: none; }
+.tour-sticky-info { display: flex; flex-direction: column; min-width: 0; }
+.tour-sticky-info strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--navy-deep);
+}
+.tour-sticky-info span {
+  font-size: 11.8px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 1025px) {
+  .tour-sticky-bar { display: none; }
+}
+
+/* ---------------- fotoğraf büyütme ---------------- */
+.tour-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: none;
+  background: rgba(8,12,28,.97);
+}
+.tour-lightbox.open { display: block; }
+.tour-lb-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+}
+.tour-lb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 8px;
+  flex-shrink: 0;
+}
+.tour-lb-count { color: #fff; font-size: 13.5px; font-weight: 700; letter-spacing: .04em; }
+.tour-lb-btn,
+.tour-lb-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  flex-shrink: 0;
+}
+.tour-lb-btn:hover,
+.tour-lb-nav:hover { background: rgba(255,255,255,.22); }
+.tour-lb-btn svg,
+.tour-lb-nav svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; }
+.tour-lb-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.tour-lb-stage img {
+  flex: 1;
+  min-width: 0;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+.tour-lb-foot { flex-shrink: 0; padding-top: 10px; }
+.tour-lb-foot p {
+  color: #D6DBEC;
+  font-size: 13.5px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.tour-lb-thumbs {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tour-lb-thumbs::-webkit-scrollbar { display: none; }
+.tour-lb-thumb {
+  flex: 0 0 auto;
+  width: 62px;
+  height: 46px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(255,255,255,.08);
+  opacity: .55;
+  transition: opacity .18s ease, border-color .18s ease;
+}
+.tour-lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tour-lb-thumb:hover { opacity: .85; }
+.tour-lb-thumb.active { opacity: 1; border-color: var(--green); }
+@media (max-width: 680px) {
+  /* Mobilde oklar parmakla kaydırmaya yer bıraksın diye küçülür. */
+  .tour-lb-nav { width: 36px; height: 36px; }
+  .tour-lb-stage { gap: 4px; }
+}
+
+/* ---------------- rezervasyon özeti ---------------- */
+.tour-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 4100;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(11,18,48,.5);
+  backdrop-filter: blur(3px);
+}
+.tour-sheet.open { display: flex; }
+.tour-sheet-panel {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -10px 40px rgba(11,18,48,.28);
+}
+@media (min-width: 681px) {
+  .tour-sheet { align-items: center; }
+  .tour-sheet-panel { border-radius: 20px; }
+}
+.tour-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.tour-sheet-head h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  color: var(--navy-deep);
+}
+.tour-sheet-tour { font-size: 13.5px; color: var(--text-muted); margin-bottom: 14px; }
+.tour-sheet-lines { list-style: none; display: grid; gap: 2px; }
+.tour-sheet-lines li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+.tour-sheet-lines li strong { color: var(--navy-deep); text-align: right; }
+.tour-sheet-lines li:last-child {
+  border-bottom: 0;
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.tour-sheet-lines li:last-child strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+}
+.tour-sheet-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #F6F8FC;
+  border: 1px solid var(--border);
+  font-size: 12.8px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tour-sheet-note .icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--navy); margin-top: 1px; }
+.tour-sheet-actions { display: grid; gap: 9px; }
+@media (min-width: 681px) {
+  .tour-sheet-actions { grid-template-columns: 1fr 1fr; }
+}
+.tour-sheet-actions .tour-cta { width: 100%; }
+
+/* ---------------- bilgi balonu ---------------- */
+.tour-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 4200;
+  transform: translate(-50%, 14px);
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: var(--navy-deep);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.tour-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------------- erişilebilirlik ---------------- */
+.tour-page :focus-visible,
+.tour-booking :focus-visible,
+.tour-sticky-bar :focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.tour-lightbox :focus-visible,
+.tour-sheet :focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-gallery-cell img,
+  .tour-similar-card,
+  .tour-sticky-bar,
+  .tour-toast,
+  .tour-faq-q .icon,
+  .tour-seats-fill {
+    transition: none;
+  }
+  .tour-gallery-cell:hover img,
+  .tour-similar-card:hover { transform: none; }
+  .tour-section-nav { scroll-behavior: auto; }
+}
+
+/* Yazdırma: yapışkan katmanlar ve etkileşim düğmeleri kâğıda basılmaz. */
+@media print {
+  .site-header,
+  .tour-section-nav,
+  .tour-sticky-bar,
+  .tour-gallery-all,
+  .tour-head-actions,
+  .tour-booking-help,
+  .tour-lightbox,
+  .tour-sheet { display: none !important; }
+  .tour-block, .tour-headline, .tour-booking { box-shadow: none; break-inside: avoid; }
+}

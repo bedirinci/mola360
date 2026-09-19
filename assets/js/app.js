@@ -472,7 +472,7 @@ const suggestedSearchTerms = [
 ];
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[
+  {title:'Popüler Etkinlikler', anchor:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[
     {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Cemil Topuzlu Sahnesi, İstanbul · 21:00', meta2:'12 Eylül, Cuma', priceMain:'890'},
     {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'310+', title:'Çeşme Yaz Festivali', meta1:'Alaçatı Sahil, İzmir · Tüm gün', meta2:'19 Eylül, Cuma', priceMain:'650'},
     {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'21 Eylül, Pazartesi', priceMain:'420'},
@@ -482,7 +482,7 @@ const cardSections = [
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
   /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar".
      Icerik Turkiye geneli: her gun filtresinde farkli sehirler bulunur. */
-  {title:'Yaklaşan Planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
+  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
     /* dayKey: gun filtreleri (Bu Cuma / Bu Cumartesi / Bu Pazar) bununla suzer.
        inDays: siralama icin kalan gun. meta2: kartta gorunen tarih metni. */
     {img:'run1', badges:['Spor'], rating:'4.6', reviews:'240+', title:'İstanbul Gece Yarısı Koşusu', meta1:'Kadıköy Sahil, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'350', inDays:0, dayKey:'cuma'},
@@ -501,26 +501,30 @@ const cardSections = [
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
+  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
     {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı', meta2:'20 Ekim, Salı', priceMain:'8990'},
     {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
     {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
     {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
   ]},
-  {title:'Günübirlik Turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
+  {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
+    /* href tasiyan tek kart: icerik sayfasi yazilmis tur. Fiyat tur.html
+       ile ayni olmak zorundadir, tests/tour.test.js ikisini karsilastirir.
+       Baska bir tura icerik sayfasi yazildiginda ona da href eklenir. */
+    {img:'efes', href:'tur.html', badges:['Günübirlik'], rating:'4.8', reviews:'1,2b+', title:'Efes Antik Kenti ve Şirince Turu', meta1:'İzmir Çıkışlı · Rehberli · Yemek Dahil', meta2:'Bu Cumartesi', priceMain:'1290'},
     {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
     {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
     {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},
     {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · Rehberli', meta2:'19 Ekim, Pazar', priceMain:'450'},
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[
+  {title:'Aktiviteler', anchor:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[
     {img:'rafting3', badges:['Su Sporları'], rating:'4.8', reviews:'440+', title:'Köprülü Kanyon Rafting', meta1:'Antalya, Manavgat · Yarım Gün', meta2:'Her gün', priceMain:'850'},
     {img:'paraglide3', badges:['Macera'], rating:'4.9', reviews:'1,2b+', title:'Ölüdeniz Yamaç Paraşütü', meta1:'Fethiye, Muğla · 20 dk Uçuş', meta2:'Her gün', priceMain:'1450'},
     {img:'balloon3', badges:['Macera'], sponsored:true, title:'Kapadokya Sıcak Hava Balonu', meta1:'Göreme, Nevşehir · 1 Saat Uçuş', meta2:'Her sabah', priceMain:'2990'},
     {img:'kayak3', badges:['Kış Sporu'], rating:'4.5', reviews:'330+', title:'Uludağ Kayak Dersi', meta1:'Bursa, Uludağ · 2 Saat Özel Ders', meta2:'Hafta içi', priceMain:'750'},
   ]},
-  {title:'Oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
+  {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
     {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
     {img:'hotel5', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Kordon Butik Otel', meta1:'Alsancak, İzmir · Sahile Yürüme Mesafesi', meta2:'Bugün', priceMain:'1950', unit:'/gece'},
     {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
@@ -677,8 +681,15 @@ onViewportResize(updateCategoryLayout);
 /* Tek bir kartin isaretlemesi. Zaman filtresi olan seritlerde liste filtre
    degistikce bu fonksiyonla yeniden cizildigi icin ayri tutuluyor. */
 function poiCardMarkup(sec, it){
+  /* Icerik sayfasi olan turda baslik gercek bir <a>: klavyeyle
+     gezilebilir ve tarayici/arama motoru bagi gorebilir. data-href ise
+     kartin tamaminin tiklanabilmesi icin (asagidaki delege dinleyici);
+     ikisi ayni hedefi gosterir. */
+  const baslik = it.href
+    ? `<a href="${it.href}">${it.title}</a>`
+    : it.title;
   return `
-        <article class="poi-card">
+        <article class="poi-card"${it.href ? ` data-href="${it.href}"` : ''}>
           <div class="poi-media">
             <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="">
             <div class="poi-badges">${it.badges.map(b=>`<span class="poi-badge">${b}</span>`).join('')}</div>
@@ -688,7 +699,7 @@ function poiCardMarkup(sec, it){
             ? `<div class="poi-status-badge sponsored">Sponsorlu</div>`
             : `<div class="poi-status-badge"><span class="icon">${svg('star')}</span>${it.rating}<span class="count">(${it.reviews})</span></div>`}
           <div class="poi-body">
-            <h3 class="poi-title">${it.title}</h3>
+            <h3 class="poi-title">${baslik}</h3>
             <p class="poi-meta-row"><span class="icon">${svg(sec.meta1Icon)}</span><span class="poi-meta-text">${it.meta1}</span></p>
             <p class="poi-meta-row"><span class="icon">${svg('calendar')}</span><strong>${sec.meta2Label}</strong><span class="poi-meta-text">${it.meta2}</span></p>
           </div>
@@ -740,7 +751,7 @@ function sectionFilterMarkup(sec){
 }
 
 document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
-  <section class="section">
+  <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
     <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
     <div class="hscroll-wrap">
@@ -753,6 +764,16 @@ document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
 
 initHscrollArrows();
 initHomeBlocks();
+
+/* Icerik sayfasi olan kartlarin her yeri tiklanabilir. Favori ve sepet
+   butonlari ile basliktaki baglanti kendi islerini yapmaya devam eder;
+   bu yuzden once onlar elenir. Tek delege dinleyici: kartlar sonradan
+   yeniden cizildiginde (zaman filtreleri) yeniden baglanmak gerekmez. */
+document.addEventListener('click', (e) => {
+  const kart = e.target.closest('.poi-card[data-href]');
+  if (!kart || e.target.closest('a, button')) return;
+  window.location.href = kart.getAttribute('data-href');
+});
 
 /* ---------------- anasayfa ara bloklarının etkileşimleri ----------------
    Blokların verisi ve işaretlemesi home-blocks.js'te; burada yalnızca
@@ -951,13 +972,25 @@ function initDragScroll() {
       startX = event.clientX;
       startScrollLeft = track.scrollLeft;
       track.classList.add('is-dragging');
-      if (track.setPointerCapture) track.setPointerCapture(pointerId);
+      /* Pointer capture BASMA aninda alinmaz, ilk gercek hareketle alinir.
+         Basma aninda alindiginda tarayici sonraki mouseup ve click
+         olaylarini da seride yonlendiriyor; click'in target'i basilan kart
+         degil seridin kendisi oluyor ve kart uzerindeki delege
+         dinleyiciler (ornegin icerik sayfasina gitme) hic tetiklenmiyordu.
+         Suruklemenin kendisi icin capture yeterince erken: 5 pikselden
+         sonra, imlec hala seridin uzerindeyken aliniyor. */
     });
 
     track.addEventListener('pointermove', event => {
       if (!dragging || event.pointerId !== pointerId) return;
       const dx = event.clientX - startX;
-      if (Math.abs(dx) > 5) moved = true;
+      if (Math.abs(dx) > 5 && !moved) {
+        moved = true;
+        /* Imlec seridin disina cikarsa da hareketler gelmeye devam etsin. */
+        if (track.setPointerCapture) {
+          try { track.setPointerCapture(pointerId); } catch (_) {}
+        }
+      }
       if (!moved) return;
       event.preventDefault();
       track.scrollLeft = startScrollLeft - dx;

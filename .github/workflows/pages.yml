@@ -34,12 +34,17 @@ jobs:
       # tutuyor ve yeni surum yayinlandiginda eski dosyayi gosterebiliyor.
       # Her yayinda dosya adlarina commit'e ozel ?v=... eklenir; adres
       # degistigi icin tarayici dosyayi yeniden indirmek zorunda kalir.
+      # Kok dizindeki her HTML sayfasi damgalanir: yeni bir sayfa
+      # eklendiginde (ornegin tur.html) bu adimi guncellemek gerekmez.
       - name: Statik dosyalara surum damgasi ekle
         run: |
           VER="${GITHUB_SHA::8}"
-          sed -E -i 's#(href|src)="(assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' index.html
           echo "Surum: $VER"
-          grep -nE 'assets/(css|js)/' index.html
+          for SAYFA in *.html; do
+            sed -E -i 's#(href|src)="(assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
+            echo "--- $SAYFA"
+            grep -nE 'assets/(css|js)/' "$SAYFA"
+          done
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
