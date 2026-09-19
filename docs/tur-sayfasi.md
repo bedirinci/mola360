@@ -137,7 +137,23 @@ kullanıcı oradan "PDF olarak kaydet"i seçiyor.
 megabaytlık bir bağımlılık; html2canvas ise metni görüntüye çevirip
 seçilemez, aranamaz, yakınlaştırınca bulanıklaşan bir PDF üretiyor.
 Tarayıcının kendi motoru gerçek vektörel metin basıyor. Ölçüldü: üretilen
-PDF'te **0 görüntü nesnesi**, 6 gömülü yazı tipi, ~72 KB, 3 A4 sayfa.
+PDF'teki **metnin tamamı vektörel** (seçilebilir, aranabilir, her ölçekte
+net); ölçüldü: 12 gömülü yazı tipi, görüntü nesneleri yalnızca turun
+kendi fotoğrafları (4 adet), ~220 KB, 3–4 A4 sayfa.
+
+**Belge sayfanın tasarım dilini taşıyor.** İlk sürüm düz metindi ve
+sayfanın kalitesinde değildi. Şimdi: kapak fotoğrafı üzerine lacivert
+geçiş ve başlık, fiyat şeridi, ikonlu künye kartları, üçlü fotoğraf
+şeridi, zaman çizgili program, iki sütunlu dahil/hariç listesi, vurgulu
+buluşma kartı, renkli iptal kademeleri ve lacivert alt bilgi.
+
+İki kural bunun için şart:
+
+- **`print-color-adjust: exact`.** Tarayıcılar baskıda zeminleri ve
+  renkleri varsayılan olarak atıyor; bu olmadan lacivert kapak beyaz,
+  rozetler görünmez çıkar.
+- **Fotoğraflar gerçek `<img>`**, CSS zemini değil. CSS zemin görselleri
+  baskıda atılabiliyor; `<img>` her koşulda basılıyor.
 
 **Ekrandaki sayfa olduğu gibi basılmıyor.** Yalnızca baskıda görünen ayrı
 bir belge var (`.tour-print-sheet`, `<body>`'nin doğrudan çocuğu).
@@ -158,6 +174,13 @@ metinden kopmasın diye `break-after: avoid`; paragrafların tek satırı
 yalnız kalmasın diye `orphans: 2; widows: 2`. Motorun bu kuralları
 gerçekten uyguladığı ölçüldü: her bölüme `break-before: page` verilince
 sayfa sayısı 3'ten 10'a çıkıyor.
+
+**Fiyat şeridinde grup büyüklüğü yazılmaz.** `pricing.maxGuests` tek bir
+rezervasyonda seçilebilecek en fazla kişi (6–9); kalkıştaki grup
+büyüklüğü `seatsPerDeparture` (16–18). İlki bir sürüm boyunca "Grup"
+diye yazıldı ve belgenin **kendi künye kartıyla** çelişti ("En fazla 6
+kişi" / "En fazla 18 kişi", aynı sayfada). Grup bilgisi zaten künye
+kartından geliyor; test şeridin `maxGuests` kullanmasını engelliyor.
 
 **Belge bilet değil.** Alt bilgide "bir bilet veya rezervasyon onayı
 değildir, fiyatlar ve program değişebilir" yazıyor ve belge tarihi

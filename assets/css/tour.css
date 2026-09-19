@@ -2067,14 +2067,20 @@
 /* ---------------- yazdırma ----------------
    Ekrandaki sayfa olduğu gibi basılmıyor: galeri, rezervasyon kartı,
    yorumlar, menüler ve etiketler kâğıda düşmüyor. Yerine yalnızca
-   baskıda çizilen ayrı bir belge var (.tour-print-sheet) — düzeni A4'e
-   göre kuruluyor, sayfa sonları kontrol altında.
+   baskıda çizilen ayrı bir BELGE var (.tour-print-sheet) — kapak
+   fotoğrafı, künye kartları, fotoğraf şeridi, zaman çizgili program ve
+   renkli iptal kademeleriyle, sayfanın kendisi kadar tasarlanmış.
+
+   print-color-adjust: exact ŞART. Tarayıcılar baskıda zeminleri ve
+   renkleri varsayılan olarak atıyor; bu olmadan lacivert kapak beyaz,
+   rozetler görünmez çıkar. Fotoğraflar CSS zemini değil gerçek <img>
+   olduğu için her koşulda basılıyor.
 
    Ölçüler pt: baskıda px'in karşılığı çözünürlüğe göre değişiyor,
    pt ise fiziksel birim. */
 @page {
   size: A4;
-  margin: 16mm 14mm;
+  margin: 12mm 12mm 14mm;
 }
 @media print {
   /* Belge dışındaki her şey kâğıttan kalkıyor. */
@@ -2083,8 +2089,8 @@
 
   html, body {
     background: #fff;
-    color: #111;
-    font-size: 10.5pt;
+    color: #1B2547;
+    font-size: 10pt;
     line-height: 1.5;
   }
 
@@ -2094,87 +2100,293 @@
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .tour-print-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  /* Başlık bloğu bölünmesin ve hemen ardından sayfa sonu gelmesin. */
-  .tour-print-head {
-    border-bottom: 1.2pt solid #111;
-    padding-bottom: 8pt;
-    margin-bottom: 14pt;
+  /* ---- kapak ---- */
+  .tour-print-cover {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10pt;
+    background: #10193C;
+    color: #fff;
+    margin-bottom: 9pt;
     break-inside: avoid;
     break-after: avoid;
   }
-  /* Bir paragrafın tek satırı önceki/sonraki sayfada yalnız kalmasın. */
-  .tour-print-sheet p,
-  .tour-print-sheet li {
-    orphans: 2;
-    widows: 2;
+  .tour-print-cover-img {
+    display: block;
+    width: 100%;
+    height: 62mm;
+    object-fit: cover;
+  }
+  /* Yazının okunması fotoğrafa bağlı kalmasın diye alt taraf koyulaşıyor. */
+  .tour-print-cover-body {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20pt 14pt 11pt;
+    background: linear-gradient(to top, rgba(10,16,40,.93) 42%, rgba(10,16,40,0));
   }
   .tour-print-brand {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 11pt;
+    font-size: 9pt;
     font-weight: 800;
-    letter-spacing: .04em;
+    letter-spacing: .12em;
     text-transform: uppercase;
+    color: #9BD34F;
   }
-  .tour-print-head h1 {
+  .tour-print-cover h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19pt;
+    line-height: 1.18;
+    margin: 3pt 0 2pt;
+    color: #fff;
+  }
+  .tour-print-lead { font-size: 10pt; color: rgba(255,255,255,.86); }
+  .tour-print-cover-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5pt;
+    margin: 7pt 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tour-print-cover-meta li {
+    padding: 2pt 7pt;
+    border-radius: 99pt;
+    background: rgba(255,255,255,.16);
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+
+  /* ---- fiyat şeridi ---- */
+  .tour-print-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10pt;
+    padding: 9pt 12pt;
+    border-radius: 8pt;
+    background: #F2F5FC;
+    border: .5pt solid #D8DFF1;
+    margin-bottom: 12pt;
+    break-inside: avoid;
+  }
+  .tour-print-band-main span { font-size: 8.5pt; color: #5B6480; }
+  .tour-print-band-main strong {
+    display: block;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 17pt;
-    line-height: 1.25;
-    margin: 5pt 0 3pt;
+    line-height: 1.1;
+    color: #1B2547;
   }
-  .tour-print-lead { font-size: 10.5pt; color: #333; }
-  .tour-print-code { font-size: 9pt; color: #555; margin-top: 3pt; }
+  .tour-print-band-side { display: flex; gap: 14pt; text-align: right; }
+  .tour-print-band-side span { display: block; font-size: 8pt; color: #5B6480; }
+  .tour-print-band-side strong { font-size: 9.5pt; }
 
-  /* Bölüm başlığı yalnız kalmasın, en az iki satırı yanında gitsin. */
-  .tour-print-block { margin-bottom: 13pt; break-inside: auto; }
+  /* ---- bölüm ---- */
+  .tour-print-block { margin-bottom: 12pt; }
   .tour-print-block h2 {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 12pt;
+    font-size: 12.5pt;
+    color: #1B2547;
     margin-bottom: 6pt;
     padding-bottom: 3pt;
-    border-bottom: .6pt solid #bbb;
+    border-bottom: 1.5pt solid #9BD34F;
     break-after: avoid;
   }
-  .tour-print-block h3 {
-    font-size: 10.5pt;
-    font-weight: 700;
-    break-after: avoid;
-  }
+  .tour-print-block h3 { font-size: 10pt; font-weight: 700; break-after: avoid; }
   .tour-print-block p { margin: 2pt 0; }
-  .tour-print-block ul { margin: 0 0 0 14pt; padding: 0; }
-  .tour-print-block li { margin-bottom: 3pt; break-inside: avoid; }
 
-  /* Bir durak/gün kâğıt sonunda ikiye bölünmesin. */
-  .tour-print-day { margin-bottom: 8pt; break-inside: avoid; }
-  .tour-print-day-meta { font-size: 9pt; color: #555; }
+  /* ---- künye kartları ---- */
+  .tour-print-facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6pt;
+  }
+  .tour-print-fact {
+    padding: 7pt 8pt;
+    border: .5pt solid #DDE3F2;
+    border-radius: 7pt;
+    background: #FAFBFE;
+    break-inside: avoid;
+  }
+  .tour-print-fact-icon {
+    display: block;
+    width: 13pt;
+    height: 13pt;
+    color: #2F7D32;
+    margin-bottom: 3pt;
+  }
+  .tour-print-fact-icon svg { width: 100%; height: 100%; }
+  .tour-print-fact-label {
+    display: block;
+    font-size: 7.5pt;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #6B7490;
+  }
+  .tour-print-fact strong { display: block; font-size: 10pt; margin-top: 1pt; }
+  .tour-print-fact-note { display: block; font-size: 8pt; color: #6B7490; }
 
-  .tour-print-table { width: 100%; border-collapse: collapse; }
+  /* ---- işaretli listeler ---- */
+  .tour-print-checks { list-style: none; margin: 0; padding: 0; }
+  .tour-print-checks li {
+    display: flex;
+    gap: 5pt;
+    margin-bottom: 3.5pt;
+    break-inside: avoid;
+  }
+  .tour-print-checks svg { width: 10pt; height: 10pt; flex: none; margin-top: 2pt; color: #2F7D32; }
+  .tour-print-checks.is-out svg { color: #98A0B5; }
+  .tour-print-subhead {
+    font-weight: 700;
+    color: #1B2547;
+    margin-bottom: 4pt;
+  }
+  .tour-print-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14pt;
+  }
+  .tour-print-bullets { margin: 0 0 0 13pt; padding: 0; }
+  .tour-print-bullets li { margin-bottom: 3pt; break-inside: avoid; }
+
+  /* ---- fotoğraf şeridi ---- */
+  .tour-print-shots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6pt;
+    margin-bottom: 12pt;
+    break-inside: avoid;
+  }
+  .tour-print-shots figure { margin: 0; }
+  .tour-print-shots img {
+    display: block;
+    width: 100%;
+    height: 34mm;
+    object-fit: cover;
+    border-radius: 6pt;
+  }
+  .tour-print-shots figcaption {
+    margin-top: 2.5pt;
+    font-size: 7.5pt;
+    color: #6B7490;
+    line-height: 1.35;
+  }
+
+  /* ---- zaman çizgili program ---- */
+  .tour-print-timeline { list-style: none; margin: 0; padding: 0; }
+  .tour-print-timeline li {
+    display: grid;
+    grid-template-columns: 22mm 1fr;
+    gap: 8pt;
+    padding-bottom: 7pt;
+    break-inside: avoid;
+  }
+  .tour-print-time {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #2F7D32;
+    padding-top: 1pt;
+  }
+  /* Sol kenarda ince bir çizgi: duraklar tek bir akış gibi okunuyor. */
+  .tour-print-step {
+    border-left: 1.5pt solid #E3E8F5;
+    padding-left: 9pt;
+  }
+  .tour-print-step-meta { font-size: 8pt; color: #6B7490; }
+
+  /* ---- otel ---- */
+  .tour-print-hotel {
+    padding: 8pt 9pt;
+    border: .5pt solid #DDE3F2;
+    border-radius: 7pt;
+    background: #FAFBFE;
+    margin-bottom: 6pt;
+    break-inside: avoid;
+  }
+  .tour-print-hotel-meta { font-size: 8.5pt; color: #6B7490; }
+
+  /* ---- vurgulu not ---- */
+  .tour-print-note {
+    padding: 8pt 9pt;
+    border-left: 2pt solid #9BD34F;
+    background: #F6FAEF;
+    border-radius: 0 6pt 6pt 0;
+    margin-bottom: 6pt;
+    break-inside: avoid;
+  }
+  .tour-print-note strong { font-size: 10.5pt; }
+
+  /* ---- tablo ---- */
+  .tour-print-table { width: 100%; border-collapse: collapse; margin: 4pt 0; }
   .tour-print-table tr { break-inside: avoid; }
   .tour-print-table th {
-    width: 32%;
+    width: 30%;
     text-align: left;
     font-weight: 600;
-    color: #333;
+    color: #4A5372;
     padding: 3pt 8pt 3pt 0;
     vertical-align: top;
-    border-bottom: .4pt solid #e2e2e2;
+    border-bottom: .4pt solid #E6EAF5;
   }
   .tour-print-table td {
     padding: 3pt 0;
     vertical-align: top;
-    border-bottom: .4pt solid #e2e2e2;
+    border-bottom: .4pt solid #E6EAF5;
   }
 
+  /* ---- iptal kademeleri ---- */
+  .tour-print-tiers { list-style: none; margin: 0; padding: 0; }
+  .tour-print-tiers li {
+    display: flex;
+    gap: 8pt;
+    align-items: flex-start;
+    padding: 5pt 0;
+    border-bottom: .4pt solid #E6EAF5;
+    break-inside: avoid;
+  }
+  .tour-print-rate {
+    flex: none;
+    min-width: 13mm;
+    text-align: center;
+    padding: 2.5pt 5pt;
+    border-radius: 99pt;
+    background: #E8F4E4;
+    color: #256B29;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 9.5pt;
+    font-weight: 700;
+  }
+  .tour-print-rate.is-zero { background: #F1F2F6; color: #767E94; }
+  .tour-print-tiers p { font-size: 9pt; color: #4A5372; }
+
+  /* ---- alt bilgi ---- */
   .tour-print-foot {
-    margin-top: 14pt;
-    padding-top: 7pt;
-    border-top: .6pt solid #bbb;
-    font-size: 8.5pt;
-    color: #555;
+    margin-top: 12pt;
+    padding: 9pt 11pt;
+    border-radius: 8pt;
+    background: #10193C;
+    color: rgba(255,255,255,.8);
+    font-size: 8pt;
     break-inside: avoid;
   }
   .tour-print-foot p { margin: 1.5pt 0; }
+  .tour-print-foot-note { color: #fff; font-size: 8.5pt; }
+  .tour-print-foot strong { color: #9BD34F; }
+
+  /* Paragrafların tek satırı sayfa sonunda yalnız kalmasın. */
+  .tour-print-sheet p,
+  .tour-print-sheet li { orphans: 2; widows: 2; }
 
   /* Bağlantılar kâğıtta mavi/altı çizili durmasın. */
   .tour-print-sheet a { color: inherit; text-decoration: none; }
