@@ -128,6 +128,48 @@ Adresler veride **kök-göreli** duruyor ve `KOK` ile önekleniyor;
 `#` ile başlayanlar olduğu gibi kalıyor. Çip görünümü anasayfadaki
 "ilgili aramalar" bulutuyla ortak (`.seo-chip`, `style.css`).
 
+### PDF belgesi
+
+Sayfanın altındaki küçük kart tarayıcının yazdırma penceresini açıyor;
+kullanıcı oradan "PDF olarak kaydet"i seçiyor.
+
+**Neden kütüphane yok.** Bu sitede derleme adımı yok. jsPDF/pdfmake
+megabaytlık bir bağımlılık; html2canvas ise metni görüntüye çevirip
+seçilemez, aranamaz, yakınlaştırınca bulanıklaşan bir PDF üretiyor.
+Tarayıcının kendi motoru gerçek vektörel metin basıyor. Ölçüldü: üretilen
+PDF'te **0 görüntü nesnesi**, 6 gömülü yazı tipi, ~72 KB, 3 A4 sayfa.
+
+**Ekrandaki sayfa olduğu gibi basılmıyor.** Yalnızca baskıda görünen ayrı
+bir belge var (`.tour-print-sheet`, `<body>`'nin doğrudan çocuğu).
+`@media print` içinde `body > *:not(.tour-print-sheet)` ile geri kalan her
+şey kâğıttan kalkıyor — galeri, rezervasyon kartı, yorumlar, menüler,
+etiketler. Belge `<main>` içinde kalsaydı o kuralla birlikte o da
+gizlenirdi; test bunu bekçilik ediyor.
+
+Belge tur kaydından üretiliyor, elle yazılmıyor — sayfadaki bilgiyle
+ayrışamaz.
+
+Ölçüler `pt` cinsinden: baskıda `px`'in karşılığı çözünürlüğe göre
+değişir, `pt` fiziksel birimdir. `@page { size: A4; margin: 16mm 14mm }`.
+
+**Sayfa sonları.** Bir durak/gün, tablo satırı, madde ve alt bilgi kâğıt
+sonunda ikiye bölünmesin diye `break-inside: avoid`; başlıklar altındaki
+metinden kopmasın diye `break-after: avoid`; paragrafların tek satırı
+yalnız kalmasın diye `orphans: 2; widows: 2`. Motorun bu kuralları
+gerçekten uyguladığı ölçüldü: her bölüme `break-before: page` verilince
+sayfa sayısı 3'ten 10'a çıkıyor.
+
+**Belge bilet değil.** Alt bilgide "bir bilet veya rezervasyon onayı
+değildir, fiyatlar ve program değişebilir" yazıyor ve belge tarihi
+basılıyor. Müşteri bunu indirip saklayacağı için rezervasyon onayı
+sanılmamalı. Fiyat da "başlangıç fiyatı" olarak geçiyor: seçilen tarihe,
+kişi sayısına ve ek hizmetlere göre değişiyor, belgeye bir toplam yazmak
+yanıltıcı olurdu.
+
+**Doğrulanamayan:** PDF Chromium'un motoruyla üretilip denetlendi. iOS
+Safari'nin yazdırma motoru aynı `@media print` kurallarını uygular ama
+sayfalama birebir aynı olmayabilir.
+
 ### Çift dokunuşla yakınlaştırma
 
 `* { touch-action: manipulation }` ile kapalı. `manipulation` bilerek

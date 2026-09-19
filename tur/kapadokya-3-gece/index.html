@@ -144,12 +144,21 @@
 
   <section class="tour-block tour-similar" id="tourSimilar"></section>
 
+  <!-- PDF indirme karti. Belgenin kendisi asagidaki tour-print-sheet;
+       o ekranda gorunmez, yalnizca baskida cizilir. -->
+  <section class="tour-block tour-print" id="tourPrint"></section>
+
   <!-- Sayfa etiketleri: sayfanin en altindaki cip bulutu. Icerigi
        tur kaydindaki "tags" alanindan uretilir; her cip gercek bir
        hedefe gider. -->
   <section class="tour-block tour-tags" id="tourTags"></section>
 
 </main>
+
+<!-- Yazdirilacak belge. Ekranda display:none; yalnizca @media print icinde
+     acilir ve o zaman sayfadaki diger her sey kagittan kalkar. Icerigi tur
+     kaydindan uretilir, sayfadaki bilgiyle ayrisamaz. -->
+<section class="tour-print-sheet" id="tourPrintSheet" aria-hidden="true"></section>
 
 <footer class="site-footer">
   <div class="footer-top">

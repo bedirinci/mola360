@@ -450,6 +450,167 @@
       </div>`;
   }
 
+  /* ---------------- PDF belgesi ----------------
+     "PDF indir" tarayicinin kendi yazdirma penceresini aciyor; oradan
+     "PDF olarak kaydet" secilir. Kutuphane eklenmedi -- bu sitede derleme
+     adimi yok ve jsPDF/html2canvas gibi cozumler ya megabaytlik bir
+     bagimlilik ya da metni goruntuye cevirip secilemez/aranamaz bir PDF
+     uretiyor. Tarayicinin kendi motoru gercek vektorel metin basiyor:
+     secilebilir, aranabilir, her olcekte net.
+
+     Ekranda gorunen sayfa oldugu gibi basilmiyor. Bunun yerine yalnizca
+     baskida gorunen ayri bir belge uretiliyor (.tour-print-sheet); boylece
+     galeri, rezervasyon karti, yorumlar ve menuler kagida dusmuyor,
+     sayfa sonlari kontrol altinda ve duzen A4'e gore kuruluyor.
+
+     Belge tur kaydindan uretildigi icin sayfadaki bilgiyle ayrisamaz. */
+
+  function printRow(baslik, deger) {
+    if (!deger) return '';
+    return `<tr><th>${baslik}</th><td>${deger}</td></tr>`;
+  }
+
+  function printList(baslik, ogeler) {
+    if (!ogeler || !ogeler.length) return '';
+    return `
+      <section class="tour-print-block">
+        <h2>${baslik}</h2>
+        <ul>${ogeler.map(o => `<li>${o}</li>`).join('')}</ul>
+      </section>`;
+  }
+
+  /* Gunubirlikte saat saat duraklar, konaklamalida gun gun akis. */
+  function printProgram() {
+    if (stay) {
+      return `
+        <section class="tour-print-block">
+          <h2>Gün gün program</h2>
+          ${tour.program.map(g => `
+            <article class="tour-print-day">
+              <h3>${g.day}. gün — ${g.title}</h3>
+              <p>${g.text}</p>
+              <p class="tour-print-day-meta">Öğünler: ${g.meals.join(', ')} · Konaklama: ${g.overnight}</p>
+            </article>`).join('')}
+        </section>`;
+    }
+    return `
+      <section class="tour-print-block">
+        <h2>Günün programı</h2>
+        ${tour.itinerary.map(d => `
+          <article class="tour-print-day">
+            <h3>${d.time} — ${d.title}</h3>
+            <p>${d.text}</p>
+          </article>`).join('')}
+      </section>`;
+  }
+
+  function printStay() {
+    if (!stay) return '';
+    const k = tour.accommodation;
+    return `
+      <section class="tour-print-block">
+        <h2>Konaklama</h2>
+        ${k.hotels.map(o => `
+          <article class="tour-print-day">
+            <h3>${o.name} — ${o.area} (${o.stars} yıldız, ${o.nights} gece)</h3>
+            <p>${o.note}</p>
+          </article>`).join('')}
+        <table class="tour-print-table">
+          ${printRow('Pansiyon', k.board)}
+          ${printRow('Kapsam', k.boardNote)}
+          ${printRow('Giriş / çıkış', k.checkIn + ' / ' + k.checkOut)}
+        </table>
+      </section>`;
+  }
+
+  function printMeeting() {
+    const b = tour.meeting;
+    const duraklar = (b.points || [])
+      .map(n => `<li>${n.time} — ${n.name}${n.note ? ' (' + n.note + ')' : ''}</li>`).join('');
+    return `
+      <section class="tour-print-block">
+        <h2>Buluşma noktası</h2>
+        <table class="tour-print-table">
+          ${printRow('Nokta', b.title)}
+          ${printRow('Adres', b.address)}
+          ${printRow('Dönüş', b.dropoff)}
+        </table>
+        ${duraklar ? `<h3>Biniş noktaları</h3><ul>${duraklar}</ul>` : ''}
+        <p>${b.note}</p>
+      </section>`;
+  }
+
+  function printCancellation() {
+    return `
+      <section class="tour-print-block">
+        <h2>İptal ve iade</h2>
+        <ul>${tour.cancellation.tiers
+          .map(k => `<li><strong>${k.label}:</strong> ${k.text}</li>`).join('')}</ul>
+        <p>${tour.cancellation.note}</p>
+      </section>`;
+  }
+
+  /* Belgenin tamami. Fiyat "baslangic fiyati" olarak yaziliyor: secilen
+     tarihe, kisi sayisina ve ek hizmetlere gore degisiyor, sayfadaki
+     rezervasyon karti hesapliyor. Belgeye bir toplam yazmak yaniltici
+     olurdu. */
+  function printSheetMarkup() {
+    const bugun = formatTrDate(new Date());
+    const adres = window.location.href.split('#')[0];
+    return `
+      <header class="tour-print-head">
+        <p class="tour-print-brand">mola360</p>
+        <h1>${tour.title}</h1>
+        <p class="tour-print-lead">${tour.tagline}</p>
+        <p class="tour-print-code">${tour.category} · Tur kodu ${tour.code}</p>
+      </header>
+
+      <section class="tour-print-block">
+        <h2>Tur bilgileri</h2>
+        <table class="tour-print-table">
+          ${tour.facts.map(o => printRow(o.label, o.value + (o.note ? ' — ' + o.note : ''))).join('')}
+          ${printRow('Bölge', tour.area + ' · ' + tour.region)}
+          ${printRow('Kalkış günleri', tour.pricing.departureNote)}
+          ${printRow('Başlangıç fiyatı', formatTRY(basePrice(tour)) + ' ' + tour.pricing.unitNote)}
+        </table>
+      </section>
+
+      ${printProgram()}
+      ${printStay()}
+      ${printList('Fiyata dahil olanlar', tour.included)}
+      ${printList('Fiyata dahil olmayanlar', tour.excluded)}
+      ${printMeeting()}
+      ${printList('Yanınıza alın', tour.bring)}
+      ${printList('Önemli bilgiler', tour.important)}
+      ${printCancellation()}
+
+      <footer class="tour-print-foot">
+        <p><strong>Bu belge bir bilet veya rezervasyon onayı değildir.</strong>
+           Bilgi amaçlıdır; fiyatlar ve program değişebilir. Güncel hâli için
+           sayfayı ziyaret edin.</p>
+        <p>${adres}</p>
+        <p>Destek: ${CONTACT.phoneLabel} · ${CONTACT.hours}</p>
+        <p>Belge tarihi: ${bugun}</p>
+      </footer>`;
+  }
+
+  /* Sayfadaki kucuk kart: belgede ne oldugunu soyler ve yazdirmayi acar. */
+  function printCardMarkup() {
+    return `
+      <div class="tour-print-card">
+        <span class="tour-print-icon">${ic('download')}</span>
+        <div class="tour-print-text">
+          <strong>Tur bilgilerini ve programı indir</strong>
+          <span>${stay ? 'Gün gün program' : 'Saat saat program'}, fiyata dahil olanlar,
+                buluşma noktası ve iptal koşulları. Açılan yazdırma penceresinde
+                “PDF olarak kaydet”i seçin.</span>
+        </div>
+        <button class="tour-cta ghost small" type="button" id="tourPrintBtn">
+          ${ic('download')}PDF indir
+        </button>
+      </div>`;
+  }
+
   /* ---------------- sayfa etiketleri ----------------
      Sayfanın en altındaki çip bulutu. Kökten gelen bağlantılar KOK ile
      öneklenir; '#' ile başlayanlar bu sayfanın kendi bölümü olduğu için
@@ -1279,6 +1440,12 @@
     const shareBtn = document.getElementById('tourGalleryShare');
     if (shareBtn) shareBtn.addEventListener('click', paylas);
 
+    /* PDF: tarayicinin yazdirma penceresi. Kullanici oradan "PDF olarak
+       kaydet"i secer. Ekrandaki sayfa degil, yalnizca baskida acilan
+       belge basilir (tour.css'teki @media print). */
+    const printBtn = document.getElementById('tourPrintBtn');
+    if (printBtn) printBtn.addEventListener('click', () => window.print());
+
     /* Rezervasyon kartı: tek delege dinleyici, kart yeniden çizilse de
        bağlı kalır. */
     bookingEl.addEventListener('click', (e) => {
@@ -1367,6 +1534,8 @@
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
   fill('tourSimilar', similarMarkup());
+  fill('tourPrint', printCardMarkup());
+  fill('tourPrintSheet', printSheetMarkup());
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
