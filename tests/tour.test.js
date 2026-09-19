@@ -1119,10 +1119,25 @@ describe('mobil başlık stili', () => {
        köşelerini dolduruyordu: köşeler çiziliydi ama görünmüyordu.
        Zemin mobilde tamamen içteki başlığa bırakılıyor. */
     const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/);
-    expect(kural, 'sarmalayıcıyı saydamlaştıran kural yok').toBeTruthy();
-    expect(kural[1]).toContain('background: none');
-    expect(kural[1]).toContain('box-shadow: none');
+    /* Tek kural olmalı; ikiye bölünürse biri diğerini ezebilir. */
+    const kurallar = mobil.match(/\.tour-body \.site-header \{/g) || [];
+    expect(kurallar.length, 'sarmalayıcı için birden fazla kural var').toBe(1);
+    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('background: none');
+    expect(kural).toContain('box-shadow: none');
+  });
+
+  it('mobilde başlık banner’ın üzerine biniyor', () => {
+    /* Başlık akıştan çıkmazsa oval alt köşelerin içinden sayfa zemini
+       görünüyor ve çentikler boş duruyor. Akıştan çıkınca galeri en
+       üstten başlıyor ve çentiklerden fotoğrafın kendisi görünüyor. */
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('position: absolute');
+    expect(kural).toContain('top: 0');
+    /* Başlık yer kaplamadığı için sayfanın üst boşluğu da sıfır olmalı,
+       yoksa galeri aşağı kayıp çentikler yine boşa düşer. */
+    expect(mobil).toContain('.tour-body .tour-page { padding-top: 0; }');
   });
 
   it('kırılma noktaları mobilde gizli ama işaretlemede duruyor', () => {

@@ -67,25 +67,38 @@
   .tour-body .header-inner { display: none; }
   .tour-mobile-header { display: flex; }
 
-  /* Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
-     yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
-     görünmüyordu. Mobilde zemini tamamen içteki başlığa bırakıyoruz,
-     böylece oval alt kenar sayfa zemininin üzerinde görünüyor.
-     (Masaüstünde sarmalayıcı kendi zeminini korur.) */
+  /* Başlık akıştan çıkıp banner'ın ÜZERİNE biniyor.
+
+     İki şeyi birden çözüyor:
+     1) Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
+        yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
+        görünmüyordu. Zemin artık tamamen içteki başlığa ait.
+     2) Akıştan çıkınca galeri sayfanın en üstünden başlıyor ve oval alt
+        köşelerin içinden sayfa zemini değil fotoğrafın kendisi
+        görünüyor; çentikler boş durmuyor.
+
+     Başlık opak lacivert olduğu için üzerindeki yazı fotoğraftan
+     etkilenmiyor. Dayanak noktası body (position: relative).
+     Masaüstünde sarmalayıcı akışta kalır ve kendi zeminini korur. */
   .tour-body .site-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background: none;
     box-shadow: none;
   }
+  /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
+  .tour-body .tour-page { padding-top: 0; }
+  /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;
+     görünen alan eskisiyle aynı kalsın. */
+  .tour-body .tour-gallery-cell { aspect-ratio: 4 / 3.6; }
 
   /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
      kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
      göstermeye gerek yok. İşaretleme ve BreadcrumbList yapısal verisi
      olduğu gibi duruyor; yalnızca görünürlük değişiyor. */
   .tour-body .tour-crumbs { display: none; }
-
-  /* Kırılma noktası kalkınca galeri başlığa yapışıyordu; oval kenarın
-     görünmesi için üstte biraz boşluk kalıyor. */
-  .tour-body .tour-page { padding-top: 12px; }
 }
 
 /* ---------------- header uyarlaması (masaüstü) ----------------
