@@ -189,6 +189,21 @@ const Mola360App = window.Mola360App = {
   })
 };
 
+/* ---------------- sayfaya gore koruma ----------------
+   Bu dosya artik yalnizca anasayfada degil, tur icerik sayfalarinda da
+   yukleniyor (header/arama/bildirim/profil tek kaynaktan gelsin diye).
+   Tur sayfasinda anasayfaya ozgu bolumler -- top10 seridi, kategori
+   seridi, kart bolumleri, mobil menu, filtre cubugu, tarih takvimi --
+   DOM'da yok. Asagidaki iki yardimci eksik elemanda sessizce geri
+   doner; boylece header ve acilir katmanlar her sayfada calisir.
+   Anasayfada eleman her zaman bulundugu icin davranis degismez. */
+function byId(id) { return document.getElementById(id); }
+function onId(id, olay, fn, opts) {
+  const el = byId(id);
+  if (el) el.addEventListener(olay, fn, opts);
+  return el;
+}
+
 const currentUser = {
   name: 'Bedir İnci',
   avatarUrl: null
@@ -662,7 +677,7 @@ function updateCategoryLayout() {
 }
 
 /* ---------------- render ---------------- */
-document.getElementById('top10Scroll').innerHTML = top10.map((it,i)=>`
+if (byId('top10Scroll')) byId('top10Scroll').innerHTML = top10.map((it,i)=>`
   <a class="top10-card" href="#">
     <div class="top10-media">
       <span class="top10-rank">${i+1}</span>
@@ -671,7 +686,7 @@ document.getElementById('top10Scroll').innerHTML = top10.map((it,i)=>`
     <div class="top10-info"><h3>${it.t}</h3></div>
   </a>`).join('');
 
-document.getElementById('catScroll').innerHTML = categories.map(c=>`
+if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
   <a class="cat-item" href="#">
     <span class="cat-icon-wrap"><img class="cat-icon-img" src="${CAT_ICONS[c.img]}" alt="${c.name}"></span>
     <span>${c.name}</span>
@@ -751,7 +766,7 @@ function sectionFilterMarkup(sec){
     </div>`;
 }
 
-document.getElementById('cardSections').innerHTML = cardSections.map(sec=>`
+if (byId('cardSections')) byId('cardSections').innerHTML = cardSections.map(sec=>`
   <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
     <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
@@ -1048,6 +1063,7 @@ function syncMobileMenuButton(isOpen) {
 }
 
 function toggleDrawer() {
+  if (!drawer || !overlay) return;
   const isOpen = drawer.classList.contains('open');
 
   if (isOpen) {
@@ -1080,7 +1096,7 @@ if (typeof ResizeObserver !== 'undefined' && siteHeader) {
 onViewportResize(syncMobileDrawerPosition);
 
 if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleDrawer);
-overlay.addEventListener('click', toggleDrawer);
+if (overlay) overlay.addEventListener('click', toggleDrawer);
 
 /* ---------------- sidebar "Devamını gör" açılır listeler ---------------- */
 document.addEventListener('click', (e) => {
@@ -1355,11 +1371,11 @@ if (window.visualViewport) {
 searchOverlayInput.addEventListener('focus', () => setTimeout(updateSearchOverlayKeyboardInset, 300));
 searchOverlayInput.addEventListener('blur', () => setTimeout(updateSearchOverlayKeyboardInset, 300));
 
-document.getElementById('headerSearchTrigger').addEventListener('click', openSearchOverlay);
-document.getElementById('headerSearchTrigger').addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
-document.getElementById('mobileSearchTrigger').addEventListener('click', openSearchOverlay);
-document.getElementById('mobileSearchTrigger').addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
-document.getElementById('searchOverlayBack').addEventListener('click', closeSearchOverlay);
+onId('headerSearchTrigger', 'click', openSearchOverlay);
+onId('headerSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
+onId('mobileSearchTrigger', 'click', openSearchOverlay);
+onId('mobileSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
+onId('searchOverlayBack', 'click', closeSearchOverlay);
 
 searchOverlayInput.addEventListener('input', ()=>{
   const value = searchOverlayInput.value;
@@ -1375,7 +1391,7 @@ searchOverlayClear.addEventListener('click', ()=>{
   searchOverlayInput.focus({preventScroll:true});
 });
 
-document.getElementById('searchHomeContent').addEventListener('click', (e)=>{
+onId('searchHomeContent', 'click', (e)=>{
   const removeButton = e.target.closest('.search-recent-remove');
   if (removeButton) {
     e.preventDefault();
@@ -1601,7 +1617,7 @@ document.addEventListener('click', (e)=>{
   closeNotifPanel();
 });
 if (notifBackBtn) notifBackBtn.addEventListener('click', (e)=>{ e.stopPropagation(); closeNotifPanel(); });
-document.getElementById('notifPanelClose').addEventListener('click', (e)=>{
+onId('notifPanelClose', 'click', (e)=>{
   e.stopPropagation();
   closeNotifPanel();
 });
@@ -1655,7 +1671,8 @@ if (drawerProfileNameEl) {
   else drawerProfileNameEl.textContent = currentUser.name;
 }
 if (drawerProfileAvatarEl) drawerProfileAvatarEl.textContent = getInitials(currentUser.name);
-document.getElementById('profileMenuName').textContent = currentUser.name;
+const profileMenuNameEl = byId('profileMenuName');
+if (profileMenuNameEl) profileMenuNameEl.textContent = currentUser.name;
 
 const profileBtn = document.getElementById('profileBtn');
 const profilePanel = document.getElementById('profilePanel');
@@ -1703,10 +1720,10 @@ document.querySelectorAll('.profile-menu-item[data-bottom-tab], .profile-menu-it
     closeProfilePanel();
   });
 });
-document.getElementById('profileLogoutBtn').addEventListener('click', closeProfilePanel);
+onId('profileLogoutBtn', 'click', closeProfilePanel);
 
 /* ---------------- favorite (heart) toggle ---------------- */
-document.getElementById('cardSections').addEventListener('click', e=>{
+onId('cardSections', 'click', e=>{
   const btn = e.target.closest('.poi-fav-btn');
   if(!btn) return;
   e.preventDefault();
@@ -2296,19 +2313,19 @@ function resetDateRange() {
   renderDateCalendar();
 }
 
-document.getElementById('dateCalPrev').addEventListener('click', () => {
+onId('dateCalPrev', 'click', () => {
   dateCalViewMonth--;
   if (dateCalViewMonth < 0) { dateCalViewMonth = 11; dateCalViewYear--; }
   renderDateCalendar();
 });
 
-document.getElementById('dateCalNext').addEventListener('click', () => {
+onId('dateCalNext', 'click', () => {
   dateCalViewMonth++;
   if (dateCalViewMonth > 11) { dateCalViewMonth = 0; dateCalViewYear++; }
   renderDateCalendar();
 });
 
-document.getElementById('dateCalGrid').addEventListener('click', event => {
+onId('dateCalGrid', 'click', event => {
   const btn = event.target.closest('.date-cal-day[data-date]');
   if (!btn || btn.disabled) return;
 
@@ -2335,13 +2352,13 @@ document.getElementById('dateCalGrid').addEventListener('click', event => {
   renderDateCalendar();
 });
 
-document.getElementById('dateCalClear').addEventListener('click', event => {
+onId('dateCalClear', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
   resetDateRange();
 });
 
-document.getElementById('dateCalApply').addEventListener('click', event => {
+onId('dateCalApply', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
   if (!dateCalRangeStart || !dateCalRangeEnd) return;
@@ -2416,8 +2433,8 @@ function setAuthTab(tab){
      başlığı ve "Giriş yap"a dönüş bağlantısı devreye girer. */
   authOverlay.classList.toggle('is-reset', tab === 'reset');
 }
-document.getElementById('headerRegisterBtn').addEventListener('click', ()=> openAuthModal('login'));
-document.getElementById('drawerAuthBtn').addEventListener('click', ()=> openAuthModal('login'));
+onId('headerRegisterBtn', 'click', ()=> openAuthModal('login'));
+onId('drawerAuthBtn', 'click', ()=> openAuthModal('login'));
 const sidebarAuthBtn = document.getElementById('sidebarAuthBtn');
 if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal('login'));
 
@@ -2447,9 +2464,9 @@ if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal(
     });
   });
 })();
-document.getElementById('authModalCloseBtn').addEventListener('click', closeAuthModal);
+onId('authModalCloseBtn', 'click', closeAuthModal);
 /* Mobil tam ekran başlığındaki geri oku da aynı kapatmayı çalıştırır. */
-document.getElementById('authModalBackBtn').addEventListener('click', closeAuthModal);
+onId('authModalBackBtn', 'click', closeAuthModal);
 authOverlay.addEventListener('click', e=>{ if(e.target === authOverlay) closeAuthModal(); });
 document.querySelectorAll('.auth-modal-tab').forEach(tabBtn=>{
   tabBtn.addEventListener('click', ()=> setAuthTab(tabBtn.dataset.authTab));

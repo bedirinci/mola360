@@ -42,9 +42,9 @@
    style.css'teki "ORTAK MOBİL EKRAN BAŞLIĞI" bloğunda tanımlı —
    burada yalnızca hangi başlığın ne zaman görüneceği var.
 
-   İki ayrı düzen kuruluyor, tek düzen zorlanmıyor: masaüstünde her zamanki
-   site başlığı (.header-inner), mobilde bu. Böylece ikisi birbirinin
-   kurallarını ezmiyor. */
+   İki ayrı başlık var, tek başlık zorlanmıyor: masaüstünde sitenin her
+   sayfadaki ortak başlığı (.site-header, site-chrome.js'ten gelir),
+   mobilde bu. Böylece ikisi birbirinin kurallarını ezmiyor. */
 .tour-mobile-header { display: none; }
 
 /* Sağdaki eylem ikon: geri okuyla aynı çap, böylece başlığın iki ucu
@@ -64,29 +64,31 @@
 }
 
 @media (max-width: 680px) {
-  .tour-body .header-inner { display: none; }
+  /* Ortak site başlığı mobilde tur sayfasında hiç görünmez; yerini
+     aşağıdaki tur başlığı alır. Bildirim/arama/profil katmanları
+     işaretlemede kalmaya devam eder, yalnızca başlık gizlenir. */
+  .tour-body .site-header { display: none; }
+  /* Ortak çerçeveyle gelen mobil arama çubuğu da gizli: tur sayfasının
+     mobil başlığı zaten tam genişlikte ve altında arama alanı yok.
+     Gizlenmezse akışta 62px yer kaplayıp galeriyi aşağı itiyor. */
+  .tour-body .mobile-search-bar { display: none; }
   .tour-mobile-header { display: flex; }
 
-  /* Başlık akıştan çıkıp banner'ın ÜZERİNE biniyor.
-
-     İki şeyi birden çözüyor:
-     1) Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
-        yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
-        görünmüyordu. Zemin artık tamamen içteki başlığa ait.
-     2) Akıştan çıkınca galeri sayfanın en üstünden başlıyor ve oval alt
-        köşelerin içinden sayfa zemini değil fotoğrafın kendisi
-        görünüyor; çentikler boş durmuyor.
+  /* Başlık akıştan çıkıp banner'ın ÜZERİNE biniyor: galeri sayfanın en
+     üstünden başlıyor ve başlığın oval alt köşelerinin içinden sayfa
+     zemini değil fotoğrafın kendisi görünüyor; çentikler boş durmuyor.
 
      Başlık opak lacivert olduğu için üzerindeki yazı fotoğraftan
      etkilenmiyor. Dayanak noktası body (position: relative).
-     Masaüstünde sarmalayıcı akışta kalır ve kendi zeminini korur. */
-  .tour-body .site-header {
+     z-index, başlık .site-header'ın içindeyken aldığı değerle aynı
+     (style.css'teki mobil .site-header kuralı) — yığılma sırası
+     değişmesin diye burada birebir tekrarlanıyor. */
+  .tour-mobile-header {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    background: none;
-    box-shadow: none;
+    z-index: 3000;
   }
   /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
   .tour-body .tour-page { padding-top: 0; }
@@ -110,35 +112,10 @@
   .tour-body .tour-crumbs { display: none; }
 }
 
-/* ---------------- header uyarlaması (masaüstü) ----------------
-   Detay sayfasında arama kutusu bir bağlantı (arama anasayfada açılıyor),
-   input değil; metin rengi input'un placeholder'ı ile aynı kalsın. */
-.tour-header-search {
-  text-decoration: none;
-  cursor: pointer;
-}
-.header-search-text {
-  flex: 1;
-  color: #B7BEDD;
-  font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.tour-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  color: #fff;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.16);
-  flex-shrink: 0;
-}
-.tour-back:hover { background: rgba(255,255,255,.2); }
-.tour-back .icon { width: 20px; height: 20px; }
+/* Masaüstünde tur sayfasının başlığı artık sitenin ortak başlığı
+   (site-chrome.js). Buradaki .tour-header-search / .header-search-text /
+   .tour-back kuralları o basitleştirilmiş kopyaya aitti; işaretleme
+   kalkınca kuralları da kaldırıldı. */
 
 /* ---------------- kırılma noktaları ---------------- */
 .tour-crumbs {

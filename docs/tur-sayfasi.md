@@ -37,17 +37,54 @@ yapamadığı için `tur.html` artık `canonical` + `noindex` + `meta refresh`
 + JS taşıyan bir yönlendirme sayfası: slug taşıyorsa o turun yeni
 adresine, taşımıyorsa varsayılan tura gidiyor.
 
-### Neden `app.js` yüklenmiyor
+### Masaüstü başlığı: tek kaynak
 
-`app.js` ilk satırlarında `document.getElementById('top10Scroll').innerHTML`
-gibi doğrudan anasayfa DOM'una yazıyor; tur sayfasında ilk satırında
-patlar. Bu yüzden ikon seti ve biçimlendirme `tour-data.js` içinde kendi
-başına duruyor.
+Masaüstünde tur sayfasının başlığı anasayfanınkiyle **aynı** — benzer
+değil, aynı. İşaretleme `assets/js/site-chrome.js` içinde tek kopya
+duruyor ve her sayfa o dosyayı yüklüyor; dosya kendi `<script>`
+etiketinin yerine basıyor, yani başlık sayfanın neresinde duracaksa
+etiket oraya konuyor. Senkron çalıştığı için tarayıcı sayfanın geri
+kalanını ayrıştırmadan önce başlık DOM'da hazır: statik işaretlemeye
+göre görünür bir gecikme yok.
 
-`ui.js` **yüklenir**: içindeki blokların hepsi eleman yoksa sessizce
+Çerçeve yalnızca başlığı değil, ona bağlı katmanları da taşıyor: bildirim
+paneli, profil menüsü, mobil arama çubuğu, tam ekran arama ve giriş
+modalı. Böylece tur sayfasında da arama açılıyor, bildirimler okunuyor,
+"Giriş Yap / Üye Ol" çalışıyor.
+
+Görsel yolları köke göre yazılmış; alt dizindeki sayfalar
+`<body data-root="../../">` ile önekini bildiriyor ve çerçeve `assets/`
+yollarını o önekle yeniden yazıyor.
+
+İki kopyayı elle eşit tutmaya çalışmak yok: `tests/site-chrome.test.js`
+hiçbir sayfada elle yazılmış bir `<header class="site-header">` kalmadığını
+doğruluyor.
+
+### `app.js` artık her sayfada yükleniyor
+
+Başlık, arama, bildirimler, profil ve giriş modalının davranışı `app.js`
+içinde. Davranışı ikinci kez yazmak yerine dosyanın kendisi sayfadan
+bağımsız hâle getirildi: anasayfaya özgü kaplara (`top10Scroll`,
+`catScroll`, `cardSections`, mobil menü, filtre çubuğu, tarih takvimi)
+erişim `byId`/`onId` üzerinden korumalı. Eleman yoksa o satır sessizce
+geçiyor.
+
+Bu korumanın sebebi somut: `app.js` en üst seviyede çalışan tek bir
+betik. Korumasız bir `document.getElementById('x').addEventListener(...)`
+tur sayfasında `TypeError` atınca dosyanın **geri kalanı hiç
+çalışmıyor** — başlık, arama, bildirimler, profil, giriş modalı topluca
+ölüyor. Bu yüzden `tests/site-chrome.test.js` zincirleme
+`document.getElementById('...').` kullanımını tümden yasaklıyor.
+
+Anasayfada eleman her zaman bulunduğu için davranış değişmedi; doğrulama
+için anasayfanın masaüstü ve mobil ekran görüntüleri değişiklik
+öncesi/sonrası piksel piksel karşılaştırıldı ve birebir aynı çıktı.
+
+`ui.js` de yüklenir: içindeki blokların hepsi eleman yoksa sessizce
 çıkıyor ve görsel yedek mekanizması (ölü URL → nötr yer tutucu) burada da
-çalışıyor. `home-blocks.js` de yüklenir; tek ihtiyaç `CONTACT` — destek
-numarası iki sayfada ayrı ayrı yazılmasın diye.
+çalışıyor. `home-blocks.js` `app.js`'ten önce gelmek zorunda; ayrıca
+`CONTACT` oradan okunuyor — destek numarası iki sayfada ayrı ayrı
+yazılmasın diye.
 
 ## İki tur tipi, tek kalıp
 
