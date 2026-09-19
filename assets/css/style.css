@@ -510,21 +510,25 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Sağdaki tek eylem. */
+/* Sağdaki tek eylem. Zemin ve üzerine gelme davranışı ortak; biçim
+   ekrana göre değişir — bildirimlerde metin hapı, tur sayfasında geri
+   okuyla aynı çapta yuvarlak ikon (biçimi tour.css'te). */
 .notif-mark-all,
 .tour-mobile-action {
   flex-shrink: 0;
-  padding: 8px 12px;
-  border-radius: 999px;
   background: rgba(255,255,255,.14);
   color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
   transition: background .15s ease, opacity .15s ease;
 }
 .notif-mark-all:hover,
 .tour-mobile-action:hover {
   background: rgba(255,255,255,.22);
+}
+.notif-mark-all {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 .notif-mark-all:disabled {
   opacity: .45;

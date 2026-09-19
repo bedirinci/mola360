@@ -47,6 +47,22 @@
    kurallarını ezmiyor. */
 .tour-mobile-header { display: none; }
 
+/* Sağdaki eylem ikon: geri okuyla aynı çap, böylece başlığın iki ucu
+   dengeli duruyor. Zemin ve hover ortak tanımdan geliyor. */
+.tour-mobile-action {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.tour-mobile-action .icon,
+.tour-mobile-action svg {
+  width: 19px;
+  height: 19px;
+}
+
 @media (max-width: 680px) {
   .tour-body .header-inner { display: none; }
   .tour-mobile-header { display: flex; }

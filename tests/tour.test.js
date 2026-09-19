@@ -635,6 +635,16 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect((metin.match(/<button/g) || []).length).toBe(1);
   });
 
+  it('paylaş düğmesi ikon ve erişilebilir adı var', () => {
+    const dugme = html.match(/<button class="tour-mobile-action"[\s\S]*?<\/button>/)[0];
+    /* Metin yerine ikon: görünür yazı olmadığı için ad aria-label'dan
+       gelmek zorunda, yoksa ekran okuyucuda adsız bir düğme kalır. */
+    expect(dugme).toContain('aria-label="Turu paylaş"');
+    expect(dugme).toContain('<svg');
+    const gorunurMetin = dugme.replace(/<[^>]*>/g, '').trim();
+    expect(gorunurMetin, 'ikon düğmede görünür metin kalmış').toBe('');
+  });
+
   it('rezervasyon kartının iki yuvası da sayfada', () => {
     expect(html).toContain('id="tourBookingMobile"');
     expect(html).toContain('id="tourBookingDesktop"');
