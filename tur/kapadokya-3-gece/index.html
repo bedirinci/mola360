@@ -92,6 +92,21 @@
       </a>
     </div>
   </div>
+
+  <!-- Mobil baslik: bildirimler ekraninin basligiyla ayni duzen -- geri
+       oku, iki satirlik baslik, sagda tek eylem. Olculer style.css icinde
+       .notif-panel-header ile ORTAK tanimli, ayri bir kopya degil.
+       Masaustunde gizli; oradaki baslik .header-inner olarak kaliyor.
+       Baslik ve alt baslik metni tur kaydiyla ayni olmak zorunda;
+       tests/tour.test.js ikisini karsilastirir. -->
+  <div class="tour-mobile-header">
+    <a class="tour-mobile-back" href="../../index.html" aria-label="Anasayfaya don"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span></a>
+    <div class="tour-mobile-heading">
+      <span class="tour-mobile-title">Kapadokya Turu — 3 Gece 4 Gün</span>
+      <span class="tour-mobile-subtitle">Konaklamalı Tur · Göreme, Nevşehir</span>
+    </div>
+    <button class="tour-mobile-action" id="tourHeaderShare" type="button" aria-label="Turu paylaş"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><line x1="8.3" y1="10.8" x2="15.7" y2="6.7"/><line x1="8.3" y1="13.2" x2="15.7" y2="17.3"/></svg></span></button>
+  </div>
 </header>
 
 <main class="tour-page">

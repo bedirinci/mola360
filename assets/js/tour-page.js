@@ -1188,23 +1188,28 @@
       });
     }
 
-    const shareBtn = document.getElementById('tourShareBtn');
-    if (shareBtn) {
-      shareBtn.addEventListener('click', () => {
-        const veri = { title: tour.title, text: tour.tagline, url: window.location.href };
-        if (navigator.share) {
-          navigator.share(veri).catch(() => {});
-          return;
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(window.location.href)
-            .then(() => toast('Bağlantı kopyalandı'))
-            .catch(() => toast('Bağlantı kopyalanamadı'));
-          return;
-        }
-        toast('Bu tarayıcı paylaşmayı desteklemiyor');
-      });
+    /* Paylaş iki yerde: başlık kartındaki yuvarlak düğme (masaüstü) ve
+       mobil başlıktaki hap (bildirimler ekranındaki "Tümünü oku" ile aynı
+       yer). İkisi de aynı işi yapar, davranış tek fonksiyonda. */
+    function paylas() {
+      const veri = { title: tour.title, text: tour.tagline, url: window.location.href };
+      if (navigator.share) {
+        navigator.share(veri).catch(() => {});
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => toast('Bağlantı kopyalandı'))
+          .catch(() => toast('Bağlantı kopyalanamadı'));
+        return;
+      }
+      toast('Bu tarayıcı paylaşmayı desteklemiyor');
     }
+
+    ['tourShareBtn', 'tourHeaderShare'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', paylas);
+    });
 
     /* Rezervasyon kartı: tek delege dinleyici, kart yeniden çizilse de
        bağlı kalır. */

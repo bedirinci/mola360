@@ -36,7 +36,59 @@
   padding: 0 var(--page-gutter) 28px;
 }
 
-/* ---------------- header uyarlaması ----------------
+/* ---------------- mobil başlık ----------------
+   Mobilde tur sayfasının başlığı bildirimler ekranının başlığıyla aynı:
+   geri oku, iki satırlık başlık, sağda tek eylem. Görünüm ölçüleri
+   style.css'teki "ORTAK MOBİL EKRAN BAŞLIĞI" bloğunda tanımlı —
+   burada yalnızca hangi başlığın ne zaman görüneceği var.
+
+   İki ayrı düzen kuruluyor, tek düzen zorlanmıyor: masaüstünde her zamanki
+   site başlığı (.header-inner), mobilde bu. Böylece ikisi birbirinin
+   kurallarını ezmiyor. */
+.tour-mobile-header { display: none; }
+
+/* Sağdaki eylem ikon: geri okuyla aynı çap, böylece başlığın iki ucu
+   dengeli duruyor. Zemin ve hover ortak tanımdan geliyor. */
+.tour-mobile-action {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.tour-mobile-action .icon,
+.tour-mobile-action svg {
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 680px) {
+  .tour-body .header-inner { display: none; }
+  .tour-mobile-header { display: flex; }
+
+  /* Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
+     yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
+     görünmüyordu. Mobilde zemini tamamen içteki başlığa bırakıyoruz,
+     böylece oval alt kenar sayfa zemininin üzerinde görünüyor.
+     (Masaüstünde sarmalayıcı kendi zeminini korur.) */
+  .tour-body .site-header {
+    background: none;
+    box-shadow: none;
+  }
+
+  /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
+     kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
+     göstermeye gerek yok. İşaretleme ve BreadcrumbList yapısal verisi
+     olduğu gibi duruyor; yalnızca görünürlük değişiyor. */
+  .tour-body .tour-crumbs { display: none; }
+
+  /* Kırılma noktası kalkınca galeri başlığa yapışıyordu; oval kenarın
+     görünmesi için üstte biraz boşluk kalıyor. */
+  .tour-body .tour-page { padding-top: 12px; }
+}
+
+/* ---------------- header uyarlaması (masaüstü) ----------------
    Detay sayfasında arama kutusu bir bağlantı (arama anasayfada açılıyor),
    input değil; metin rengi input'un placeholder'ı ile aynı kalsın. */
 .tour-header-search {
