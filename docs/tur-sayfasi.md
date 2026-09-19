@@ -79,14 +79,43 @@ konum `--tour-header-h`'den hesaplanıyor — mobilde başlık banner'ın
 üzerine bindiği için sabit bir değer verilse düğmeler onun altında
 kalırdı.
 
+Ölçüler ekrana göre: masaüstünde 38px düğme / 20px ikon, mobilde 34px
+düğme / 18px ikon ve aradaki boşluk 8px yerine 7px. Mobil ölçü kuralı
+galerinin kendi `@media (max-width: 680px)` bloğunda, yani temel
+tanımdan SONRA.
+
 **Bir dönem paylaş mobilde gizleniyordu ve o kural işe yaramıyordu.**
 `.tour-gallery-share { display: none }` medya sorgusunun içindeydi ama
 temel `display: flex` kuralı dosyada ondan SONRA geliyordu ve aynı
 ağırlıktaydı. Kural yazıldı, test geçti, ekran görüntüsü düğmenin
 mobilde hâlâ durduğunu gösterdi. Kural artık tümden kalktı (paylaş
-mobilde de görünüyor), ama tuzak duruyor: **bu dosyada medya sorguları
-temel kuralların ÖNÜNDE.** Bir şeyi mobilde gizlerken ya kuralı temel
-tanımdan sonraya koy ya da `.tour-body` ile bir basamak yükselt.
+mobilde de görünüyor), ama tuzak duruyor: **bu dosyada iki ayrı mobil
+blok var ve baştaki, galeri düğmelerinin temel tanımının ÖNÜNDE.**
+Düğmelerin mobil ölçüsünü ezmek isteyen bir kuralı oraya yazmak sessizce
+işe yaramaz. `tests/tour.test.js` artık yalnızca kuralın varlığını değil,
+temel tanımdan sonra geldiğini de doğruluyor — kural yukarı taşınırsa
+test düşüyor.
+
+### Ekran görüntüsü karşılaştırırken dış ağı kes
+
+Bu ortamda `images.unsplash.com` ve `commons.wikimedia.org` egress
+politikasıyla engelli. Görseller yüklenmeyince `ui.js` nötr yer tutucuya
+düşüyor — ama **reddedilme süresi her çalıştırmada biraz farklı**, yani
+yedeğe geçiş anı da farklı. Sonuç: aynı kodun iki ekran görüntüsü birkaç
+pikselde ayrışabiliyor ve bu, olmayan bir gerilemeyi varmış gibi
+gösteriyor. (Bu dosyada iki kez böyle bir iz sürüldü; ikisi de sahte
+çıktı.)
+
+Çözüm, karşılaştırma yaparken 127.0.0.1 dışındaki her isteği tarayıcıda
+anında kesmek:
+
+```js
+await page.route('**/*', r =>
+  r.request().url().startsWith('http://127.0.0.1') ? r.continue() : r.abort());
+```
+
+Böylece render tamamen belirlenimci oluyor ve "değişiklikli/değişiklik
+öncesi" karşılaştırması bayt bayt anlam taşıyor.
 
 ### `app.js` artık her sayfada yükleniyor
 
