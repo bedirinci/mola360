@@ -69,45 +69,26 @@
 </head>
 <body class="tour-body" data-root="../../">
 
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-logo-group">
-      <a class="tour-back" href="../../index.html" aria-label="Anasayfaya dön">
-        <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>
-      </a>
-      <a href="../../index.html" class="logo"><img src="../../assets/img/logo.png" alt="mola360"></a>
-    </div>
+<!-- Masaustu basligi anasayfayla AYNI: isaretleme assets/js/site-chrome.js
+     icinde tek kopya duruyor ve bu etiketin yerine basiliyor. Bildirim
+     paneli, profil menusu, arama ve giris modali da beraberinde gelir;
+     app.js asagida yuklendigi icin hepsi burada da calisir. -->
+<script src="../../assets/js/site-chrome.js"></script>
 
-    <a class="header-search tour-header-search" href="../../index.html" aria-label="Arama sayfasına git">
-      <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-      <span class="header-search-text">Etkinlik, otel, aktivite veya mekan ara…</span>
-    </a>
-
-    <div class="header-right">
-      <div class="header-actions">
-        <a class="btn-primary" href="../../index.html">Giriş Yap / Üye Ol</a>
-      </div>
-      <a class="header-quick-btn" href="../../index.html" aria-label="Favorilerim">
-        <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-10-9.3C0.4 8 2 4.5 5.6 4c2.1-0.3 4 0.7 6.4 3 2.4-2.3 4.3-3.3 6.4-3C21.9 4.5 23.6 8 22 11.2c-2.5 4.7-10 9.3-10 9.3z"></path></svg></span>
-      </a>
-    </div>
+<!-- Mobil baslik: bildirimler ekraninin basligiyla ayni duzen -- geri
+     oku, iki satirlik baslik, sagda tek eylem. Olculer style.css icinde
+     .notif-panel-header ile ORTAK tanimli, ayri bir kopya degil.
+     Masaustunde gizli; orada sitenin ortak basligi gorunur.
+     Baslik ve alt baslik metni tur kaydiyla ayni olmak zorunda;
+     tests/tour.test.js ikisini karsilastirir. -->
+<div class="tour-mobile-header">
+  <a class="tour-mobile-back" href="../../index.html" aria-label="Anasayfaya don"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span></a>
+  <div class="tour-mobile-heading">
+    <span class="tour-mobile-title">Kapadokya Turu — 3 Gece 4 Gün</span>
+    <span class="tour-mobile-subtitle">Konaklamalı · Göreme, Nevşehir</span>
   </div>
-
-  <!-- Mobil baslik: bildirimler ekraninin basligiyla ayni duzen -- geri
-       oku, iki satirlik baslik, sagda tek eylem. Olculer style.css icinde
-       .notif-panel-header ile ORTAK tanimli, ayri bir kopya degil.
-       Masaustunde gizli; oradaki baslik .header-inner olarak kaliyor.
-       Baslik ve alt baslik metni tur kaydiyla ayni olmak zorunda;
-       tests/tour.test.js ikisini karsilastirir. -->
-  <div class="tour-mobile-header">
-    <a class="tour-mobile-back" href="../../index.html" aria-label="Anasayfaya don"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span></a>
-    <div class="tour-mobile-heading">
-      <span class="tour-mobile-title">Kapadokya Turu — 3 Gece 4 Gün</span>
-      <span class="tour-mobile-subtitle">Konaklamalı · Göreme, Nevşehir</span>
-    </div>
-    <button class="tour-mobile-action" id="tourHeaderShare" type="button" aria-label="Turu paylaş"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><line x1="8.3" y1="10.8" x2="15.7" y2="6.7"/><line x1="8.3" y1="13.2" x2="15.7" y2="17.3"/></svg></span></button>
-  </div>
-</header>
+  <button class="tour-mobile-action" id="tourHeaderShare" type="button" aria-label="Turu paylaş"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><line x1="8.3" y1="10.8" x2="15.7" y2="6.7"/><line x1="8.3" y1="13.2" x2="15.7" y2="17.3"/></svg></span></button>
+</div>
 
 <main class="tour-page">
 
@@ -205,7 +186,10 @@
 <!-- home-blocks.js yalnizca veri ve fonksiyon tanimi icerir (DOM'a
      dokunmaz); buradan tek ihtiyac CONTACT: destek numarasi iki sayfada
      ayri ayri yazilmasin. app.js yuklenmez, anasayfanin DOM'una bagli. -->
+<script src="../../assets/js/search-utils.js"></script>
+<script src="../../assets/js/notif-utils.js"></script>
 <script src="../../assets/js/home-blocks.js"></script>
+<script src="../../assets/js/app.js"></script>
 <script src="../../assets/js/tour-data.js"></script>
 <script src="../../assets/js/tour-page.js"></script>
 <script src="../../assets/js/ui.js"></script>

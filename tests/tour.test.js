@@ -629,7 +629,7 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
   });
 
   it('mobil başlıkta geri oku ve tek eylem var', () => {
-    const blok = html.match(/<div class="tour-mobile-header">[\s\S]*?<\/div>\n<\/header>/);
+    const blok = html.match(/<div class="tour-mobile-header">[\s\S]*?\n<\/div>/);
     expect(blok, 'mobil başlık bloğu bulunamadı').toBeTruthy();
     const metin = blok[0];
     expect(metin).toContain('class="tour-mobile-back"');
@@ -662,11 +662,26 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect(html).not.toMatch(/href="index\.html/);
   });
 
-  it('gereken betikler yüklü, anasayfaya ait olan yüklenmiyor', () => {
-    ['home-blocks.js', 'tour-data.js', 'tour-page.js', 'ui.js']
+  it('gereken betikler yüklü', () => {
+    /* app.js de yükleniyor: başlık, arama, bildirimler, profil ve giriş
+       modalı onun üzerinden çalışıyor. Anasayfaya özgü bölümler burada
+       olmadığı için app.js byId/onId ile korumalı erişiyor. */
+    ['site-chrome.js', 'search-utils.js', 'notif-utils.js', 'home-blocks.js',
+     'app.js', 'tour-data.js', 'tour-page.js', 'ui.js']
       .forEach(ad => expect(html, ad + ' yüklenmiyor').toContain('src="../../assets/js/' + ad + '"'));
-    /* app.js ilk satırında anasayfanın DOM'unu arar; burada patlar. */
-    expect(html).not.toContain('assets/js/app.js');
+  });
+
+  it('ortak çerçeve app.js\'ten ÖNCE yükleniyor', () => {
+    /* app.js en üst seviyede bu işaretlemedeki ID\'leri arıyor;
+       sonra yüklenirse başlık ölü kalır. */
+    expect(html.indexOf('site-chrome.js')).toBeLessThan(html.indexOf('app.js'));
+  });
+
+  it('masaüstü başlığının kopyası sayfada yok', () => {
+    /* Başlık tek kaynaktan (site-chrome.js) geliyor; sayfaya elle
+       yazılmış bir kopya kalırsa iki başlık birden basılır. */
+    expect(html).not.toContain('<header class="site-header"');
+    expect(html).not.toContain('class="header-inner"');
   });
 
   it('sayfa kendi stil dosyasını ve ortak stili yükler', () => {
@@ -1122,21 +1137,10 @@ describe('mobil başlık stili', () => {
   it('mobil başlık yalnızca mobilde, masaüstü başlığı yalnızca masaüstünde', () => {
     expect(turStil).toMatch(/\.tour-mobile-header \{ display: none; \}/);
     const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    expect(mobil).toContain('.tour-body .header-inner { display: none; }');
+    expect(mobil).toContain('.tour-body .site-header { display: none; }');
     expect(mobil).toContain('.tour-mobile-header { display: flex; }');
-  });
-
-  it('sarmalayıcı başlık mobilde saydam — oval köşeler görünsün', () => {
-    /* .site-header de lacivert olduğu için içteki başlığın yuvarlak alt
-       köşelerini dolduruyordu: köşeler çiziliydi ama görünmüyordu.
-       Zemin mobilde tamamen içteki başlığa bırakılıyor. */
-    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    /* Tek kural olmalı; ikiye bölünürse biri diğerini ezebilir. */
-    const kurallar = mobil.match(/\.tour-body \.site-header \{/g) || [];
-    expect(kurallar.length, 'sarmalayıcı için birden fazla kural var').toBe(1);
-    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/)[1];
-    expect(kural).toContain('background: none');
-    expect(kural).toContain('box-shadow: none');
+    /* Ortak çerçeveyle gelen mobil arama çubuğu akışta yer kaplamasın. */
+    expect(mobil).toContain('.tour-body .mobile-search-bar { display: none; }');
   });
 
   it('mobilde başlık banner’ın üzerine biniyor', () => {
@@ -1144,12 +1148,28 @@ describe('mobil başlık stili', () => {
        görünüyor ve çentikler boş duruyor. Akıştan çıkınca galeri en
        üstten başlıyor ve çentiklerden fotoğrafın kendisi görünüyor. */
     const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/)[1];
+    /* Tek kural olmalı; ikiye bölünürse biri diğerini ezebilir. */
+    const kurallar = mobil.match(/\.tour-mobile-header \{\n/g) || [];
+    expect(kurallar.length, 'konum için birden fazla kural var').toBe(1);
+    const kural = mobil.match(/\.tour-mobile-header \{\n([\s\S]*?)\}/)[1];
     expect(kural).toContain('position: absolute');
     expect(kural).toContain('top: 0');
+    /* Başlık .site-header'ın içindeyken aldığı yığılma değeriyle aynı
+       kalmalı; düşerse galerinin altında kalır. */
+    expect(kural).toContain('z-index: 3000');
     /* Başlık yer kaplamadığı için sayfanın üst boşluğu da sıfır olmalı,
        yoksa galeri aşağı kayıp çentikler yine boşa düşer. */
     expect(mobil).toContain('.tour-body .tour-page { padding-top: 0; }');
+  });
+
+  it('basitleştirilmiş başlığın stilleri geride kalmadı', () => {
+    /* Masaüstü başlığı ortak çerçeveye taşınınca bu sınıfların
+       işaretlemesi kalktı; kuralları da kalkmalı. */
+    /* Yorumlar elenerek bakılıyor: kuralın kalkma nedeni yorumda
+       anlatılıyor, orada geçmesi sorun değil. */
+    const kurallar = turStil.replace(/\/\*[\s\S]*?\*\//g, '');
+    ['.tour-header-search', '.header-search-text', '.tour-back']
+      .forEach(sinif => expect(kurallar, sinif + ' kuralı geride kalmış').not.toContain(sinif));
   });
 
   it('kırılma noktaları mobilde gizli ama işaretlemede duruyor', () => {
