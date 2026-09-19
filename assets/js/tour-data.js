@@ -581,6 +581,9 @@ const TOURS = {
     title: 'Efes Antik Kenti, Meryem Ana Evi ve Şirince Turu',
     tagline: 'İzmir çıkışlı tam gün, küçük grup, lisanslı rehber',
     category: 'Günübirlik Tur',
+    /* Dar yerlerde (mobil başlık alt satırı, kategori rozeti) "Tur"
+       ekini tekrar etmeye gerek yok. */
+    categoryShort: 'Günübirlik',
     categoryPlural: 'Günübirlik Turlar',
     categoryAnchor: 'turlar',
     /* Baslik satirinda ve program basliginda gecen sure metni. Daha once
@@ -826,6 +829,7 @@ const TOURS = {
     title: 'Kapadokya Turu — 3 Gece 4 Gün',
     tagline: 'Uçaklı, Göreme’de mağara otel, üç tam gün rehberli program',
     category: 'Konaklamalı Tur',
+    categoryShort: 'Konaklamalı',
     categoryPlural: 'Konaklamalı Turlar',
     categoryAnchor: 'konaklamali-turlar',
     durationLabel: '3 gece 4 gün',

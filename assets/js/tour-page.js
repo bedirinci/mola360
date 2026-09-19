@@ -118,7 +118,7 @@
     return `
       <div class="tour-head-row">
         <div class="tour-head-chips">
-          <span class="tour-chip solid">${tour.category}</span>
+          <span class="tour-chip solid">${tour.categoryShort}</span>
           ${tour.badges.map(b => `<span class="tour-chip">${ic(b.icon)}${b.label}</span>`).join('')}
         </div>
         <div class="tour-head-actions">
@@ -939,9 +939,12 @@
   }
 
   /* Kullanici hareketi azaltmayi sectiyse yumusak kaydirma yapilmaz. */
+  function azaltilmisHareket() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function scrollToY(top) {
-    const azalt = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: Math.max(0, top), behavior: azalt ? 'auto' : 'smooth' });
+    window.scrollTo({ top: Math.max(0, top), behavior: azaltilmisHareket() ? 'auto' : 'smooth' });
   }
 
   function scrollToSection(id) {
@@ -964,6 +967,9 @@
     if (!bolumler.length) return;
 
     let queued = false;
+    /* Son ortalanan sekme. Aktif sekme DEGISMEDIKCE menu kaydirilmaz. */
+    let sonAktif = '';
+
     function sync() {
       queued = false;
       const esik = stickyOffset() + 24;
@@ -981,12 +987,36 @@
       nav.classList.toggle('is-stuck', nav.getBoundingClientRect().top <= yapiskanUst + 1);
 
       nav.querySelectorAll('[data-nav]').forEach(link => {
-        const on = link.getAttribute('data-nav') === aktif;
-        link.classList.toggle('active', on);
-        if (on && nav.scrollWidth > nav.clientWidth + 2) {
-          const sol = link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2;
-          nav.scrollTo({ left: Math.max(0, sol), behavior: 'smooth' });
-        }
+        link.classList.toggle('active', link.getAttribute('data-nav') === aktif);
+      });
+
+      /* ÖNEMLİ: kaydırma yalnızca aktif sekme değiştiğinde çağrılır.
+         Önceden her kaydırma karesinde scrollTo({behavior:'smooth'})
+         çalışıyordu; her çağrı yumuşak animasyonu baştan başlattığı için
+         menü hiç tamamlanamıyor, yavaş ve takılarak sürükleniyordu. */
+      if (aktif !== sonAktif) {
+        sonAktif = aktif;
+        ortala(aktif);
+      }
+    }
+
+    /* Aktif sekmeyi görünür alanın ortasına getirir. Zaten tamamen
+       görünüyorsa hiç dokunmaz: gereksiz animasyon da takılma hissi
+       veriyor. */
+    function ortala(id) {
+      const link = nav.querySelector('[data-nav="' + id + '"]');
+      if (!link || nav.scrollWidth <= nav.clientWidth + 2) return;
+
+      const pay = 12;
+      const solKenar = link.offsetLeft - nav.scrollLeft;
+      const sagKenar = solKenar + link.offsetWidth;
+      if (solKenar >= pay && sagKenar <= nav.clientWidth - pay) return;
+
+      const hedef = link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2;
+      const enFazla = nav.scrollWidth - nav.clientWidth;
+      nav.scrollTo({
+        left: Math.max(0, Math.min(hedef, enFazla)),
+        behavior: azaltilmisHareket() ? 'auto' : 'smooth'
       });
     }
 

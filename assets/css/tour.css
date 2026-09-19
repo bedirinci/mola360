@@ -254,8 +254,8 @@
   z-index: 5;
   right: 14px;
   top: calc(var(--tour-header-h, 0px) + 14px);
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +269,7 @@
 }
 .tour-gallery-fav:hover { background: #fff; transform: scale(1.06); }
 .tour-gallery-fav:active { transform: scale(.94); }
-.tour-gallery-fav .icon { width: 23px; height: 23px; }
+.tour-gallery-fav .icon { width: 20px; height: 20px; }
 .tour-gallery-fav.on { color: #E0245E; }
 .tour-gallery-fav.on .icon svg { fill: currentColor; }
 
@@ -522,7 +522,9 @@
   z-index: 30;
   display: flex;
   gap: 4px;
-  padding: 6px;
+  /* Yapışınca iç boşluk büyüyecek; tek yerden gelsin diye değişkende. */
+  --tour-nav-pad: 6px;
+  padding: var(--tour-nav-pad);
   background: rgba(255,255,255,.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
@@ -544,9 +546,18 @@
   .tour-section-nav.is-stuck {
     margin-left: calc(var(--page-gutter) * -1);
     margin-right: calc(var(--page-gutter) * -1);
+    /* Kutu kenarlara uzarken İÇERİK yerinde kalır: dışarı taşan kadarı
+       iç boşluğa eklenir. Yalnızca negatif kenar boşluğu verilseydi
+       çipler de o kadar sola kayar, menü yapıştığı anda yanal bir
+       sıçrama olurdu. */
+    padding-left: calc(var(--tour-nav-pad) + var(--page-gutter));
+    padding-right: calc(var(--tour-nav-pad) + var(--page-gutter));
     border-radius: 0;
-    border-left: 0;
-    border-right: 0;
+    /* Yan kenarlıklar KALDIRILMIYOR, saydamlaştırılıyor: kaldırılsaydı
+       kutu modeli 1'er piksel daralır ve çipler o kadar kayardı.
+       Ekranın en kenarında oldukları için zaten görünmüyorlar. */
+    border-left-color: transparent;
+    border-right-color: transparent;
     background: rgba(255,255,255,.97);
     box-shadow: 0 4px 14px rgba(21,32,72,.1);
   }
