@@ -623,7 +623,9 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
        iki satırlık başlık, sağda tek eylem. Metin elle yazıldığı için
        veriyle karşılaştırılır. */
     expect(html).toContain('<span class="tour-mobile-title">' + t.title + '</span>');
-    expect(html).toContain('<span class="tour-mobile-subtitle">' + t.category + ' · ' + t.area + '</span>');
+    /* Dar satırda "Tur" ekini tekrar etmeye gerek yok: "Günübirlik Tur"
+       yerine "Günübirlik". */
+    expect(html).toContain('<span class="tour-mobile-subtitle">' + t.categoryShort + ' · ' + t.area + '</span>');
   });
 
   it('mobil başlıkta geri oku ve tek eylem var', () => {
@@ -1038,9 +1040,18 @@ describe('her turun ortak alanları', () => {
     Object.entries(TOURS).forEach(([anahtar, t]) => {
       expect(t.slug, anahtar + ' slug anahtarla aynı değil').toBe(anahtar);
       expect(['daily', 'stay'], anahtar).toContain(t.type);
-      ['title', 'tagline', 'category', 'categoryPlural', 'categoryAnchor', 'durationLabel', 'code']
+      ['title', 'tagline', 'category', 'categoryShort', 'categoryPlural', 'categoryAnchor', 'durationLabel', 'code']
         .forEach(alan => expect(String(t[alan] || '').length, anahtar + '.' + alan + ' boş').toBeGreaterThan(0));
       expect(t.pricing.departureNote, anahtar + ' kalkış notu yok').toBeTruthy();
+    });
+  });
+
+  it('kısa kategori etiketi gerçekten kısa ve "Tur" eki taşımıyor', () => {
+    Object.entries(TOURS).forEach(([anahtar, t]) => {
+      expect(t.categoryShort.length, anahtar).toBeLessThan(t.category.length);
+      expect(t.categoryShort, anahtar + ' kısa etikette "Tur" eki var').not.toMatch(/\bTur\b/);
+      /* Uzun biçimin başlangıcı olmalı: "Günübirlik Tur" -> "Günübirlik" */
+      expect(t.category.startsWith(t.categoryShort), anahtar).toBe(true);
     });
   });
 
@@ -1296,5 +1307,33 @@ describe('yapışan bölüm menüsü', () => {
     const mobilBlok = turStil.lastIndexOf('@media (max-width: 680px)', konum);
     expect(mobilBlok, 'is-stuck kuralı mobil bloğun dışında').toBeGreaterThan(-1);
     expect(turStil.slice(mobilBlok, konum)).not.toContain('@media (min-width');
+  });
+});
+
+describe('bölüm menüsü otomatik kaydırma', () => {
+  it('yalnızca aktif sekme değişince kaydırılıyor', () => {
+    /* Önceden her kaydırma karesinde scrollTo({behavior:"smooth"})
+       çağrılıyordu; her çağrı yumuşak animasyonu baştan başlattığı için
+       menü hiç tamamlanamıyor, yavaş ve takılarak sürükleniyordu. */
+    const blok = sayfaJs.match(/function initSectionNav\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(blok).toContain('let sonAktif');
+    expect(blok).toMatch(/if \(aktif !== sonAktif\) \{/);
+    /* Sınıf güncellemesinin içinde kaydırma KALMAMALI. */
+    const sinifDongusu = blok.match(/nav\.querySelectorAll\('\[data-nav\]'\)\.forEach\(link => \{([\s\S]*?)\}\);/)[1];
+    expect(sinifDongusu, 'kaydırma hâlâ her karede çalışıyor').not.toContain('scrollTo');
+  });
+
+  it('zaten görünen sekme için kaydırma yapılmıyor', () => {
+    /* Gereksiz animasyon da takılma hissi veriyor. */
+    const blok = sayfaJs.match(/function ortala\(id\) \{([\s\S]*?)\n    \}/)[1];
+    expect(blok).toContain('nav.clientWidth - pay');
+    expect(blok).toContain('return;');
+    /* Hedef, kaydırılabilir aralığın dışına taşmamalı. */
+    expect(blok).toContain('Math.min(hedef, enFazla)');
+  });
+
+  it('hareket azaltma tercihi burada da geçerli', () => {
+    const blok = sayfaJs.match(/function ortala\(id\) \{([\s\S]*?)\n    \}/)[1];
+    expect(blok).toContain('azaltilmisHareket()');
   });
 });

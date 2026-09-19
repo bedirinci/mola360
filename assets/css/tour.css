@@ -254,8 +254,8 @@
   z-index: 5;
   right: 14px;
   top: calc(var(--tour-header-h, 0px) + 14px);
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +269,7 @@
 }
 .tour-gallery-fav:hover { background: #fff; transform: scale(1.06); }
 .tour-gallery-fav:active { transform: scale(.94); }
-.tour-gallery-fav .icon { width: 23px; height: 23px; }
+.tour-gallery-fav .icon { width: 20px; height: 20px; }
 .tour-gallery-fav.on { color: #E0245E; }
 .tour-gallery-fav.on .icon svg { fill: currentColor; }
 
