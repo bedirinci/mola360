@@ -96,6 +96,52 @@ işe yaramaz. `tests/tour.test.js` artık yalnızca kuralın varlığını deği
 temel tanımdan sonra geldiğini de doğruluyor — kural yukarı taşınırsa
 test düşüyor.
 
+### Benzer tur kartlarında fotoğraf yüksekliği
+
+Kart sütun yönlü bir flex kabı, fotoğraf kutusu da flex öğesi. Görsel
+akışta kalırsa öğenin otomatik en küçük boyutu içeriğe göre belirlendiği
+için **dikey bir fotoğraf kutuyu `aspect-ratio`'nun üstüne çıkarıyor** ve
+o kartın görseli diğerlerinden uzun duruyor. Canlıda tam olarak bu oldu:
+dört karttan biri (dikey çekilmiş bir fotoğraf) belirgin şekilde uzundu.
+
+Çözüm iki parça: `flex: none` (öğe ne büyüsün ne küçülsün) ve görseli
+`position: absolute` ile akıştan çıkarmak. İzole bir sayfada ölçüldü —
+eski kuralla yükseklikler `142, 142, 315, 142`, yeni kuralla
+`142, 142, 142, 142`.
+
+Anasayfadaki `.poi-media` bu hatadan etkilenmiyor: orada yükseklik sabit
+(`150px`), oran hesabı yok.
+
+### Sayfa etiketleri
+
+Sayfanın en altında bir çip bulutu (`#tourTags`). İçerik tur kaydındaki
+`tags` alanından geliyor; her çip `{ label, href }`.
+
+**Kural: hedefi olmayan çip eklenmez.** `docs/seo-arastirma.md` madde 4,
+iç bağlantı ağının değerinin hedefler gerçek olana kadar sıfır olduğunu
+söylüyor. Bu yüzden her adres üç şeyden biri: anasayfadaki şerit çapası,
+bu sayfanın kendi bölümü, ya da diğer tur sayfası. `tests/tour.test.js`
+bunu doğruluyor — sayfa içi çapa gerçekten o sayfada, dışa giden adres
+de diskte olmalı; olmazsa test düşüyor.
+
+Adresler veride **kök-göreli** duruyor ve `KOK` ile önekleniyor;
+`#` ile başlayanlar olduğu gibi kalıyor. Çip görünümü anasayfadaki
+"ilgili aramalar" bulutuyla ortak (`.seo-chip`, `style.css`).
+
+### Çift dokunuşla yakınlaştırma
+
+`html { touch-action: manipulation }` ile kapalı. `manipulation` bilerek
+seçildi: kaydırma ve **iki parmakla** yakınlaştırma çalışmaya devam
+ediyor, yalnızca çift dokunuş hareketi kalkıyor. Aynı şeyi viewport
+etiketine `user-scalable=no` yazarak yapmak mümkündü ama o,
+yakınlaştırmayı tümden kapatıp az gören kullanıcıyı dışlıyor — test bunu
+da bekçilik ediyor.
+
+**Not:** `index.html`'in viewport etiketinde `maximum-scale=1.0,
+user-scalable=no` **hâlâ duruyor** (bu değişiklikten önce de vardı).
+Yani anasayfada iki parmakla yakınlaştırma kapalı. Tur sayfalarında öyle
+değil. Bir erişilebilirlik kaybı; ayrı bir işte ele alınmalı.
+
 ### Ekran görüntüsü karşılaştırırken dış ağı kes
 
 Bu ortamda `images.unsplash.com` ve `commons.wikimedia.org` egress

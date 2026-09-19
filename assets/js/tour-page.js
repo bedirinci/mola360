@@ -450,6 +450,26 @@
       </div>`;
   }
 
+  /* ---------------- sayfa etiketleri ----------------
+     Sayfanın en altındaki çip bulutu. Kökten gelen bağlantılar KOK ile
+     öneklenir; '#' ile başlayanlar bu sayfanın kendi bölümü olduğu için
+     olduğu gibi kalır. Çip görünümü anasayfadaki "ilgili aramalar"
+     bulutuyla ORTAK (.seo-chip / .seo-chip-list, style.css) -- iki yerde
+     ayrı bir çip tanımı tutmamak için. */
+  function tagHref(t) {
+    return String(t.href).charAt(0) === '#' ? t.href : KOK + t.href;
+  }
+
+  function tagsMarkup() {
+    const etiketler = tour.tags || [];
+    if (!etiketler.length) return '';
+    return `
+      <div class="tour-block-head"><h2>Sayfa etiketleri</h2><p>Bu turla ilgili bölümler ve yakın kategoriler.</p></div>
+      <ul class="seo-chip-list tour-tag-list">
+        ${etiketler.map(t => `<li><a class="seo-chip" href="${tagHref(t)}">${t.label}</a></li>`).join('')}
+      </ul>`;
+  }
+
   /* ---------------- rezervasyon kartı ----------------
      Kart bir kez kurulur, sonra yalnızca değişen parçalar güncellenir.
      Her tuşta innerHTML'i baştan yazmak onay kutusundaki klavye odağını
@@ -1347,6 +1367,7 @@
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
   fill('tourSimilar', similarMarkup());
+  fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
   syncBookingPlacement();

@@ -8,7 +8,7 @@
       sekme, sayfada karsiligi olmayan kap, anasayfada tur sayfasindan
       farkli bir fiyat gibi sessiz kaymalar burada yakalanir. */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import {
   TOURS,
   DEFAULT_TOUR_SLUG,
@@ -1390,5 +1390,103 @@ describe('bölüm menüsü otomatik kaydırma', () => {
   it('hareket azaltma tercihi burada da geçerli', () => {
     const blok = sayfaJs.match(/function ortala\(id\) \{([\s\S]*?)\n    \}/)[1];
     expect(blok).toContain('azaltilmisHareket()');
+  });
+});
+
+/* ---------------- benzer turlar, dokunma, sayfa etiketleri ---------------- */
+describe('benzer tur kartları', () => {
+  it('fotoğraf kutusu içeriğe göre uzayamaz', () => {
+    /* Kart sütun yönlü bir flex kabı, medya kutusu da flex öğesi.
+       Görsel akışta kalırsa öğenin otomatik en küçük boyutu içeriğe
+       göre belirlendiği için DİKEY bir fotoğraf kutuyu aspect-ratio'nun
+       üstüne çıkarıyor ve o kartın görseli diğerlerinden uzun duruyor.
+       Bu gerçekten yaşandı: dört karttan biri belirgin şekilde uzundu. */
+    const kutu = turStil.match(/\.tour-similar-media \{([\s\S]*?)\}/)[1];
+    expect(kutu).toContain('aspect-ratio: 4 / 3');
+    expect(kutu, 'flex öğesi büyüyebilir durumda').toContain('flex: none');
+    expect(kutu).toContain('overflow: hidden');
+
+    const resim = turStil.match(/\.tour-similar-media img \{([\s\S]*?)\}/)[1];
+    expect(resim, 'görsel akıştan çıkarılmamış').toContain('position: absolute');
+    expect(resim).toContain('object-fit: cover');
+  });
+});
+
+describe('çift dokunuşla yakınlaştırma', () => {
+  it('kök elemanda kapalı', () => {
+    const kural = ortakStil.match(/\nhtml \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('touch-action: manipulation');
+  });
+
+  it('iki parmakla yakınlaştırma tur sayfalarında açık kalıyor', () => {
+    /* user-scalable=no yakınlaştırmayı TÜMDEN kapatır ve az gören
+       kullanıcıyı sayfadan dışlar; istenen yalnızca çift dokunuştu. */
+    sayfalar.forEach(({ slug, html }) => {
+      const viewport = html.match(/<meta name="viewport"[^>]*>/)[0];
+      expect(viewport, slug + ' yakınlaştırmayı tümden kapatıyor').not.toContain('user-scalable=no');
+      expect(viewport, slug + ' yakınlaştırmayı tümden kapatıyor').not.toContain('maximum-scale');
+    });
+  });
+});
+
+describe('sayfa etiketleri', () => {
+  it('her turun etiketleri var ve sayfada bir yuvası var', () => {
+    Object.values(TOURS).forEach(t => {
+      expect(t.tags, t.slug + ' etiketsiz').toBeTruthy();
+      expect(t.tags.length, t.slug + ' etiketi az').toBeGreaterThanOrEqual(6);
+    });
+    sayfalar.forEach(({ slug, html }) => {
+      expect(html, slug + ' etiket yuvası yok').toContain('id="tourTags"');
+    });
+    expect(sayfaJs).toContain("fill('tourTags', tagsMarkup())");
+  });
+
+  it('çip görünümü anasayfayla ortak, ayrı bir kopya değil', () => {
+    /* İki yerde ayrı çip tanımı tutmak ikisini zamanla ayrıştırır. */
+    expect(sayfaJs).toContain('class="seo-chip"');
+    expect(sayfaJs).toContain('class="seo-chip-list tour-tag-list"');
+    expect(ortakStil).toMatch(/\.seo-chip \{/);
+  });
+
+  it('HİÇBİR etiket boşluğa gitmiyor', () => {
+    /* docs/seo-arastirma.md madde 4: hedefi olmayan bağlantı ağının
+       SEO değeri sıfır. Sayfa içi çapa gerçekten o sayfada, dışa giden
+       adres de diskte olmalı. */
+    const anaAnkrajlar = new Set(
+      [...app.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]));
+
+    sayfalar.forEach(({ slug, html }) => {
+      const sayfaCapalari = new Set(
+        [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]));
+
+      TOURS[slug].tags.forEach(({ label, href }) => {
+        expect(label.trim().length, slug + ' boş etiket').toBeGreaterThan(0);
+
+        if (href.charAt(0) === '#') {
+          expect(sayfaCapalari, slug + ' -> ' + href + ' çapası sayfada yok')
+            .toContain(href.slice(1));
+          return;
+        }
+
+        const [yol, capa] = href.split('#');
+        expect(existsSync(new URL('../' + yol, import.meta.url)),
+          slug + ' -> ' + yol + ' diskte yok').toBe(true);
+        if (capa) {
+          expect(anaAnkrajlar, slug + ' -> #' + capa + ' anasayfada yok').toContain(capa);
+        }
+      });
+    });
+  });
+
+  it('kök-göreli adresler sayfanın kökünden kuruluyor', () => {
+    /* /tur/<slug>/ iki dizin içeride; etiket adresleri veride kök-göreli
+       duruyor ve KOK ile önekleniyor. */
+    expect(sayfaJs).toContain("KOK + t.href");
+    Object.values(TOURS).forEach(t => {
+      t.tags.forEach(({ href }) => {
+        expect(href, t.slug + ' -> ' + href + ' zaten göreli önek taşıyor')
+          .not.toContain('../');
+      });
+    });
   });
 });

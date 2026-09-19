@@ -814,7 +814,26 @@ const TOURS = {
       { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
       { key: 'alacati',   title: 'Alaçatı ve Çeşme Turu',        meta: 'İzmir çıkışlı · 8 saat',  rating: '4.6', price: 990 },
       { key: 'bodrum',    title: 'Bodrum Tekne Turu',            meta: 'Bodrum çıkışlı · 6 saat', rating: '4.8', price: 1150 }
-    ]
+    ],
+    /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
+       HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
+       capasina, ya bu sayfanin bir bolumune, ya da diger tur
+       sayfasina. Hedefi olmayan anahtar kelime cipi eklenmez:
+       docs/seo-arastirma.md madde 4, is ag'in degerinin hedefler
+       gercek olana kadar sifir oldugunu soyluyor.
+       href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
+    tags: [
+      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
+      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
+      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
+      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Turun programı',       href: '#program' },
+      { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
+      { label: 'Buluşma noktası',      href: '#bulusma' },
+      { label: 'İptal ve iade',        href: '#bilgiler' },
+      { label: 'Gezen yorumları',      href: '#yorumlar' },
+      { label: 'Kapadokya turu',       href: 'tur/kapadokya-3-gece/' }
+    ],
   },
 
   /* ---- Konaklamalı tur ----
@@ -1078,7 +1097,26 @@ const TOURS = {
       { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
       { key: 'ihlara',    title: 'Ihlara Vadisi Yürüyüş Turu',   meta: 'Nevşehir çıkışlı · 8 saat', rating: '4.6', price: 1150 },
       { key: 'uchisar',   title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat', rating: '4.7', price: 750 }
-    ]
+    ],
+    /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
+       HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
+       capasina, ya bu sayfanin bir bolumune, ya da diger tur
+       sayfasina. Hedefi olmayan anahtar kelime cipi eklenmez:
+       docs/seo-arastirma.md madde 4, is ag'in degerinin hedefler
+       gercek olana kadar sifir oldugunu soyluyor.
+       href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
+    tags: [
+      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
+      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
+      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
+      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Gün gün program',      href: '#program' },
+      { label: 'Konaklama',            href: '#konaklama' },
+      { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
+      { label: 'Buluşma noktası',      href: '#bulusma' },
+      { label: 'İptal ve iade',        href: '#bilgiler' },
+      { label: 'Efes ve Şirince turu', href: 'tur/efes-sirince/' }
+    ],
   }
 };
 
