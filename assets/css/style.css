@@ -427,9 +427,19 @@ ul {
   .notif-panel-inner { animation: none; }
   .notif-item { transition: none; }
 }
-.notif-panel-header {
-  flex-shrink: 0;
-  display: flex;
+/* =============== ORTAK MOBİL EKRAN BAŞLIĞI ===============
+   Üç ekran aynı başlığı kullanır: bildirimler, giriş/üye ol ve tur
+   içerik sayfası. Düzen her üçünde de aynı — solda yuvarlak geri oku,
+   ortada iki satırlık başlık, sağda tek eylem.
+
+   Ölçüler ESKİDEN her ekran için ayrı ayrı yazılıyordu ve yanlarında
+   "biri değişirse diğeri de güncellenmeli" notu duruyordu. Artık tek
+   tanım: bir değer burada değişince üç ekran birlikte değişir.
+   display ve flex-shrink paylaşılmaz, çünkü her ekran kendi görünürlük
+   kuralına sahip (bildirimler her zaman, diğer ikisi yalnızca mobilde). */
+.notif-panel-header,
+.auth-modal-hero,
+.tour-mobile-header {
   align-items: center;
   gap: 10px;
   padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
@@ -439,7 +449,13 @@ ul {
   border-bottom-right-radius: 22px;
   box-shadow: 0 3px 10px rgba(11,18,48,.11);
 }
-.notif-panel-back {
+.notif-panel-header {
+  flex-shrink: 0;
+  display: flex;
+}
+.notif-panel-back,
+.auth-modal-back,
+.tour-mobile-back {
   flex-shrink: 0;
   width: 34px;
   height: 34px;
@@ -449,32 +465,54 @@ ul {
   border-radius: 50%;
   color: #fff;
 }
-.notif-panel-back:hover {
+.notif-panel-back:hover,
+.auth-modal-back:hover,
+.tour-mobile-back:hover {
   background: rgba(255,255,255,.1);
 }
 .notif-panel-back .icon,
-.notif-panel-back svg {
+.notif-panel-back svg,
+.auth-modal-back .icon,
+.auth-modal-back svg,
+.tour-mobile-back .icon,
+.tour-mobile-back svg {
   width: 22px;
   height: 22px;
 }
-.notif-panel-heading {
+.notif-panel-heading,
+.auth-modal-hero-text,
+.tour-mobile-heading {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.notif-panel-title {
+/* Başlık tek satırda kalır; sığmayan uzun tur adı sarmak yerine kısalır. */
+.notif-panel-title,
+.auth-modal-hero-text strong,
+.tour-mobile-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.notif-panel-subtitle {
+/* Alt satır da tek satırda kalır. */
+.notif-panel-subtitle,
+.auth-modal-hero-text span,
+.tour-mobile-subtitle {
   font-size: 12px;
   color: rgba(255,255,255,.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.notif-mark-all {
+/* Sağdaki tek eylem. */
+.notif-mark-all,
+.tour-mobile-action {
   flex-shrink: 0;
   padding: 8px 12px;
   border-radius: 999px;
@@ -484,7 +522,8 @@ ul {
   font-weight: 600;
   transition: background .15s ease, opacity .15s ease;
 }
-.notif-mark-all:hover {
+.notif-mark-all:hover,
+.tour-mobile-action:hover {
   background: rgba(255,255,255,.22);
 }
 .notif-mark-all:disabled {
@@ -1153,58 +1192,11 @@ ul {
 /* ---- mobil tam ekran giriş/üye ol başlığı ----
    Masaüstünde popup görünümü korunduğu için gizlidir; yalnızca 680px ve
    altında görünür. */
-/* Olculer bildirimler ekraninin basligiyla (.notif-panel-header) birebir
-   ayni tutulur: ic bosluk, hizalama, golge ve yazi boyutlari. Biri
-   degisirse digeri de guncellenmeli. */
+/* Görünüm ortak tanımdan geliyor (yukarıdaki "ORTAK MOBİL EKRAN
+   BAŞLIĞI" bloğu); burada yalnızca bu ekrana özel görünürlük var:
+   masaüstünde popup görünümü korunduğu için gizli, ≤680px'te açılır. */
 .auth-modal-hero {
   display: none;
-  align-items: center;
-  gap: 10px;
-  padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
-  background: var(--navy);
-  color: #fff;
-  border-bottom-left-radius: 22px;
-  border-bottom-right-radius: 22px;
-  box-shadow: 0 3px 10px rgba(11,18,48,.11);
-}
-.auth-modal-back {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-}
-.auth-modal-back:hover {
-  background: rgba(255,255,255,.1);
-}
-.auth-modal-back .icon,
-.auth-modal-back svg {
-  width: 22px;
-  height: 22px;
-}
-.auth-modal-hero-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.auth-modal-hero-text strong {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -.2px;
-}
-/* Alt satır tek satırda kalır; dar ekranda sarmak yerine kısalır. */
-.auth-modal-hero-text span {
-  font-size: 12px;
-  color: rgba(255,255,255,.72);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 /* ---- mobil: giriş/üye ol ekranı tam ekran açılır ---- */
 @media (max-width: 680px) {

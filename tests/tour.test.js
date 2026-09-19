@@ -51,6 +51,8 @@ const sayfaJs = readFileSync(new URL('../assets/js/tour-page.js', import.meta.ur
 const veriJs = readFileSync(new URL('../assets/js/tour-data.js', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../assets/js/app.js', import.meta.url), 'utf8');
 const yonlendirme = readFileSync(new URL('../tur.html', import.meta.url), 'utf8');
+const ortakStil = readFileSync(new URL('../assets/css/style.css', import.meta.url), 'utf8');
+const turStil = readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8');
 
 /* Her turun kendi HTML dosyası var: /tur/<slug>/index.html. Statik
    bilgiler (H1, sekme başlığı, kırılma noktaları) elle yazıldığı için
@@ -614,6 +616,25 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     });
   });
 
+  it('mobil başlık metni tur kaydıyla aynı', () => {
+    /* Mobilde başlık bildirimler ekranınınkiyle aynı düzende: geri oku,
+       iki satırlık başlık, sağda tek eylem. Metin elle yazıldığı için
+       veriyle karşılaştırılır. */
+    expect(html).toContain('<span class="tour-mobile-title">' + t.title + '</span>');
+    expect(html).toContain('<span class="tour-mobile-subtitle">' + t.category + ' · ' + t.area + '</span>');
+  });
+
+  it('mobil başlıkta geri oku ve tek eylem var', () => {
+    const blok = html.match(/<div class="tour-mobile-header">[\s\S]*?<\/div>\n<\/header>/);
+    expect(blok, 'mobil başlık bloğu bulunamadı').toBeTruthy();
+    const metin = blok[0];
+    expect(metin).toContain('class="tour-mobile-back"');
+    expect(metin).toContain('href="../../index.html"');
+    expect(metin).toContain('id="tourHeaderShare"');
+    /* Bildirimler başlığındaki gibi sağda TEK eylem olmalı. */
+    expect((metin.match(/<button/g) || []).length).toBe(1);
+  });
+
   it('rezervasyon kartının iki yuvası da sayfada', () => {
     expect(html).toContain('id="tourBookingMobile"');
     expect(html).toContain('id="tourBookingDesktop"');
@@ -1039,5 +1060,46 @@ describe('her turun ortak alanları', () => {
     Object.values(TOURS).forEach(t => {
       expect(t.similar.some(x => x.slug), t.slug + ' başka bir tur sayfasına hiç bağlanmıyor').toBe(true);
     });
+  });
+});
+
+/* ---------------- ortak mobil ekran başlığı ---------------- */
+describe('mobil başlık stili', () => {
+  it('üç ekran tek tanımı paylaşır, kopya yok', () => {
+    /* Bildirimler, giriş/üye ol ve tur sayfası aynı başlığı kullanıyor.
+       Eskiden ölçüler her biri için ayrı yazılıydı ve yanında "biri
+       değişirse diğeri de güncellenmeli" notu vardı; artık tek tanım. */
+    const kapsayici = ortakStil.match(
+      /\.notif-panel-header,\s*\n\.auth-modal-hero,\s*\n\.tour-mobile-header \{([\s\S]*?)\}/);
+    expect(kapsayici, 'ortak başlık tanımı bulunamadı').toBeTruthy();
+    /* Görünümü belirleyen değerler ortak blokta olmalı. */
+    ['background: var(--navy)', 'border-bottom-left-radius', 'box-shadow', 'gap: 10px']
+      .forEach(deger => expect(kapsayici[1], deger + ' ortak tanımda yok').toContain(deger));
+  });
+
+  it('geri oku, başlık yığını ve alt başlık da ortak', () => {
+    [
+      /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back \{/,
+      /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading \{/,
+      /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title \{/,
+      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle \{/,
+      /\.notif-mark-all,\s*\n\.tour-mobile-action \{/
+    ].forEach(kalip => expect(ortakStil, 'ortak değil: ' + kalip).toMatch(kalip));
+  });
+
+  it('giriş ekranı başlığı kendi kopyasını taşımıyor', () => {
+    /* .auth-modal-hero yalnızca görünürlük kuralı tutmalı; ölçüleri
+       tekrar yazarsa iki ekran birbirinden ayrışır. */
+    const blok = ortakStil.match(/\n\.auth-modal-hero \{([\s\S]*?)\}/)[1];
+    expect(blok).toContain('display: none');
+    ['padding', 'background', 'box-shadow', 'border-bottom-left-radius']
+      .forEach(deger => expect(blok, deger + ' kopyalanmış').not.toContain(deger));
+  });
+
+  it('mobil başlık yalnızca mobilde, masaüstü başlığı yalnızca masaüstünde', () => {
+    expect(turStil).toMatch(/\.tour-mobile-header \{ display: none; \}/);
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    expect(mobil).toContain('.tour-body .header-inner { display: none; }');
+    expect(mobil).toContain('.tour-mobile-header { display: flex; }');
   });
 });
