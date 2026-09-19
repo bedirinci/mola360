@@ -55,6 +55,7 @@ const yonlendirme = readFileSync(new URL('../tur.html', import.meta.url), 'utf8'
 const ortakStil = readFileSync(new URL('../assets/css/style.css', import.meta.url), 'utf8');
 const turStil = readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8');
 const arayuz = readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8');
+const pdfJs = readFileSync(new URL('../assets/js/tour-pdf.js', import.meta.url), 'utf8');
 
 /* Her turun kendi HTML dosyası var: /tur/<slug>/index.html. Statik
    bilgiler (H1, sekme başlığı, kırılma noktaları) elle yazıldığı için
@@ -1548,77 +1549,65 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- PDF belgesi ---------------- */
 describe('PDF belgesi', () => {
-  it('her sayfada kart ve belge yuvası var', () => {
+  it('düğme dosyayı indiriyor, yazdırma penceresi açmıyor', () => {
+    /* İstenen buydu: tarayıcının yazdırma penceresi değil, doğrudan
+       inen bir dosya. */
+    expect(pdfJs).toContain('.download(dosya)');
+    expect(pdfJs).toContain("'mola360-' + tur.slug + '.pdf'");
+    expect(sayfaJs, 'yazdırma penceresi hâlâ açılıyor').not.toContain('window.print()');
+    expect(sayfaJs).toContain('Mola360TourPdf.indir(tour)');
+  });
+
+  it('her sayfada kart ve iki betik var, sırası doğru', () => {
     sayfalar.forEach(({ slug, html }) => {
       expect(html, slug + ' indirme kartı yok').toContain('id="tourPrint"');
-      expect(html, slug + ' belge yuvası yok').toContain('id="tourPrintSheet"');
+      expect(html, slug + ' tour-pdf.js yüklenmiyor').toContain('src="../../assets/js/tour-pdf.js"');
+      /* tour-pdf.js, tour-page.js'ten ÖNCE: düğme bağlanırken
+         window.Mola360TourPdf hazır olmalı. */
+      /* Yorumlarda da adi geciyor; <script src=> uzerinden bakiliyor. */
+      expect(html.indexOf('src="../../assets/js/tour-pdf.js"'), slug + ' betik sırası ters')
+        .toBeLessThan(html.indexOf('src="../../assets/js/tour-page.js"'));
+      /* Kütüphane sayfayla birlikte YÜKLENMEMELİ. */
+      expect(html, slug + ' pdfmake sayfayla yükleniyor').not.toContain('vendor/pdfmake');
     });
-    expect(sayfaJs).toContain("fill('tourPrintSheet', printSheetMarkup())");
-    expect(sayfaJs).toContain('window.print()');
   });
 
-  it('belge body’nin DOĞRUDAN çocuğu', () => {
-    /* Baskıda "body > *:not(.tour-print-sheet)" ile her şey gizleniyor;
-       belge <main> içinde kalsaydı o kuralla birlikte o da gizlenirdi. */
-    sayfalar.forEach(({ slug, html }) => {
-      const sonra = html.slice(html.indexOf('</main>'));
-      expect(sonra, slug + ' belge </main> içinde kalmış').toContain('id="tourPrintSheet"');
-    });
-    expect(turStil).toContain('body > *:not(.tour-print-sheet)');
+  it('kütüphane yalnızca düğmeye basılınca, bir kez yükleniyor', () => {
+    /* ~1,9 MB. Sayfayı normal gezen ziyaretçiye maliyeti olmamalı. */
+    expect(pdfJs).toContain("vendor/pdfmake.min.js");
+    expect(pdfJs).toContain("vendor/vfs_fonts.js");
+    expect(pdfJs).toContain('let yuklendi = null');
+    /* vfs_fonts kendini pdfMake'e kaydediyor; pdfmake ondan önce gelmeli. */
+    expect(pdfJs.indexOf('pdfmake.min.js')).toBeLessThan(pdfJs.indexOf('vfs_fonts.js'));
   });
 
-  it('ekranda gizli, yalnızca baskıda açılıyor', () => {
-    expect(turStil).toContain('.tour-print-sheet { display: none; }');
-    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
-    expect(baski).toContain('.tour-print-sheet {');
-    expect(baski).toContain('display: block');
+  it('fotoğraf gelmezse belge yine üretiliyor', () => {
+    /* Uzak sunucu izin vermezse belge fotoğrafsız çıkmalı, hiç
+       çıkmamasındansa. */
+    expect(pdfJs).toContain('.catch(() => null)');
+    const kapak = pdfJs.match(/function kapak\(tur, heroVeri\) \{([\s\S]*?)\n  \}/)[1];
+    expect(kapak, 'fotoğrafsız durum ele alınmamış').toContain('heroVeri');
+    expect(kapak).toContain('?');
   });
 
-  it('A4 ve sayfa sonu kontrolleri tanımlı', () => {
-    /* Ölçüler pt: baskıda px'in karşılığı çözünürlüğe göre değişir. */
-    expect(turStil).toMatch(/@page \{[\s\S]*?size: A4/);
-    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
-    /* Bir durak/gün, tablo satırı veya madde kâğıt sonunda ikiye
-       bölünmesin; başlık da altındaki metinden kopmasın. */
-    /* Kart ızgarasının KENDİSİ bölünebilir (altı kart iki sayfaya
-       yayılabilir); bölünmemesi gereken tek tek kartlar. */
-    ['.tour-print-timeline li', '.tour-print-table tr', '.tour-print-foot',
-     '.tour-print-shots', '.tour-print-cover', '.tour-print-fact',
-     '.tour-print-tiers li']
-      .forEach(sec => {
-        const kural = baski.match(new RegExp(sec.replace(/\./g, '\\.') + ' \\{([\\s\\S]*?)\\}'));
-        expect(kural, sec + ' kuralı yok').toBeTruthy();
-        expect(kural[1], sec + ' bölünmeye açık').toContain('break-inside: avoid');
-      });
-    expect(baski).toContain('break-after: avoid');
-    expect(baski).toContain('orphans: 2');
-  });
-
-  it('renkler ve zeminler kâğıda basılıyor', () => {
-    /* Tarayıcılar baskıda zeminleri varsayılan olarak atıyor. Bu kural
-       olmadan lacivert kapak beyaz, rozetler görünmez çıkar. */
-    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
-    expect(baski).toContain('print-color-adjust: exact');
-    expect(baski).toContain('-webkit-print-color-adjust: exact');
-  });
-
-  it('kapak ve şeritte GERÇEK <img> var, CSS zemini değil', () => {
-    /* CSS zemin görselleri baskıda atılabiliyor; <img> her koşulda
-       basılıyor. */
-    expect(sayfaJs).toContain('class="tour-print-cover-img" src=');
-    expect(sayfaJs).toContain('tourImage(f.key, PRINT_WIDTHS.shot)');
-    expect(sayfaJs).toContain('tourImage(foto.key, PRINT_WIDTHS.hero)');
+  it('belge tur kaydından üretiliyor, elle yazılmıyor', () => {
+    ['tur.title', 'tur.code', 'tur.included', 'tur.excluded',
+     'tur.meeting', 'tur.important', 'tur.cancellation.tiers', 'tur.facts',
+     'tur.highlights', 'tur.bring']
+      .forEach(alan => expect(pdfJs, alan + ' belgede kullanılmıyor').toContain(alan));
+    const govde = pdfJs.match(/function program\(tur, konaklamali\) \{([\s\S]*?)\n  \}/)[1];
+    expect(govde).toContain('tur.program');
+    expect(govde).toContain('tur.itinerary');
   });
 
   it('fiyat şeridi grup büyüklüğü yazmıyor', () => {
     /* pricing.maxGuests tek bir rezervasyonda seçilebilecek en fazla kişi
        (6-9); kalkıştaki grup büyüklüğü seatsPerDeparture (16-18). İlki
        "Grup" diye yazılınca belgenin KENDİ künye kartıyla çelişiyordu. */
-    const band = sayfaJs.match(/function printPriceBand\(\) \{([\s\S]*?)\n  \}/)[1];
+    /* Tuzagin nedeni yorumda anlatiliyor; kod tarafina bakiliyor. */
+    const band = pdfJs.match(/function fiyatSeridi\(tur\) \{([\s\S]*?)\n  \}/)[1]
+      .replace(/\/\*[\s\S]*?\*\//g, '');
     expect(band, 'grup büyüklüğü yanlış alandan yazılmış').not.toContain('maxGuests');
-    expect(band).toContain('durationLabel');
-    expect(band).toContain('departureNote');
-    /* Künye kartı grubu zaten taşıyor. */
     Object.values(TOURS).forEach(t => {
       const grup = t.facts.find(f => f.label === 'Grup');
       expect(grup, t.slug + ' künyede grup yok').toBeTruthy();
@@ -1626,34 +1615,50 @@ describe('PDF belgesi', () => {
     });
   });
 
-  it('belge sayfanın tasarım diliyle aynı bölümleri taşıyor', () => {
-    ['printCover', 'printPriceBand', 'printHighlights', 'printFacts',
-     'printShots', 'printProgram', 'printIncluded', 'printMeeting',
-     'printCancellation']
-      .forEach(fn => expect(sayfaJs, fn + ' yok').toContain('function ' + fn + '('));
-  });
-
-  it('belge tur kaydından üretiliyor, elle yazılmıyor', () => {
-    /* Sayfadaki bilgiyle ayrışmasın diye aynı kaynaktan. */
-    ['tour.title', 'tour.code', 'tour.included', 'tour.excluded',
-     'tour.meeting', 'tour.important', 'tour.cancellation.tiers']
-      .forEach(alan => expect(sayfaJs, alan + ' belgede kullanılmıyor').toContain(alan));
-    /* Konaklamalı turda gün gün program, günübirlikte saat saat. */
-    const govde = sayfaJs.match(/function printProgram\(\) \{([\s\S]*?)\n  \}/)[1];
-    expect(govde).toContain('tour.program');
-    expect(govde).toContain('tour.itinerary');
+  it('sayfa sonu kontrolleri var', () => {
+    /* Bölüm başlığı sayfanın dibinde yalnız kalmasın; iptal kademeleri
+       ikiye bölünmesin. İkisi de gerçek çıktıda görüldü ve düzeltildi. */
+    expect(pdfJs).toContain('pageBreakBefore');
+    expect(pdfJs).toContain('headlineLevel === 1 && sonrakiler.length === 0');
+    expect(pdfJs).toContain('unbreakable: true');
   });
 
   it('belge bilet olmadığını söylüyor', () => {
-    /* Müşteri bunu indirip saklayacak; rezervasyon onayı sanılmamalı. */
-    expect(sayfaJs).toContain('bilet veya rezervasyon onayı değildir');
-    expect(sayfaJs).toContain('fiyatlar ve program değişebilir');
+    expect(pdfJs).toContain('bilet veya rezervasyon onayı değildir');
+    expect(pdfJs).toContain('fiyatlar ve program değişebilir');
   });
 
   it('indirme ikonu ikon setinde tanımlı', () => {
-    /* Tanımsız ikon boş bir <svg> basar ve düğme boş görünür --
-       bu hata bu projede bir kez yaşandı (home ikonu). */
+    /* Tanımsız ikon boş bir <svg> basar; bu hata bu projede bir kez
+       yaşandı (home ikonu). Belge de ikon setinden besleniyor. */
     expect(TOUR_ICONS.download, 'download ikonu yok').toBeTruthy();
-    expect(TOUR_ICONS.download.length).toBeGreaterThan(20);
+    const kullanilan = [...pdfJs.matchAll(/ikon\('([a-zA-Z]+)'/g)].map(m => m[1]);
+    const digerleri = [...pdfJs.matchAll(/isaretliListe\([^,]+, '([a-zA-Z]+)'/g)].map(m => m[1]);
+    [...new Set([...kullanilan, ...digerleri])].forEach(ad =>
+      expect(TOUR_ICONS[ad], ad + ' ikonu tanımsız').toBeTruthy());
+  });
+
+  it('ikinci bir belge kopyası geride kalmadı', () => {
+    /* Aynı veriden üretilen iki belge elle eşit tutulamaz; HTML baskı
+       sayfası indirme gelince kaldırıldı. */
+    expect(sayfaJs, 'HTML belge üreticisi duruyor').not.toContain('printSheetMarkup');
+    expect(turStil.replace(/\/\*[\s\S]*?\*\//g, ''), 'baskı sayfası stili duruyor')
+      .not.toContain('.tour-print-sheet');
+    sayfalar.forEach(({ slug, html }) =>
+      expect(html, slug + ' belge yuvası duruyor').not.toContain('tourPrintSheet'));
+  });
+
+  it('Ctrl+P hâlâ makul bir çıktı veriyor', () => {
+    /* Belge kalktı ama yazdırma büsbütün bozulmamalı: yapışkan
+       katmanlar ve etkileşim düğmeleri kâğıda düşmesin. */
+    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
+    ['.site-header', '.tour-sticky-bar', '.tour-section-nav', '.tour-print']
+      .forEach(sec => expect(baski, sec + ' kâğıda düşüyor').toContain(sec));
+  });
+
+  it('vendor dosyaları yerinde ve belgelenmiş', () => {
+    ['assets/js/vendor/pdfmake.min.js', 'assets/js/vendor/vfs_fonts.js',
+     'assets/js/vendor/README.md']
+      .forEach(y => expect(existsSync(new URL('../' + y, import.meta.url)), y + ' yok').toBe(true));
   });
 });
