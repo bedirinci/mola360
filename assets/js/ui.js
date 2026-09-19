@@ -770,3 +770,52 @@ window.m360AutoHideThumb = function (thumb, options) {
     document.querySelectorAll('.filter-dropdown-panel:not(.is-open)').forEach(resetSheet);
   }, true);
 })();
+/* ===== cift dokunusla yakinlastirma ===== */
+/* Olculdu: `touch-action: manipulation` iOS Safari'de bu hareketi
+   durdurmuyor. Anasayfada hareketin olmamasinin sebebi o degil, viewport
+   etiketindeki `user-scalable=no` -- ama o etiket IKI PARMAKLA
+   yakinlastirmayi da kapatiyor ve gozu iyi gormeyen kullaniciyi sayfadan
+   disliyor. Bu yuzden tur sayfalarina kopyalanmadi.
+
+   Burada yalnizca IKINCI dokunusun varsayilan davranisi iptal ediliyor:
+   cift dokunus kapaniyor, pinch aynen calisiyor.
+
+   Iki parmaga hic dokunulmuyor -- ekranda baska parmak varsa veya ayni
+   anda birden fazla parmak kalkiyorsa dinleyici erken cikiyor.
+
+   TEKRAR listesi: touchend'de preventDefault cagirmak o dokunusun
+   click'ini de yutar. Ayni noktaya hizli iki kez basmanin ANLAMLI oldugu
+   kontroller (kisi sayisi tuslari, form alanlari, acik/kapali dugmeler)
+   bu yuzden disarida tutuluyor. Bag ve galeri hucresi gibi seylerde
+   ikinci dokunus zaten bir sey yapmadigi icin orada yutmak serbest --
+   ki galeri seridi tam da yakinlastirmanin hedef aldigi blok. */
+(function () {
+  const ARA = 350;   // iki dokunus arasi en fazla sure (ms)
+  const KAYMA = 30;  // iki dokunus arasi en fazla uzaklik (px)
+  const TEKRAR = 'input, textarea, select, [contenteditable], [data-step], [aria-pressed]';
+
+  let sonZaman = 0;
+  let sonX = 0;
+  let sonY = 0;
+
+  document.addEventListener('touchend', function (olay) {
+    if (olay.touches.length || olay.changedTouches.length !== 1) return;
+
+    const dokunus = olay.changedTouches[0];
+    const simdi = olay.timeStamp;
+    const cift = simdi - sonZaman <= ARA &&
+      Math.abs(dokunus.clientX - sonX) <= KAYMA &&
+      Math.abs(dokunus.clientY - sonY) <= KAYMA;
+
+    sonZaman = simdi;
+    sonX = dokunus.clientX;
+    sonY = dokunus.clientY;
+
+    if (!cift) return;
+
+    const hedef = olay.target;
+    if (hedef && hedef.closest && hedef.closest(TEKRAR)) return;
+
+    olay.preventDefault();
+  }, { passive: false });
+})();
