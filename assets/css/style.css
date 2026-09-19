@@ -430,7 +430,9 @@ ul {
 /* =============== ORTAK MOBİL EKRAN BAŞLIĞI ===============
    Üç ekran aynı başlığı kullanır: bildirimler, giriş/üye ol ve tur
    içerik sayfası. Düzen her üçünde de aynı — solda yuvarlak geri oku,
-   ortada iki satırlık başlık, sağda tek eylem.
+   ortada iki satırlık başlık. Sağdaki eylem yalnızca bildirimlerde
+   var; tur sayfasında paylaş banner'a taşındı, giriş ekranında da
+   böyle bir eylem yok.
 
    Ölçüler ESKİDEN her ekran için ayrı ayrı yazılıyordu ve yanlarında
    "biri değişirse diğeri de güncellenmeli" notu duruyordu. Artık tek
@@ -510,18 +512,16 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Sağdaki tek eylem. Zemin ve üzerine gelme davranışı ortak; biçim
-   ekrana göre değişir — bildirimlerde metin hapı, tur sayfasında geri
-   okuyla aynı çapta yuvarlak ikon (biçimi tour.css'te). */
-.notif-mark-all,
-.tour-mobile-action {
+/* Sağdaki eylem yalnızca bildirimler ekranında: "Tümünü oku" hapı.
+   Tur sayfasının başlığında bir dönem paylaş düğmesi de bu tanımı
+   paylaşıyordu; paylaş banner'a taşınınca burası tek ekrana kaldı. */
+.notif-mark-all {
   flex-shrink: 0;
   background: rgba(255,255,255,.14);
   color: #fff;
   transition: background .15s ease, opacity .15s ease;
 }
-.notif-mark-all:hover,
-.tour-mobile-action:hover {
+.notif-mark-all:hover {
   background: rgba(255,255,255,.22);
 }
 .notif-mark-all {

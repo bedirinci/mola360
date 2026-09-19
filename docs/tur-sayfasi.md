@@ -66,25 +66,27 @@ Bir dönem favori iki yerdeydi (banner + başlık kartı) ve paylaş da iki
 yerdeydi (başlık kartı + mobil başlık). Aynı işi yapan iki düğme hem
 fazlalıktı hem de durumlarını birbirine eşit tutmayı gerektiriyordu.
 
-Şimdi her ikisi de banner'ın sağ üst köşesinde, yan yana:
-
-| | masaüstü | mobil |
-|---|---|---|
-| Favori | banner (sağ üst) | banner (sağ üst) |
-| Paylaş | banner, favorinin solunda | mobil başlıkta sağdaki düğme |
+Şimdi her ikisi de banner'ın sağ üst köşesinde, yan yana ve **her iki
+ekran boyutunda da aynı yerde**: solda favori, sağda paylaş. Mobil
+başlıktaki paylaş düğmesi de kaldırıldı, orada artık yalnızca geri oku
+ve iki satırlık başlık var — başlık böylece daha uzun tur adını
+gösterebiliyor.
 
 Konum düğmelerin kendisinde değil `.tour-gallery-actions` sarmalayıcıda:
-ikisi aynı hizada kalıyor ve aradaki boşluk tek yerden geliyor. Üst
+ikisi aynı hizada kalıyor ve aradaki boşluk tek yerden geliyor. Sıra
+işaretlemeden geliyor (satır yönlü flex), ayrı bir kural gerekmiyor. Üst
 konum `--tour-header-h`'den hesaplanıyor — mobilde başlık banner'ın
 üzerine bindiği için sabit bir değer verilse düğmeler onun altında
 kalırdı.
 
-**Dikkat:** `.tour-gallery-share`'i mobilde gizleyen kural
-`.tour-body` ile bir basamak yükseltilmiş. Temel `display: flex` kuralı
-dosyada o medya sorgusundan SONRA geliyor ve aynı ağırlıkta; önek
-olmadan eziliyor ve paylaş düğmesi mobilde de görünüyor. Bu tam olarak
-başına geldi: kural yazıldı, test geçti, ekran görüntüsü düğmenin hâlâ
-orada olduğunu gösterdi.
+**Bir dönem paylaş mobilde gizleniyordu ve o kural işe yaramıyordu.**
+`.tour-gallery-share { display: none }` medya sorgusunun içindeydi ama
+temel `display: flex` kuralı dosyada ondan SONRA geliyordu ve aynı
+ağırlıktaydı. Kural yazıldı, test geçti, ekran görüntüsü düğmenin
+mobilde hâlâ durduğunu gösterdi. Kural artık tümden kalktı (paylaş
+mobilde de görünüyor), ama tuzak duruyor: **bu dosyada medya sorguları
+temel kuralların ÖNÜNDE.** Bir şeyi mobilde gizlerken ya kuralı temel
+tanımdan sonraya koy ya da `.tour-body` ile bir basamak yükselt.
 
 ### `app.js` artık her sayfada yükleniyor
 

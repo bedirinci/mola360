@@ -628,25 +628,16 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect(html).toContain('<span class="tour-mobile-subtitle">' + t.categoryShort + ' · ' + t.area + '</span>');
   });
 
-  it('mobil başlıkta geri oku ve tek eylem var', () => {
+  it('mobil başlıkta geri oku var, sağda eylem yok', () => {
     const blok = html.match(/<div class="tour-mobile-header">[\s\S]*?\n<\/div>/);
     expect(blok, 'mobil başlık bloğu bulunamadı').toBeTruthy();
     const metin = blok[0];
     expect(metin).toContain('class="tour-mobile-back"');
     expect(metin).toContain('href="../../index.html"');
-    expect(metin).toContain('id="tourHeaderShare"');
-    /* Bildirimler başlığındaki gibi sağda TEK eylem olmalı. */
-    expect((metin.match(/<button/g) || []).length).toBe(1);
-  });
-
-  it('paylaş düğmesi ikon ve erişilebilir adı var', () => {
-    const dugme = html.match(/<button class="tour-mobile-action"[\s\S]*?<\/button>/)[0];
-    /* Metin yerine ikon: görünür yazı olmadığı için ad aria-label'dan
-       gelmek zorunda, yoksa ekran okuyucuda adsız bir düğme kalır. */
-    expect(dugme).toContain('aria-label="Turu paylaş"');
-    expect(dugme).toContain('<svg');
-    const gorunurMetin = dugme.replace(/<[^>]*>/g, '').trim();
-    expect(gorunurMetin, 'ikon düğmede görünür metin kalmış').toBe('');
+    /* Paylaş banner'a, favorinin sağına taşındı; başlıkta düğme yok. */
+    expect(metin).not.toContain('tourHeaderShare');
+    expect(metin).not.toContain('tour-mobile-action');
+    expect((metin.match(/<button/g) || []).length).toBe(0);
   });
 
   it('rezervasyon kartının iki yuvası da sayfada', () => {
@@ -1120,9 +1111,12 @@ describe('mobil başlık stili', () => {
       /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back \{/,
       /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading \{/,
       /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title \{/,
-      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle \{/,
-      /\.notif-mark-all,\s*\n\.tour-mobile-action \{/
+      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle \{/
     ].forEach(kalip => expect(ortakStil, 'ortak değil: ' + kalip).toMatch(kalip));
+    /* Sağdaki eylem artık yalnızca bildirimlerde; tur başlığındaki
+       paylaş banner'a taşındı ve sınıfı hiçbir yerde kalmadı. */
+    expect(ortakStil.replace(/\/\*[\s\S]*?\*\//g, '')).not.toContain('.tour-mobile-action');
+    expect(turStil.replace(/\/\*[\s\S]*?\*\//g, '')).not.toContain('.tour-mobile-action');
   });
 
   it('giriş ekranı başlığı kendi kopyasını taşımıyor', () => {
@@ -1275,14 +1269,21 @@ describe('banner düğmeleri', () => {
     expect(sync).toContain('state.favorite');
   });
 
-  it('paylaş masaüstünde bannerda, mobilde başlıkta — davranış tek', () => {
-    /* İki düğme aynı anda görünmüyor ama ikisi de aynı işi yapıyor;
-       davranış kopyalanırsa biri zamanla diğerinden ayrışır. */
-    expect(sayfaJs).toContain("['tourGalleryShare', 'tourHeaderShare'].forEach");
-    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    /* .tour-body ile: temel display kuralı bu bloktan sonra geliyor ve
-       aynı ağırlıkta olduğu için önek olmadan eziliyor. */
-    expect(mobil).toContain('.tour-body .tour-gallery-share { display: none; }');
+  it('paylaş tek düğme: her iki ekran boyutunda da bannerda', () => {
+    /* Mobil başlıktaki ikinci paylaş kaldırıldı; iki düğme aynı işi
+       yaparsa biri zamanla diğerinden ayrışır. */
+    expect(sayfaJs).toContain("getElementById('tourGalleryShare')");
+    expect(sayfaJs).not.toContain('tourHeaderShare');
+    /* Mobilde gizleyen bir kural kalmamalı: paylaş orada da görünür. */
+    expect(turStil.replace(/\/\*[\s\S]*?\*\//g, ''))
+      .not.toMatch(/\.tour-gallery-share \{ display: none/);
+  });
+
+  it('favori solda, paylaş sağda', () => {
+    /* Sıra işaretlemeden geliyor (flex, satır yönü); favori önce. */
+    const galeri = sayfaJs.match(/function galleryMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(galeri.indexOf('id="tourGalleryFav"'))
+      .toBeLessThan(galeri.indexOf('id="tourGalleryShare"'));
   });
 
   it('banner düğmeleri banner’ın üstünde, başlığın altında konumlanıyor', () => {
