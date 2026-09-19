@@ -1279,6 +1279,24 @@ describe('banner düğmeleri', () => {
       .not.toMatch(/\.tour-gallery-share \{ display: none/);
   });
 
+  it('banner düğmeleri mobilde daha küçük', () => {
+    /* Dar ekranda 34px, masaüstünde 38px. */
+    const mobilKural = '.tour-gallery-fav,\n  .tour-gallery-share { width: 34px; height: 34px; }';
+    const mobilBloklar = [...turStil.matchAll(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/g)]
+      .map(m => m[1]);
+    expect(mobilBloklar.some(b => b.includes(mobilKural)),
+      'mobil ölçü kuralı bir mobil blokta değil').toBe(true);
+    /* Temel ölçü masaüstünde durmalı. */
+    const temel = turStil.match(/\n\.tour-gallery-fav,\n\.tour-gallery-share \{([\s\S]*?)\}/)[1];
+    expect(temel).toContain('width: 38px');
+
+    /* ASIL ŞART: mobil kural temel tanımdan SONRA gelmeli. Aynı
+       ağırlıktalar; önce gelirse sessizce eziliyor ve düğmeler mobilde
+       de 38px kalıyor. Bu dosyada tam olarak böyle bir hata yaşandı. */
+    expect(turStil.indexOf(mobilKural))
+      .toBeGreaterThan(turStil.indexOf('\n.tour-gallery-fav,\n.tour-gallery-share {'));
+  });
+
   it('favori solda, paylaş sağda', () => {
     /* Sıra işaretlemeden geliyor (flex, satır yönü); favori önce. */
     const galeri = sayfaJs.match(/function galleryMarkup\(\) \{([\s\S]*?)\n  \}/)[1];

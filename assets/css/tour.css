@@ -261,6 +261,20 @@
   }
   .tour-gallery-more,
   .tour-gallery-all { display: none; }
+
+  /* Dar ekranda düğmeler fotoğraftan daha az yer kapsın: masaüstündeki
+     38px yerine 34px, ikonlar da orantılı küçülüyor.
+
+     Bu blok temel tanımdan SONRA geldiği için önek gerekmiyor;
+     dosyadaki diğer mobil blok temel kuralların ÖNÜNDE ve orada aynı
+     kuralı yazmak sessizce ezilirdi. */
+  .tour-gallery-fav,
+  .tour-gallery-share { width: 34px; height: 34px; }
+  .tour-gallery-fav .icon,
+  .tour-gallery-share .icon { width: 18px; height: 18px; }
+  /* Düğmeler küçülünce aradaki boşluk da bir tık daralıyor. */
+  .tour-gallery-actions { gap: 7px; }
+
   .tour-gallery-count {
     display: block;
     position: absolute;
