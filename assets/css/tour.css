@@ -67,25 +67,38 @@
   .tour-body .header-inner { display: none; }
   .tour-mobile-header { display: flex; }
 
-  /* Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
-     yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
-     görünmüyordu. Mobilde zemini tamamen içteki başlığa bırakıyoruz,
-     böylece oval alt kenar sayfa zemininin üzerinde görünüyor.
-     (Masaüstünde sarmalayıcı kendi zeminini korur.) */
+  /* Başlık akıştan çıkıp banner'ın ÜZERİNE biniyor.
+
+     İki şeyi birden çözüyor:
+     1) Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
+        yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
+        görünmüyordu. Zemin artık tamamen içteki başlığa ait.
+     2) Akıştan çıkınca galeri sayfanın en üstünden başlıyor ve oval alt
+        köşelerin içinden sayfa zemini değil fotoğrafın kendisi
+        görünüyor; çentikler boş durmuyor.
+
+     Başlık opak lacivert olduğu için üzerindeki yazı fotoğraftan
+     etkilenmiyor. Dayanak noktası body (position: relative).
+     Masaüstünde sarmalayıcı akışta kalır ve kendi zeminini korur. */
   .tour-body .site-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background: none;
     box-shadow: none;
   }
+  /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
+  .tour-body .tour-page { padding-top: 0; }
+  /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;
+     görünen alan eskisiyle aynı kalsın. */
+  .tour-body .tour-gallery-cell { aspect-ratio: 4 / 3.6; }
 
   /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
      kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
      göstermeye gerek yok. İşaretleme ve BreadcrumbList yapısal verisi
      olduğu gibi duruyor; yalnızca görünürlük değişiyor. */
   .tour-body .tour-crumbs { display: none; }
-
-  /* Kırılma noktası kalkınca galeri başlığa yapışıyordu; oval kenarın
-     görünmesi için üstte biraz boşluk kalıyor. */
-  .tour-body .tour-page { padding-top: 12px; }
 }
 
 /* ---------------- header uyarlaması (masaüstü) ----------------
@@ -1676,7 +1689,15 @@
 .tour-cta:hover { background: var(--green-dark); color: #fff; }
 .tour-cta:active { transform: translateY(1px); }
 .tour-cta .icon { width: 19px; height: 19px; }
-.tour-cta.small { min-height: 46px; width: auto; padding: 12px 20px; font-size: 15px; border-radius: 12px; }
+/* Şeritteki buton: metin iki satıra sarıp şeridi yükseltmesin. */
+.tour-cta.small {
+  min-height: 46px;
+  width: auto;
+  padding: 12px 20px;
+  font-size: 15px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
 .tour-cta.ghost {
   background: var(--card);
   border: 1px solid var(--border);
@@ -1732,13 +1753,30 @@
 }
 .tour-sticky-bar.is-visible { transform: none; }
 .tour-sticky-info { display: flex; flex-direction: column; min-width: 0; }
+/* Üst satır: fiyat ve kişi sayısı yan yana, taban hizasında. */
+.tour-sticky-price {
+  display: flex;
+  align-items: baseline;
+  /* Araya "/" ayracı girdiği için boşluk daraldı; ayraç zaten ayırıyor. */
+  gap: 5px;
+  min-width: 0;
+}
 .tour-sticky-info strong {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 19px;
   font-weight: 800;
   color: var(--navy-deep);
+  white-space: nowrap;
 }
-.tour-sticky-info span {
+/* Kişi sayısı fiyatın yanında ama onunla yarışmasın: küçük ve soluk. */
+.tour-sticky-guests {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+/* Alt satır yalnızca tarih; sığmazsa kısalır. */
+.tour-sticky-date {
   font-size: 11.8px;
   color: var(--text-muted);
   white-space: nowrap;

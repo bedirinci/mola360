@@ -559,10 +559,13 @@
       <p class="tour-sum-note">Vergiler dahil · ${kisiler} · ${dateRangeText()}</p>`;
   }
 
-  /* Günübirlikte tek tarih, konaklamalıda kalkış – dönüş aralığı. */
-  function dateRangeText() {
+  /* Günübirlikte tek tarih, konaklamalıda kalkış – dönüş aralığı.
+     kisa=true dar alanlar için: yapışkan alt şeritte tam biçim
+     sığmayıp kesiliyordu. */
+  function dateRangeText(kisa) {
     if (!stay) return formatTrDate(state.date);
     const donus = stayReturnDate(tour, state.date);
+    if (kisa) return formatTrDateRangeShort(state.date, donus);
     return formatTrDate(state.date) + ' – ' + formatTrDate(donus);
   }
 
@@ -780,10 +783,16 @@
     const bar = document.getElementById('tourStickyBar');
     if (!bar) return;
     const toplam = hesap || calcTotal(tour, state);
+    /* Kişi sayısı fiyatın sağında, aynı satırda: ikisi birlikte "ne kadar,
+       kaç kişiye" sorusunu tek bakışta cevaplıyor. Alt satır yalnızca
+       tarihe kalıyor, böylece uzun tarih aralığı kısalmadan sığıyor. */
     bar.innerHTML = `
       <div class="tour-sticky-info">
-        <strong>${formatTRY(toplam.total)}</strong>
-        <span>${dateRangeText()} · ${toplam.guests} kişi</span>
+        <span class="tour-sticky-price">
+          <strong>${formatTRY(toplam.total)}</strong>
+          <span class="tour-sticky-guests">/ ${toplam.guests} kişi</span>
+        </span>
+        <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
       <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
   }
