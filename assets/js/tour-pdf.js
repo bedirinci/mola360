@@ -110,6 +110,21 @@ window.Mola360TourPdf = (function () {
     return { stack: [baslik(metin), ayrac()], unbreakable: false };
   }
 
+  /* Bir bilgi bolumu sayfa ortasinda IKIYE BOLUNMESIN: sigmiyorsa
+     tamami sonraki sayfaya gecsin. "Fiyata dahil olanlar"in yarisi bir
+     sayfada yarisi digerinde kaliyordu.
+
+     Program bu sarmalayiciya girmiyor: sekiz duraklik bir program tek
+     sayfaya sigmayabiliyor, sigmayan bir unbreakable blok ise tasip
+     kirpilir. Orada bolunme serbest ama HER DURAK kendi icinde
+     butun -- program() icindeki dontBreakRows bunu sagliyor. */
+  function bolum(baslikMetni, ...icerik) {
+    return {
+      stack: [bolumBasligi(baslikMetni), ...icerik.filter(Boolean)],
+      unbreakable: true
+    };
+  }
+
   /* Cizgisiz tablo: yalnizca satir alti ince ayrac. */
   const DUZ = {
     hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 0 : 0.5,
@@ -143,12 +158,18 @@ window.Mola360TourPdf = (function () {
 
   /* ---- belgenin bolumleri ---- */
 
-  function kapak(tur, heroVeri) {
+  function kapak(tur, heroVeri, logoVeri) {
     const ustBlok = heroVeri
       ? { image: heroVeri, width: SAYFA_GENISLIK, height: 150, cover: { width: SAYFA_GENISLIK, height: 150 } }
       : { canvas: [{ type: 'rect', x: 0, y: 0, w: SAYFA_GENISLIK, h: 12, color: R.yesilAcik }] };
 
     const cipler = [tur.category, tur.area, tur.durationLabel, 'Tur kodu ' + tur.code];
+
+    /* Gercek logo. Dosya kendi sunucumuzda oldugu icin her zaman
+       geliyor; yine de gelmezse marka adi yaziyla basiliyor. */
+    const marka = logoVeri
+      ? { image: logoVeri, width: 74, margin: [0, 0, 0, 5] }
+      : { text: 'MOLA360', style: 'marka' };
 
     return [
       ustBlok,
@@ -157,7 +178,7 @@ window.Mola360TourPdf = (function () {
           widths: ['*'],
           body: [[{
             stack: [
-              { text: 'MOLA360', style: 'marka' },
+              marka,
               { text: tur.title, style: 'h1' },
               { text: tur.tagline, style: 'kapakAlt' },
               { text: cipler.join('   ·   '), style: 'kapakCip', margin: [0, 7, 0, 0] }
@@ -266,6 +287,9 @@ window.Mola360TourPdf = (function () {
 
     return {
       table: {
+        /* Her durak/gun kendi icinde butun: satir sayfa ortasinda
+           ikiye bolunmesin, sigmiyorsa tamami sonraki sayfaya gecsin. */
+        dontBreakRows: true,
         widths: [52, '*'],
         body: satirlar.map(([etiket, bas, metin, alt]) => [
           { text: etiket, style: 'zaman' },
@@ -366,80 +390,77 @@ window.Mola360TourPdf = (function () {
   }
 
   /* ---- belgenin tamami ---- */
-  function belge(tur, gorseller) {
+  function belge(tur, gorseller, logoVeri) {
     const konaklamali = tur.type === 'stay';
     const icerik = [];
 
-    kapak(tur, gorseller[0]).forEach(b => icerik.push(b));
+    kapak(tur, gorseller[0], logoVeri).forEach(b => icerik.push(b));
     icerik.push(fiyatSeridi(tur));
 
-    icerik.push(bolumBasligi('Öne çıkanlar'));
-    icerik.push(isaretliListe(tur.highlights, 'check', R.yesil));
+    icerik.push(bolum('Öne çıkanlar',
+      isaretliListe(tur.highlights, 'check', R.yesil)));
 
-    icerik.push(bolumBasligi('Tur bilgileri'));
-    icerik.push(kunyeKartlari(tur));
+    icerik.push(bolum('Tur bilgileri', kunyeKartlari(tur)));
 
     const serit = fotografSeridi(gorseller.slice(1), tur.gallery.slice(1, 4));
     if (serit) icerik.push(serit);
 
+    /* Program tek sayfaya sigmayabilir; bolum() sarmalayicisina
+       girmiyor. Bolunme serbest, ama her durak kendi icinde butun. */
     icerik.push(bolumBasligi(konaklamali ? 'Gün gün program' : 'Günün programı'));
     icerik.push(program(tur, konaklamali));
 
     if (konaklamali) {
       const k = tur.accommodation;
-      icerik.push(bolumBasligi('Konaklama'));
-      k.hotels.forEach(o => icerik.push(vurguKart([
-        { text: o.name, style: 'h3' },
-        { text: o.area + ' · ' + o.stars + ' yıldız · ' + o.nights + ' gece', style: 'altYazi' },
-        { text: o.note, style: 'govde', margin: [0, 2, 0, 0] }
-      ])));
-      icerik.push(bilgiTablosu([
-        ['Pansiyon', k.board], ['Kapsam', k.boardNote],
-        ['Giriş / çıkış', k.checkIn + ' / ' + k.checkOut]
-      ]));
+      icerik.push(bolum('Konaklama',
+        ...k.hotels.map(o => vurguKart([
+          { text: o.name, style: 'h3' },
+          { text: o.area + ' · ' + o.stars + ' yıldız · ' + o.nights + ' gece', style: 'altYazi' },
+          { text: o.note, style: 'govde', margin: [0, 2, 0, 0] }
+        ])),
+        bilgiTablosu([
+          ['Pansiyon', k.board], ['Kapsam', k.boardNote],
+          ['Giriş / çıkış', k.checkIn + ' / ' + k.checkOut]
+        ])));
     }
 
-    icerik.push(bolumBasligi('Fiyata dahil olanlar'));
-    icerik.push({
+    /* Iki sutun AYNI hizadan bassin. Sag sutunda "Dahil olmayanlar"
+       basligi varken sol sutunda yoktu; sag taraftaki liste bir satir
+       asagidan basliyor ve baslik kaymis gorunuyordu. Artik iki sutunun
+       da kendi basligi var, bolum basligi da ustune gore duzeltildi. */
+    icerik.push(bolum('Fiyat kapsamı', {
       columns: [
-        { width: '*', stack: [isaretliListe(tur.included, 'check', R.yesil)] },
+        { width: '*', stack: [
+            { text: 'Dahil olanlar', style: 'h3', margin: [0, 0, 0, 4] },
+            isaretliListe(tur.included, 'check', R.yesil)
+          ] },
         { width: '*', stack: [
             { text: 'Dahil olmayanlar', style: 'h3', margin: [0, 0, 0, 4] },
             isaretliListe(tur.excluded, 'close', '#98A0B5')
           ], margin: [14, 0, 0, 0] }
       ]
-    });
+    }));
 
     const b = tur.meeting;
-    icerik.push(bolumBasligi('Buluşma noktası'));
-    icerik.push(vurguKart([
-      { text: b.title, style: 'h3' },
-      { text: b.address, style: 'govde', margin: [0, 2, 0, 0] },
-      b.dropoff ? { text: 'Dönüş: ' + b.dropoff, style: 'altYazi', margin: [0, 2, 0, 0] } : {}
-    ]));
-    if (b.points && b.points.length) {
-      icerik.push(bilgiTablosu(b.points.map(n =>
-        [n.time, n.name + (n.note ? ' — ' + n.note : '')])));
-    }
-    icerik.push({ text: b.note, style: 'govde', margin: [0, 6, 0, 0] });
+    icerik.push(bolum('Buluşma noktası',
+      vurguKart([
+        { text: b.title, style: 'h3' },
+        { text: b.address, style: 'govde', margin: [0, 2, 0, 0] },
+        b.dropoff ? { text: 'Dönüş: ' + b.dropoff, style: 'altYazi', margin: [0, 2, 0, 0] } : {}
+      ]),
+      (b.points && b.points.length)
+        ? bilgiTablosu(b.points.map(n => [n.time, n.name + (n.note ? ' — ' + n.note : '')]))
+        : null,
+      { text: b.note, style: 'govde', margin: [0, 6, 0, 0] }));
 
-    icerik.push(bolumBasligi('Yanınıza alın'));
-    icerik.push(isaretliListe(tur.bring, 'check', R.yesil));
+    icerik.push(bolum('Yanınıza alın', isaretliListe(tur.bring, 'check', R.yesil)));
 
     /* Onemli bilgiler uyari, ozellik degil: tik yerine bilgi ikonu. */
-    icerik.push(bolumBasligi('Önemli bilgiler'));
-    icerik.push(isaretliListe(tur.important, 'info', R.soluk));
+    icerik.push(bolum('Önemli bilgiler', isaretliListe(tur.important, 'info', R.soluk)));
 
-    /* Iptal kademeleri kisa ve birlikte okunmasi gereken bir tablo;
-       sayfa sonunda ikiye bolununce ucuncu kademe oksuz kaliyordu. */
-    icerik.push({
-      stack: [
-        bolumBasligi('İptal ve iade'),
-        iptalKademeleri(tur),
-        { text: tur.cancellation.note, style: 'govde', margin: [0, 6, 0, 0] }
-      ],
-      unbreakable: true
-    });
+    icerik.push(bolum('İptal ve iade',
+      iptalKademeleri(tur),
+      { text: tur.cancellation.note, style: 'govde', margin: [0, 6, 0, 0] }));
 
     icerik.push(altBilgi(tur));
 
@@ -481,26 +502,122 @@ window.Mola360TourPdf = (function () {
     };
   }
 
-  /* ---- disariya acilan tek fonksiyon ---- */
-  function indir(tur, durum) {
-    const bildir = (m) => { if (typeof durum === 'function') durum(m); };
-    bildir('yukleniyor');
-
+  /* ---- belgeyi hazirla ---- */
+  function hazirla(tur) {
     const adresler = [tur.gallery[0], ...tur.gallery.slice(1, 4)]
       .map(f => tourImage(f.key, 1000));
-
     return kutuphane()
-      .then(() => gorselleriAl(adresler))
-      .then(gorseller => {
-        const dosya = 'mola360-' + tur.slug + '.pdf';
-        pdfMake.createPdf(belge(tur, gorseller)).download(dosya);
-        bildir('bitti');
-      })
-      .catch(hata => {
-        bildir('hata');
-        throw hata;
-      });
+      /* Logo kendi sunucumuzda: her zaman geliyor. Fotograflar uzak;
+         gelmeyenin yerine null geciyor. */
+      .then(() => Promise.all([
+        gorselleriAl(adresler),
+        gorselAl(KOK + 'assets/img/logo.png').catch(() => null)
+      ]))
+      .then(([gorseller, logo]) => pdfMake.createPdf(belge(tur, gorseller, logo)));
   }
 
-  return { indir: indir };
+  /* ---- disariya acilan fonksiyonlar ---- */
+
+  /* Uretilen belge saklaniyor: ikinci dokunusta aninda sunuluyor.
+     Asagidaki "dokunus suresi" sorununun cozumu de bu. */
+  let hazirBlob = null;
+
+  function dosyaAdi(tur) { return 'mola360-' + tur.slug + '.pdf'; }
+
+  /* Son care: gizli bir bagla indir. */
+  function bagIleIndir(blob, ad) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = ad;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  /* Belgeyi kullaniciya SUNMA yolu, platforma gore degisiyor:
+
+     1) Paylasim sayfasi (iPhone, Android). iOS'ta asil dogru yol bu:
+        "Dosyalara Kaydet", "Hizli Bak" gibi secenekleri olan sistem
+        sayfasi aciliyor. Blob adresli bir <a download> iOS Safari'de
+        calismiyor -- dosyayi indirmek yerine sekmede aciyor, sikayet
+        edilen davranis tam olarak buydu.
+
+     2) Kaydetme penceresi (masaustu Chrome/Edge): nereye kaydedilecegi
+        soruluyor.
+
+     3) Digerleri: dogrudan indirme.
+
+     Hem paylasim hem kaydetme penceresi KULLANICI HAREKETI icinde
+     cagrilmak zorunda. Belge ilk uretimde birkac saniye suruyor ve o
+     sure dolabiliyor; tarayici NotAllowedError atiyor. O durumda
+     "tekrar" bildiriliyor: belge artik hazir oldugu icin kullanicinin
+     ikinci dokunusu aninda sonuclaniyor. */
+  function sun(tur, blob, bildir) {
+    const ad = dosyaAdi(tur);
+
+    if (navigator.canShare && typeof navigator.share === 'function') {
+      let dosya = null;
+      try { dosya = new File([blob], ad, { type: 'application/pdf' }); } catch (_) {}
+      if (dosya && navigator.canShare({ files: [dosya] })) {
+        return navigator.share({ files: [dosya], title: tur.title })
+          .then(() => bildir('bitti'))
+          .catch(h => {
+            if (h && h.name === 'AbortError') return bildir('iptal');
+            if (h && h.name === 'NotAllowedError') return bildir('tekrar');
+            bagIleIndir(blob, ad);
+            bildir('bitti');
+          });
+      }
+    }
+
+    if (typeof window.showSaveFilePicker === 'function') {
+      return window.showSaveFilePicker({
+        suggestedName: ad,
+        types: [{ description: 'PDF belgesi', accept: { 'application/pdf': ['.pdf'] } }]
+      })
+        .then(tutamac => tutamac.createWritable()
+          .then(yazici => yazici.write(blob).then(() => yazici.close())))
+        .then(() => bildir('bitti'))
+        .catch(h => {
+          if (h && h.name === 'AbortError') return bildir('iptal');
+          if (h && h.name === 'SecurityError') return bildir('tekrar');
+          bagIleIndir(blob, ad);
+          bildir('bitti');
+        });
+    }
+
+    bagIleIndir(blob, ad);
+    return Promise.resolve(bildir('bitti'));
+  }
+
+  function indir(tur, durum) {
+    const bildir = (m) => { if (typeof durum === 'function') durum(m); return m; };
+
+    /* Belge hazirsa dokunus henuz taze: paylasim/kaydetme hemen acilir. */
+    if (hazirBlob) return Promise.resolve(sun(tur, hazirBlob, bildir));
+
+    bildir('yukleniyor');
+    return hazirla(tur)
+      .then(pdf => pdf.getBlob())
+      .then(blob => { hazirBlob = blob; return sun(tur, blob, bildir); })
+      .catch(hata => { bildir('hata'); throw hata; });
+  }
+
+  /* Ctrl+P sayfayi degil BU belgeyi yazdirsin. pdfmake urettigi PDF'i
+     gizli bir cerceveye koyup onu yazdiriyor.
+
+     Sinir: yalnizca klavye kisayolu yakalanabiliyor. Tarayicinin kendi
+     menusunden verilen yazdirma emri sayfayi basar -- bu yuzden
+     tour.css'teki sade @media print blogu duruyor. */
+  function yazdir(tur, durum) {
+    const bildir = (m) => { if (typeof durum === 'function') durum(m); };
+    bildir('yukleniyor');
+    return hazirla(tur)
+      .then(pdf => { pdf.print(); bildir('bitti'); })
+      .catch(hata => { bildir('hata'); throw hata; });
+  }
+
+  return { indir: indir, yazdir: yazdir };
 })();
