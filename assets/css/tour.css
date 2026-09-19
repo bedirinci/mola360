@@ -94,6 +94,15 @@
      görünen alan eskisiyle aynı kalsın. */
   .tour-body .tour-gallery-cell { aspect-ratio: 4 / 3.6; }
 
+  /* Başlık kartındaki eylemler mobilde gizli:
+     - Favori banner'ın sağ üst köşesine taşındı.
+     - Paylaş zaten mobil başlıkta duruyor, ikincisi fazlalık.
+     Masaüstünde ikisi de yerinde kalıyor; orada banner üstünde favori
+     var ama başlıkta paylaş için başka bir yer yok. */
+  /* .tour-head-actions temel kuralı bu bloktan SONRA geliyor ve aynı
+     ağırlıkta; ezilmemek için .tour-body ile bir basamak yükseltildi. */
+  .tour-body .tour-head-actions { display: none; }
+
   /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
      kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
      göstermeye gerek yok. İşaretleme ve BreadcrumbList yapısal verisi
@@ -232,13 +241,47 @@
 }
 .tour-gallery-count { display: none; }
 
+/* Banner'ın sağ üst köşesindeki favori düğmesi. Fotoğrafın üzerinde
+   durduğu için beyaz zemin + gölge ile belirgin; hangi fotoğraf gelirse
+   gelsin okunur kalır.
+
+   Üst konumu başlığın yüksekliğinden hesaplanıyor: mobilde başlık
+   banner'ın üzerine bindiği için sabit bir değer verilse düğme onun
+   altında kalırdı. Masaüstünde başlık gizli olduğundan değişken 0 olur
+   ve düğme doğrudan banner'ın üstüne oturur. */
+.tour-gallery-fav {
+  position: absolute;
+  z-index: 5;
+  right: 14px;
+  top: calc(var(--tour-header-h, 0px) + 14px);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  color: var(--navy-deep);
+  box-shadow: 0 4px 14px rgba(11,18,48,.3);
+  backdrop-filter: blur(4px);
+  transition: transform .15s ease, background .15s ease, color .15s ease;
+}
+.tour-gallery-fav:hover { background: #fff; transform: scale(1.06); }
+.tour-gallery-fav:active { transform: scale(.94); }
+.tour-gallery-fav .icon { width: 23px; height: 23px; }
+.tour-gallery-fav.on { color: #E0245E; }
+.tour-gallery-fav.on .icon svg { fill: currentColor; }
+
 @media (max-width: 680px) {
-  .tour-gallery { margin: 0 0 16px; }
-  /* Mobilde tam genişlikte tek şerit: kenar boşluğunu iptal eder. */
+  /* Tam genişlik artık BÖLÜMÜN kendisinde: içindeki mutlak konumlu
+     düğmeler (favori, sayaç) böylece ekranın kenarına göre hizalanıyor,
+     sayfa boşluğu kadar içeride kalmıyor. */
+  .tour-gallery { margin: 0 calc(var(--page-gutter) * -1) 16px; }
   .tour-gallery-grid {
     display: flex;
     gap: 0;
-    margin: 0 calc(var(--page-gutter) * -1);
+    margin: 0;
     border-radius: 0;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -493,6 +536,22 @@
 @media (min-width: 681px) {
   .tour-section-nav { top: calc(var(--desktop-header-height) + 8px); }
 }
+/* Menü tepeye yapıştığında kenarlara kadar uzayıp köşeleri düzleşiyor:
+   yapışık bir çubuğun iki yanında boşluk kalması, altındaki içeriğin o
+   boşluktan akıp gitmesi demek. "Yapıştı" durumunu CSS bilemediği için
+   sınıfı tour-page.js ölçüp veriyor (.is-stuck). */
+@media (max-width: 680px) {
+  .tour-section-nav.is-stuck {
+    margin-left: calc(var(--page-gutter) * -1);
+    margin-right: calc(var(--page-gutter) * -1);
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 4px 14px rgba(21,32,72,.1);
+  }
+}
+
 .tour-nav-link {
   padding: 9px 15px;
   border-radius: 999px;

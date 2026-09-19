@@ -71,6 +71,7 @@
     city: sehirler.length ? sehirler[0].id : '',
     singleRoom: false,
     allDates: false,
+    favorite: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
     photo: 0
@@ -104,6 +105,8 @@
             ${i === 4 && kalan ? `<span class="tour-gallery-more">${ic('image')}+${kalan} fotoğraf</span>` : ''}
           </button>`).join('')}
       </div>
+      <button class="tour-gallery-fav" type="button" id="tourGalleryFav"
+              aria-pressed="false" aria-label="Favorilere ekle">${ic('heart')}</button>
       <span class="tour-gallery-count" id="tourGalleryCount" aria-hidden="true"></span>
       <button class="tour-gallery-all" type="button" data-photo="0">
         ${ic('camera')}Tüm fotoğraflar<span class="count">${foto.length}</span>
@@ -990,6 +993,13 @@
       const dip = window.innerHeight + window.scrollY >= document.body.scrollHeight - 4;
       if (dip) aktif = bolumler[bolumler.length - 1].id;
 
+      /* Menü tepeye yapıştığında kenarlara kadar uzayıp köşeleri
+         düzleşiyor (CSS .is-stuck). CSS'te "yapıştı" diye bir seçici
+         olmadığı için durum burada ölçülüyor: yapışkan konumdayken
+         elemanın üst kenarı tam olarak kendi top değerine oturur. */
+      const yapiskanUst = parseFloat(getComputedStyle(nav).top) || 0;
+      nav.classList.toggle('is-stuck', nav.getBoundingClientRect().top <= yapiskanUst + 1);
+
       nav.querySelectorAll('[data-nav]').forEach(link => {
         const on = link.getAttribute('data-nav') === aktif;
         link.classList.toggle('active', on);
@@ -1007,6 +1017,18 @@
     }, { passive: true });
     window.addEventListener('resize', sync);
     sync();
+  }
+
+  /* Mobil başlık banner'ın üzerine bindiği için, banner üzerindeki
+     düğmelerin (favori) onun altında kalmaması gerekiyor. Başlığın
+     yüksekliği güvenli alan payıyla birlikte cihazdan cihaza değiştiği
+     için ölçülüp CSS değişkenine yazılıyor; masaüstünde başlık gizli
+     olduğundan değer 0 olur ve aynı kural orada da doğru çalışır. */
+  function syncHeaderHeight() {
+    const h = document.querySelector('.tour-mobile-header');
+    const yukseklik = (h && getComputedStyle(h).display !== 'none')
+      ? Math.round(h.getBoundingClientRect().height) : 0;
+    document.documentElement.style.setProperty('--tour-header-h', yukseklik + 'px');
   }
 
   /* Mobil galeride kaçıncı fotoğrafta olduğumuzu gösteren sayaç. */
@@ -1186,16 +1208,30 @@
     });
 
     /* Favori ve paylaş */
-    const favBtn = document.getElementById('tourFavBtn');
-    if (favBtn) {
-      favBtn.addEventListener('click', () => {
-        const on = favBtn.getAttribute('aria-pressed') === 'true';
-        favBtn.setAttribute('aria-pressed', on ? 'false' : 'true');
-        favBtn.classList.toggle('on', !on);
-        favBtn.setAttribute('aria-label', on ? 'Favorilere ekle' : 'Favorilerden çıkar');
-        toast(on ? 'Favorilerden çıkarıldı' : 'Favorilerine eklendi');
+    /* Favori iki yerde: banner'ın sağ üst köşesi (mobilde asıl olan) ve
+       başlık kartındaki yuvarlak düğme (masaüstü). Durum TEK değişkende;
+       iki düğme de ondan besleniyor, yoksa biri işaretliyken diğeri boş
+       kalabilir. */
+    function syncFav() {
+      ['tourFavBtn', 'tourGalleryFav'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.toggle('on', state.favorite);
+        btn.setAttribute('aria-pressed', state.favorite ? 'true' : 'false');
+        btn.setAttribute('aria-label', state.favorite ? 'Favorilerden çıkar' : 'Favorilere ekle');
       });
     }
+
+    ['tourFavBtn', 'tourGalleryFav'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        state.favorite = !state.favorite;
+        syncFav();
+        toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+      });
+    });
+    syncFav();
 
     /* Paylaş iki yerde: başlık kartındaki yuvarlak düğme (masaüstü) ve
        mobil başlıktaki hap (bildirimler ekranındaki "Tümünü oku" ile aynı
@@ -1312,6 +1348,10 @@
 
   bookingEl.innerHTML = bookingMarkup();
   syncBookingPlacement();
+
+  syncHeaderHeight();
+  window.addEventListener('resize', syncHeaderHeight);
+  window.addEventListener('orientationchange', syncHeaderHeight);
 
   renderReviews();
   syncBooking();
