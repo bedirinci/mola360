@@ -600,6 +600,145 @@
   color: var(--text-muted);
 }
 
+/* ---------------- gün gün program (konaklamalı tur) ----------------
+   Günübirlik turun saat saat zaman çizelgesiyle aynı dikey ray, ama
+   işaretçi saat değil gün rozeti. Dört günü saat saat dökmek listeyi
+   okunmaz hâle getiriyordu. */
+.tour-days { list-style: none; }
+.tour-day {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  column-gap: 16px;
+}
+.tour-day-no {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(140deg, var(--navy), var(--navy-2));
+  color: #fff;
+  flex-shrink: 0;
+}
+.tour-day-no strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  line-height: 1;
+}
+.tour-day-no span {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .78;
+  margin-top: 1px;
+}
+.tour-day-body {
+  padding: 2px 0 22px 22px;
+  border-left: 2px solid var(--border);
+  margin-left: 2px;
+}
+.tour-day:last-child .tour-day-body { border-left-color: transparent; padding-bottom: 0; }
+.tour-day-body h3 {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--navy-deep);
+  margin-bottom: 6px;
+}
+.tour-day-body p {
+  font-size: 13.8px;
+  line-height: 1.62;
+  color: var(--text-muted);
+}
+.tour-day-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ---------------- konaklama ---------------- */
+.tour-hotel {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #FBFCFE;
+}
+.tour-hotel-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--navy);
+  color: #fff;
+}
+.tour-hotel-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; }
+.tour-hotel-body { min-width: 0; }
+.tour-hotel-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tour-hotel-head strong { font-size: 15.5px; color: var(--navy-deep); }
+.tour-hotel-stars { display: inline-flex; gap: 1px; }
+.tour-hotel-stars .icon { width: 14px; height: 14px; color: #F5B731; }
+.tour-hotel-stars .icon svg { fill: currentColor; stroke: none; }
+.tour-hotel-area {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 5px 0 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.tour-hotel-area .icon { width: 15px; height: 15px; flex-shrink: 0; }
+.tour-hotel-body > p { font-size: 13.6px; line-height: 1.6; color: var(--text-muted); }
+
+.tour-room-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+@media (min-width: 681px) {
+  .tour-room-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.tour-room {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.tour-room strong { font-size: 13.8px; color: var(--navy-deep); }
+.tour-room span { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+
+.tour-board-facts {
+  list-style: none;
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+.tour-board-facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.2px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.tour-board-facts .icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--navy); margin-top: 1px; }
+.tour-board-facts span { display: flex; flex-direction: column; gap: 1px; }
+.tour-board-facts strong { color: var(--navy-deep); font-size: 13.6px; }
+
 /* ---------------- dahil olanlar ---------------- */
 .tour-included-grid {
   display: grid;
@@ -1240,6 +1379,50 @@
 }
 .tour-date-note .icon { width: 15px; height: 15px; flex-shrink: 0; }
 
+/* Kalkış şehri: her satırda şehir, not ve fark. Yatay çip olarak
+   dizilseydi 372 piksellik sütunda not metni sığmazdı. */
+.tour-city-chips { display: grid; gap: 7px; }
+.tour-city-chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1px 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  text-align: left;
+  transition: border-color .15s ease, background .15s ease;
+}
+.tour-city-chip strong { grid-column: 1; font-size: 14px; color: var(--navy-deep); }
+.tour-city-chip > span:not(.tour-city-fee) {
+  grid-column: 1;
+  font-size: 11.8px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.tour-city-fee {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--navy-deep);
+  white-space: nowrap;
+}
+.tour-city-chip:hover { border-color: var(--navy); }
+.tour-city-chip.active {
+  border-color: var(--navy);
+  background: rgba(21,32,72,.045);
+  box-shadow: inset 0 0 0 1px var(--navy);
+}
+
+/* Oda düzeninin insan diliyle özeti (kaç oda, hangi tip). */
+.tour-room-plan {
+  font-size: 11.8px;
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+
 .tour-seats { display: flex; flex-direction: column; gap: 6px; }
 .tour-seats-bar {
   height: 6px;
@@ -1348,6 +1531,11 @@
 .tour-addon input:checked ~ .tour-addon-body strong { color: var(--green-dark); }
 .tour-addon:has(input:checked) { border-color: var(--green-dark); background: rgba(140,198,63,.07); }
 .tour-addon input:focus-visible ~ .tour-addon-box { outline: 2px solid var(--navy); outline-offset: 2px; }
+/* Tek kişilik oda tek yetişkinde zorunlu: kutu işaretli ama pasif.
+   Tıklanıp hiçbir şey olmaması yerine pasif göründüğü belli olur. */
+.tour-addon:has(input:disabled) { cursor: default; opacity: .9; }
+.tour-addon:has(input:disabled):hover { border-color: var(--green-dark); }
+.tour-addon input:disabled ~ .tour-addon-box { opacity: .65; }
 .tour-addon-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .tour-addon-body strong { font-size: 13.6px; }
 .tour-addon-body span { font-size: 12px; line-height: 1.45; color: var(--text-muted); }
@@ -1377,8 +1565,12 @@
   color: var(--text-muted);
 }
 .tour-sum-lines li span:last-child { font-weight: 600; color: var(--text); white-space: nowrap; }
-.tour-sum-lines li.muted span:last-child { color: var(--green-dark); }
+/* Satır tipleri saf hesap katmanından geliyor (hesap.lines[].kind):
+   free ücretsiz kalem, addon ek seçenek, fee zorunlu ek ücret. */
+.tour-sum-lines li.free span:last-child { color: var(--green-dark); }
 .tour-sum-lines li.addon span:first-child { color: var(--green-dark); }
+.tour-sum-lines li.fee span:first-child { color: #B4530A; }
+.tour-sum-lines li.fee span:last-child { color: #B4530A; }
 .tour-sum-save {
   display: flex;
   align-items: center;

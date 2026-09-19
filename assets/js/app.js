@@ -502,16 +502,17 @@ const cardSections = [
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
   {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'kapadokya2', badges:['Kültür','Yurt İçi'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı', meta2:'20 Ekim, Salı', priceMain:'8990'},
+    {img:'kapadokya2', href:'tur/kapadokya-3-gece/', badges:['Kültür','Yurt İçi'], rating:'4.7', reviews:'970+', title:'Kapadokya Turu — 3 Gece 4 Gün', meta1:'3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı', meta2:'20 Ekim, Salı', priceMain:'8990'},
     {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
     {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
     {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
   ]},
   {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    /* href tasiyan tek kart: icerik sayfasi yazilmis tur. Fiyat tur.html
-       ile ayni olmak zorundadir, tests/tour.test.js ikisini karsilastirir.
-       Baska bir tura icerik sayfasi yazildiginda ona da href eklenir. */
-    {img:'efes', href:'tur.html', badges:['Günübirlik'], rating:'4.8', reviews:'1,2b+', title:'Efes Antik Kenti ve Şirince Turu', meta1:'İzmir Çıkışlı · Rehberli · Yemek Dahil', meta2:'Bu Cumartesi', priceMain:'1290'},
+    /* href tasiyan kart, icerik sayfasi yazilmis tur demek. Adres
+       /tur/<slug>/ bicimindedir ve slug tour-data.js'teki TOURS anahtariyla
+       ayni olmak zorundadir; fiyat da o kaydin fiyatiyla ayni olmalidir.
+       tests/tour.test.js ikisini de karsilastirir. */
+    {img:'efes', href:'tur/efes-sirince/', badges:['Günübirlik'], rating:'4.8', reviews:'1,2b+', title:'Efes Antik Kenti ve Şirince Turu', meta1:'İzmir Çıkışlı · Rehberli · Yemek Dahil', meta2:'Bu Cumartesi', priceMain:'1290'},
     {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
     {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
     {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},

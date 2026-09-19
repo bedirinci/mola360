@@ -176,3 +176,28 @@ resim simgesi çıkmaz. Yanlış olanın anahtarını söylemek yeterli:
 Yayına almadan önce bu belgenin başındaki üç madde (lisans/yazar
 doğrulaması, kendi sunucuya alma, gözle kontrol) bu altı dosya için de
 geçerli.
+
+
+## Dördüncü tur: konaklamalı tur sayfasının görselleri
+
+`tur/kapadokya-3-gece/` için dört yeni kayıt. İki kayıt (`kapadokyaBalon`,
+`balonUcus`) zaten `cardImages` içinde kullanılan dosyaları gösteriyor;
+dosya adları birebir aynı, adres iki yerde de `Special:FilePath` ile
+üretiliyor.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `kapadokyaBalon` | `Hot air balloons in Cappadocia.jpg` | Zaten kullanımdaydı (`kapadokya`) |
+| `balonUcus` | `Hot air balloon ride at sunrise in Cappadocia 2.JPG` | Zaten kullanımdaydı (`balloon3`) |
+| `goreme` | `Goreme Open Air Museum.jpg` | **Doğrulanmadı** |
+| `ihlara` | `Ihlara Valley.jpg` | **Doğrulanmadı** |
+| `derinkuyu` | `Derinkuyu Underground City.jpg` | **Doğrulanmadı** |
+| `uchisar` | `Uchisar Castle Cappadocia.jpg` | **Doğrulanmadı** |
+
+Doğrulanmama sebebi öncekiyle aynı: ağ politikası
+`commons.wikimedia.org`'a CONNECT'i 403 ile reddediyor. Ad yanlışsa
+`ui.js`'teki yedek nötr yer tutucuya düşürür, kırık resim simgesi çıkmaz.
+
+Böylece doğrulanması gereken dosya sayısı dokuza çıktı: Efes turundan
+beş (`efesTiyatro`, `efesYamacEvler`, `meryemAna`, `artemis`, `sirince`),
+Kapadokya turundan dört. Hepsi `TOUR_IMAGE_FILES` içinde tek satır.

@@ -6,24 +6,47 @@
    cardSections) doğrudan bağlı ve tur sayfasında ilk satırında patlar.
    Bu yüzden ikon seti ve biçimlendirme tour-data.js'te kendi başına duruyor.
    ui.js yüklenir — içindeki tüm bloklar eleman yoksa sessizce çıkar ve
-   görsel yedek mekanizması (bozuk URL -> yer tutucu) burada da çalışır. */
+   görsel yedek mekanizması (bozuk URL -> yer tutucu) burada da çalışır.
+
+   Aynı dosya iki tur tipine hizmet eder:
+     daily  günübirlik — saat saat program, kişi başı tek tarife
+     stay   konaklamalı — gün gün program, konaklama bloğu, oda bazlı fiyat
+   Ayrım tour.type ile yapılır; ortak olan her şey (galeri, künye, yorumlar,
+   SSS, iade tablosu) tek kod yolundan geçer. */
 (function () {
 
-  const tour = resolveTour(tourSlugFromQuery(window.location.search));
+  /* Sayfa /tur/<slug>/ adresinde duruyor, slug adresten okunuyor.
+     Eski tur.html?tur=... adresi de çalışmaya devam etsin diye sorgu
+     dizisi yedek olarak kalıyor. */
+  const tour = resolveTour(
+    tourSlugFromPath(window.location.pathname) || tourSlugFromQuery(window.location.search)
+  );
   if (!tour) return;
 
-  /* Bölüm menüsü ve kaydırma takibi bu listeden beslenir. Her kaydın id'si
-     tur.html'de bir <section> olmak zorundadır; tests/tour.test.js bunu
-     doğrular, böylece menüde hedefi olmayan sekme kalamaz. */
-  const SECTIONS = [
+  const stay = tour.type === 'stay';
+
+  /* Sayfa kökü: /tur/<slug>/index.html iki dizin içeride olduğu için
+     anasayfaya ve diğer turlara giden bağlantılar buradan kurulur.
+     Değer sayfanın <body data-root="..."> niteliğinden gelir; tahmin
+     edilmez, böylece depo alt dizinde yayınlansa da doğru kalır. */
+  const KOK = (document.body && document.body.getAttribute('data-root')) || '';
+
+  /* Bölüm menüsü ve kaydırma takibi bu listeden beslenir. Sayfada
+     karşılığı OLMAYAN kayıt listeden düşer: konaklamalı turun
+     "Konaklama" bölümü var, günübirliğin yok, ikisi de aynı listeyi
+     kullanabiliyor. tests/tour.test.js her tur tipinin gerektirdiği
+     bölümlerin sayfasında bulunduğunu doğrular. */
+  const TUM_SECTIONS = [
     { id: 'genel-bakis',   label: 'Genel Bakış' },
     { id: 'program',       label: 'Program' },
+    { id: 'konaklama',     label: 'Konaklama' },
     { id: 'dahil-olanlar', label: 'Dahil Olanlar' },
     { id: 'bulusma',       label: 'Buluşma' },
     { id: 'bilgiler',      label: 'Önemli Bilgiler' },
     { id: 'yorumlar',      label: 'Yorumlar' },
     { id: 'sss',           label: 'SSS' }
   ];
+  const SECTIONS = TUM_SECTIONS.filter(sec => document.getElementById(sec.id));
 
   const GALLERY_WIDTHS = { hero: 1200, thumb: 600, full: 1600 };
   const REVIEWS_STEP = 3;
@@ -32,8 +55,11 @@
 
   const p = tour.pricing;
   const puan = ratingSummary(tour.ratingBreakdown);
-  const indirim = discountPercent(p.adultList, p.adult);
+  const temelFiyat = basePrice(tour);
+  const listeFiyat = baseListPrice(tour);
+  const indirim = discountPercent(listeFiyat, temelFiyat);
   const tarihler = nextDepartureDates(new Date(), p.departureDays, DATE_CHIPS_ALL, p.leadDays);
+  const sehirler = tour.departureCities || [];
 
   const state = {
     date: tarihler[0] || '',
@@ -41,6 +67,9 @@
     children: 0,
     infants: 0,
     addons: [],
+    /* Konaklamalı tura özel: kalkış şehri ve tek kişilik oda tercihi. */
+    city: sehirler.length ? sehirler[0].id : '',
+    singleRoom: false,
     allDates: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
@@ -105,7 +134,7 @@
         <span class="tour-head-count">${formatNumberTR(puan.total)} değerlendirme</span>
       </a>
       <span class="tour-head-meta-item">${ic('mapPin')}${tour.area}</span>
-      <span class="tour-head-meta-item">${ic('clock')}${p.startTime} kalkış · ${tour.facts[0].value}</span>
+      <span class="tour-head-meta-item">${ic('clock')}${p.startTime} kalkış · ${tour.durationLabel}</span>
       <span class="tour-head-meta-item muted">Tur kodu ${tour.code}</span>`;
   }
 
@@ -148,9 +177,10 @@
         aria-expanded="false" aria-controls="tourProseRest">Devamını oku${ic('chevDown')}</button>` : ''}`;
   }
 
-  function itineraryMarkup() {
-    const sure = tour.facts[0].value;
-    return blockHead('Günün programı', `${tour.itinerary.length} durak · toplam ${sure}`) + `
+  /* Günübirlik tur: saat saat duraklar. */
+  function dailyItineraryMarkup() {
+    return blockHead('Günün programı',
+      `${tour.itinerary.length} durak · toplam ${tour.durationLabel}`) + `
       <ol class="tour-timeline">
         ${tour.itinerary.map(stop => `
           <li class="tour-stop">
@@ -165,6 +195,74 @@
             </div>
           </li>`).join('')}
       </ol>`;
+  }
+
+  /* Konaklamalı tur: gün gün. Saat yerine "1. GÜN" rozeti, her günün
+     altında o gün dahil olan öğünler ve nerede kalındığı. Saat saat
+     dökmek dört günlük bir programı okunmaz hâle getiriyor. */
+  function stayProgramMarkup() {
+    const ogun = (gunler) => (gunler || []).filter(m => m && m !== '—');
+    return blockHead('Gün gün program',
+      `${tour.days} gün · ${tour.nights} gece · ${tour.program.length} günlük akış`) + `
+      <ol class="tour-days">
+        ${tour.program.map(gun => {
+          const ogunler = ogun(gun.meals);
+          return `
+          <li class="tour-day">
+            <span class="tour-day-no"><strong>${gun.day}</strong><span>gün</span></span>
+            <div class="tour-day-body">
+              <h3>${gun.title}</h3>
+              <p>${gun.text}</p>
+              <div class="tour-day-tags">
+                ${ogunler.length
+                  ? ogunler.map(m => `<span class="tour-stop-badge">${ic('food')}${m} dahil</span>`).join('')
+                  : `<span class="tour-stop-duration">${ic('food')}Öğün dahil değil</span>`}
+                ${gun.overnight && gun.overnight !== '—'
+                  ? `<span class="tour-stop-duration">${ic('home')}Konaklama: ${gun.overnight}</span>`
+                  : `<span class="tour-stop-duration">${ic('bus')}Dönüş günü</span>`}
+              </div>
+            </div>
+          </li>`;
+        }).join('')}
+      </ol>`;
+  }
+
+  function itineraryMarkup() {
+    return stay ? stayProgramMarkup() : dailyItineraryMarkup();
+  }
+
+  /* ---------------- konaklama (yalnızca konaklamalı tur) ---------------- */
+  function accommodationMarkup() {
+    const k = tour.accommodation;
+    if (!k) return '';
+    return blockHead('Konaklama', `${tour.nights} gece · ${k.board}`) + `
+      ${k.hotels.map(h => `
+        <div class="tour-hotel">
+          <span class="tour-hotel-icon">${tourSvg('home')}</span>
+          <div class="tour-hotel-body">
+            <div class="tour-hotel-head">
+              <strong>${h.name}</strong>
+              <span class="tour-hotel-stars" aria-label="${h.stars} yıldız">
+                ${Array.from({ length: h.stars }, () => ic('star')).join('')}
+              </span>
+            </div>
+            <p class="tour-hotel-area">${ic('mapPin')}${h.area} · ${h.nights} gece</p>
+            <p>${h.note}</p>
+          </div>
+        </div>`).join('')}
+
+      <div class="tour-room-grid">
+        ${k.rooms.map(o => `
+          <div class="tour-room">
+            <strong>${o.label}</strong>
+            <span>${o.text}</span>
+          </div>`).join('')}
+      </div>
+
+      <ul class="tour-board-facts">
+        <li>${ic('food')}<span><strong>${k.board}</strong>${k.boardNote}</span></li>
+        <li>${ic('clock')}<span><strong>Giriş ${k.checkIn} · Çıkış ${k.checkOut}</strong>Otel kuralı; erken giriş müsaitliğe bağlı.</span></li>
+      </ul>`;
   }
 
   function includedMarkup() {
@@ -357,7 +455,7 @@
       <div class="tour-block-head"><h2>Benzer turlar</h2><p>Aynı bölgede, aynı günübirlik tempoda.</p></div>
       <div class="tour-similar-grid">
         ${tour.similar.map(s => `
-          <a class="tour-similar-card" href="index.html">
+          <a class="tour-similar-card" href="${s.slug ? KOK + 'tur/' + s.slug + '/' : KOK + 'index.html'}">
             <span class="tour-similar-media">
               <img src="${tourImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
               <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
@@ -377,9 +475,9 @@
      düşürüyor; bu yüzden sync* fonksiyonları sınıf ve metin değiştirir,
      tam yeniden çizim yalnızca tarih listesi açılıp kapanırken olur. */
   const PARTY_ROWS = [
-    { key: 'adults',   label: 'Yetişkin', note: '12 yaş ve üzeri', price: p.adult },
-    { key: 'children', label: 'Çocuk',    note: p.childAges,      price: p.child },
-    { key: 'infants',  label: 'Bebek',    note: p.infantAges,     price: p.infant }
+    { key: 'adults',   label: 'Yetişkin', note: stay ? p.unitNote : '12 yaş ve üzeri', price: temelFiyat },
+    { key: 'children', label: 'Çocuk',    note: p.childAges,  price: Number(p.child) || 0 },
+    { key: 'infants',  label: 'Bebek',    note: p.infantAges, price: Number(p.infant) || 0 }
   ];
 
   const bookingEl = document.createElement('section');
@@ -435,14 +533,14 @@
       </label>`).join('');
   }
 
+  /* Özet satırları tour-data.js'teki hesaptan gelir (hesap.lines):
+     ekranda görünen döküm ile toplanan tutar tek kaynaktan beslenir,
+     ikisi ayrışamaz. */
   function summaryMarkup(hesap) {
-    const satir = (label, value, cls) =>
-      `<li${cls ? ` class="${cls}"` : ''}><span>${label}</span><span>${value}</span></li>`;
-
-    let satirlar = satir(`Yetişkin × ${hesap.adults}`, formatTRY(hesap.adultTotal));
-    if (hesap.children) satirlar += satir(`Çocuk × ${hesap.children}`, formatTRY(hesap.childTotal));
-    if (hesap.infants)  satirlar += satir(`Bebek × ${hesap.infants}`, 'Ücretsiz', 'muted');
-    hesap.addons.forEach(a => { satirlar += satir(a.label, formatTRY(a.amount), 'addon'); });
+    const satir = (l) => `
+      <li class="${l.kind}"><span>${l.label}</span><span>${
+        l.kind === 'free' ? 'Ücretsiz' : formatTRY(l.amount)
+      }</span></li>`;
 
     const kisiler = [
       hesap.adults + ' yetişkin',
@@ -451,22 +549,65 @@
     ].filter(Boolean).join(' · ');
 
     return `
-      <ul class="tour-sum-lines">${satirlar}</ul>
+      <ul class="tour-sum-lines">${hesap.lines.map(satir).join('')}</ul>
       ${hesap.saving > 0 ? `<p class="tour-sum-save">${ic('sparkle')}Liste fiyatına göre
         <strong>${formatTRY(hesap.saving)}</strong> avantaj</p>` : ''}
       <div class="tour-sum-total">
         <span>Toplam</span>
         <strong>${formatTRY(hesap.total)}</strong>
       </div>
-      <p class="tour-sum-note">Vergiler dahil · ${kisiler} · ${formatTrDate(state.date)}</p>`;
+      <p class="tour-sum-note">Vergiler dahil · ${kisiler} · ${dateRangeText()}</p>`;
+  }
+
+  /* Günübirlikte tek tarih, konaklamalıda kalkış – dönüş aralığı. */
+  function dateRangeText() {
+    if (!stay) return formatTrDate(state.date);
+    const donus = stayReturnDate(tour, state.date);
+    return formatTrDate(state.date) + ' – ' + formatTrDate(donus);
+  }
+
+  /* ---- konaklamalı tura özel alanlar ---- */
+  function cityFieldMarkup() {
+    if (!stay || !sehirler.length) return '';
+    return `
+      <div class="tour-booking-field">
+        <span class="tour-field-label">${ic('bus')}Kalkış şehri</span>
+        <div class="tour-city-chips" role="group" aria-label="Kalkış şehri">
+          ${sehirler.map(c => `
+            <button class="tour-city-chip${c.id === state.city ? ' active' : ''}" type="button"
+                    data-city="${c.id}" aria-pressed="${c.id === state.city ? 'true' : 'false'}">
+              <strong>${c.label}</strong>
+              <span>${c.note}</span>
+              <span class="tour-city-fee">${c.fee > 0 ? '+' + formatTRY(c.fee) + ' / kişi' : 'Fark yok'}</span>
+            </button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function roomFieldMarkup() {
+    if (!stay) return '';
+    return `
+      <div class="tour-booking-field">
+        <span class="tour-field-label">${ic('home')}Oda düzeni</span>
+        <label class="tour-addon" for="tourSingleRoom">
+          <input type="checkbox" id="tourSingleRoom" data-single-room>
+          <span class="tour-addon-box">${tourSvg('check')}</span>
+          <span class="tour-addon-body">
+            <strong>Tek kişilik oda</strong>
+            <span id="tourSingleNote"></span>
+          </span>
+          <span class="tour-addon-price">+${formatTRY(p.singleSupplement)}<span>/kişi</span></span>
+        </label>
+        <p class="tour-room-plan" id="tourRoomPlan"></p>
+      </div>`;
   }
 
   function bookingMarkup() {
     return `
       <div class="tour-booking-top">
         <div class="tour-price">
-          ${indirim > 0 ? `<span class="tour-price-was">${formatTRY(p.adultList)}</span>` : ''}
-          <strong class="tour-price-now">${formatTRY(p.adult)}</strong>
+          ${indirim > 0 ? `<span class="tour-price-was">${formatTRY(listeFiyat)}</span>` : ''}
+          <strong class="tour-price-now">${formatTRY(temelFiyat)}</strong>
           <span class="tour-price-unit">${p.unitNote}</span>
           ${indirim > 0 ? `<span class="tour-price-off">%${indirim} indirim</span>` : ''}
         </div>
@@ -477,22 +618,27 @@
 
       <div class="tour-booking-field">
         <div class="tour-field-head">
-          <span class="tour-field-label">${ic('calendar')}Tarih seçin</span>
+          <span class="tour-field-label">${ic('calendar')}${stay ? 'Kalkış tarihi' : 'Tarih seçin'}</span>
           <button class="tour-text-btn small" type="button" id="tourAllDates"
                   aria-expanded="false">Tüm tarihler</button>
         </div>
         <div class="tour-date-chips" id="tourDateChips" role="group"
              aria-label="Kalkış tarihleri">${dateChipsMarkup()}</div>
         <p class="tour-date-note">${ic('clock')}Kalkış ${p.startTime} ·
-          ${tour.facts[3].note}</p>
+          ${p.departureNote}</p>
+        ${stay ? `<p class="tour-date-note" id="tourReturnNote"></p>` : ''}
         <div class="tour-seats" id="tourSeats"></div>
       </div>
+
+      ${cityFieldMarkup()}
 
       <div class="tour-booking-field">
         <span class="tour-field-label">${ic('users')}Kişi sayısı</span>
         <div class="tour-party">${partyRowsMarkup()}</div>
         <p class="tour-party-limit" id="tourPartyLimit"></p>
       </div>
+
+      ${roomFieldMarkup()}
 
       <div class="tour-booking-field">
         <span class="tour-field-label">${ic('plus')}Ek seçenekler</span>
@@ -575,11 +721,58 @@
       if (kutu) kutu.checked = state.addons.indexOf(a.id) !== -1;
     });
 
+    /* Konaklamalı tura özel alanlar: kalkış şehri, oda düzeni, dönüş
+       tarihi. Günübirlik turda bu elemanlar hiç basılmadığı için
+       koşullar sessizce atlanır. */
+    if (stay) {
+      bookingEl.querySelectorAll('[data-city]').forEach(btn => {
+        const on = btn.getAttribute('data-city') === state.city;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+
+      const kutu = document.getElementById('tourSingleRoom');
+      if (kutu) {
+        kutu.checked = hesap.singleRoom;
+        /* Tek yetişkin tek kişilik odada kalır: kutu işaretli ve pasif.
+           Tıklanıp hiçbir şey olmaması yerine nedeni altında yazıyor. */
+        kutu.disabled = hesap.singleForced;
+      }
+      const not = document.getElementById('tourSingleNote');
+      if (not) {
+        not.textContent = hesap.singleForced
+          ? 'Tek başına katıldığınız için zorunlu'
+          : 'İşaretlemezseniz iki kişilik odada kalırsınız';
+      }
+      const plan = document.getElementById('tourRoomPlan');
+      if (plan) plan.textContent = roomPlanText(hesap);
+
+      const donus = document.getElementById('tourReturnNote');
+      if (donus) {
+        donus.innerHTML = ic('calendar') + 'Dönüş ' + formatTrDate(stayReturnDate(tour, state.date))
+          + ' · ' + tour.nights + ' gece';
+      }
+    }
+
     const ozet = document.getElementById('tourSummary');
     if (ozet) ozet.innerHTML = summaryMarkup(hesap);
 
     syncSeats();
     syncStickyBar(hesap);
+  }
+
+  /* Oda düzeninin insan diliyle özeti. */
+  function roomPlanText(hesap) {
+    if (hesap.singleRoom) {
+      return hesap.singleRooms + ' tek kişilik oda'
+        + (hesap.children ? ', çocuklar ailesiyle aynı odada' : '');
+    }
+    if (hesap.thirdAdults) {
+      return '1 adet 3 kişilik oda — 3. kişi indirimli tarifeden';
+    }
+    const oda = Math.ceil(hesap.adults / 2);
+    return oda + ' adet 2 kişilik oda'
+      + (hesap.children ? ', çocuklar ailesiyle aynı odada' : '');
   }
 
   /* ---------------- yapışkan alt şerit (mobil) ---------------- */
@@ -590,7 +783,7 @@
     bar.innerHTML = `
       <div class="tour-sticky-info">
         <strong>${formatTRY(toplam.total)}</strong>
-        <span>${formatTrDate(state.date)} · ${toplam.guests} kişi</span>
+        <span>${dateRangeText()} · ${toplam.guests} kişi</span>
       </div>
       <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
   }
@@ -690,8 +883,11 @@
         </div>
         <p class="tour-sheet-tour">${tour.title}</p>
         <ul class="tour-sheet-lines">
-          ${satir('Tarih', formatTrDate(state.date))}
-          ${satir('Kalkış', p.startTime + ' · ' + tour.meeting.title)}
+          ${satir(stay ? 'Tarih aralığı' : 'Tarih', dateRangeText())}
+          ${stay ? satir('Konaklama', tour.nights + ' gece · ' + tour.accommodation.board) : ''}
+          ${stay && hesap.city ? satir('Kalkış', hesap.city.label + ' · ' + p.startTime) : ''}
+          ${stay ? satir('Oda düzeni', roomPlanText(hesap)) : ''}
+          ${!stay ? satir('Kalkış', p.startTime + ' · ' + tour.meeting.title) : ''}
           ${satir('Kişi', hesap.adults + ' yetişkin'
             + (hesap.children ? ' · ' + hesap.children + ' çocuk' : '')
             + (hesap.infants ? ' · ' + hesap.infants + ' bebek' : ''))}
@@ -1028,6 +1224,13 @@
         return;
       }
 
+      const sehir = e.target.closest('[data-city]');
+      if (sehir) {
+        state.city = sehir.getAttribute('data-city');
+        syncBooking();
+        return;
+      }
+
       const tumTarih = e.target.closest('#tourAllDates');
       if (tumTarih) {
         state.allDates = !state.allDates;
@@ -1043,6 +1246,11 @@
     });
 
     bookingEl.addEventListener('change', (e) => {
+      if (e.target.closest('[data-single-room]')) {
+        state.singleRoom = !!e.target.checked;
+        syncBooking();
+        return;
+      }
       const kutu = e.target.closest('[data-addon]');
       if (!kutu) return;
       const id = kutu.getAttribute('data-addon');
@@ -1079,6 +1287,7 @@
   fill('tourSectionNav', sectionNavMarkup());
   fill('genel-bakis', overviewMarkup());
   fill('program', itineraryMarkup());
+  fill('konaklama', accommodationMarkup());
   fill('dahil-olanlar', includedMarkup());
   fill('bulusma', meetingMarkup());
   fill('bilgiler', infoMarkup());
