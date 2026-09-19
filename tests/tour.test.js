@@ -1580,7 +1580,11 @@ describe('PDF belgesi', () => {
     const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
     /* Bir durak/gün, tablo satırı veya madde kâğıt sonunda ikiye
        bölünmesin; başlık da altındaki metinden kopmasın. */
-    ['.tour-print-day', '.tour-print-table tr', '.tour-print-foot']
+    /* Kart ızgarasının KENDİSİ bölünebilir (altı kart iki sayfaya
+       yayılabilir); bölünmemesi gereken tek tek kartlar. */
+    ['.tour-print-timeline li', '.tour-print-table tr', '.tour-print-foot',
+     '.tour-print-shots', '.tour-print-cover', '.tour-print-fact',
+     '.tour-print-tiers li']
       .forEach(sec => {
         const kural = baski.match(new RegExp(sec.replace(/\./g, '\\.') + ' \\{([\\s\\S]*?)\\}'));
         expect(kural, sec + ' kuralı yok').toBeTruthy();
@@ -1588,6 +1592,45 @@ describe('PDF belgesi', () => {
       });
     expect(baski).toContain('break-after: avoid');
     expect(baski).toContain('orphans: 2');
+  });
+
+  it('renkler ve zeminler kâğıda basılıyor', () => {
+    /* Tarayıcılar baskıda zeminleri varsayılan olarak atıyor. Bu kural
+       olmadan lacivert kapak beyaz, rozetler görünmez çıkar. */
+    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
+    expect(baski).toContain('print-color-adjust: exact');
+    expect(baski).toContain('-webkit-print-color-adjust: exact');
+  });
+
+  it('kapak ve şeritte GERÇEK <img> var, CSS zemini değil', () => {
+    /* CSS zemin görselleri baskıda atılabiliyor; <img> her koşulda
+       basılıyor. */
+    expect(sayfaJs).toContain('class="tour-print-cover-img" src=');
+    expect(sayfaJs).toContain('tourImage(f.key, PRINT_WIDTHS.shot)');
+    expect(sayfaJs).toContain('tourImage(foto.key, PRINT_WIDTHS.hero)');
+  });
+
+  it('fiyat şeridi grup büyüklüğü yazmıyor', () => {
+    /* pricing.maxGuests tek bir rezervasyonda seçilebilecek en fazla kişi
+       (6-9); kalkıştaki grup büyüklüğü seatsPerDeparture (16-18). İlki
+       "Grup" diye yazılınca belgenin KENDİ künye kartıyla çelişiyordu. */
+    const band = sayfaJs.match(/function printPriceBand\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(band, 'grup büyüklüğü yanlış alandan yazılmış').not.toContain('maxGuests');
+    expect(band).toContain('durationLabel');
+    expect(band).toContain('departureNote');
+    /* Künye kartı grubu zaten taşıyor. */
+    Object.values(TOURS).forEach(t => {
+      const grup = t.facts.find(f => f.label === 'Grup');
+      expect(grup, t.slug + ' künyede grup yok').toBeTruthy();
+      expect(grup.value).toContain(String(t.pricing.seatsPerDeparture));
+    });
+  });
+
+  it('belge sayfanın tasarım diliyle aynı bölümleri taşıyor', () => {
+    ['printCover', 'printPriceBand', 'printHighlights', 'printFacts',
+     'printShots', 'printProgram', 'printIncluded', 'printMeeting',
+     'printCancellation']
+      .forEach(fn => expect(sayfaJs, fn + ' yok').toContain('function ' + fn + '('));
   });
 
   it('belge tur kaydından üretiliyor, elle yazılmıyor', () => {
