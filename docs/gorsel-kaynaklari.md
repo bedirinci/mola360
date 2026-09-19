@@ -145,3 +145,34 @@ Diğerleri yayına almadan önce doğrulanmalı.
 Bunlar ekran görüntüsünde bozuk görünmüyordu, yani URL'leri çalışıyor.
 Konu uyumu doğrulanamadı; biri yanlışsa anahtarını söylemek yeterli,
 aynı yöntemle Commons'tan değiştirilir.
+
+
+## Üçüncü tur: tur içerik sayfasının görselleri
+
+`tur.html` için altı yeni kayıt eklendi. Bunlar `app.js`'teki
+`cardImages`'te değil, `assets/js/tour-data.js` içindeki
+`TOUR_IMAGE_FILES` içinde duruyor; adres iki dosyada da aynı yöntemle
+(`Special:FilePath`) dosya adından üretiliyor, yani aynı fotoğraf iki
+farklı adrese gitmiyor. `tests/tour.test.js` ortak anahtarlarda
+(`pamukkale`, `alacati`, `bodrum`, `kemeralti`) iki dosyanın birebir aynı
+adresi ürettiğini doğruluyor.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `efesKutuphane` | `Ephesus Celsus Library Façade.jpg` | Zaten kullanımdaydı (`efes`) |
+| `efesTiyatro` | `Ephesus Great Theatre.jpg` | **Doğrulanmadı** |
+| `efesYamacEvler` | `Terrace Houses Ephesus.jpg` | **Doğrulanmadı** |
+| `meryemAna` | `House of the Virgin Mary Ephesus.jpg` | **Doğrulanmadı** |
+| `artemis` | `Temple of Artemis Ephesus.jpg` | **Doğrulanmadı** |
+| `sirince` | `Sirince Izmir Turkey.jpg` | **Doğrulanmadı** |
+
+"Doğrulanmadı" şu demek: bu ortamın ağ politikası
+`commons.wikimedia.org`'a CONNECT'i 403 ile reddediyor, dosyanın gerçekten
+o adla var olduğu **kontrol edilemedi**. Ad yanlışsa sayfa bozulmaz —
+`ui.js`'teki yedek görseli nötr yer tutucuya düşürür, tarayıcının kırık
+resim simgesi çıkmaz. Yanlış olanın anahtarını söylemek yeterli:
+`TOUR_IMAGE_FILES` içinde tek satır değişir.
+
+Yayına almadan önce bu belgenin başındaki üç madde (lisans/yazar
+doğrulaması, kendi sunucuya alma, gözle kontrol) bu altı dosya için de
+geçerli.
