@@ -151,6 +151,44 @@ kaydettiği için `pdfmake.min.js` ondan önce gelmeli.
 **fotoğrafsız** üretiliyor — hiç üretilmemesindense. Kapakta fotoğraf
 yoksa yerine ince yeşil bir şerit geçiyor.
 
+**iPhone'da paylaşım sayfası.** Blob adresli bir `<a download>` iOS
+Safari'de dosyayı indirmiyor, **sekmede açıyor** — bildirilen şikâyet tam
+olarak buydu. Doğru yol sistem paylaşım sayfası: `navigator.share` ile
+PDF dosyası verilince iOS'un kendi sayfası açılıyor ve "Dosyalara
+Kaydet" oradan çıkıyor. Sunum sırası: **paylaşım sayfası → kaydetme
+penceresi (masaüstü Chrome/Edge) → doğrudan indirme**.
+
+**Dokunuş süresi.** Hem paylaşım hem kaydetme penceresi kullanıcı
+hareketi içinde çağrılmak zorunda; belge ilk üretimde birkaç saniye
+sürüyor ve süre dolabiliyor (`NotAllowedError`). Üretilen belge
+saklandığı için ikinci dokunuş anında sonuçlanıyor; kullanıcıya
+"Kaydetmek için bir kez daha dokunun" deniyor. Yani ilk kullanımda iki
+dokunuş, sonrasında tek.
+
+**Hiçbir bilgi bölümü ikiye bölünmüyor.** Her bölüm `bolum()`
+sarmalayıcısıyla `unbreakable`; sığmıyorsa tamamı sonraki sayfaya
+geçiyor. "Fiyata dahil olanlar"ın yarısı bir sayfada yarısı diğerinde
+kalıyordu.
+
+**Program bu sarmalayıcıya girmez.** Sekiz duraklık bir program tek
+sayfaya sığmayabiliyor ve sığmayan bir `unbreakable` blok kırpılır.
+Orada bölünme serbest, ama `dontBreakRows: true` ile **her durak/gün
+kendi içinde bütün** — 3. günün yarısı 2. sayfada kalmıyor.
+
+**Kapakta gerçek logo.** `assets/img/logo.png` alınıp gömülüyor; dosya
+kendi sunucumuzda olduğu için her zaman geliyor, yine de gelmezse marka
+adı yazıyla basılıyor. Logo beyaz + yeşil ve saydam zeminli, lacivert
+kapakta okunuyor.
+
+**İki sütun aynı hizadan başlar.** Sağ sütunda "Dahil olmayanlar"
+başlığı varken solda yoktu; sağdaki liste bir satır aşağıdan başlıyor ve
+başlık kaymış görünüyordu. Artık iki sütunun da başlığı var, bölüm
+başlığı da "Fiyat kapsamı" oldu.
+
+**`getBlob` söz döndürür.** pdfmake 0.3'te geri çağırma değil söz
+(0.2'de geri çağırmaydı). Geri çağırma beklemek **hata fırlatmadan**
+sonsuza kadar asılı bırakıyor; düğme "Hazırlanıyor…" hâlinde kalıyordu.
+
 **Belge tur kaydından üretiliyor**, ekrandaki işaretlemeden değil.
 İçerik: kapak (fotoğraf + lacivert başlık bloğu), fiyat şeridi, öne
 çıkanlar, ikonlu künye kartları, üçlü fotoğraf şeridi, zaman çizgili
@@ -177,6 +215,12 @@ değildir, fiyatlar ve program değişebilir" yazıyor ve belge tarihi
 basılıyor. Fiyat "başlangıç fiyatı" olarak geçiyor: seçilen tarihe, kişi
 sayısına ve ek hizmetlere göre değiştiği için belgeye bir toplam yazmak
 yanıltıcı olurdu.
+
+**Ctrl+P sayfayı değil belgeyi yazdırır.** Kısayol yakalanıp
+`pdf.print()` çağrılıyor. Sınır: yalnızca klavye kısayolu
+yakalanabiliyor; tarayıcının kendi menüsünden verilen yazdırma emri
+sayfayı basar — bu yüzden `tour.css`'teki sade `@media print` bloğu
+duruyor.
 
 **İkinci bir belge kopyası tutulmuyor.** Bir dönem aynı veriden HTML bir
 baskı sayfası kuruluyor ve `@media print` onu basıyordu. İndirme gelince

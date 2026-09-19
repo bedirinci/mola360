@@ -1313,16 +1313,39 @@
     const printBtn = document.getElementById('tourPrintBtn');
     if (printBtn && window.Mola360TourPdf) {
       const ilkMetin = printBtn.innerHTML;
-      printBtn.addEventListener('click', () => {
-        if (printBtn.disabled) return;
+      let surüyor = false;
+
+      /* Dugme iki kez baslatilmasin; kutuphane ilk basista iniyor. */
+      function belgeyiAc(is) {
+        if (surüyor) return;
+        surüyor = true;
         printBtn.disabled = true;
         printBtn.innerHTML = ic('download') + 'Hazırlanıyor…';
-        Mola360TourPdf.indir(tour)
+
+        /* "tekrar": belge hazir ama kaydetme/paylasim penceresi acilamadi,
+           cunku uretim sirasinda dokunusun suresi doldu. Belge artik
+           bellekte; ikinci dokunus aninda sonuclanacak. */
+        const durum = (d) => {
+          if (d === 'tekrar') toast('Kaydetmek için bir kez daha dokunun');
+        };
+
+        is(durum)
           .catch(() => toast('Belge oluşturulamadı, tekrar deneyin'))
           .then(() => {
+            surüyor = false;
             printBtn.disabled = false;
             printBtn.innerHTML = ilkMetin;
           });
+      }
+
+      printBtn.addEventListener('click', () => belgeyiAc((d) => Mola360TourPdf.indir(tour, d)));
+
+      /* Ctrl+P sayfayi degil belgeyi yazdirsin. */
+      document.addEventListener('keydown', (e) => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        if (String(e.key).toLowerCase() !== 'p') return;
+        e.preventDefault();
+        belgeyiAc((d) => Mola360TourPdf.yazdir(tour, d));
       });
     }
 

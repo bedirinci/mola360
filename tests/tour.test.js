@@ -1549,13 +1549,86 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- PDF belgesi ---------------- */
 describe('PDF belgesi', () => {
-  it('düğme dosyayı indiriyor, yazdırma penceresi açmıyor', () => {
-    /* İstenen buydu: tarayıcının yazdırma penceresi değil, doğrudan
-       inen bir dosya. */
-    expect(pdfJs).toContain('.download(dosya)');
+  it('düğme dosyayı veriyor, sayfayı yazdırmıyor', () => {
     expect(pdfJs).toContain("'mola360-' + tur.slug + '.pdf'");
-    expect(sayfaJs, 'yazdırma penceresi hâlâ açılıyor').not.toContain('window.print()');
-    expect(sayfaJs).toContain('Mola360TourPdf.indir(tour)');
+    expect(sayfaJs, 'sayfa yazdırma hâlâ açılıyor').not.toContain('window.print()');
+    expect(sayfaJs).toContain('Mola360TourPdf.indir(tour');
+  });
+
+  it('iPhone’da paylaşım sayfası ÖNCE denenir', () => {
+    /* Blob adresli bir <a download> iOS Safari'de dosyayı indirmiyor,
+       sekmede açıyor -- şikâyet edilen davranış buydu. Doğru yol sistem
+       paylaşım sayfası: "Dosyalara Kaydet" oradan çıkıyor. */
+    const govde = pdfJs.match(/function sun\(tur, blob, bildir\) \{([\s\S]*?)\n  \}/)[1];
+    /* Koşulun KENDİSİ aranıyor: yalnızca "navigator.share geçiyor mu"
+       diye bakmak yolu kısa devre yapan bir değişikliği kaçırıyor. */
+    expect(govde, 'paylaşım yolu devre dışı bırakılmış')
+      .toMatch(/if \(navigator\.canShare && typeof navigator\.share === 'function'\)/);
+    expect(govde).toMatch(/navigator\.canShare\(\{ files: \[dosya\] \}\)/);
+    expect(govde).toContain("new File([blob]");
+    /* Sıra önemli: paylaşım → kaydetme penceresi → doğrudan indirme. */
+    expect(govde.indexOf('navigator.share')).toBeLessThan(govde.indexOf('showSaveFilePicker'));
+    expect(govde.indexOf('showSaveFilePicker')).toBeLessThan(govde.lastIndexOf('bagIleIndir'));
+  });
+
+  it('dokunuş süresi dolarsa ikinci dokunuş anında çalışır', () => {
+    /* Paylaşım ve kaydetme penceresi kullanıcı hareketi içinde
+       çağrılmak zorunda; belge üretimi birkaç saniye sürüyor ve süre
+       dolabiliyor (NotAllowedError). Belge saklandığı için ikinci
+       dokunuş anında sonuçlanıyor. */
+    expect(pdfJs).toContain('let hazirBlob = null');
+    expect(pdfJs).toContain("if (hazirBlob) return Promise.resolve(sun(");
+    expect(pdfJs).toContain("'NotAllowedError'");
+    expect(pdfJs).toContain("bildir('tekrar')");
+    expect(sayfaJs).toContain("d === 'tekrar'");
+  });
+
+  it('getBlob SÖZ olarak kullanılıyor', () => {
+    /* pdfmake 0.3'te getBlob söz döndürüyor (0.2'de geri çağırmaydı).
+       Geri çağırma beklemek hata fırlatmadan sonsuza kadar asılı
+       bırakıyor; düğme "Hazırlanıyor…" hâlinde kalıyordu. */
+    expect(pdfJs).toContain('pdf.getBlob()');
+    expect(pdfJs, 'geri çağırma biçimi geri gelmiş').not.toMatch(/getBlob\(\s*(blob|function|\()/);
+  });
+
+  it('Ctrl+P sayfayı değil belgeyi yazdırıyor', () => {
+    expect(pdfJs).toContain('function yazdir(');
+    expect(pdfJs).toContain('pdf.print()');
+    expect(sayfaJs).toContain("String(e.key).toLowerCase() !== 'p'");
+    expect(sayfaJs).toContain('Mola360TourPdf.yazdir(tour');
+  });
+
+  it('kapakta gerçek logo var', () => {
+    /* Marka adı yazıyla değil, gerçek logoyla. Logo kendi sunucumuzda
+       olduğu için her zaman geliyor; yine de gelmezse yazıya düşüyor. */
+    expect(pdfJs).toContain("assets/img/logo.png");
+    const kapakGovde = pdfJs.match(/function kapak\(tur, heroVeri, logoVeri\) \{([\s\S]*?)\n  \}/)[1];
+    expect(kapakGovde).toContain('image: logoVeri');
+    expect(kapakGovde, 'logo gelmezse yazıya düşmüyor').toContain("text: 'MOLA360'");
+    expect(existsSync(new URL('../assets/img/logo.png', import.meta.url))).toBe(true);
+  });
+
+  it('hiçbir bilgi bölümü ikiye bölünmüyor', () => {
+    /* "Fiyata dahil olanlar"ın yarısı bir sayfada yarısı diğerinde
+       kalıyordu. Sığmayan bölüm tamamen sonraki sayfaya geçmeli. */
+    const govde = pdfJs.match(/function bolum\(baslikMetni, \.\.\.icerik\) \{([\s\S]*?)\n  \}/)[1];
+    expect(govde).toContain('unbreakable: true');
+    /* Program bu sarmalayıcıya GİRMEZ: sekiz duraklık bir program tek
+       sayfaya sığmayabiliyor, sığmayan unbreakable blok ise kırpılır.
+       Orada bölünme serbest ama her durak kendi içinde bütün. */
+    const prog = pdfJs.match(/function program\(tur, konaklamali\) \{([\s\S]*?)\n  \}/)[1];
+    expect(prog, 'duraklar bölünebilir durumda').toContain('dontBreakRows: true');
+    const belgeGovde = pdfJs.match(/function belge\(tur, gorseller, logoVeri\) \{([\s\S]*?)\n\n    return \{/)[1];
+    expect(belgeGovde, 'program unbreakable sarmalayıcıya girmiş')
+      .toContain("icerik.push(bolumBasligi(konaklamali ? 'Gün gün program'");
+  });
+
+  it('iki sütun aynı hizadan başlıyor', () => {
+    /* Sağ sütunda başlık varken solda yoktu; sağdaki liste bir satır
+       aşağıdan başlıyor ve başlık kaymış görünüyordu. */
+    const belgeGovde = pdfJs.match(/function belge\(tur, gorseller, logoVeri\) \{([\s\S]*?)\n\n    return \{/)[1];
+    expect(belgeGovde).toContain("text: 'Dahil olanlar'");
+    expect(belgeGovde).toContain("text: 'Dahil olmayanlar'");
   });
 
   it('her sayfada kart ve iki betik var, sırası doğru', () => {
@@ -1585,7 +1658,7 @@ describe('PDF belgesi', () => {
     /* Uzak sunucu izin vermezse belge fotoğrafsız çıkmalı, hiç
        çıkmamasındansa. */
     expect(pdfJs).toContain('.catch(() => null)');
-    const kapak = pdfJs.match(/function kapak\(tur, heroVeri\) \{([\s\S]*?)\n  \}/)[1];
+    const kapak = pdfJs.match(/function kapak\(tur, heroVeri, logoVeri\) \{([\s\S]*?)\n  \}/)[1];
     expect(kapak, 'fotoğrafsız durum ele alınmamış').toContain('heroVeri');
     expect(kapak).toContain('?');
   });
