@@ -1261,6 +1261,29 @@ describe('yapışan bölüm menüsü', () => {
     expect(sayfaJs).toContain('getComputedStyle(nav).top');
   });
 
+  it('kutu kenarlara uzarken çipler yerinde kalıyor', () => {
+    /* Yalnızca negatif kenar boşluğu verilseydi çipler de o kadar sola
+       kayar, menü yapıştığı anda yanal bir sıçrama olurdu. Dışarı taşan
+       kadarı iç boşluğa ekleniyor. */
+    const kural = turStil.match(/\.tour-section-nav\.is-stuck \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('padding-left: calc(var(--tour-nav-pad) + var(--page-gutter))');
+    expect(kural).toContain('padding-right: calc(var(--tour-nav-pad) + var(--page-gutter))');
+    /* Temel iç boşluk aynı değişkenden gelmeli, yoksa telafi tutmaz. */
+    const temel = turStil.match(/\.tour-section-nav \{([\s\S]*?)\}/)[1];
+    expect(temel).toContain('--tour-nav-pad:');
+    expect(temel).toContain('padding: var(--tour-nav-pad)');
+  });
+
+  it('yan kenarlıklar kaldırılmıyor, saydamlaştırılıyor', () => {
+    /* Kaldırılsaydı kutu modeli 1'er piksel daralır ve çipler o kadar
+       kayardı; ekranın en kenarında oldukları için zaten görünmüyorlar. */
+    const kural = turStil.match(/\.tour-section-nav\.is-stuck \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('border-left-color: transparent');
+    expect(kural).toContain('border-right-color: transparent');
+    expect(kural, 'kenarlık kaldırılmış').not.toMatch(/border-left:\s*0/);
+    expect(kural, 'kenarlık kaldırılmış').not.toMatch(/border-right:\s*0/);
+  });
+
   it('yapışınca kenarlara uzayıp köşeleri düzleşiyor — yalnızca mobilde', () => {
     const kural = turStil.match(/\.tour-section-nav\.is-stuck \{([\s\S]*?)\}/);
     expect(kural, 'is-stuck kuralı yok').toBeTruthy();
