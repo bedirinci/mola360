@@ -1468,7 +1468,9 @@ ul {
   font-weight: 700;
   line-height: 1.2;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(6,11,32,.85), 0 1px 10px rgba(6,11,32,.6);
+  /* Golge YOK. Karttaki perde alt kenarda .95'e kadar koyulasiyor
+     (.drawer-promo-card::before); baslik zaten neredeyse opak bir
+     zeminin uzerinde duruyor, golge yalnizca parlama yapiyordu. */
   margin-top: 6px;
   max-width: 84%;
 }
@@ -3817,7 +3819,7 @@ ul {
   .desktop-sidebar .drawer-promo-card::after { content:''; position:absolute; inset:0; z-index:1; box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); border-radius:inherit; pointer-events:none; }
   .desktop-sidebar .drawer-promo-content { position:relative; z-index:2; height:100%; padding:9px 10px; display:flex; flex-direction:column; justify-content:space-between; }
   .desktop-sidebar .drawer-promo-badge { align-self:flex-start; padding:3px 7px; border-radius:999px; background:var(--green); color:#16210A; font-size:8.5px; font-weight:800; }
-  .desktop-sidebar .drawer-promo-title { max-width:90%; margin-top:5px; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; line-height:1.2; font-weight:700; text-shadow:0 1px 4px rgba(0,0,0,.7); }
+  .desktop-sidebar .drawer-promo-title { max-width:90%; margin-top:5px; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; line-height:1.2; font-weight:700; }
   .desktop-sidebar .drawer-promo-bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
   .desktop-sidebar .drawer-promo-discount { color:#fff; display:flex; align-items:baseline; gap:2px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; line-height:1; }
   .desktop-sidebar .drawer-promo-discount .num { font-size:19px; font-weight:800; }
@@ -3886,7 +3888,7 @@ ul {
   .desktop-sidebar .desktop-sidebar-footer .drawer-whatsapp-btn {
     flex:0 0 40px; width:40px; height:40px; border-radius:11px;
     display:flex; align-items:center; justify-content:center;
-    background:#25D366; color:#fff; box-shadow:0 5px 14px rgba(37,211,102,.3);
+    background:#25D366; color:#fff;
   }
   .desktop-sidebar .desktop-sidebar-footer .drawer-whatsapp-btn svg { width:20px; height:20px; }
 }
@@ -4243,7 +4245,7 @@ ul {
     justify-content: center;
     background: #25D366;
     color: #fff;
-    box-shadow: 0 5px 14px rgba(37,211,102,.3);
+    /* Golge YOK: yesil dugmenin altindaki yesil golge halo yapiyordu. */
   }
   .drawer-whatsapp-btn svg { width: 22px; height: 22px; }
 
@@ -4991,9 +4993,15 @@ ul {
   height: 100%;
   object-fit: cover;
 }
-/* Perde hafifletildi: gorsel daha cok gorunsun diye sol kenar .92'den
-   .80'e, orta .75'ten .58'e, sag .25'ten .12'ye indi. Metnin okunurlugu
-   kaybolmasin diye yazilara golge eklendi (asagida). */
+/* Perde, metnin kontrastini TEK BASINA tasiyor.
+
+   Bir donem perde hafifletilip (sol .92 -> .80, orta .75 -> .58) kaybolan
+   kontrast yazilara golge ile geri verilmisti. O golge yaziyi -- kampanya
+   kartindaki dugme yazisi dahil -- parlatiyordu ve kaldirildi.
+
+   Perde OLDUGU GIBI birakildi: bilerek acik tonlu bir fotograf konup
+   bakildi, yazilar golgesiz de okunuyor. Yazilar perdenin koyu ucunda
+   (sol) duruyor; sagdaki .12'lik ucta metin yok. */
 .home-promo-shade {
   position: absolute;
   inset: 0;
@@ -5001,8 +5009,6 @@ ul {
 }
 .home-promo-content {
   position: relative;
-  /* Perde hafifledigi icin kontrasti golge tasiyor. */
-  text-shadow: 0 1px 10px rgba(11,18,48,.55);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

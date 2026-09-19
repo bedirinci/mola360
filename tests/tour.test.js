@@ -1735,3 +1735,68 @@ describe('PDF belgesi', () => {
       .forEach(y => expect(existsSync(new URL('../' + y, import.meta.url)), y + ' yok').toBe(true));
   });
 });
+
+/* ---------------- glow (parlama) ---------------- */
+describe('parlama efekti yok', () => {
+  /* Yorumlar eleniyor: bir kuralin NEDEN kalktigi yorumda anlatiliyor,
+     orada gecmesi sorun degil. */
+  const temiz = (stil) => stil.replace(/\/\*[\s\S]*?\*\//g, '');
+  const stiller = [['style.css', temiz(ortakStil)], ['tour.css', temiz(turStil)]];
+
+  it('hicbir yerde text-shadow yok', () => {
+    /* Yazi golgesi bu sitede hep parlama olarak gorunuyordu -- kampanya
+       kartindaki dugme yazisi buna ornekti. Fotograf uzerindeki basliklar
+       kontrasti PERDEDEN aliyor, golgeden degil. */
+    stiller.forEach(([ad, stil]) => {
+      const bulunan = (stil.match(/text-shadow\s*:\s*[^;]+/g) || [])
+        .filter(k => !/none/.test(k));
+      expect(bulunan, ad + ' icinde text-shadow: ' + bulunan.join(' | ')).toEqual([]);
+    });
+  });
+
+  it('renkli (marka rengiyle eslesen) golge yok', () => {
+    /* Yesil dugmenin altinda yesil golge halo yapiyor. Notr lacivert
+       yukseklik golgeleri sorun degil, onlar parlama degil. */
+    const markaRenkleri = [
+      /140\s*,\s*198\s*,\s*63/,   // --green
+      /155\s*,\s*211\s*,\s*79/,   // acik yesil
+      /37\s*,\s*211\s*,\s*102/,   // whatsapp yesili
+      /var\(--green/
+    ];
+    stiller.forEach(([ad, stil]) => {
+      (stil.match(/box-shadow\s*:\s*[^;]+/g) || []).forEach(kural => {
+        kural.split(/,(?![^(]*\))/).forEach(kat => {
+          /* Once renk/anahtar kelimeler atiliyor, sonra SAYILAR
+             okunuyor. "0 6px 16px" yaziminda ilk degerin birimi yok;
+             yalnizca px'leri saymak bu golgeyi tamamen kacirir -- ilk
+             surumde tam olarak bu oldu ve test yesil parlamayi
+             goremedi. */
+          const oncesi = kat
+            .replace(/rgba?\([^)]*\)|var\([^)]*\)|#[0-9a-fA-F]{3,8}/g, ' ')
+            .replace(/box-shadow\s*:|inset/g, ' ');
+          const olcu = (oncesi.match(/-?[\d.]+/g) || []).map(Number);
+          /* Bulanikligi olmayan (0 0 0 Npx) bir golge halkadir,
+             parlama degil; kenarlik ve odak halkalari oyle. */
+          const bulanik = olcu.length >= 3 && olcu[2] > 0;
+          if (!bulanik) return;
+          markaRenkleri.forEach(renk => {
+            expect(renk.test(kat), ad + ' icinde renkli parlama: ' + kat.trim()).toBe(false);
+          });
+        });
+      });
+    });
+  });
+
+  it('odak halkalari duruyor', () => {
+    /* Parlama temizligi klavye erisilebilirligini bozmamali: odak
+       gostergeleri solid outline, golge degil. */
+    expect(turStil).toMatch(/:focus-visible[\s\S]{0,120}outline:\s*\d+px solid/);
+  });
+
+  it('yukseklik golgeleri korundu', () => {
+    /* Kartlarin notr golgesi parlama degil; hepsi silinseydi arayuz
+       duzlesirdi. */
+    expect(ortakStil).toMatch(/--shadow:\s*0 3px 12px rgba\(21,32,72/);
+    expect(ortakStil).toMatch(/--shadow-lg:\s*0 8px 22px rgba\(21,32,72/);
+  });
+});

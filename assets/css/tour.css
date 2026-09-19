@@ -163,7 +163,6 @@
   color: #fff;
   font-size: 14px;
   font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0,0,0,.35);
 }
 .tour-gallery-more .icon { width: 18px; height: 18px; }
 .tour-gallery-all {
@@ -677,7 +676,9 @@
   height: 12px;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 0 3px var(--card), 0 0 0 5px rgba(140,198,63,.22);
+  /* Beyaz halka noktayi cizgiden ayiriyor. Disindaki yesil halka
+     kaldirildi: nokta kendi renginde bir hale tasiyordu. */
+  box-shadow: 0 0 0 3px var(--card);
 }
 .tour-stop:last-child .tour-stop-body { border-left-color: transparent; padding-bottom: 0; }
 .tour-stop-head {
@@ -1700,7 +1701,8 @@
   font-size: 16px;
   font-weight: 800;
   text-decoration: none;
-  box-shadow: 0 6px 16px rgba(140,198,63,.32);
+  /* Golge YOK. Yesil dugmenin altinda yesil bir golge halo gibi
+     duruyordu; dugme zaten dolgulu, yukseklik icin golgeye gerek yok. */
   transition: background .18s ease, color .18s ease, transform .12s ease;
 }
 .tour-cta:hover { background: var(--green-dark); color: #fff; }
