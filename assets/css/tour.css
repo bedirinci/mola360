@@ -1267,6 +1267,16 @@
 
 /* ---------------- benzer turlar ---------------- */
 .tour-similar { margin-top: var(--tour-gap); }
+
+/* ---------------- sayfa etiketleri ----------------
+   Çip görünümü style.css'teki .seo-chip / .seo-chip-list ile ORTAK;
+   burada yalnızca bloğun sayfadaki yeri ve dar ekran davranışı var. */
+.tour-tags { margin-top: var(--tour-gap); }
+@media (max-width: 680px) {
+  /* Ortak çip tanımı nowrap; dar ekranda uzun etiket kutudan taşmasın
+     diye tur sayfasında sarmaya izin veriliyor. */
+  .tour-tag-list .seo-chip { white-space: normal; }
+}
 .tour-similar-grid {
   display: grid;
   gap: 12px;
@@ -1287,8 +1297,31 @@
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .tour-similar-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.tour-similar-media { position: relative; display: block; aspect-ratio: 4 / 3; background: #E9EDF5; }
-.tour-similar-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Fotoğraf kutusu her kartta AYNI yükseklikte olmalı; gerçek fotoğraflar
+   farklı en/boy oranlarında geliyor.
+
+   Görsel akıştan çıkarılmadan (position: absolute) kutu, aspect-ratio ile
+   hesaplanan yüksekliğini koruyamıyor: kart sütun yönlü bir flex kabı,
+   medya kutusu da flex öğesi. Öğenin otomatik en küçük boyutu içeriğe
+   göre belirlendiği için dikey bir fotoğraf kutuyu aspect-ratio'nun
+   üstüne çıkarıyor ve o kartın görseli diğerlerinden uzun duruyordu.
+   flex: none aynı sebeple: öğe ne büyüsün ne küçülsün. */
+.tour-similar-media {
+  position: relative;
+  display: block;
+  flex: none;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #E9EDF5;
+}
+.tour-similar-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .tour-similar-rating {
   position: absolute;
   left: 8px;
