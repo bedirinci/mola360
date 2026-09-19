@@ -433,26 +433,6 @@
       </div>`;
   }
 
-  function operatorMarkup() {
-    const o = tour.operator;
-    return `
-      <div class="tour-operator">
-        <span class="tour-operator-avatar" aria-hidden="true">${reviewerInitials(o.name)}</span>
-        <div class="tour-operator-body">
-          <span class="tour-operator-label">Turu düzenleyen</span>
-          <strong>${o.name}</strong>
-          <p>${o.about}</p>
-          <ul class="tour-operator-stats">
-            <li><strong>${o.since}</strong><span>bu yıldan beri</span></li>
-            <li><strong>${o.tours}</strong><span>farklı tur</span></li>
-            <li><strong>${o.guests}</strong><span>misafir</span></li>
-            <li><strong>${String(o.rating).replace('.', ',')}</strong><span>operatör puanı</span></li>
-          </ul>
-          <p class="tour-operator-response">${ic('clock')}${o.response}</p>
-        </div>
-      </div>`;
-  }
-
   function similarMarkup() {
     return `
       <div class="tour-block-head"><h2>Benzer turlar</h2><p>Aynı bölgede, aynı günübirlik tempoda.</p></div>
@@ -1343,7 +1323,6 @@
   fill('bilgiler', infoMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('operator', operatorMarkup());
   fill('tourSimilar', similarMarkup());
 
   bookingEl.innerHTML = bookingMarkup();

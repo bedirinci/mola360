@@ -611,8 +611,9 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     /* Sayfada bulunan her bölüm listede olmalı, aksi hâlde menüde hiç
        görünmez. */
     const sayfadakiler = [...html.matchAll(/<section class="tour-block" id="([a-z-]+)"/g)].map(m => m[1]);
+    /* İstisna yok: sayfadaki her bloğun menüde bir karşılığı olmalı,
+       yoksa kullanıcı o bölüme menüden hiç ulaşamaz. */
     sayfadakiler.forEach(id => {
-      if (id === 'operator') return; /* menüde yer almayan blok */
       expect(idler, id + ' TUM_SECTIONS içinde yok').toContain(id);
     });
   });

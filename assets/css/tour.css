@@ -1277,69 +1277,6 @@
   max-width: 68ch;
 }
 
-/* ---------------- operatör ---------------- */
-.tour-operator { display: flex; gap: 14px; }
-.tour-operator-avatar {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-2));
-  color: #fff;
-  font-size: 17px;
-  font-weight: 800;
-}
-.tour-operator-label {
-  font-size: 11.5px;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  font-weight: 700;
-  color: var(--text-faint);
-}
-.tour-operator-body > strong {
-  display: block;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 17px;
-  color: var(--navy-deep);
-  margin: 2px 0 6px;
-}
-.tour-operator-body > p { font-size: 13.8px; line-height: 1.6; color: var(--text-muted); }
-.tour-operator-stats {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 14px 0 10px;
-}
-@media (min-width: 681px) {
-  .tour-operator-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-.tour-operator-stats li {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #F6F8FC;
-  display: flex;
-  flex-direction: column;
-}
-.tour-operator-stats strong {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  color: var(--navy-deep);
-}
-.tour-operator-stats span { font-size: 11.8px; color: var(--text-muted); }
-.tour-operator-response {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--green-dark);
-  font-weight: 600;
-}
-.tour-operator-response .icon { width: 16px; height: 16px; }
-
 /* ---------------- benzer turlar ---------------- */
 .tour-similar { margin-top: var(--tour-gap); }
 .tour-similar-grid {
