@@ -167,6 +167,24 @@ function trDateParts(value) {
   };
 }
 
+/* Dar alanlar için kısa tarih aralığı:
+     aynı ay  -> "24 – 27 Eylül"
+     ayrı ay  -> "30 Eylül – 3 Ekim"
+   Yapışkan alt şeritte tam biçim ("24 Eylül Perşembe – 27 Eylül Pazar")
+   sığmayıp kesiliyordu; kesik tarih hiç tarih olmamasından beter. */
+function formatTrDateRangeShort(startISO, endISO) {
+  const bas = asDate(startISO);
+  const son = asDate(endISO);
+  if (!bas) return '';
+  if (!son) return formatTrDate(bas);
+  const ayniAy = bas.getFullYear() === son.getFullYear() && bas.getMonth() === son.getMonth();
+  if (ayniAy) {
+    return bas.getDate() + ' – ' + son.getDate() + ' ' + AYLAR_TR[son.getMonth()];
+  }
+  return bas.getDate() + ' ' + AYLAR_TR[bas.getMonth()]
+    + ' – ' + son.getDate() + ' ' + AYLAR_TR[son.getMonth()];
+}
+
 /* Tur yalnızca belirli günler kalkıyor; takvim de yalnızca o günleri
    göstermeli. weekdays: Date.getDay() değerleri (0 = pazar).
    leadDays: en erken kaç gün sonrası satılabilir (aynı gün satılmaz). */
@@ -1104,6 +1122,7 @@ if (typeof module !== 'undefined' && module.exports) {
     asDate,
     toISODate,
     formatTrDate,
+    formatTrDateRangeShort,
     trDateParts,
     nextDepartureDates,
     seatsLeft,

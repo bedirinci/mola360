@@ -24,6 +24,7 @@ import {
   asDate,
   toISODate,
   formatTrDate,
+  formatTrDateRangeShort,
   trDateParts,
   nextDepartureDates,
   seatsLeft,
@@ -1132,5 +1133,66 @@ describe('mobil başlık stili', () => {
       expect(html, slug + ' kırılma noktası işaretlemesi silinmiş').toContain('<nav class="tour-crumbs"');
       expect(html, slug + ' BreadcrumbList silinmiş').toContain('"@type": "BreadcrumbList"');
     });
+  });
+});
+
+/* ---------------- yapışkan alt şerit ---------------- */
+describe('formatTrDateRangeShort', () => {
+  it('aynı ayda ay bir kez yazılır', () => {
+    expect(formatTrDateRangeShort('2026-09-24', '2026-09-27')).toBe('24 – 27 Eylül');
+  });
+
+  it('ay değişince iki ay da yazılır', () => {
+    expect(formatTrDateRangeShort('2026-09-30', '2026-10-03')).toBe('30 Eylül – 3 Ekim');
+  });
+
+  it('yıl değişince de doğru çalışır', () => {
+    expect(formatTrDateRangeShort('2026-12-30', '2027-01-02')).toBe('30 Aralık – 2 Ocak');
+  });
+
+  it('bitiş yoksa tek tarihe düşer', () => {
+    expect(formatTrDateRangeShort('2026-09-24', '')).toBe('24 Eylül Perşembe');
+  });
+
+  it('geçersiz girdide boş döner', () => {
+    expect(formatTrDateRangeShort('', '')).toBe('');
+    expect(formatTrDateRangeShort(null, null)).toBe('');
+  });
+
+  it('tam biçimden kısa — dar şeritte sığsın diye', () => {
+    const kisa = formatTrDateRangeShort('2026-09-24', '2026-09-27');
+    const tam = formatTrDate('2026-09-24') + ' – ' + formatTrDate('2026-09-27');
+    expect(kisa.length).toBeLessThan(tam.length);
+  });
+});
+
+describe('yapışkan alt şerit düzeni', () => {
+  it('kişi sayısı fiyatın yanında, alt satırda yalnızca tarih', () => {
+    const blok = sayfaJs.match(/bar\.innerHTML = `([\s\S]*?)`;/)[1];
+    /* Kişi sayısı fiyat satırının İÇİNDE olmalı. */
+    const fiyatSatiri = blok.match(/<span class="tour-sticky-price">([\s\S]*?)<\/span>\s*<span class="tour-sticky-date">/);
+    expect(fiyatSatiri, 'fiyat satırı bulunamadı').toBeTruthy();
+    expect(fiyatSatiri[1]).toContain('tour-sticky-guests');
+    expect(fiyatSatiri[1]).toContain('formatTRY(toplam.total)');
+    /* Tarih satırında kişi sayısı KALMAMALI. */
+    const tarihSatiri = blok.match(/<span class="tour-sticky-date">([\s\S]*?)<\/span>/)[1];
+    expect(tarihSatiri).toContain('dateRangeText');
+    expect(tarihSatiri, 'tarih satırında kişi sayısı kalmış').not.toContain('kişi');
+  });
+
+  it('şerit kısa tarih biçimini kullanır', () => {
+    const blok = sayfaJs.match(/bar\.innerHTML = `([\s\S]*?)`;/)[1];
+    expect(blok).toContain('dateRangeText(true)');
+  });
+
+  it('fiyat ve kişi sayısı taban hizasında yan yana', () => {
+    const kural = turStil.match(/\.tour-sticky-price \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('display: flex');
+    expect(kural).toContain('align-items: baseline');
+  });
+
+  it('şerit butonu iki satıra sarmaz', () => {
+    const kural = turStil.match(/\.tour-cta\.small \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('white-space: nowrap');
   });
 });
