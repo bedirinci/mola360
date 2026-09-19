@@ -1112,4 +1112,25 @@ describe('mobil başlık stili', () => {
     expect(mobil).toContain('.tour-body .header-inner { display: none; }');
     expect(mobil).toContain('.tour-mobile-header { display: flex; }');
   });
+
+  it('sarmalayıcı başlık mobilde saydam — oval köşeler görünsün', () => {
+    /* .site-header de lacivert olduğu için içteki başlığın yuvarlak alt
+       köşelerini dolduruyordu: köşeler çiziliydi ama görünmüyordu.
+       Zemin mobilde tamamen içteki başlığa bırakılıyor. */
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    const kural = mobil.match(/\.tour-body \.site-header \{([\s\S]*?)\}/);
+    expect(kural, 'sarmalayıcıyı saydamlaştıran kural yok').toBeTruthy();
+    expect(kural[1]).toContain('background: none');
+    expect(kural[1]).toContain('box-shadow: none');
+  });
+
+  it('kırılma noktaları mobilde gizli ama işaretlemede duruyor', () => {
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    expect(mobil).toContain('.tour-body .tour-crumbs { display: none; }');
+    /* Gizlemek silmek değil: işaretleme ve BreadcrumbList yerinde. */
+    sayfalar.forEach(({ slug, html }) => {
+      expect(html, slug + ' kırılma noktası işaretlemesi silinmiş').toContain('<nav class="tour-crumbs"');
+      expect(html, slug + ' BreadcrumbList silinmiş').toContain('"@type": "BreadcrumbList"');
+    });
+  });
 });

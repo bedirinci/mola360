@@ -66,14 +66,26 @@
 @media (max-width: 680px) {
   .tour-body .header-inner { display: none; }
   .tour-mobile-header { display: flex; }
-  /* Başlık lacivert ve yuvarlak köşeli; altındaki içerik ona yapışmasın. */
-  .tour-body .tour-crumbs { padding-top: 12px; }
-  /* Bulunulan sayfanın adı artık başlıkta yazıyor; kırılma noktasında
-     ikinci kez göstermek hem yeri boşa harcıyor hem 390 pikselde
-     kesiliyordu. Geriye giden adımlar duruyor, işaretleme ve
-     BreadcrumbList yapısal verisi olduğu gibi kalıyor. */
-  .tour-crumbs [aria-current="page"] { display: none; }
-  .tour-crumbs li:nth-last-child(2)::after { content: none; }
+
+  /* Sarmalayıcı .site-header de lacivert olduğu için içteki başlığın
+     yuvarlak alt köşelerini dolduruyordu — köşeler çizilmiş ama
+     görünmüyordu. Mobilde zemini tamamen içteki başlığa bırakıyoruz,
+     böylece oval alt kenar sayfa zemininin üzerinde görünüyor.
+     (Masaüstünde sarmalayıcı kendi zeminini korur.) */
+  .tour-body .site-header {
+    background: none;
+    box-shadow: none;
+  }
+
+  /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
+     kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
+     göstermeye gerek yok. İşaretleme ve BreadcrumbList yapısal verisi
+     olduğu gibi duruyor; yalnızca görünürlük değişiyor. */
+  .tour-body .tour-crumbs { display: none; }
+
+  /* Kırılma noktası kalkınca galeri başlığa yapışıyordu; oval kenarın
+     görünmesi için üstte biraz boşluk kalıyor. */
+  .tour-body .tour-page { padding-top: 12px; }
 }
 
 /* ---------------- header uyarlaması (masaüstü) ----------------
