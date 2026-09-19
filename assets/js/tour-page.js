@@ -790,7 +790,7 @@
       <div class="tour-sticky-info">
         <span class="tour-sticky-price">
           <strong>${formatTRY(toplam.total)}</strong>
-          <span class="tour-sticky-guests">${toplam.guests} kişi</span>
+          <span class="tour-sticky-guests">/ ${toplam.guests} kişi</span>
         </span>
         <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
