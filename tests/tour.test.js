@@ -1244,43 +1244,59 @@ describe('yapışkan alt şerit düzeni', () => {
   });
 });
 
-/* ---------------- banner favorisi ve yapışan bölüm menüsü ---------------- */
-describe('banner favorisi', () => {
-  it('galeride favori düğmesi var ve erişilebilir', () => {
+/* ---------------- banner düğmeleri ve yapışan bölüm menüsü ---------------- */
+describe('banner düğmeleri', () => {
+  it('galeride favori ve paylaş düğmeleri var, ikisi de erişilebilir', () => {
     const galeri = sayfaJs.match(/function galleryMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
     expect(galeri).toContain('tour-gallery-fav');
     expect(galeri).toContain('aria-pressed="false"');
     expect(galeri).toContain("aria-label=\"Favorilere ekle\"");
+    /* Paylaş masaüstünde favorinin yanında; ikisi aynı sarmalayıcıda. */
+    expect(galeri).toContain('tour-gallery-actions');
+    expect(galeri).toContain('id="tourGalleryShare"');
+    expect(galeri).toContain("aria-label=\"Turu paylaş\"");
   });
 
-  it('favori durumu tek kaynaktan, iki düğme de ondan besleniyor', () => {
-    /* İki ayrı düğme kendi sınıfını kendi çevirirse biri işaretliyken
-       diğeri boş kalabilir. */
+  it('başlık kartında ikinci bir favori/paylaş kalmadı', () => {
+    /* İkisi de banner'a taşındı; aynı işi yapan ikinci bir düğme hem
+       fazlalık hem de iki düğmenin durumunu eşit tutmayı gerektirir. */
+    expect(sayfaJs).not.toContain('tour-head-actions');
+    expect(sayfaJs).not.toContain('id="tourFavBtn"');
+    expect(sayfaJs).not.toContain('id="tourShareBtn"');
+    /* Yorumlar elenerek bakılıyor: kuralın neden kalktığı yorumda
+       anlatılıyor, orada geçmesi sorun değil. */
+    expect(turStil.replace(/\/\*[\s\S]*?\*\//g, '')).not.toContain('.tour-head-actions');
+  });
+
+  it('favori durumu tek kaynaktan besleniyor', () => {
     expect(sayfaJs).toContain('state.favorite');
     const sync = sayfaJs.match(/function syncFav\(\) \{([\s\S]*?)\n    \}/)[1];
-    expect(sync).toContain("'tourFavBtn', 'tourGalleryFav'");
+    expect(sync).toContain("getElementById('tourGalleryFav')");
     expect(sync).toContain('state.favorite');
   });
 
-  it('favori düğmesi banner’ın üstünde, başlığın altında konumlanıyor', () => {
-    /* Mobilde başlık banner'ın üzerine bindiği için düğmenin üst konumu
-       ölçülen başlık yüksekliğinden hesaplanıyor; sabit değer verilseydi
-       başlığın altında kalırdı. */
-    const kural = turStil.match(/\.tour-gallery-fav \{([\s\S]*?)\}/)[1];
+  it('paylaş masaüstünde bannerda, mobilde başlıkta — davranış tek', () => {
+    /* İki düğme aynı anda görünmüyor ama ikisi de aynı işi yapıyor;
+       davranış kopyalanırsa biri zamanla diğerinden ayrışır. */
+    expect(sayfaJs).toContain("['tourGalleryShare', 'tourHeaderShare'].forEach");
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    /* .tour-body ile: temel display kuralı bu bloktan sonra geliyor ve
+       aynı ağırlıkta olduğu için önek olmadan eziliyor. */
+    expect(mobil).toContain('.tour-body .tour-gallery-share { display: none; }');
+  });
+
+  it('banner düğmeleri banner’ın üstünde, başlığın altında konumlanıyor', () => {
+    /* Mobilde başlık banner'ın üzerine bindiği için düğmelerin üst
+       konumu ölçülen başlık yüksekliğinden hesaplanıyor; sabit değer
+       verilseydi başlığın altında kalırlardı. Konum sarmalayıcıda:
+       iki düğme aynı hizada kalsın diye. */
+    const kural = turStil.match(/\.tour-gallery-actions \{([\s\S]*?)\}/)[1];
     expect(kural).toContain('position: absolute');
     expect(kural).toContain('var(--tour-header-h');
+    expect(kural).toContain('display: flex');
     expect(sayfaJs).toContain("setProperty('--tour-header-h'");
     /* Ölçüm ekran döndürülünce de tazelenmeli. */
     expect(sayfaJs).toContain("window.addEventListener('resize', syncHeaderHeight)");
-  });
-
-  it('mobilde başlık kartındaki eylemler gizli', () => {
-    /* Favori banner'a taşındı, paylaş zaten mobil başlıkta. */
-    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
-    expect(mobil).toContain('.tour-body .tour-head-actions { display: none; }');
-    /* Masaüstünde ikisi de durmalı: orada mobil başlık yok. */
-    expect(sayfaJs).toContain("id=\"tourShareBtn\"");
-    expect(sayfaJs).toContain("id=\"tourFavBtn\"");
   });
 });
 

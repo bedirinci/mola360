@@ -105,8 +105,12 @@
             ${i === 4 && kalan ? `<span class="tour-gallery-more">${ic('image')}+${kalan} fotoğraf</span>` : ''}
           </button>`).join('')}
       </div>
-      <button class="tour-gallery-fav" type="button" id="tourGalleryFav"
-              aria-pressed="false" aria-label="Favorilere ekle">${ic('heart')}</button>
+      <div class="tour-gallery-actions">
+        <button class="tour-gallery-share" type="button" id="tourGalleryShare"
+                aria-label="Turu paylaş">${ic('share')}</button>
+        <button class="tour-gallery-fav" type="button" id="tourGalleryFav"
+                aria-pressed="false" aria-label="Favorilere ekle">${ic('heart')}</button>
+      </div>
       <span class="tour-gallery-count" id="tourGalleryCount" aria-hidden="true"></span>
       <button class="tour-gallery-all" type="button" data-photo="0">
         ${ic('camera')}Tüm fotoğraflar<span class="count">${foto.length}</span>
@@ -120,12 +124,6 @@
         <div class="tour-head-chips">
           <span class="tour-chip solid">${tour.categoryShort}</span>
           ${tour.badges.map(b => `<span class="tour-chip">${ic(b.icon)}${b.label}</span>`).join('')}
-        </div>
-        <div class="tour-head-actions">
-          <button class="tour-icon-btn" type="button" id="tourFavBtn"
-                  aria-pressed="false" aria-label="Favorilere ekle">${ic('heart')}</button>
-          <button class="tour-icon-btn" type="button" id="tourShareBtn"
-                  aria-label="Turu paylaş">${ic('share')}</button>
         </div>
       </div>`;
   }
@@ -1218,34 +1216,32 @@
     });
 
     /* Favori ve paylaş */
-    /* Favori iki yerde: banner'ın sağ üst köşesi (mobilde asıl olan) ve
-       başlık kartındaki yuvarlak düğme (masaüstü). Durum TEK değişkende;
-       iki düğme de ondan besleniyor, yoksa biri işaretliyken diğeri boş
-       kalabilir. */
+    /* Favori tek yerde: banner'ın sağ üst köşesi. Başlık kartındaki ikinci
+       düğme kaldırıldı -- aynı işi yapan iki düğme hem fazlalıktı hem de
+       durumlarını birbirine eşit tutmayı gerektiriyordu. Yine de durum
+       değişkenden okunuyor, çünkü düğme mobilde ve masaüstünde aynı. */
     function syncFav() {
-      ['tourFavBtn', 'tourGalleryFav'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.classList.toggle('on', state.favorite);
-        btn.setAttribute('aria-pressed', state.favorite ? 'true' : 'false');
-        btn.setAttribute('aria-label', state.favorite ? 'Favorilerden çıkar' : 'Favorilere ekle');
-      });
+      const btn = document.getElementById('tourGalleryFav');
+      if (!btn) return;
+      btn.classList.toggle('on', state.favorite);
+      btn.setAttribute('aria-pressed', state.favorite ? 'true' : 'false');
+      btn.setAttribute('aria-label', state.favorite ? 'Favorilerden çıkar' : 'Favorilere ekle');
     }
 
-    ['tourFavBtn', 'tourGalleryFav'].forEach(id => {
-      const btn = document.getElementById(id);
-      if (!btn) return;
-      btn.addEventListener('click', () => {
+    const favBtn = document.getElementById('tourGalleryFav');
+    if (favBtn) {
+      favBtn.addEventListener('click', () => {
         state.favorite = !state.favorite;
         syncFav();
         toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
       });
-    });
+    }
     syncFav();
 
-    /* Paylaş iki yerde: başlık kartındaki yuvarlak düğme (masaüstü) ve
-       mobil başlıktaki hap (bildirimler ekranındaki "Tümünü oku" ile aynı
-       yer). İkisi de aynı işi yapar, davranış tek fonksiyonda. */
+    /* Paylaş iki yerde: banner'ın sağ üst köşesinde favorinin yanında
+       (masaüstü) ve mobil başlıkta sağdaki düğmede (mobil). Aynı anda
+       yalnızca biri görünür -- ikisi de aynı işi yapar, davranış tek
+       fonksiyonda. */
     function paylas() {
       const veri = { title: tour.title, text: tour.tagline, url: window.location.href };
       if (navigator.share) {
@@ -1261,7 +1257,7 @@
       toast('Bu tarayıcı paylaşmayı desteklemiyor');
     }
 
-    ['tourShareBtn', 'tourHeaderShare'].forEach(id => {
+    ['tourGalleryShare', 'tourHeaderShare'].forEach(id => {
       const btn = document.getElementById(id);
       if (btn) btn.addEventListener('click', paylas);
     });

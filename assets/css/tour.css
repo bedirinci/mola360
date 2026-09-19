@@ -96,14 +96,14 @@
      görünen alan eskisiyle aynı kalsın. */
   .tour-body .tour-gallery-cell { aspect-ratio: 4 / 3.6; }
 
-  /* Başlık kartındaki eylemler mobilde gizli:
-     - Favori banner'ın sağ üst köşesine taşındı.
-     - Paylaş zaten mobil başlıkta duruyor, ikincisi fazlalık.
-     Masaüstünde ikisi de yerinde kalıyor; orada banner üstünde favori
-     var ama başlıkta paylaş için başka bir yer yok. */
-  /* .tour-head-actions temel kuralı bu bloktan SONRA geliyor ve aynı
-     ağırlıkta; ezilmemek için .tour-body ile bir basamak yükseltildi. */
-  .tour-body .tour-head-actions { display: none; }
+  /* Banner'daki paylaş mobilde gizli: paylaş zaten mobil başlıkta
+     sağdaki düğmede duruyor, ikincisi fazlalık. Favori banner'da
+     kalıyor -- mobilde asıl yeri orası.
+
+     .tour-gallery-share temel kuralı (display: flex) bu bloktan SONRA
+     geliyor ve aynı ağırlıkta; ezilmemek için .tour-body ile bir
+     basamak yükseltildi. */
+  .tour-body .tour-gallery-share { display: none; }
 
   /* Kırılma noktaları mobilde gizli: başlık zaten geri okunu ve
      kategoriyi (alt satırda) taşıyor, aynı bilgiyi ikinci kez
@@ -218,19 +218,28 @@
 }
 .tour-gallery-count { display: none; }
 
-/* Banner'ın sağ üst köşesindeki favori düğmesi. Fotoğrafın üzerinde
-   durduğu için beyaz zemin + gölge ile belirgin; hangi fotoğraf gelirse
-   gelsin okunur kalır.
+/* Banner'ın sağ üst köşesindeki düğmeler: masaüstünde paylaş + favori
+   yan yana, mobilde yalnızca favori (paylaş orada başlıkta duruyor).
+   Fotoğrafın üzerinde durdukları için beyaz zemin + gölge ile belirgin;
+   hangi fotoğraf gelirse gelsin okunur kalıyorlar.
+
+   Konum düğmelerin kendisinde değil bu sarmalayıcıda: ikisi aynı
+   hizada kalsın ve aradaki boşluk tek yerden gelsin diye.
 
    Üst konumu başlığın yüksekliğinden hesaplanıyor: mobilde başlık
-   banner'ın üzerine bindiği için sabit bir değer verilse düğme onun
+   banner'ın üzerine bindiği için sabit bir değer verilse düğmeler onun
    altında kalırdı. Masaüstünde başlık gizli olduğundan değişken 0 olur
-   ve düğme doğrudan banner'ın üstüne oturur. */
-.tour-gallery-fav {
+   ve düğmeler doğrudan banner'ın üstüne oturur. */
+.tour-gallery-actions {
   position: absolute;
   z-index: 5;
   right: 14px;
   top: calc(var(--tour-header-h, 0px) + 14px);
+  display: flex;
+  gap: 8px;
+}
+.tour-gallery-fav,
+.tour-gallery-share {
   width: 38px;
   height: 38px;
   display: flex;
@@ -244,9 +253,12 @@
   backdrop-filter: blur(4px);
   transition: transform .15s ease, background .15s ease, color .15s ease;
 }
-.tour-gallery-fav:hover { background: #fff; transform: scale(1.06); }
-.tour-gallery-fav:active { transform: scale(.94); }
-.tour-gallery-fav .icon { width: 20px; height: 20px; }
+.tour-gallery-fav:hover,
+.tour-gallery-share:hover { background: #fff; transform: scale(1.06); }
+.tour-gallery-fav:active,
+.tour-gallery-share:active { transform: scale(.94); }
+.tour-gallery-fav .icon,
+.tour-gallery-share .icon { width: 20px; height: 20px; }
 .tour-gallery-fav.on { color: #E0245E; }
 .tour-gallery-fav.on .icon svg { fill: currentColor; }
 
@@ -336,11 +348,12 @@
   box-shadow: var(--shadow);
   padding: 20px;
 }
+/* Satırda artık tek çocuk var (rozetler); düğmeler banner'a taşındı.
+   Sarmalayıcı yine de duruyor: flex olduğu için içindeki rozet şeridi
+   min-width:0 ile daralabiliyor ve mobilde yatay kaydırma çalışıyor. */
 .tour-head-row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
   margin-bottom: 14px;
 }
 .tour-head-chips {
@@ -379,11 +392,9 @@
   }
   .tour-head-chips::-webkit-scrollbar { display: none; }
 }
-.tour-head-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
+/* NOT: .tour-head-actions (başlık kartındaki favori + paylaş) kaldırıldı;
+   ikisi de banner'ın sağ üst köşesine taşındı. .tour-icon-btn duruyor:
+   fotoğraf/koşullar sayfasının kapatma düğmesi hâlâ onu kullanıyor. */
 .tour-icon-btn {
   display: flex;
   align-items: center;
@@ -2001,7 +2012,7 @@
   .tour-section-nav,
   .tour-sticky-bar,
   .tour-gallery-all,
-  .tour-head-actions,
+  .tour-gallery-actions,
   .tour-booking-help,
   .tour-lightbox,
   .tour-sheet { display: none !important; }

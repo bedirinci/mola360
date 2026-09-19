@@ -60,6 +60,32 @@ yollarını o önekle yeniden yazıyor.
 hiçbir sayfada elle yazılmış bir `<header class="site-header">` kalmadığını
 doğruluyor.
 
+### Favori ve paylaş: tek yerde, banner'ın sağ üst köşesinde
+
+Bir dönem favori iki yerdeydi (banner + başlık kartı) ve paylaş da iki
+yerdeydi (başlık kartı + mobil başlık). Aynı işi yapan iki düğme hem
+fazlalıktı hem de durumlarını birbirine eşit tutmayı gerektiriyordu.
+
+Şimdi her ikisi de banner'ın sağ üst köşesinde, yan yana:
+
+| | masaüstü | mobil |
+|---|---|---|
+| Favori | banner (sağ üst) | banner (sağ üst) |
+| Paylaş | banner, favorinin solunda | mobil başlıkta sağdaki düğme |
+
+Konum düğmelerin kendisinde değil `.tour-gallery-actions` sarmalayıcıda:
+ikisi aynı hizada kalıyor ve aradaki boşluk tek yerden geliyor. Üst
+konum `--tour-header-h`'den hesaplanıyor — mobilde başlık banner'ın
+üzerine bindiği için sabit bir değer verilse düğmeler onun altında
+kalırdı.
+
+**Dikkat:** `.tour-gallery-share`'i mobilde gizleyen kural
+`.tour-body` ile bir basamak yükseltilmiş. Temel `display: flex` kuralı
+dosyada o medya sorgusundan SONRA geliyor ve aynı ağırlıkta; önek
+olmadan eziliyor ve paylaş düğmesi mobilde de görünüyor. Bu tam olarak
+başına geldi: kural yazıldı, test geçti, ekran görüntüsü düğmenin hâlâ
+orada olduğunu gösterdi.
+
 ### `app.js` artık her sayfada yükleniyor
 
 Başlık, arama, bildirimler, profil ve giriş modalının davranışı `app.js`
