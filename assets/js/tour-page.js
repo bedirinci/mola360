@@ -451,246 +451,14 @@
   }
 
   /* ---------------- PDF belgesi ----------------
-     "PDF indir" tarayicinin kendi yazdirma penceresini aciyor; oradan
-     "PDF olarak kaydet" secilir. Kutuphane eklenmedi -- bu sitede derleme
-     adimi yok ve jsPDF/html2canvas gibi cozumler ya megabaytlik bir
-     bagimlilik ya da metni goruntuye cevirip secilemez/aranamaz bir PDF
-     uretiyor. Tarayicinin kendi motoru gercek vektorel metin basiyor.
+     Belge artik assets/js/tour-pdf.js icinde pdfmake ile uretiliyor ve
+     dosya olarak iniyor. Burada yalnizca sayfadaki kart duruyor.
 
-     Ekranda gorunen sayfa oldugu gibi basilmiyor. Bunun yerine yalnizca
-     baskida gorunen ayri bir BELGE uretiliyor (.tour-print-sheet):
-     kapak fotografi, kunye kartlari, fotograf seridi, zaman cizgili
-     program, iki sutunlu dahil/haric listesi ve renkli iptal kademeleri.
-     Galeri, rezervasyon karti, yorumlar ve menuler kagida dusmuyor.
-
-     Belge tur kaydindan uretildigi icin sayfadaki bilgiyle ayrisamaz. */
-
-  const PRINT_WIDTHS = { hero: 1200, shot: 600 };
-
-  function printRow(baslik, deger) {
-    if (!deger) return '';
-    return `<tr><th>${baslik}</th><td>${deger}</td></tr>`;
-  }
-
-  /* Kapak: fotografin uzerine lacivert gecis ve baslik. Sayfadaki
-     banner'in kagit karsiligi. */
-  function printCover() {
-    const foto = tour.gallery[0];
-    return `
-      <header class="tour-print-cover">
-        <img class="tour-print-cover-img" src="${tourImage(foto.key, PRINT_WIDTHS.hero)}" alt="">
-        <div class="tour-print-cover-body">
-          <p class="tour-print-brand">mola360</p>
-          <h1>${tour.title}</h1>
-          <p class="tour-print-lead">${tour.tagline}</p>
-          <ul class="tour-print-cover-meta">
-            <li>${tour.category}</li>
-            <li>${tour.area}</li>
-            <li>${tour.durationLabel}</li>
-            <li>Tur kodu ${tour.code}</li>
-          </ul>
-        </div>
-      </header>`;
-  }
-
-  /* Fiyat seridi: kagidin en ust bilgisi. Toplam degil BASLANGIC fiyati
-     -- secilen tarihe, kisi sayisina ve ek hizmetlere gore degisiyor.
-
-     DIKKAT: burada grup buyuklugu YAZILMAZ. pricing.maxGuests tek bir
-     rezervasyonda secilebilecek en fazla kisi (6-9), seatsPerDeparture
-     ise kalkistaki grup buyuklugu (16-18). Ilki "Grup" diye yazilinca
-     belgenin kendi kunye karti ("En fazla 18 kisi") ile celisiyordu;
-     grup bilgisi zaten facts'ten geliyor. */
-  function printPriceBand() {
-    return `
-      <section class="tour-print-band">
-        <div class="tour-print-band-main">
-          <span>Başlangıç fiyatı</span>
-          <strong>${formatTRY(basePrice(tour))}</strong>
-          <span>${p.unitNote}</span>
-        </div>
-        <div class="tour-print-band-side">
-          <div><span>Süre</span><strong>${tour.durationLabel}</strong></div>
-          <div><span>Kalkış günleri</span><strong>${p.departureNote}</strong></div>
-          <div><span>Kalkış saati</span><strong>${p.startTime}</strong></div>
-        </div>
-      </section>`;
-  }
-
-  /* Kunye kartlari: sayfadaki bilgi kartlarinin kagit karsiligi. */
-  function printFacts() {
-    return `
-      <section class="tour-print-block">
-        <h2>Tur bilgileri</h2>
-        <div class="tour-print-facts">
-          ${tour.facts.map(o => `
-            <article class="tour-print-fact">
-              <span class="tour-print-fact-icon">${ic(o.icon)}</span>
-              <span class="tour-print-fact-label">${o.label}</span>
-              <strong>${o.value}</strong>
-              ${o.note ? `<span class="tour-print-fact-note">${o.note}</span>` : ''}
-            </article>`).join('')}
-        </div>
-      </section>`;
-  }
-
-  function printHighlights() {
-    return `
-      <section class="tour-print-block">
-        <h2>Öne çıkanlar</h2>
-        <ul class="tour-print-checks">
-          ${tour.highlights.map(m => `<li>${ic('check')}<span>${m}</span></li>`).join('')}
-        </ul>
-      </section>`;
-  }
-
-  /* Fotograf seridi: uc kare, altlarinda kendi acikliklari. */
-  function printShots() {
-    const foto = tour.gallery.slice(1, 4);
-    if (!foto.length) return '';
-    return `
-      <section class="tour-print-shots">
-        ${foto.map(f => `
-          <figure>
-            <img src="${tourImage(f.key, PRINT_WIDTHS.shot)}" alt="">
-            <figcaption>${f.caption}</figcaption>
-          </figure>`).join('')}
-      </section>`;
-  }
-
-  /* Program: solda zaman cizgisi, her durak/gun bir kart. */
-  function printProgram() {
-    const satirlar = stay
-      ? tour.program.map(g => ({
-          etiket: g.day + '. gün',
-          baslik: g.title,
-          metin: g.text,
-          alt: 'Öğünler: ' + g.meals.join(', ') + ' · Konaklama: ' + g.overnight
-        }))
-      : tour.itinerary.map(d => ({ etiket: d.time, baslik: d.title, metin: d.text, alt: '' }));
-
-    return `
-      <section class="tour-print-block">
-        <h2>${stay ? 'Gün gün program' : 'Günün programı'}</h2>
-        <ol class="tour-print-timeline">
-          ${satirlar.map(r => `
-            <li>
-              <span class="tour-print-time">${r.etiket}</span>
-              <div class="tour-print-step">
-                <h3>${r.baslik}</h3>
-                <p>${r.metin}</p>
-                ${r.alt ? `<p class="tour-print-step-meta">${r.alt}</p>` : ''}
-              </div>
-            </li>`).join('')}
-        </ol>
-      </section>`;
-  }
-
-  function printStay() {
-    if (!stay) return '';
-    const k = tour.accommodation;
-    return `
-      <section class="tour-print-block">
-        <h2>Konaklama</h2>
-        ${k.hotels.map(o => `
-          <article class="tour-print-hotel">
-            <h3>${o.name}</h3>
-            <p class="tour-print-hotel-meta">${o.area} · ${o.stars} yıldız · ${o.nights} gece</p>
-            <p>${o.note}</p>
-          </article>`).join('')}
-        <table class="tour-print-table">
-          ${printRow('Pansiyon', k.board)}
-          ${printRow('Kapsam', k.boardNote)}
-          ${printRow('Giriş / çıkış', k.checkIn + ' / ' + k.checkOut)}
-        </table>
-      </section>`;
-  }
-
-  /* Dahil olanlar ve olmayanlar yan yana: kagitta karsilastirmasi kolay. */
-  function printIncluded() {
-    return `
-      <section class="tour-print-block">
-        <h2>Fiyata dahil olanlar</h2>
-        <div class="tour-print-two">
-          <ul class="tour-print-checks">
-            ${tour.included.map(m => `<li>${ic('check')}<span>${m}</span></li>`).join('')}
-          </ul>
-          <ul class="tour-print-checks is-out">
-            <li class="tour-print-subhead">Dahil olmayanlar</li>
-            ${tour.excluded.map(m => `<li>${ic('close')}<span>${m}</span></li>`).join('')}
-          </ul>
-        </div>
-      </section>`;
-  }
-
-  function printMeeting() {
-    const b = tour.meeting;
-    const duraklar = (b.points || []).map(n => `
-      <tr><th>${n.time}</th><td>${n.name}${n.note ? ' — ' + n.note : ''}</td></tr>`).join('');
-    return `
-      <section class="tour-print-block">
-        <h2>Buluşma noktası</h2>
-        <div class="tour-print-note">
-          <strong>${b.title}</strong>
-          <p>${b.address}</p>
-          ${b.dropoff ? `<p><em>Dönüş:</em> ${b.dropoff}</p>` : ''}
-        </div>
-        ${duraklar ? `<table class="tour-print-table">${duraklar}</table>` : ''}
-        <p>${b.note}</p>
-      </section>`;
-  }
-
-  function printList(baslik, ogeler, sinif) {
-    if (!ogeler || !ogeler.length) return '';
-    return `
-      <section class="tour-print-block">
-        <h2>${baslik}</h2>
-        <ul class="${sinif || 'tour-print-bullets'}">
-          ${ogeler.map(o => `<li>${o}</li>`).join('')}
-        </ul>
-      </section>`;
-  }
-
-  /* Iptal kademeleri: iade orani renkli bir rozet olarak. */
-  function printCancellation() {
-    return `
-      <section class="tour-print-block">
-        <h2>İptal ve iade</h2>
-        <ul class="tour-print-tiers">
-          ${tour.cancellation.tiers.map(k => `
-            <li>
-              <span class="tour-print-rate${k.rate === 0 ? ' is-zero' : ''}">%${Math.round(k.rate * 100)}</span>
-              <div><strong>${k.label}</strong><p>${k.text}</p></div>
-            </li>`).join('')}
-        </ul>
-        <p>${tour.cancellation.note}</p>
-      </section>`;
-  }
-
-  function printSheetMarkup() {
-    const bugun = formatTrDate(new Date());
-    const adres = window.location.href.split('#')[0];
-    return `
-      ${printCover()}
-      ${printPriceBand()}
-      ${printHighlights()}
-      ${printFacts()}
-      ${printShots()}
-      ${printProgram()}
-      ${printStay()}
-      ${printIncluded()}
-      ${printMeeting()}
-      ${printList('Yanınıza alın', tour.bring)}
-      ${printList('Önemli bilgiler', tour.important)}
-      ${printCancellation()}
-
-      <footer class="tour-print-foot">
-        <p class="tour-print-foot-note"><strong>Bu belge bir bilet veya rezervasyon onayı değildir.</strong>
-           Bilgi amaçlıdır; fiyatlar ve program değişebilir. Güncel hâli için sayfayı ziyaret edin.</p>
-        <p>${adres}</p>
-        <p>Destek: ${CONTACT.phoneLabel} · ${CONTACT.hours} · Belge tarihi: ${bugun}</p>
-      </footer>`;
-  }
+     Bir donem ayni belgenin ikinci bir surumu burada HTML olarak
+     kuruluyor ve @media print ile basiliyordu. Indirme gelince o kopya
+     KALDIRILDI: ayni veriden uretilen iki belgeyi elle esit tutmak
+     kacinilmaz olarak ayrisiyor. Ctrl+P artik sayfanin kendisini
+     basiyor (tour.css sadece etkilesimli katmanlari gizliyor). */
 
   /* Sayfadaki kucuk kart: belgede ne oldugunu soyler ve yazdirmayi acar. */
   function printCardMarkup() {
@@ -1538,11 +1306,25 @@
     const shareBtn = document.getElementById('tourGalleryShare');
     if (shareBtn) shareBtn.addEventListener('click', paylas);
 
-    /* PDF: tarayicinin yazdirma penceresi. Kullanici oradan "PDF olarak
-       kaydet"i secer. Ekrandaki sayfa degil, yalnizca baskida acilan
-       belge basilir (tour.css'teki @media print). */
+    /* PDF: dosya DOGRUDAN iniyor, yazdirma penceresi acilmiyor.
+       Belgeyi assets/js/tour-pdf.js uretiyor; kutuphane yalnizca ilk
+       basista yukleniyor, o yuzden dugme "Hazirlaniyor..." durumuna
+       geciyor ve iki kez baslatilmasin diye kilitleniyor. */
     const printBtn = document.getElementById('tourPrintBtn');
-    if (printBtn) printBtn.addEventListener('click', () => window.print());
+    if (printBtn && window.Mola360TourPdf) {
+      const ilkMetin = printBtn.innerHTML;
+      printBtn.addEventListener('click', () => {
+        if (printBtn.disabled) return;
+        printBtn.disabled = true;
+        printBtn.innerHTML = ic('download') + 'Hazırlanıyor…';
+        Mola360TourPdf.indir(tour)
+          .catch(() => toast('Belge oluşturulamadı, tekrar deneyin'))
+          .then(() => {
+            printBtn.disabled = false;
+            printBtn.innerHTML = ilkMetin;
+          });
+      });
+    }
 
     /* Rezervasyon kartı: tek delege dinleyici, kart yeniden çizilse de
        bağlı kalır. */
@@ -1633,7 +1415,6 @@
   fill('sss', faqMarkup());
   fill('tourSimilar', similarMarkup());
   fill('tourPrint', printCardMarkup());
-  fill('tourPrintSheet', printSheetMarkup());
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();

@@ -130,68 +130,66 @@ Adresler veride **kök-göreli** duruyor ve `KOK` ile önekleniyor;
 
 ### PDF belgesi
 
-Sayfanın altındaki küçük kart tarayıcının yazdırma penceresini açıyor;
-kullanıcı oradan "PDF olarak kaydet"i seçiyor.
+Sayfanın altındaki kart **dosyayı doğrudan indiriyor**; yazdırma
+penceresi açılmıyor. Belgeyi `assets/js/tour-pdf.js` pdfmake ile
+üretiyor.
 
-**Neden kütüphane yok.** Bu sitede derleme adımı yok. jsPDF/pdfmake
-megabaytlık bir bağımlılık; html2canvas ise metni görüntüye çevirip
-seçilemez, aranamaz, yakınlaştırınca bulanıklaşan bir PDF üretiyor.
-Tarayıcının kendi motoru gerçek vektörel metin basıyor. Ölçüldü: üretilen
-PDF'teki **metnin tamamı vektörel** (seçilebilir, aranabilir, her ölçekte
-net); ölçüldü: 12 gömülü yazı tipi, görüntü nesneleri yalnızca turun
-kendi fotoğrafları (4 adet), ~220 KB, 3–4 A4 sayfa.
+**Neden kütüphane.** Tarayıcı kendi baskı çıktısını programa vermiyor —
+`window.print()` tek API ve dosya üretmiyor. Gerçek indirme için PDF'i
+JS'in kurması gerekiyor. Ölçülen seçenekler: pdfmake ~1,9 MB (sayfalama
+kendinde), jsPDF ~720 KB (sayfalama elle). İçerik uzunluğu turdan tura
+değiştiği için (8 durak / 4 gün, farklı sayıda madde) **sayfalama asıl
+zor kısım**; pdfmake o yüzden seçildi.
 
-**Belge sayfanın tasarım dilini taşıyor.** İlk sürüm düz metindi ve
-sayfanın kalitesinde değildi. Şimdi: kapak fotoğrafı üzerine lacivert
-geçiş ve başlık, fiyat şeridi, ikonlu künye kartları, üçlü fotoğraf
-şeridi, zaman çizgili program, iki sütunlu dahil/hariç listesi, vurgulu
-buluşma kartı, renkli iptal kademeleri ve lacivert alt bilgi.
+**Kütüphane sayfayla yüklenmiyor.** `assets/js/vendor/` altındaki iki
+dosya yalnızca düğmeye ilk basışta, bir kez iniyor. Sayfayı normal gezen
+ziyaretçiye maliyeti sıfır. Sıra önemli: `vfs_fonts` kendini `pdfMake`e
+kaydettiği için `pdfmake.min.js` ondan önce gelmeli.
 
-İki kural bunun için şart:
+**Fotoğraflar.** PDF'e gömülebilmek için önce veri adresine çevriliyor
+(`fetch` → blob → dataURL). Uzak sunucu izin vermezse belge
+**fotoğrafsız** üretiliyor — hiç üretilmemesindense. Kapakta fotoğraf
+yoksa yerine ince yeşil bir şerit geçiyor.
 
-- **`print-color-adjust: exact`.** Tarayıcılar baskıda zeminleri ve
-  renkleri varsayılan olarak atıyor; bu olmadan lacivert kapak beyaz,
-  rozetler görünmez çıkar.
-- **Fotoğraflar gerçek `<img>`**, CSS zemini değil. CSS zemin görselleri
-  baskıda atılabiliyor; `<img>` her koşulda basılıyor.
+**Belge tur kaydından üretiliyor**, ekrandaki işaretlemeden değil.
+İçerik: kapak (fotoğraf + lacivert başlık bloğu), fiyat şeridi, öne
+çıkanlar, ikonlu künye kartları, üçlü fotoğraf şeridi, zaman çizgili
+program, konaklama, iki sütunlu dahil/hariç, buluşma noktası ve biniş
+durakları, yanınıza alın, önemli bilgiler, renkli iptal kademeleri,
+lacivert alt bilgi.
 
-**Ekrandaki sayfa olduğu gibi basılmıyor.** Yalnızca baskıda görünen ayrı
-bir belge var (`.tour-print-sheet`, `<body>`'nin doğrudan çocuğu).
-`@media print` içinde `body > *:not(.tour-print-sheet)` ile geri kalan her
-şey kâğıttan kalkıyor — galeri, rezervasyon kartı, yorumlar, menüler,
-etiketler. Belge `<main>` içinde kalsaydı o kuralla birlikte o da
-gizlenirdi; test bunu bekçilik ediyor.
+**Sayfa sonları — ikisi de gerçek çıktıda görülüp düzeltildi:**
 
-Belge tur kaydından üretiliyor, elle yazılmıyor — sayfadaki bilgiyle
-ayrışamaz.
-
-Ölçüler `pt` cinsinden: baskıda `px`'in karşılığı çözünürlüğe göre
-değişir, `pt` fiziksel birimdir. `@page { size: A4; margin: 16mm 14mm }`.
-
-**Sayfa sonları.** Bir durak/gün, tablo satırı, madde ve alt bilgi kâğıt
-sonunda ikiye bölünmesin diye `break-inside: avoid`; başlıklar altındaki
-metinden kopmasın diye `break-after: avoid`; paragrafların tek satırı
-yalnız kalmasın diye `orphans: 2; widows: 2`. Motorun bu kuralları
-gerçekten uyguladığı ölçüldü: her bölüme `break-before: page` verilince
-sayfa sayısı 3'ten 10'a çıkıyor.
+- `pageBreakBefore` ile bölüm başlığı sayfanın dibinde **yalnız
+  kalmıyor**; altında hiçbir şey kalmadıysa başlık sonraki sayfaya
+  atılıyor (`baslik()` içindeki `headlineLevel` bu kontrol için).
+- İptal kademeleri `unbreakable`; bölününce üçüncü kademe öksüz
+  kalıyordu.
 
 **Fiyat şeridinde grup büyüklüğü yazılmaz.** `pricing.maxGuests` tek bir
 rezervasyonda seçilebilecek en fazla kişi (6–9); kalkıştaki grup
 büyüklüğü `seatsPerDeparture` (16–18). İlki bir sürüm boyunca "Grup"
-diye yazıldı ve belgenin **kendi künye kartıyla** çelişti ("En fazla 6
-kişi" / "En fazla 18 kişi", aynı sayfada). Grup bilgisi zaten künye
-kartından geliyor; test şeridin `maxGuests` kullanmasını engelliyor.
+diye yazıldı ve belgenin **kendi künye kartıyla** çelişti. Test şeridin
+`maxGuests` kullanmasını engelliyor.
 
 **Belge bilet değil.** Alt bilgide "bir bilet veya rezervasyon onayı
 değildir, fiyatlar ve program değişebilir" yazıyor ve belge tarihi
-basılıyor. Müşteri bunu indirip saklayacağı için rezervasyon onayı
-sanılmamalı. Fiyat da "başlangıç fiyatı" olarak geçiyor: seçilen tarihe,
-kişi sayısına ve ek hizmetlere göre değişiyor, belgeye bir toplam yazmak
+basılıyor. Fiyat "başlangıç fiyatı" olarak geçiyor: seçilen tarihe, kişi
+sayısına ve ek hizmetlere göre değiştiği için belgeye bir toplam yazmak
 yanıltıcı olurdu.
 
-**Doğrulanamayan:** PDF Chromium'un motoruyla üretilip denetlendi. iOS
-Safari'nin yazdırma motoru aynı `@media print` kurallarını uygular ama
-sayfalama birebir aynı olmayabilir.
+**İkinci bir belge kopyası tutulmuyor.** Bir dönem aynı veriden HTML bir
+baskı sayfası kuruluyor ve `@media print` onu basıyordu. İndirme gelince
+o kopya kaldırıldı: aynı veriden üretilen iki belgeyi elle eşit tutmak
+kaçınılmaz olarak ayrışıyor. Ctrl+P artık sayfanın kendisini basıyor;
+`tour.css` yalnızca yapışkan katmanları ve etkileşim düğmelerini
+gizliyor.
+
+**Doğrulanamayan:** bu ortamdan Wikimedia'ya çıkılamadığı için
+denetlenen PDF'lerde fotoğrafların yerinde örnek görseller var. Fotoğraf
+boru hattı (istek → dataURL → PDF'e gömme) yerel görsellerle uçtan uca
+denendi; PDF'te 8 görüntü nesnesi sayıldı. Gerçek cihazda Wikimedia'nın
+CORS başlığı gerekiyor; gelmezse belge fotoğrafsız iniyor.
 
 ### Çift dokunuşla yakınlaştırma
 
