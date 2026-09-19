@@ -2028,15 +2028,154 @@
   .tour-section-nav { scroll-behavior: auto; }
 }
 
-/* Yazdırma: yapışkan katmanlar ve etkileşim düğmeleri kâğıda basılmaz. */
+/* ---------------- PDF belgesi ----------------
+   Ekrandaki küçük kart. Belgenin kendisi ekranda görünmez, yalnızca
+   baskıda çizilir (aşağıdaki @media print bloğu). */
+.tour-print { margin-top: var(--tour-gap); }
+.tour-print-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+.tour-print-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #F1F4FB;
+  color: var(--navy);
+}
+.tour-print-icon .icon { width: 21px; height: 21px; }
+.tour-print-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tour-print-text strong { font-size: 14.5px; color: var(--navy-deep); }
+.tour-print-text span { font-size: 12.8px; color: var(--text-muted); line-height: 1.45; }
+.tour-print-card .tour-cta { flex: none; }
+@media (max-width: 680px) {
+  .tour-print-card { flex-wrap: wrap; }
+  .tour-print-card .tour-cta { width: 100%; justify-content: center; }
+}
+/* Belge ekranda yok; yalnızca baskıda açılır. */
+.tour-print-sheet { display: none; }
+
+/* ---------------- yazdırma ----------------
+   Ekrandaki sayfa olduğu gibi basılmıyor: galeri, rezervasyon kartı,
+   yorumlar, menüler ve etiketler kâğıda düşmüyor. Yerine yalnızca
+   baskıda çizilen ayrı bir belge var (.tour-print-sheet) — düzeni A4'e
+   göre kuruluyor, sayfa sonları kontrol altında.
+
+   Ölçüler pt: baskıda px'in karşılığı çözünürlüğe göre değişiyor,
+   pt ise fiziksel birim. */
+@page {
+  size: A4;
+  margin: 16mm 14mm;
+}
 @media print {
-  .site-header,
-  .tour-section-nav,
-  .tour-sticky-bar,
-  .tour-gallery-all,
-  .tour-gallery-actions,
-  .tour-booking-help,
-  .tour-lightbox,
-  .tour-sheet { display: none !important; }
-  .tour-block, .tour-headline, .tour-booking { box-shadow: none; break-inside: avoid; }
+  /* Belge dışındaki her şey kâğıttan kalkıyor. */
+  body > *:not(.tour-print-sheet),
+  .tour-print { display: none !important; }
+
+  html, body {
+    background: #fff;
+    color: #111;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  .tour-print-sheet {
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Başlık bloğu bölünmesin ve hemen ardından sayfa sonu gelmesin. */
+  .tour-print-head {
+    border-bottom: 1.2pt solid #111;
+    padding-bottom: 8pt;
+    margin-bottom: 14pt;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  /* Bir paragrafın tek satırı önceki/sonraki sayfada yalnız kalmasın. */
+  .tour-print-sheet p,
+  .tour-print-sheet li {
+    orphans: 2;
+    widows: 2;
+  }
+  .tour-print-brand {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11pt;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .tour-print-head h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 17pt;
+    line-height: 1.25;
+    margin: 5pt 0 3pt;
+  }
+  .tour-print-lead { font-size: 10.5pt; color: #333; }
+  .tour-print-code { font-size: 9pt; color: #555; margin-top: 3pt; }
+
+  /* Bölüm başlığı yalnız kalmasın, en az iki satırı yanında gitsin. */
+  .tour-print-block { margin-bottom: 13pt; break-inside: auto; }
+  .tour-print-block h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12pt;
+    margin-bottom: 6pt;
+    padding-bottom: 3pt;
+    border-bottom: .6pt solid #bbb;
+    break-after: avoid;
+  }
+  .tour-print-block h3 {
+    font-size: 10.5pt;
+    font-weight: 700;
+    break-after: avoid;
+  }
+  .tour-print-block p { margin: 2pt 0; }
+  .tour-print-block ul { margin: 0 0 0 14pt; padding: 0; }
+  .tour-print-block li { margin-bottom: 3pt; break-inside: avoid; }
+
+  /* Bir durak/gün kâğıt sonunda ikiye bölünmesin. */
+  .tour-print-day { margin-bottom: 8pt; break-inside: avoid; }
+  .tour-print-day-meta { font-size: 9pt; color: #555; }
+
+  .tour-print-table { width: 100%; border-collapse: collapse; }
+  .tour-print-table tr { break-inside: avoid; }
+  .tour-print-table th {
+    width: 32%;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    padding: 3pt 8pt 3pt 0;
+    vertical-align: top;
+    border-bottom: .4pt solid #e2e2e2;
+  }
+  .tour-print-table td {
+    padding: 3pt 0;
+    vertical-align: top;
+    border-bottom: .4pt solid #e2e2e2;
+  }
+
+  .tour-print-foot {
+    margin-top: 14pt;
+    padding-top: 7pt;
+    border-top: .6pt solid #bbb;
+    font-size: 8.5pt;
+    color: #555;
+    break-inside: avoid;
+  }
+  .tour-print-foot p { margin: 1.5pt 0; }
+
+  /* Bağlantılar kâğıtta mavi/altı çizili durmasın. */
+  .tour-print-sheet a { color: inherit; text-decoration: none; }
 }

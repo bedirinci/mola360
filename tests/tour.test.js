@@ -1545,3 +1545,72 @@ describe('sayfa etiketleri', () => {
     });
   });
 });
+
+/* ---------------- PDF belgesi ---------------- */
+describe('PDF belgesi', () => {
+  it('her sayfada kart ve belge yuvası var', () => {
+    sayfalar.forEach(({ slug, html }) => {
+      expect(html, slug + ' indirme kartı yok').toContain('id="tourPrint"');
+      expect(html, slug + ' belge yuvası yok').toContain('id="tourPrintSheet"');
+    });
+    expect(sayfaJs).toContain("fill('tourPrintSheet', printSheetMarkup())");
+    expect(sayfaJs).toContain('window.print()');
+  });
+
+  it('belge body’nin DOĞRUDAN çocuğu', () => {
+    /* Baskıda "body > *:not(.tour-print-sheet)" ile her şey gizleniyor;
+       belge <main> içinde kalsaydı o kuralla birlikte o da gizlenirdi. */
+    sayfalar.forEach(({ slug, html }) => {
+      const sonra = html.slice(html.indexOf('</main>'));
+      expect(sonra, slug + ' belge </main> içinde kalmış').toContain('id="tourPrintSheet"');
+    });
+    expect(turStil).toContain('body > *:not(.tour-print-sheet)');
+  });
+
+  it('ekranda gizli, yalnızca baskıda açılıyor', () => {
+    expect(turStil).toContain('.tour-print-sheet { display: none; }');
+    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
+    expect(baski).toContain('.tour-print-sheet {');
+    expect(baski).toContain('display: block');
+  });
+
+  it('A4 ve sayfa sonu kontrolleri tanımlı', () => {
+    /* Ölçüler pt: baskıda px'in karşılığı çözünürlüğe göre değişir. */
+    expect(turStil).toMatch(/@page \{[\s\S]*?size: A4/);
+    const baski = turStil.match(/@media print \{([\s\S]*?)\n\}/)[1];
+    /* Bir durak/gün, tablo satırı veya madde kâğıt sonunda ikiye
+       bölünmesin; başlık da altındaki metinden kopmasın. */
+    ['.tour-print-day', '.tour-print-table tr', '.tour-print-foot']
+      .forEach(sec => {
+        const kural = baski.match(new RegExp(sec.replace(/\./g, '\\.') + ' \\{([\\s\\S]*?)\\}'));
+        expect(kural, sec + ' kuralı yok').toBeTruthy();
+        expect(kural[1], sec + ' bölünmeye açık').toContain('break-inside: avoid');
+      });
+    expect(baski).toContain('break-after: avoid');
+    expect(baski).toContain('orphans: 2');
+  });
+
+  it('belge tur kaydından üretiliyor, elle yazılmıyor', () => {
+    /* Sayfadaki bilgiyle ayrışmasın diye aynı kaynaktan. */
+    ['tour.title', 'tour.code', 'tour.included', 'tour.excluded',
+     'tour.meeting', 'tour.important', 'tour.cancellation.tiers']
+      .forEach(alan => expect(sayfaJs, alan + ' belgede kullanılmıyor').toContain(alan));
+    /* Konaklamalı turda gün gün program, günübirlikte saat saat. */
+    const govde = sayfaJs.match(/function printProgram\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(govde).toContain('tour.program');
+    expect(govde).toContain('tour.itinerary');
+  });
+
+  it('belge bilet olmadığını söylüyor', () => {
+    /* Müşteri bunu indirip saklayacak; rezervasyon onayı sanılmamalı. */
+    expect(sayfaJs).toContain('bilet veya rezervasyon onayı değildir');
+    expect(sayfaJs).toContain('fiyatlar ve program değişebilir');
+  });
+
+  it('indirme ikonu ikon setinde tanımlı', () => {
+    /* Tanımsız ikon boş bir <svg> basar ve düğme boş görünür --
+       bu hata bu projede bir kez yaşandı (home ikonu). */
+    expect(TOUR_ICONS.download, 'download ikonu yok').toBeTruthy();
+    expect(TOUR_ICONS.download.length).toBeGreaterThan(20);
+  });
+});
