@@ -803,15 +803,6 @@ const TOURS = {
         a: 'Hafif yağışta program aynen uygulanır; antik kentte üstü kapalı alan az olduğu için yağmurluk getirmenizi öneririz. Sağanak veya fırtına güvenlik riski oluşturursa tur iptal edilir ve ücretin tamamı iade edilir.' }
     ],
 
-    operator: {
-      name: 'Ege Rota Turizm',
-      since: 2014,
-      tours: 38,
-      guests: '6.400+',
-      rating: 4.8,
-      response: 'Mesajlara ortalama 1 saat içinde yanıt veriyor',
-      about: 'İzmir merkezli, yalnızca Ege rotalarında çalışan küçük grup operatörü. Rehberlerin tamamı profesyonel turist rehberi belgesine sahiptir.'
-    },
 
     /* slug tasiyan kayit gercek bir icerik sayfasina gider; tasimayan
        kayit anasayfaya. Yeni sayfa yazildikca slug eklenir. */
@@ -1077,15 +1068,6 @@ const TOURS = {
         a: 'Duraklar aynı kalır, sıra değişebilir. Kışın Ihlara Vadisi’nde zemin kaygan olduğunda yürüyüş kısaltılır, kar yağışında Zelve yerine kapalı alanlar öne alınır. Rehber değişikliği bir akşam önce otelde duyurur. Uçuş iptal edilirse ücretin tamamı iade edilir.' }
     ],
 
-    operator: {
-      name: 'Anadolu Tur Organizasyon',
-      since: 2011,
-      tours: 54,
-      guests: '19.000+',
-      rating: 4.7,
-      response: 'Mesajlara ortalama 2 saat içinde yanıt veriyor',
-      about: 'Nevşehir merkezli, yalnızca İç Anadolu ve Kapadokya programlarıyla çalışan operatör. Rehberlerin tamamı profesyonel turist rehberi belgesine sahiptir.'
-    },
 
     similar: [
       { key: 'efesKutuphane', slug: 'efes-sirince', title: 'Efes Antik Kenti ve Şirince Turu', meta: 'İzmir çıkışlı · 9 saat', rating: '4.8', price: 1290 },

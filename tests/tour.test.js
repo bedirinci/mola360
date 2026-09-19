@@ -611,8 +611,9 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     /* Sayfada bulunan her bölüm listede olmalı, aksi hâlde menüde hiç
        görünmez. */
     const sayfadakiler = [...html.matchAll(/<section class="tour-block" id="([a-z-]+)"/g)].map(m => m[1]);
+    /* İstisna yok: sayfadaki her bloğun menüde bir karşılığı olmalı,
+       yoksa kullanıcı o bölüme menüden hiç ulaşamaz. */
     sayfadakiler.forEach(id => {
-      if (id === 'operator') return; /* menüde yer almayan blok */
       expect(idler, id + ' TUM_SECTIONS içinde yok').toContain(id);
     });
   });
@@ -1209,5 +1210,68 @@ describe('yapışkan alt şerit düzeni', () => {
   it('şerit butonu iki satıra sarmaz', () => {
     const kural = turStil.match(/\.tour-cta\.small \{([\s\S]*?)\}/)[1];
     expect(kural).toContain('white-space: nowrap');
+  });
+});
+
+/* ---------------- banner favorisi ve yapışan bölüm menüsü ---------------- */
+describe('banner favorisi', () => {
+  it('galeride favori düğmesi var ve erişilebilir', () => {
+    const galeri = sayfaJs.match(/function galleryMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(galeri).toContain('tour-gallery-fav');
+    expect(galeri).toContain('aria-pressed="false"');
+    expect(galeri).toContain("aria-label=\"Favorilere ekle\"");
+  });
+
+  it('favori durumu tek kaynaktan, iki düğme de ondan besleniyor', () => {
+    /* İki ayrı düğme kendi sınıfını kendi çevirirse biri işaretliyken
+       diğeri boş kalabilir. */
+    expect(sayfaJs).toContain('state.favorite');
+    const sync = sayfaJs.match(/function syncFav\(\) \{([\s\S]*?)\n    \}/)[1];
+    expect(sync).toContain("'tourFavBtn', 'tourGalleryFav'");
+    expect(sync).toContain('state.favorite');
+  });
+
+  it('favori düğmesi banner’ın üstünde, başlığın altında konumlanıyor', () => {
+    /* Mobilde başlık banner'ın üzerine bindiği için düğmenin üst konumu
+       ölçülen başlık yüksekliğinden hesaplanıyor; sabit değer verilseydi
+       başlığın altında kalırdı. */
+    const kural = turStil.match(/\.tour-gallery-fav \{([\s\S]*?)\}/)[1];
+    expect(kural).toContain('position: absolute');
+    expect(kural).toContain('var(--tour-header-h');
+    expect(sayfaJs).toContain("setProperty('--tour-header-h'");
+    /* Ölçüm ekran döndürülünce de tazelenmeli. */
+    expect(sayfaJs).toContain("window.addEventListener('resize', syncHeaderHeight)");
+  });
+
+  it('mobilde başlık kartındaki eylemler gizli', () => {
+    /* Favori banner'a taşındı, paylaş zaten mobil başlıkta. */
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    expect(mobil).toContain('.tour-body .tour-head-actions { display: none; }');
+    /* Masaüstünde ikisi de durmalı: orada mobil başlık yok. */
+    expect(sayfaJs).toContain("id=\"tourShareBtn\"");
+    expect(sayfaJs).toContain("id=\"tourFavBtn\"");
+  });
+});
+
+describe('yapışan bölüm menüsü', () => {
+  it('yapışma durumu ölçülüp sınıf olarak veriliyor', () => {
+    /* CSS'te "yapıştı" seçicisi yok; durum elemanın üst kenarının kendi
+       top değerine oturmasından anlaşılıyor. */
+    expect(sayfaJs).toContain("nav.classList.toggle('is-stuck'");
+    expect(sayfaJs).toContain('getComputedStyle(nav).top');
+  });
+
+  it('yapışınca kenarlara uzayıp köşeleri düzleşiyor — yalnızca mobilde', () => {
+    const kural = turStil.match(/\.tour-section-nav\.is-stuck \{([\s\S]*?)\}/);
+    expect(kural, 'is-stuck kuralı yok').toBeTruthy();
+    expect(kural[1]).toContain('border-radius: 0');
+    expect(kural[1]).toContain('margin-left: calc(var(--page-gutter) * -1)');
+    expect(kural[1]).toContain('margin-right: calc(var(--page-gutter) * -1)');
+    /* Kural mobil medya sorgusunun içinde olmalı; masaüstünde menü hap
+       biçimini koruyor. */
+    const konum = turStil.indexOf('.tour-section-nav.is-stuck');
+    const mobilBlok = turStil.lastIndexOf('@media (max-width: 680px)', konum);
+    expect(mobilBlok, 'is-stuck kuralı mobil bloğun dışında').toBeGreaterThan(-1);
+    expect(turStil.slice(mobilBlok, konum)).not.toContain('@media (min-width');
   });
 });
