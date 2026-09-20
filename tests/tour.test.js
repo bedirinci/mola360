@@ -1875,13 +1875,54 @@ describe('rezervasyon özetindeki iletişim düğmeleri', () => {
     expect(blok).toContain('rel="noopener"');
   });
 
-  it('WhatsApp logosu DOLU çiziliyor ve yolu tek kaynaktan geliyor', () => {
-    /* TOUR_ICONS'taki ikonlar cizgi ile ciziliyor (fill: none); WhatsApp
-       logosu dolu bir sekil, o kurallarla ici bos bir ana hat olurdu. */
+  it('masaüstünde onay düğmesi alt satırı tek başına kaplıyor', () => {
+    /* 681px ustunde dugmeler 2 sutunlu grid'e giriyor. WhatsApp eklenene
+       kadar dugme sayisi 2'ydi ve satir kendiliginden doluyordu; 3 olunca
+       "Anladim" yarim genislikte kalip saginda bosluk biraktı. */
+    const blok = turStil.match(
+      /@media \(min-width: 681px\) \{\s*\.tour-sheet-actions \{[^}]*\}([\s\S]*?)\n\}/);
+    expect(blok, '681px bloğu bulunamadı').not.toBe(null);
+    expect(blok[1].replace(/\s+/g, ' '), 'onay düğmesi tüm sütunları kaplamıyor')
+      .toMatch(/\[data-sheet="close"\][^{]*\{[^}]*grid-column:\s*1\s*\/\s*-1/);
+  });
+
+  it('WhatsApp logosunun yolu tek kaynaktan geliyor', () => {
     const govde = sayfaJs.match(/const whatsappIkon = \(\) =>([\s\S]*?);\n/)[1];
-    expect(govde).toContain('fill="currentColor"');
     expect(govde, 'yol elle kopyalanmış').toContain('WHATSAPP_ICON_PATH');
     /* Kaynak home-blocks.js; tur sayfasi onu zaten yukluyor. */
     expect(bloklar).toContain('const WHATSAPP_ICON_PATH');
+  });
+
+  it('WhatsApp logosu DOLU çiziliyor — dolgu CSS kuralından geliyor', () => {
+    /* TOUR_ICONS ikonlari CIZGI ile ciziliyor; style.css'te
+       ".icon svg { fill: none; stroke: currentColor }" var. WhatsApp
+       logosu DOLU bir sekil oldugu icin o kural geri alinmali.
+
+       Bu testin ilk hali yanlisti: svg'de fill="currentColor" NITELIGI
+       arıyordu. Nitelik kaynakta duruyordu, test geciyordu, ama ekranda
+       hicbir sey degismiyordu -- fill/stroke birer sunum niteligi ve
+       herhangi bir CSS kurali onlari yener. Logo cizgiyle cizilip
+       19px'te tikanmis bir yumru olarak cikiyordu. Bu yuzden test artik
+       niteligi degil, ise yarayan tek seyi arıyor: CSS kuralini. */
+    const govde = sayfaJs.match(/const whatsappIkon = \(\) =>([\s\S]*?);\n/)[1];
+
+    /* Sarmalayici span'in "icon" disinda bir sinifi olmali; kural ona bagli. */
+    const sinifOzniteligi = govde.match(/class="icon ([a-z0-9-]+)"/);
+    expect(sinifOzniteligi, 'sarmalayicida ayirt edici sinif yok').not.toBe(null);
+    const sinif = sinifOzniteligi[1];
+
+    /* O sinif icin tour.css'te svg kurali var mi ve dolguyu veriyor mu? */
+    const kural = turStil.match(
+      new RegExp('\\.' + sinif + '[^{]*svg\\s*\\{([^}]*)\\}'));
+    expect(kural, '.' + sinif + ' icin svg kurali yok').not.toBe(null);
+    expect(kural[1].replace(/\s+/g, ' '), 'dolgu verilmemis')
+      .toMatch(/fill:\s*currentColor/);
+    expect(kural[1].replace(/\s+/g, ' '), 'cizgi kapatilmamis')
+      .toMatch(/stroke:\s*none/);
+
+    /* Nitelik yeniden eklenirse bu yanilticidir: ise yaramaz ama
+       yaradigi sanilir. Ozellikle yasaklaniyor. */
+    expect(govde, 'fill niteligi CSS\'i yenemez, kurala guven')
+      .not.toContain('fill="');
   });
 });

@@ -1979,8 +1979,29 @@
 .tour-sheet-actions { display: grid; gap: 9px; }
 @media (min-width: 681px) {
   .tour-sheet-actions { grid-template-columns: 1fr 1fr; }
+  /* Iki iletisim dugmesi yan yana durur, onay dugmesi alt satiri tek
+     basina kaplar. WhatsApp eklenene kadar dugme sayisi 2'ydi ve grid
+     kendiliginden dengeliydi; 3 olunca "Anladim" yarim genislikte kalip
+     sagında bosluk birakiyordu. */
+  .tour-sheet-actions [data-sheet="close"] { grid-column: 1 / -1; }
 }
 .tour-sheet-actions .tour-cta { width: 100%; }
+
+/* WhatsApp isareti DOLGULU cizilir; genel ".icon svg" kurali geri alinir.
+   (Anasayfadaki .home-support-wa-icon ile ayni kalip.)
+
+   Bu is svg'ye fill="currentColor" NITELIGI koyarak yapilamaz: fill ve
+   stroke birer sunum niteligi, en dusuk oncelikte durur ve herhangi bir
+   CSS kurali onlari yener. Once oyle denendi, style.css'teki
+   ".icon svg { fill: none; stroke: currentColor }" kazandi ve logo
+   cizgiyle cizilip 19px'te tikanmis bir yumru olarak cikti.
+
+   Secici bilerek iki sinifli: ".icon svg" ile ayni ozgullukte olsaydi
+   kazanmasi dosya sirasina kalirdi. Boyle sira degisse de kazanir. */
+.tour-wa-icon.icon svg {
+  fill: currentColor;
+  stroke: none;
+}
 
 /* ---------------- bilgi balonu ---------------- */
 .tour-toast {
