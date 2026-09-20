@@ -525,7 +525,17 @@ window.Mola360TourPdf = (function () {
   function dosyaAdi(tur) { return 'mola360-' + tur.slug + '.pdf'; }
 
   /* Son care: gizli bir bagla indir. */
-  function bagIleIndir(blob, ad) {
+  /* Safari PDF'i TANIDIGI icin "application/pdf" tipli bir blob'u
+     indirmek yerine sekmede aciyor -- sikayet edilen davranis buydu.
+     Baytlar "application/octet-stream" olarak yeniden sariliyor:
+     tarayici dosyayi gosteremeyince kendi indirme onayini aciyor
+     ("... dosyasini indirmek istiyor musunuz? / Goruntule / Indir").
+
+     Dosya adi .pdf uzantisini koruyor; indirildikten sonra sistem onu
+     yine PDF olarak aciyor. Degisen yalnizca tarayiciya "bunu
+     gosterme, indir" demek. */
+  function bagIleIndir(pdfBlob, ad) {
+    const blob = new Blob([pdfBlob], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -536,41 +546,24 @@ window.Mola360TourPdf = (function () {
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
 
-  /* Belgeyi kullaniciya SUNMA yolu, platforma gore degisiyor:
+  /* Belgeyi KAYDETME yolu. Paylasim sayfasi burada BILEREK yok:
+     indir dugmesi dosyayi indirmeli, paylas dugmesi paylasmali. Ikisi
+     ayri dugme oldugu icin indir'in paylasim sayfasini acmasi icin
+     sebep kalmadi.
 
-     1) Paylasim sayfasi (iPhone, Android). iOS'ta asil dogru yol bu:
-        "Dosyalara Kaydet", "Hizli Bak" gibi secenekleri olan sistem
-        sayfasi aciliyor. Blob adresli bir <a download> iOS Safari'de
-        calismiyor -- dosyayi indirmek yerine sekmede aciyor, sikayet
-        edilen davranis tam olarak buydu.
-
-     2) Kaydetme penceresi (masaustu Chrome/Edge): nereye kaydedilecegi
+     1) Kaydetme penceresi (masaustu Chrome/Edge): nereye kaydedilecegi
         soruluyor.
 
-     3) Digerleri: dogrudan indirme.
+     2) Digerleri (iPhone dahil): bag ile indirme. Blob
+        "application/octet-stream" oldugu icin Safari dosyayi
+        gosteremiyor ve kendi indirme onayini aciyor.
 
-     Hem paylasim hem kaydetme penceresi KULLANICI HAREKETI icinde
-     cagrilmak zorunda. Belge ilk uretimde birkac saniye suruyor ve o
-     sure dolabiliyor; tarayici NotAllowedError atiyor. O durumda
-     "tekrar" bildiriliyor: belge artik hazir oldugu icin kullanicinin
-     ikinci dokunusu aninda sonuclaniyor. */
-  function sun(tur, blob, bildir) {
+     Kaydetme penceresi KULLANICI HAREKETI icinde cagrilmak zorunda.
+     Belge ilk uretimde birkac saniye suruyor ve o sure dolabiliyor;
+     tarayici SecurityError atiyor. O durumda "tekrar" bildiriliyor:
+     belge artik hazir oldugu icin ikinci dokunus aninda sonuclaniyor. */
+  function kaydet(tur, blob, bildir) {
     const ad = dosyaAdi(tur);
-
-    if (navigator.canShare && typeof navigator.share === 'function') {
-      let dosya = null;
-      try { dosya = new File([blob], ad, { type: 'application/pdf' }); } catch (_) {}
-      if (dosya && navigator.canShare({ files: [dosya] })) {
-        return navigator.share({ files: [dosya], title: tur.title })
-          .then(() => bildir('bitti'))
-          .catch(h => {
-            if (h && h.name === 'AbortError') return bildir('iptal');
-            if (h && h.name === 'NotAllowedError') return bildir('tekrar');
-            bagIleIndir(blob, ad);
-            bildir('bitti');
-          });
-      }
-    }
 
     if (typeof window.showSaveFilePicker === 'function') {
       return window.showSaveFilePicker({
@@ -596,12 +589,12 @@ window.Mola360TourPdf = (function () {
     const bildir = (m) => { if (typeof durum === 'function') durum(m); return m; };
 
     /* Belge hazirsa dokunus henuz taze: paylasim/kaydetme hemen acilir. */
-    if (hazirBlob) return Promise.resolve(sun(tur, hazirBlob, bildir));
+    if (hazirBlob) return Promise.resolve(kaydet(tur, hazirBlob, bildir));
 
     bildir('yukleniyor');
     return hazirla(tur)
       .then(pdf => pdf.getBlob())
-      .then(blob => { hazirBlob = blob; return sun(tur, blob, bildir); })
+      .then(blob => { hazirBlob = blob; return kaydet(tur, blob, bildir); })
       .catch(hata => { bildir('hata'); throw hata; });
   }
 
