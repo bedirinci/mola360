@@ -240,6 +240,17 @@ Aşağı kaydırınca başlık **daralıyor** — alt satır (kategori/konum)
 gizleniyor, yükseklik 60px'ten 46px'e iniyor. Tur adı kalıyor; asıl iş
 o. Telefonda iki satırlık sabit başlık ekranın fazlasını yer.
 
+Daralmış hâlde **alt köşe yuvarlaklığı kalkıyor.** Yuvarlaklık, başlık
+banner fotoğrafının üzerindeyken anlamlıydı: köşe çentiklerinden
+fotoğrafın kendisi görünüyordu. Başlık sabitlenince çentiklerin
+arkasında fotoğraf değil sayfa zemini kalıyor ve iki köşede açık renk
+birer boşluk çıkıyordu — özellikle bölüm menüsüyle birleştiği yerde.
+Sayfanın en üstünde yuvarlaklık duruyor; orada arkası hâlâ fotoğraf.
+
+Yuvarlaklık kuralı `style.css`'te `.notif-panel-header` ve
+`.auth-modal-hero` ile **ortak**; bu yüzden ortak kural değil, yalnızca
+tur başlığının daralmış hâli geri alınıyor.
+
 Bölüm menüsü `top: var(--tour-header-h)` ile başlığın **altına**
 yapışıyor. İkisi de `top: 0` olsaydı menü sabit başlığın altında
 kalırdı. Başlık daralınca yükseklik değiştiği için `--tour-header-h`

@@ -87,6 +87,25 @@
   .tour-mobile-header.is-daralmis .tour-mobile-subtitle { display: none; }
   .tour-mobile-header.is-daralmis { padding-top: 6px; padding-bottom: 6px; }
   .tour-mobile-header.is-daralmis .tour-mobile-title { font-size: 15px; }
+
+  /* Daralmis halde alt kose yuvarlakligi KALKIYOR.
+
+     Yuvarlaklik, baslik banner fotografinin uzerindeyken anlamliydi:
+     kose centiklerinden fotografin kendisi goruruyordu. Baslik sabit
+     hale gelince centiklerin arkasinda fotograf degil sayfa zemini
+     kaliyor ve iki kosede acik renk birer bosluk goruruyor -- ozellikle
+     altindaki bolum menusuyle birlestigi yerde.
+
+     Sayfanin en ustunde (daralmamis halde) yuvarlaklik duruyor; orada
+     arkasi hala fotograf.
+
+     Ortak kural .notif-panel-header ve .auth-modal-hero ile paylasiliyor
+     (style.css), o yuzden burada yalnizca tur basligi icin geri
+     aliniyor. */
+  .tour-mobile-header.is-daralmis {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
   /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
   .tour-body .tour-page { padding-top: 0; }
   /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;

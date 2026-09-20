@@ -2027,6 +2027,26 @@ describe('yapışkan tur başlığı', () => {
     expect(kural).toMatch(/top:\s*var\(--tour-header-h/);
   });
 
+  it('daralmış başlıkta alt köşe yuvarlaklığı kalkıyor', () => {
+    /* Yuvarlaklik baslik banner FOTOGRAFININ uzerindeyken anlamliydi:
+       kose centiklerinden fotograf goruruyordu. Baslik sabitlenince
+       centiklerin arkasinda sayfa zemini kaliyor ve iki kosede acik
+       renk bosluk cikiyordu -- ozellikle bolum menusuyle birlestigi
+       yerde.
+
+       Sayfanin en ustunde (daralmamis) yuvarlaklik DURUYOR; orada
+       arkasi hala fotograf. */
+    expect(turStil).toMatch(
+      /\.tour-mobile-header\.is-daralmis \{[^}]*border-bottom-left-radius:\s*0/);
+    expect(turStil).toMatch(
+      /\.tour-mobile-header\.is-daralmis \{[^}]*border-bottom-right-radius:\s*0/);
+    /* Ortak kural style.css'te .notif-panel-header ve .auth-modal-hero
+       ile paylasiliyor; orada yaricap DURMALI, yoksa bildirim paneli ve
+       giris modali de duzlesirdi. */
+    expect(ortakStil, 'ortak yuvarlaklık kuralı kaldırılmış')
+      .toMatch(/\.tour-mobile-header \{[^}]*border-bottom-left-radius:\s*22px/);
+  });
+
   it('aşağı kaydırınca başlık daralıyor', () => {
     /* Telefonda iki satirlik sabit baslik ekranin fazlasini yer;
        kaydirinca alt satir gizleniyor, tur ADI kaliyor. */
