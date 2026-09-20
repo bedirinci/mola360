@@ -506,10 +506,9 @@
         <div class="tour-print-text">
           <strong>Tur bilgilerini ve programı indir</strong>
           <span>Fotoğraflı belge: ${stay ? 'gün gün program' : 'saat saat program'}, fiyata dahil
-                olanlar, buluşma noktası ve iptal koşulları. Açılan yazdırma penceresinde
-                “PDF olarak kaydet”i seçin.</span>
+                olanlar, buluşma noktası ve iptal koşulları.</span>
         </div>
-        <button class="tour-cta ghost small" type="button" id="tourPrintBtn">
+        <button class="tour-cta ghost small" type="button" data-pdf>
           ${ic('download')}PDF indir
         </button>
       </div>`;
@@ -722,6 +721,13 @@
       <ul class="tour-booking-trust">
         ${tour.trust.map(t => `<li>${ic(t.icon)}<span>${t.text}</span></li>`).join('')}
       </ul>
+
+      <!-- Belgeyi buradan da indirilebilir yapiyoruz: panel mobilde 1.5
+           ekran asagida, programin altindaki kart ise 7 ekran. Ayni isi
+           yapan iki giris; kart ne oldugunu anlatir, bu dugme kisa yol. -->
+      <button class="tour-cta ghost small tour-booking-pdf" type="button" data-pdf>
+        ${ic('download')}Programı PDF indir
+      </button>
 
       <div class="tour-booking-contact">
         <a class="tour-booking-help" href="${CONTACT.phoneHref}">
@@ -1354,43 +1360,52 @@
     /* PDF: dosya DOGRUDAN iniyor, yazdirma penceresi acilmiyor.
        Belgeyi assets/js/tour-pdf.js uretiyor; kutuphane yalnizca ilk
        basista yukleniyor, o yuzden dugme "Hazirlaniyor..." durumuna
-       geciyor ve iki kez baslatilmasin diye kilitleniyor. */
-    const printBtn = document.getElementById('tourPrintBtn');
-    if (printBtn && window.Mola360TourPdf) {
-      const ilkMetin = printBtn.innerHTML;
-      let surüyor = false;
+       geciyor ve iki kez baslatilmasin diye kilitleniyor.
 
-      /* Dugme iki kez baslatilmasin; kutuphane ilk basista iniyor. */
-      function belgeyiAc(is) {
-        if (surüyor) return;
-        surüyor = true;
-        printBtn.disabled = true;
-        printBtn.innerHTML = ic('download') + 'Hazırlanıyor…';
+       Dugme sayfada IKI yerde: programin altindaki kart ve rezervasyon
+       paneli. Bu yuzden id yerine [data-pdf] ve tek bir delege
+       dinleyici var -- panel ileride yeniden cizilse de calismaya
+       devam eder, ucuncu bir dugme eklemek de kod gerektirmez. */
+    let pdfSuruyor = false;
 
-        /* "tekrar": belge hazir ama kaydetme/paylasim penceresi acilamadi,
-           cunku uretim sirasinda dokunusun suresi doldu. Belge artik
-           bellekte; ikinci dokunus aninda sonuclanacak. */
-        const durum = (d) => {
-          if (d === 'tekrar') toast('Kaydetmek için bir kez daha dokunun');
-        };
+    function belgeyiAc(dugme, is) {
+      if (pdfSuruyor) return;
+      pdfSuruyor = true;
+      const ilkMetin = dugme.innerHTML;
+      dugme.disabled = true;
+      dugme.innerHTML = ic('download') + 'Hazırlanıyor…';
 
-        is(durum)
-          .catch(() => toast('Belge oluşturulamadı, tekrar deneyin'))
-          .then(() => {
-            surüyor = false;
-            printBtn.disabled = false;
-            printBtn.innerHTML = ilkMetin;
-          });
-      }
+      /* "tekrar": belge hazir ama kaydetme/paylasim penceresi acilamadi,
+         cunku uretim sirasinda dokunusun suresi doldu. Belge artik
+         bellekte; ikinci dokunus aninda sonuclanacak. */
+      const durum = (d) => {
+        if (d === 'tekrar') toast('Kaydetmek için bir kez daha dokunun');
+      };
 
-      printBtn.addEventListener('click', () => belgeyiAc((d) => Mola360TourPdf.indir(tour, d)));
+      is(durum)
+        .catch(() => toast('Belge oluşturulamadı, tekrar deneyin'))
+        .then(() => {
+          pdfSuruyor = false;
+          dugme.disabled = false;
+          dugme.innerHTML = ilkMetin;
+        });
+    }
 
-      /* Ctrl+P sayfayi degil belgeyi yazdirsin. */
+    if (window.Mola360TourPdf) {
+      document.addEventListener('click', (e) => {
+        const dugme = e.target.closest('[data-pdf]');
+        if (dugme) belgeyiAc(dugme, (d) => Mola360TourPdf.indir(tour, d));
+      });
+
+      /* Ctrl+P sayfayi degil belgeyi yazdirsin. Durum metni ilk
+         dugmede gosteriliyor; hangisi oldugu onemli degil. */
       document.addEventListener('keydown', (e) => {
         if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
         if (String(e.key).toLowerCase() !== 'p') return;
+        const dugme = document.querySelector('[data-pdf]');
+        if (!dugme) return;
         e.preventDefault();
-        belgeyiAc((d) => Mola360TourPdf.yazdir(tour, d));
+        belgeyiAc(dugme, (d) => Mola360TourPdf.yazdir(tour, d));
       });
     }
 
