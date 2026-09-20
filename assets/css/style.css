@@ -18,6 +18,12 @@
   /* Mobil arama kutusunun alt köşe yarıçapı. Filtre çubuğu yapıştığında
      oluşan köşe oyuğunu doldurmak için de aynı değer kullanılır. */
   --m360-search-radius: 25px;
+  /* Üstten inen şeritlerin (bildirim paneli, giriş modalı, arama
+     ekranı, tur başlığı) alt köşe yarıçapı. Tur sayfasında başlığın
+     altına yapışan bölüm menüsü, köşelerde kalan oyuğu doldurmak
+     için aynı değeri kullanıyor; tek tanım olduğu için oyuk ile
+     yuvarlaklık birbirinden ayrışamaz. */
+  --m360-header-radius: 22px;
   --top10-card-width: 135px;
   --cat-gap: 15px;
   --cat-gap-tablet: 15px;
@@ -485,8 +491,8 @@ ul {
   padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
   background: var(--navy);
   color: #fff;
-  border-bottom-left-radius: 22px;
-  border-bottom-right-radius: 22px;
+  border-bottom-left-radius: var(--m360-header-radius);
+  border-bottom-right-radius: var(--m360-header-radius);
   box-shadow: 0 3px 10px rgba(11,18,48,.11);
 }
 .notif-panel-header {
@@ -1570,8 +1576,8 @@ ul {
   flex-shrink: 0;
   background: var(--navy);
   padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
-  border-bottom-left-radius: 22px;
-  border-bottom-right-radius: 22px;
+  border-bottom-left-radius: var(--m360-header-radius);
+  border-bottom-right-radius: var(--m360-header-radius);
   box-shadow: 0 3px 10px rgba(11,18,48,.11);
 }
 .search-overlay-bar {

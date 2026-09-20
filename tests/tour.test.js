@@ -2027,34 +2027,91 @@ describe('yapışkan tur başlığı', () => {
     expect(kural).toMatch(/top:\s*var\(--tour-header-h/);
   });
 
-  it('daralmış başlıkta alt köşe yuvarlaklığı kalkıyor', () => {
-    /* Yuvarlaklik baslik banner FOTOGRAFININ uzerindeyken anlamliydi:
-       kose centiklerinden fotograf goruruyordu. Baslik sabitlenince
-       centiklerin arkasinda sayfa zemini kaliyor ve iki kosede acik
-       renk bosluk cikiyordu -- ozellikle bolum menusuyle birlestigi
-       yerde.
-
-       Sayfanin en ustunde (daralmamis) yuvarlaklik DURUYOR; orada
-       arkasi hala fotograf. */
-    expect(turStil).toMatch(
-      /\.tour-mobile-header\.is-daralmis \{[^}]*border-bottom-left-radius:\s*0/);
-    expect(turStil).toMatch(
-      /\.tour-mobile-header\.is-daralmis \{[^}]*border-bottom-right-radius:\s*0/);
-    /* Ortak kural style.css'te .notif-panel-header ve .auth-modal-hero
-       ile paylasiliyor; orada yaricap DURMALI, yoksa bildirim paneli ve
-       giris modali de duzlesirdi. */
-    expect(ortakStil, 'ortak yuvarlaklık kuralı kaldırılmış')
-      .toMatch(/\.tour-mobile-header \{[^}]*border-bottom-left-radius:\s*22px/);
+  it('sabit başlık her kaydırma konumunda aynı görünüyor', () => {
+    /* Baslik bir sure "daralıyordu": asagi kaydirinca alt satir gizlenip
+       yukseklik dusuyordu. Musteri ayni turun basligini iki ayri
+       bicimde goruyordu; tur icerigi basligiyla ayni olmasi istendi.
+       Bu yuzden daraltmanin HEM kurallari HEM kancasi kalkti. */
+    expect(turStil, 'daraltma kuralları geri gelmiş').not.toContain('is-daralmis');
+    expect(sayfaJs, 'daraltma kancası geri gelmiş').not.toContain('is-daralmis');
+    expect(sayfaJs, 'daraltma kancası geri gelmiş').not.toContain('initStickyHeader');
+    /* Yukseklik artik sabit ama guvenli alan payi ve donme ile
+       degisebiliyor; olcum duruyor. */
+    expect(sayfaJs).toContain('window.addEventListener(\'resize\', syncHeaderHeight)');
+    expect(sayfaJs).toContain('window.addEventListener(\'orientationchange\', syncHeaderHeight)');
+    /* Yuvarlaklik da her konumda duruyor: hicbir kural onu sifirlamiyor. */
+    expect(turStil).not.toMatch(/\.tour-mobile-header[^{]*\{[^}]*border-bottom-left-radius:\s*0/);
   });
 
-  it('aşağı kaydırınca başlık daralıyor', () => {
-    /* Telefonda iki satirlik sabit baslik ekranin fazlasini yer;
-       kaydirinca alt satir gizleniyor, tur ADI kaliyor. */
-    expect(sayfaJs, 'daraltma kancası yok').toContain('is-daralmis');
-    expect(turStil).toMatch(/\.tour-mobile-header\.is-daralmis[^{]*\.tour-mobile-subtitle[^{]*\{[^}]*display:\s*none/);
-    /* Yukseklik degistigi icin menunun hizasi yeniden olculmeli. */
-    const fn = sayfaJs.match(/function initStickyHeader\(\) \{([\s\S]*?)\n  \}/)[1];
-    expect(fn, 'daralınca --tour-header-h güncellenmiyor').toContain('syncHeaderHeight()');
+  it('başlığın alt köşe yarıçapı tek bir belirteçten geliyor', () => {
+    /* Menunun kose oyugunu dolduran serit, yaricapin TAM boyunda olmak
+       zorunda: kisa kalirsa oyuk durur, uzun olursa serit basligin
+       altindan tasar. Iki yerde ayri ayri yazilsaydi biri degistiginde
+       digeri sessizce yanlis kalirdi. */
+    expect(ortakStil, 'ortak yuvarlaklık belirteci yok')
+      .toMatch(/--m360-header-radius:\s*22px/);
+    expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
+      /\.tour-mobile-header \{[^}]*border-bottom-left-radius:\s*var\(--m360-header-radius\)/);
+    expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
+      /\.tour-mobile-header \{[^}]*border-bottom-right-radius:\s*var\(--m360-header-radius\)/);
+  });
+
+  it('yapışık menü başlığın köşe oyuğunu KENDİ zeminiyle dolduruyor', () => {
+    /* Baslik yuvarlak, menu yapisikken duz: birlestikleri yerde iki
+       kosede birer oyuk kaliyor ve oradan arkadaki icerik goruruyordu.
+       Anasayfada arama kutusuyla filtre cubugunun bulustugu yerdeki
+       cozumun ayni (.filter-bar.is-stuck::before).
+
+       Dolgu, menunun KENDI zemini: oyuk hemen altindaki cubugun devami
+       gibi gorunsun diye. Sayfa zemini (--bg) denendi ve oyuk gri bir
+       kama olarak ayri okunuyordu; anasayfada iki yuzey zaten ayni renk
+       oldugu icin orada bu ayrim hic dogmuyor. */
+    const kural = turStil.match(
+      /\.tour-section-nav\.is-stuck \{([\s\S]*?)\n  \}/)[1];
+    const golge = kural.match(/box-shadow:([\s\S]*?);/)[1];
+    /* Dolgu serit: yukari dogru, bulaniksiz, yaricapla AYNI yukseklikte
+       ve cubugun zemin degiskeninde. */
+    expect(golge, 'dolgu şeridi yok ya da yanlış renkte/yükseklikte')
+      .toMatch(/0 calc\(-1 \* \(var\(--m360-header-radius\) \+ 1px\)\) 0 var\(--tour-nav-bg\)/);
+    /* Normal dusen golge DURUYOR: dolgu onun yerine gecmiyor. */
+    expect(golge, 'menünün düşen gölgesi kaybolmuş')
+      .toMatch(/0 4px 14px rgba\(21,32,72,\.1\)/);
+    /* Serit once yaziliyor: dusen golgenin yukari tasan bulanikligini
+       kapatsin diye. Sonra yazilsaydi golge seridin ustune binerdi. */
+    expect(golge.indexOf('var(--tour-nav-bg)'))
+      .toBeLessThan(golge.indexOf('rgba(21,32,72,.1)'));
+    /* Cubugun zemini o degiskenden geliyor; boylece oyuk ile cubuk
+       farkli bir renge kayamaz. */
+    const taban = turStil.match(/\.tour-section-nav \{([\s\S]*?)\n\}/)[1];
+    expect(taban, 'çubuğun zemini değişkenden gelmiyor')
+      .toMatch(/background:\s*var\(--tour-nav-bg\)/);
+    expect(kural, 'yapışık haldeki zemin değişkeni tanımlanmamış')
+      .toMatch(/--tour-nav-bg:\s*rgba\(255,255,255,\.97\)/);
+    /* Ust kenarlik saydam: 1 px'lik gri cizgi oyugu asagidaki cubuktan
+       ayiran bir dikis gibi goruruyordu. */
+    expect(kural, 'üst kenarlık saydamlaştırılmamış')
+      .toMatch(/border-top-color:\s*transparent/);
+    /* YALNIZCA yapisikken: sayfanin en ustunde oyuklarin arkasinda
+       banner fotografi var, orada beyaz bir serit yanlis olurdu. */
+    expect(taban, 'dolgu şeridi yapışık olmayan menüye de uygulanmış')
+      .not.toContain('--m360-header-radius');
+  });
+
+  it('köşe oyuğu ::before ile değil gölgeyle dolduruluyor', () => {
+    /* Menude overflow-x: auto var (cipler yana kayiyor). Bu, kutunun
+       DISINA tasan mutlak konumlu cocuklari kirpar; anasayfadaki
+       .filter-bar.is-stuck::before seridinin buradaki karsiligi
+       gorunmez olurdu -- anasayfada kaydirma ayri bir ic kutuda oldugu
+       icin orada sorun cikmiyor. Elemanin KENDI golgesi kirpilmaz. */
+    /* DIKKAT: kuralin GOVDESI ayiklanip orada aranir. Dogrudan
+       /\.tour-section-nav \{[\s\S]*?overflow-x/ yazilsaydi tembel eslesme
+       kapanis suslu parantezini asip ilerideki BASKA bir kuraldaki
+       overflow-x'e uzanir ve sav bosa cikardi. */
+    const nav = turStil.match(/\.tour-section-nav \{([\s\S]*?)\n\}/)[1];
+    expect(nav, 'yana kaydırma yok; kırpma gerekçesi de yok')
+      .toMatch(/overflow-x:\s*auto/);
+    expect(turStil, 'kırpılacak bir ::before eklenmiş')
+      .not.toContain('.tour-section-nav.is-stuck::before');
   });
 });
 

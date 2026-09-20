@@ -236,25 +236,70 @@ Müşteri uzun sayfada hangi turu incelediğini kaybetmesin diye mobil
 başlık `position: fixed`. Önceden `absolute`'tu: banner'la birlikte
 yukarı kayıp kayboluyordu.
 
-Aşağı kaydırınca başlık **daralıyor** — alt satır (kategori/konum)
-gizleniyor, yükseklik 60px'ten 46px'e iniyor. Tur adı kalıyor; asıl iş
-o. Telefonda iki satırlık sabit başlık ekranın fazlasını yer.
-
-Daralmış hâlde **alt köşe yuvarlaklığı kalkıyor.** Yuvarlaklık, başlık
-banner fotoğrafının üzerindeyken anlamlıydı: köşe çentiklerinden
-fotoğrafın kendisi görünüyordu. Başlık sabitlenince çentiklerin
-arkasında fotoğraf değil sayfa zemini kalıyor ve iki köşede açık renk
-birer boşluk çıkıyordu — özellikle bölüm menüsüyle birleştiği yerde.
-Sayfanın en üstünde yuvarlaklık duruyor; orada arkası hâlâ fotoğraf.
-
-Yuvarlaklık kuralı `style.css`'te `.notif-panel-header` ve
-`.auth-modal-hero` ile **ortak**; bu yüzden ortak kural değil, yalnızca
-tur başlığının daralmış hâli geri alınıyor.
+Başlık **her kaydırma konumunda aynı görünüyor.** Bir ara daralıyordu
+— alt satır (kategori/konum) gizlenip yükseklik düşüyordu — ama müşteri
+aynı turun başlığını iki ayrı biçimde görüyordu; tur içeriği başlığıyla
+aynı olması istendi. Daraltmanın hem CSS kuralları hem JS kancası
+(`initStickyHeader`) kaldırıldı. `--tour-header-h` artık kaydırmayla
+değişmiyor; yalnızca yükleme, `resize` ve `orientationchange` anında
+ölçülüyor (güvenli alan payı ve ekran dönmesi hâlâ etkiliyor).
 
 Bölüm menüsü `top: var(--tour-header-h)` ile başlığın **altına**
 yapışıyor. İkisi de `top: 0` olsaydı menü sabit başlığın altında
-kalırdı. Başlık daralınca yükseklik değiştiği için `--tour-header-h`
-yeniden ölçülüyor, yoksa aralarında boşluk kalırdı.
+kalırdı.
+
+### Köşe oyuğu: başlıkla menünün buluştuğu yer
+
+Başlığın alt köşeleri yuvarlak (22px), yapışık menü ise düz. İkisi
+birleştiğinde iki köşede birer oyuk kalıyor ve oradan arkadaki içerik
+görünüyordu. Anasayfada arama kutusuyla filtre çubuğunun buluştuğu
+yerde aynı durum var ve orada `.filter-bar.is-stuck::before` ile
+çözülüyor; buradaki çözüm onun karşılığı.
+
+**Dolgu, menünün KENDİ zemini — sayfa zemini değil.** Önce `var(--bg)`
+denendi: anasayfada filtre çubuğunun zemini zaten `var(--bg)` olduğu
+için orada oyuk ile çubuk tek bir yüzey gibi okunuyor. Tur sayfasında
+menünün zemini beyaza yakın, dolayısıyla gri dolgu ayrı bir kama olarak
+göze çarpıyordu. Ölçüldü: sayfa zemini dolgusu ile dolgusuz hâl
+arasındaki en büyük kanal farkı yalnızca 8/255 — yani sorunu neredeyse
+hiç değiştirmiyordu. Çubuğun zemini `--tour-nav-bg` değişkeninde
+tutuluyor ve dolgu aynı değişkeni kullanıyor, böylece ikisi ayrışamaz.
+
+**Üst kenarlık da saydam.** Yapışıkken menünün 1px'lik gri üst
+kenarlığı başlığın alt kenarına dayanıyor ve oyuğu aşağıdaki çubuktan
+ayıran bir dikiş gibi görünüyordu. Yan kenarlıklar gibi kaldırılmıyor,
+saydamlaştırılıyor: kaldırılsaydı kutu modeli daralır, çipler kayardı.
+
+**Neden gölge, neden `::before` değil.** Menüde `overflow-x: auto` var
+(çipler yana kayıyor); bu, kutunun **dışına** taşan mutlak konumlu
+çocukları kırpar — anasayfadaki şeridin buradaki karşılığı görünmez
+olurdu. Anasayfada sorun çıkmıyor, çünkü orada yana kaydırma
+`.filter-group` adlı ayrı bir iç kutuda. Elemanın **kendi** gölgesi bu
+kırpmaya takılmaz; ayrıca dış gölge kutunun içine hiç çizilmediği için
+`backdrop-filter`'a da karışmaz:
+
+```css
+box-shadow:
+  0 calc(-1 * (var(--m360-header-radius) + 1px)) 0 var(--tour-nav-bg),
+  0 4px 14px rgba(21,32,72,.1);
+```
+
+Şerit başlığın **arkasında** kalır (menü `z-index: 30`, başlık `3000`):
+lacivert alanda görünmez, yalnızca köşe oyuklarında ortaya çıkar. Listede
+önce yazılıyor ki düşen gölgenin yukarı taşan bulanıklığını da kapatsın.
+Yalnızca `.is-stuck`'ta uygulanıyor — sayfanın en üstünde oyukların
+arkasında banner fotoğrafı var, orada beyaz bir şerit yanlış olurdu.
+
+Şeridin yüksekliği yuvarlaklıktan geliyor. Yuvarlaklık `style.css`'te
+`.notif-panel-header`, `.auth-modal-hero` ve `.search-overlay-top` ile
+**ortak**; dört yerde ayrı ayrı yazılmasın diye `--m360-header-radius`
+belirtecine alındı. Şerit kısa kalırsa oyuk durur, uzun olursa başlığın
+altından taşar — tek tanım olduğu için ikisi ayrışamaz.
+
+Ölçüldü (390×844, Chromium): başlığın alt kenarı ile menünün üst kenarı
+tam olarak çakışıyor (60/60), yuvarlaklık kaydırmadan bağımsız 22px
+kalıyor, oyuk pikselleri çubuğun zeminiyle aynı okunuyor. Yapışma
+eşiğinde gidip gelme yok: 1px'lik adımlarla geçiş tek yönlü.
 
 Masaüstünde mobil başlık gizli olduğundan değişken `0px`; ayrıca
 `@media (min-width: 681px)` bloğundaki kural menüyü sitenin ortak

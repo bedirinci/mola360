@@ -1176,35 +1176,6 @@
     document.documentElement.style.setProperty('--tour-header-h', yukseklik + 'px');
   }
 
-  /* Sabit tur başlığı aşağı kaydırınca daralır: alt satır gizlenir,
-     yükseklik düşer. Tur ADI hep görünür kalır -- müşteri hangi turu
-     incelediğini kaybetmesin diye zaten sabitlendi.
-
-     Eşik galeri yüksekliğine değil sabit bir değere bağlı: galeri
-     yüksekliği cihazdan cihaza değişiyor ve eşiği ona bağlamak
-     başlığın kaydırma sırasında zıplamasına yol açıyordu.
-
-     Daraldığında yükseklik değiştiği için --tour-header-h yeniden
-     ölçülüyor; bölüm menüsü başlığın hemen altına yapışıyor ve
-     aradaki boşluk kaymıyor. */
-  function initStickyHeader() {
-    const h = document.querySelector('.tour-mobile-header');
-    if (!h) return;
-    const ESIK = 140;
-    let daralmis = null;
-
-    function uygula() {
-      const olmali = window.scrollY > ESIK;
-      if (olmali === daralmis) return;
-      daralmis = olmali;
-      h.classList.toggle('is-daralmis', olmali);
-      syncHeaderHeight();
-    }
-
-    uygula();
-    window.addEventListener('scroll', uygula, { passive: true });
-  }
-
   /* Mobil galeride kaçıncı fotoğrafta olduğumuzu gösteren sayaç. */
   function initGalleryCounter() {
     const grid = document.querySelector('.tour-gallery-grid');
@@ -1587,7 +1558,6 @@
 
   syncHeaderHeight();
   window.addEventListener('resize', syncHeaderHeight);
-  initStickyHeader();
   window.addEventListener('orientationchange', syncHeaderHeight);
 
   renderReviews();
