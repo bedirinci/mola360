@@ -702,8 +702,13 @@
         ${tour.trust.map(t => `<li>${ic(t.icon)}<span>${t.text}</span></li>`).join('')}
       </ul>
 
-      <a class="tour-booking-help" href="${CONTACT.phoneHref}">
-        ${ic('phone')}<span><strong>${CONTACT.phoneLabel}</strong>${CONTACT.hours}</span></a>`;
+      <div class="tour-booking-contact">
+        <a class="tour-booking-help" href="${CONTACT.phoneHref}">
+          ${ic('phone')}<span><strong>${CONTACT.phoneLabel}</strong>${CONTACT.hours}</span></a>
+        <a class="tour-booking-help" href="${CONTACT.whatsappHref}"
+           target="_blank" rel="noopener">
+          ${whatsappIkon()}<span><strong>WhatsApp'tan yaz</strong>${CONTACT.hours}</span></a>
+      </div>`;
   }
 
   /* Kontenjan çubuğu: kalan yer tarihten türetilir (tour-data.js/seatsLeft),

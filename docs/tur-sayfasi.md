@@ -598,6 +598,20 @@ WhatsApp düğmesiyle aynı kaynak, iki kopya tutulmuyor.
 "Anladım" yarım genişlikte durup sağında boşluk bıraktı. Onay düğmesi
 artık `grid-column: 1 / -1` ile alt satırı tek başına kaplıyor.
 
+## WhatsApp iki yerde
+
+Rezervasyon **özetinde** (katman) ve rezervasyon **panelinde** (sağ
+sütun/sayfa içi kart), her ikisinde de telefonun hemen altında.
+
+Paneldeki kart telefon kartıyla aynı biçimi kullanıyor
+(`.tour-booking-help`); ikisi `.tour-booking-contact` sarmalayıcısında
+duruyor ve aradaki boşluk oradan geliyor. Sarmalayıcı olmasaydı boşluk
+panelin kendi boşluğuna kalırdı ve aynı işi gören iki kart birbirinden
+uzak dururdu.
+
+Alt satır ikisinde de `CONTACT.hours` — aynı destek masası, ayrı bir
+saat bilgisi uydurulmadı.
+
 ## Sunum niteliği CSS'i yenemez — WhatsApp logosu iki kez yanlış çizildi
 
 İlk sürümde dolgu `<svg fill="currentColor">` **niteliğiyle** verilmişti.
