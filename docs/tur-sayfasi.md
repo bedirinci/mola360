@@ -193,6 +193,43 @@ aşağıda. Önce programın altına taşındı, sonra kart tümden kaldırıld�
 düğme zaten programın altında duruyor, bağlam belli, ayrı bir kart
 gerekmiyor.
 
+## Katman açıkken arka sayfa kilidi
+
+Rezervasyon özeti veya ışık kutusu açıkken arkadaki sayfa kaymamalı.
+Bir dönem kayıyordu — "bazen arkadaki sayfayı scroll edebiliyorum".
+
+Eski yöntem yalnızca `html`'e `overflow: hidden` yazıyordu. **iOS
+Safari bu kuralı dokunmatik kaydırmada uygulamıyor**, sayfa parmakla
+yine kayıyordu. Masaüstünde çalıştığı için gözden kaçmıştı.
+
+Çalışan yol **gövdeyi sabitlemek**:
+
+```js
+govde.style.position = 'fixed';
+govde.style.top = -kilitliY + 'px';
+```
+
+Gövde `fixed` olunca belgenin kaydırılacak yüksekliği kalmıyor —
+kaydıracak bir şey yok. Sayfa yukarı zıplamasın diye o anki konum
+`top: -Ypx` ile korunuyor, kilit açılınca `scrollTo` ile geri
+veriliyor.
+
+Ölçüm: katman açıkken kaydırılabilir yükseklik `9517px → 0`, zorla
+kaydırma denemesinde `scrollY` 0'da kalıyor, kapatınca konum 1800'e
+geri dönüyor.
+
+**Sayaç neden var.** İki katman üst üste açılırsa ikinci kilit konumu
+yeniden okursa `0` yazar (gövde zaten sabit, `scrollY` 0). Sayaç
+yalnızca ilk kilidin konumu okumasını, yalnızca son açmanın kilidi
+kaldırmasını sağlıyor.
+
+**Panelin kendi kaydırması kapanmıyor:** `.tour-sheet-panel` kendi
+`overflow-y: auto` değerine sahip, uzun özet içeride kayabiliyor.
+Kısa ekranda (390×420) doğrulandı: panel içinde kayıyor, arka sayfa
+kilitli.
+
+Aynı kilit ışık kutusunda da kullanılıyor.
+
 ## Tur adı yukarıda sabit kalıyor
 
 Müşteri uzun sayfada hangi turu incelediğini kaybetmesin diye mobil
