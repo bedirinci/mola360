@@ -1862,6 +1862,47 @@ describe('ikon ölçüleri', () => {
   });
 });
 
+describe('PDF indirme girişleri', () => {
+  it('sayfada iki giriş var ve ikisi de aynı kancayı kullanıyor', () => {
+    /* Kart programin altinda (ne oldugunu anlatir), dugme rezervasyon
+       panelinde (kisa yol). Ikisi de [data-pdf]; id kullanilsaydi ayni
+       id iki kez gecerdi. */
+    /* Yalnizca dugme isaretlemesi sayiliyor; "data-pdf" adi JS'teki
+       secicilerde ve yorumda da geciyor. */
+    const dugmeler = sayfaJs.match(/<button[^>]*\bdata-pdf\b[^>]*>/g) || [];
+    expect(dugmeler.length, 'iki [data-pdf] düğmesi bekleniyor: ' + dugmeler.length).toBe(2);
+    expect(sayfaJs, 'eski tekil id geri gelmiş').not.toContain('id="tourPrintBtn"');
+    expect(sayfaJs, 'id ile seçim geri gelmiş').not.toContain("getElementById('tourPrintBtn')");
+  });
+
+  it('dinleyici delege — panel yeniden çizilse de çalışır', () => {
+    /* Dugmeye dogrudan baglanmak yerine belge duzeyinde [data-pdf]
+       yakalaniyor; boylece ucuncu bir dugme eklemek kod gerektirmiyor. */
+    expect(sayfaJs).toMatch(/document\.addEventListener\('click'[\s\S]{0,200}closest\('\[data-pdf\]'\)/);
+  });
+
+  it('kart programın hemen altında, sayfanın dibinde değil', () => {
+    /* Kart bir donem "benzer turlar"dan sonra, sayfanin %90'indaydi;
+       mobilde 16 ekran asagi. Olculdu ve yukari alindi. */
+    sayfalar.forEach(({ slug, html }) => {
+      const program = html.indexOf('id="program"');
+      const pdf = html.indexOf('id="tourPrint"');
+      const benzer = html.indexOf('id="tourSimilar"');
+      expect(pdf, slug + ' PDF bölümü yok').toBeGreaterThan(-1);
+      expect(pdf, slug + ': PDF kartı programdan önce').toBeGreaterThan(program);
+      expect(pdf, slug + ': PDF kartı hâlâ benzer turlardan sonra').toBeLessThan(benzer);
+    });
+  });
+
+  it('kart metni artık yazdırma penceresinden söz etmiyor', () => {
+    /* Belge PR #53'ten beri DOGRUDAN iniyor; "acilan yazdirma
+       penceresinde PDF olarak kaydet" cumlesi o degisiklikten kalmisti
+       ve kullaniciya olmayan bir sey tarif ediyordu. */
+    expect(sayfaJs, 'bayat yazdırma talimatı geri gelmiş')
+      .not.toMatch(/yazdırma penceresinde/i);
+  });
+});
+
 describe('rezervasyon panelindeki iletişim kartları', () => {
   const blok = () => sayfaJs.match(
     /<div class="tour-booking-contact">([\s\S]*?)<\/div>/)[1];

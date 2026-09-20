@@ -134,6 +134,29 @@ Sayfanın altındaki kart **dosyayı doğrudan indiriyor**; yazdırma
 penceresi açılmıyor. Belgeyi `assets/js/tour-pdf.js` pdfmake ile
 üretiyor.
 
+**Sayfada iki giriş var.** Belgeyi indirmenin iki yolu:
+
+| giriş | yer | mobilde | işi |
+|---|---|---|---|
+| kart | programın hemen altında | ~7 ekran | belgede ne olduğunu anlatır |
+| düğme | rezervasyon panelinde | ~1.5 ekran | kısa yol |
+
+Kart bir dönem sayfanın **en altındaydı** — "benzer turlar"dan sonra,
+yani içeriğin **%90'ında**, mobilde 16 ekran aşağıda. Ölçüldü ve
+yukarı alındı: belgeyi indirmek en çok programı okuduktan sonra
+anlamlı. Asıl görünürlüğü ise paneldeki düğme sağlıyor.
+
+Her iki düğme de `id` yerine **`[data-pdf]`** taşıyor ve tek bir delege
+dinleyiciye bağlı. `id` kullanılsaydı aynı id sayfada iki kez geçerdi;
+delege dinleyici sayesinde panel ileride yeniden çizilse de çalışmaya
+devam eder ve üçüncü bir düğme eklemek kod gerektirmez.
+
+**Kart metnindeki bayat talimat.** Kartta uzun süre "Açılan yazdırma
+penceresinde 'PDF olarak kaydet'i seçin" yazıyordu. Belge PR #53'ten
+beri doğrudan iniyor, öyle bir pencere açılmıyor — cümle kullanıcıya
+olmayan bir şey tarif ediyordu. Kaldırıldı; test geri gelmesini
+engelliyor.
+
 **Neden kütüphane.** Tarayıcı kendi baskı çıktısını programa vermiyor —
 `window.print()` tek API ve dosya üretmiyor. Gerçek indirme için PDF'i
 JS'in kurması gerekiyor. Ölçülen seçenekler: pdfmake ~1,9 MB (sayfalama
