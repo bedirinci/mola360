@@ -62,7 +62,7 @@ const VENUES = [
   { img:'efes',    type:'Ören Yeri',    title:'Efes Antik Kent',        area:'Selçuk, İzmir',   rating:'4.9', reviews:'12b+',  hours:'08:00 – 19:00', open:true },
   { img:'kemeralti', type:'Çarşı',      title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
   { img:'izmirKordon', type:'Sahil',    title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
-  { img:'alacati', type:'Gezi Noktası', title:'Alaçatı Taş Sokaklar',   area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
+  { img:'alacati', type:'Gezi Noktası', title:'Alaçatı Yel Değirmenleri', area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
   { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
   { img:'izmirMuze', type:'Müze',       title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
 ];

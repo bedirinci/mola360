@@ -422,7 +422,7 @@ const cardImages = {
      bellidir. Yazar ve lisans bilgisi icin docs/gorsel-kaynaklari.md. */
   "kemeralti": "https://commons.wikimedia.org/wiki/Special:FilePath/Kemeralt%C4%B1_market_02.jpg?width=800",
   "izmirKonak": "https://commons.wikimedia.org/wiki/Special:FilePath/Izmir_Konak_Square.jpg?width=800",
-  "izmirKordon": "https://commons.wikimedia.org/wiki/Special:FilePath/Izmir_Alsancak_Kordon_6339.jpg?width=800",
+  "izmirKordon": "https://commons.wikimedia.org/wiki/Special:FilePath/A_panoramic_view_of_the_Alsancak_quarter_in_Izmir.jpg?width=800",
   "izmirMuze": "https://commons.wikimedia.org/wiki/Special:FilePath/%C4%B0zmir_Archaeological_Museum_2462_1.jpg?width=800",
   "alacati": "https://commons.wikimedia.org/wiki/Special:FilePath/Ala%C3%A7at%C4%B1_de%C4%9Firmenler_01.jpg?width=800",
   "aspendos": "https://commons.wikimedia.org/wiki/Special:FilePath/Aspendos_Turkey.JPG?width=800",
