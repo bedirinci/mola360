@@ -247,3 +247,55 @@ describe('blok verileri', () => {
     expect(gecen.length).toBeGreaterThanOrEqual(25);
   });
 });
+
+describe('WhatsApp logosunun geometrisi', () => {
+  /* Logo iç içe iki daireden oluşuyor: dış baloncuk (r=10) ve onu halka
+     yapan delik (r=8.13). İkisi EŞMERKEZLİ olmak zorunda, yoksa halka
+     bir yanda kalınlaşır.
+
+     Bir dönem tam olarak bu oldu: iç yayın başlangıç noktası merkeze
+     8.39 uzaktaydı, yani kendi dairesinin dışındaydı. SVG yayı iki uç
+     noktadan geçmek zorunda olduğu için merkez 0.61 birim aşağı kayıyor,
+     delik iniyor ve halka tepede 2.48 / dipte 1.27 birim çıkıyordu —
+     küçük ölçülerde "iki ikon üst üste binmiş" gibi görünüyordu. */
+  const kaynak = readFileSync(
+    new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+  const yol = kaynak.match(/const WHATSAPP_ICON_PATH = '([^']+)'/)[1];
+  const say = (...a) => a.map(Number);
+
+  /* Dış baloncuğun yay uçları: ...L<x> <y>A10 10 0 1 0 <x> <y>Z */
+  const dis = yol.match(/L([\d.]+) ([\d.]+)A10 10 0 1 0 ([\d.]+) ([\d.]+)Z/);
+  /* Deliğin yay uçları: M<x> <y>A8.13 8.13 0 1 1 <x> <y>L */
+  const ic = yol.match(/M([\d.]+) ([\d.]+)A8\.13 8\.13 0 1 1 ([\d.]+) ([\d.]+)L/);
+
+  it('her iki yay da yolda duruyor', () => {
+    expect(dis, 'dış baloncuk yayı bulunamadı — örüntü ölmüş olabilir').not.toBe(null);
+    expect(ic, 'delik yayı bulunamadı — örüntü ölmüş olabilir').not.toBe(null);
+  });
+
+  it('delik dış baloncukla eşmerkezli', () => {
+    const [x1, y1, x2, y2] = say(dis[1], dis[2], dis[3], dis[4]);
+    /* Dış yayın iki ucundan ve r=10'dan merkezi çöz; iki aday çıkar,
+       kutunun ortasına (12,12) yakın olan gerçek merkez. */
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const kx = x2 - x1, ky = y2 - y1;
+    const kiris = Math.hypot(kx, ky);
+    const h = Math.sqrt(100 - (kiris / 2) ** 2);
+    const adaylar = [1, -1].map(s => [
+      mx + s * h * (ky / kiris) * -1,
+      my + s * h * (kx / kiris),
+    ]);
+    const uzak = ([px, py], [qx, qy]) => Math.hypot(px - qx, py - qy);
+    const C = adaylar.sort((a, b) => uzak(a, [12, 12]) - uzak(b, [12, 12]))[0];
+
+    /* Dış uçlar tanım gereği 10 birimde; asıl sınanan deliğin uçları. */
+    expect(uzak([x1, y1], C)).toBeCloseTo(10, 1);
+    expect(uzak([x2, y2], C)).toBeCloseTo(10, 1);
+
+    const [ax, ay, bx, by] = say(ic[1], ic[2], ic[3], ic[4]);
+    expect(uzak([ax, ay], C), 'delik yayının başlangıcı kendi dairesinin dışında')
+      .toBeCloseTo(8.13, 1);
+    expect(uzak([bx, by], C), 'delik yayının sonu kendi dairesinin dışında')
+      .toBeCloseTo(8.13, 1);
+  });
+});
