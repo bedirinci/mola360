@@ -1750,6 +1750,10 @@
 .tour-booking-help .icon { width: 18px; height: 18px; color: var(--navy); }
 .tour-booking-help span { display: flex; flex-direction: column; font-size: 11.8px; color: var(--text-muted); }
 .tour-booking-help strong { font-size: 14px; color: var(--navy-deep); }
+/* Telefon ve WhatsApp kartlari alt alta; aradaki bosluk tek yerden.
+   Sarmalayici olmasaydi bosluk panelin kendi bosluguna kalirdi ve iki
+   kart birbirinden uzak dururdu -- ikisi ayni isi goruyor, yakin durmali. */
+.tour-booking-contact { display: grid; gap: 8px; }
 
 /* ---------------- mobil yapışkan şerit ---------------- */
 .tour-sticky-bar {

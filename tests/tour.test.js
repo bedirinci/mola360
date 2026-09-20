@@ -1862,6 +1862,37 @@ describe('ikon ölçüleri', () => {
   });
 });
 
+describe('rezervasyon panelindeki iletişim kartları', () => {
+  const blok = () => sayfaJs.match(
+    /<div class="tour-booking-contact">([\s\S]*?)<\/div>/)[1];
+
+  it('telefonun altında WhatsApp kartı var, ikisi aynı biçimde', () => {
+    const b = blok();
+    expect(b).toContain('CONTACT.phoneHref');
+    expect(b).toContain('CONTACT.whatsappHref');
+    /* Sira: once telefon, sonra WhatsApp. */
+    expect(b.indexOf('phoneHref')).toBeLessThan(b.indexOf('whatsappHref'));
+    /* Ikisi de ayni kart bicimini kullaniyor. */
+    expect(b.match(/class="tour-booking-help"/g)).toHaveLength(2);
+    /* Disa acilan baglanti guvenli. */
+    expect(b).toContain('rel="noopener"');
+  });
+
+  it('WhatsApp kartı dolgulu logo yardımcısını kullanıyor', () => {
+    /* ic() cizgi ikonu basar; WhatsApp logosu dolu bir sekil oldugu icin
+       kendi yardimcisi var (dolguyu CSS kurali veriyor). */
+    const b = blok();
+    expect(b, 'çizgi ikonu kullanılmış').toContain('whatsappIkon()');
+    expect(b).not.toMatch(/ic\('whatsapp'\)/);
+  });
+
+  it('iki kart arasındaki boşluk sarmalayıcıdan geliyor', () => {
+    const kural = turStil.match(/\.tour-booking-contact\s*\{([^}]*)\}/);
+    expect(kural, '.tour-booking-contact kuralı yok').not.toBe(null);
+    expect(kural[1].replace(/\s+/g, ' ')).toMatch(/gap:\s*\d/);
+  });
+});
+
 describe('rezervasyon özetindeki iletişim düğmeleri', () => {
   it('telefonun altında WhatsApp düğmesi var, ikisi de beyaz', () => {
     const blok = sayfaJs.match(/<div class="tour-sheet-actions">([\s\S]*?)<\/div>/)[1];
