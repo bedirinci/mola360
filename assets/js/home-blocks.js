@@ -86,13 +86,19 @@ const NEWSLETTER_PERKS = [
 const CONTACT = {
   phoneLabel: '0850 000 00 00',
   phoneHref: 'tel:+908500000000',
+  /* Telefon hattinin saatleri. Yalnizca ekranda yaziyor, bir mantigi
+     beslemiyor. */
   hours: 'Her Gün 09:00 – 22:00',
-  /* Ekranda yazan "hours" metnini ayristirmak kirilgan oldugu icin
-     saatler ayrica SAYI olarak duruyor. Ikisi birbirine uymazsa test
-     dusuyor -- metni degistirip sayilari unutmak mumkun olmasin. */
-  supportOpenHour: 9,
-  supportCloseHour: 22,
-  whatsappHref: 'https://wa.me/900000000000'
+  whatsappHref: 'https://wa.me/900000000000',
+  /* WhatsApp'in saatleri TELEFONDAN AYRI ve daha genis: 08:00 - 23:59.
+     Bunlar ekranda yazmiyor, WhatsApp kartindaki yesil isigi besliyor.
+
+     Kapanis 24: "gece yarisina kadar" demek. 23:59'da isik hala yanmali,
+     bu yuzden 23.98 gibi bir deger degil 24 yazildi -- supportOnline
+     ust siniri disarida biraktigi icin (saat < kapanis) 23:59:59'a
+     kadar acik, 00:00'da kapali oluyor. */
+  whatsappOpenHour: 8,
+  whatsappCloseHour: 24
 };
 
 /* Destek su anda acik mi? Saatler TURKIYE saatine gore; ziyaretcinin
