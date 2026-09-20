@@ -619,5 +619,51 @@ window.Mola360TourPdf = (function () {
       .catch(hata => { bildir('hata'); throw hata; });
   }
 
-  return { indir: indir, yazdir: yazdir };
+  /* PAYLAS: indir()'den farki, dosyayi KAYDETMEYE degil PAYLASMAYA
+     yoneltmesi.
+
+     iOS'ta ikisi de sistem paylasim sayfasini acar -- orada "Dosyalara
+     Kaydet" de var, WhatsApp'a gonder de. Fark masaustunde belirginlesir:
+     indir() kaydetme penceresini acar, paylas() varsa paylasim
+     penceresini.
+
+     Dosya paylasimi desteklenmiyorsa (Firefox, eski tarayicilar) belge
+     hic uretilmez -- bos yere bekletmenin anlami yok -- ve sayfanin
+     BAGLANTISI paylasilir. O da yoksa baglanti panoya kopyalanir. */
+  function paylas(tur, durum) {
+    const bildir = (m) => { if (typeof durum === 'function') durum(m); return m; };
+
+    const dosyaPaylasilabilir = () => {
+      if (!navigator.canShare || typeof navigator.share !== 'function') return false;
+      try {
+        return navigator.canShare({
+          files: [new File([new Blob([])], 'a.pdf', { type: 'application/pdf' })]
+        });
+      } catch (_) { return false; }
+    };
+
+    if (!dosyaPaylasilabilir()) return Promise.resolve(bildir('dosyasiz'));
+
+    const gonder = (blob) => navigator.share({
+      files: [new File([blob], dosyaAdi(tur), { type: 'application/pdf' })],
+      title: tur.title
+    })
+      .then(() => bildir('bitti'))
+      .catch(h => {
+        if (h && h.name === 'AbortError') return bildir('iptal');
+        if (h && h.name === 'NotAllowedError') return bildir('tekrar');
+        return bildir('dosyasiz');
+      });
+
+    /* Belge hazirsa dokunus taze: paylasim sayfasi hemen acilir. */
+    if (hazirBlob) return Promise.resolve(gonder(hazirBlob));
+
+    bildir('yukleniyor');
+    return hazirla(tur)
+      .then(pdf => pdf.getBlob())
+      .then(blob => { hazirBlob = blob; return gonder(blob); })
+      .catch(hata => { bildir('hata'); throw hata; });
+  }
+
+  return { indir: indir, yazdir: yazdir, paylas: paylas };
 })();

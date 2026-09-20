@@ -267,7 +267,7 @@
   }
 
   function itineraryMarkup() {
-    return stay ? stayProgramMarkup() : dailyItineraryMarkup();
+    return (stay ? stayProgramMarkup() : dailyItineraryMarkup()) + docActionsMarkup();
   }
 
   /* ---------------- konaklama (yalnızca konaklamalı tur) ---------------- */
@@ -498,19 +498,24 @@
      kacinilmaz olarak ayrisiyor. Ctrl+P artik sayfanin kendisini
      basiyor (tour.css sadece etkilesimli katmanlari gizliyor). */
 
-  /* Sayfadaki kucuk kart: belgede ne oldugunu soyler ve yazdirmayi acar. */
-  function printCardMarkup() {
+  /* Program bolumunun en altindaki iki dugme: genis "indir" ve yaninda
+     kare "paylas".
+
+     Bir donem burada kendi bolumu olan aciklamali bir kart vardi;
+     kaldirildi. Belgenin ne icerdigini anlatmak icin ayri bir kart
+     gerekmiyor -- dugme zaten programin altinda duruyor, baglam belli.
+
+     indir ve paylas AYRI isler: iOS'ta ikisi de sistem paylasim
+     sayfasini acar, masaustunde indir kaydetme penceresini, paylas
+     paylasim penceresini acar. */
+  function docActionsMarkup() {
     return `
-      <div class="tour-print-card">
-        <span class="tour-print-icon">${ic('download')}</span>
-        <div class="tour-print-text">
-          <strong>Tur bilgilerini ve programı indir</strong>
-          <span>Fotoğraflı belge: ${stay ? 'gün gün program' : 'saat saat program'}, fiyata dahil
-                olanlar, buluşma noktası ve iptal koşulları.</span>
-        </div>
-        <button class="tour-cta ghost small" type="button" data-pdf>
-          ${ic('download')}PDF indir
+      <div class="tour-doc-actions">
+        <button class="tour-cta ghost tour-doc-get" type="button" data-pdf>
+          ${ic('download')}Tur programını PDF indir
         </button>
+        <button class="tour-icon-btn tour-doc-share" type="button" data-pdf-share
+                aria-label="Tur programını PDF olarak paylaş">${ic('share')}</button>
       </div>`;
   }
 
@@ -721,13 +726,6 @@
       <ul class="tour-booking-trust">
         ${tour.trust.map(t => `<li>${ic(t.icon)}<span>${t.text}</span></li>`).join('')}
       </ul>
-
-      <!-- Belgeyi buradan da indirilebilir yapiyoruz: panel mobilde 1.5
-           ekran asagida, programin altindaki kart ise 7 ekran. Ayni isi
-           yapan iki giris; kart ne oldugunu anlatir, bu dugme kisa yol. -->
-      <button class="tour-cta ghost small tour-booking-pdf" type="button" data-pdf>
-        ${ic('download')}Programı PDF indir
-      </button>
 
       <div class="tour-booking-contact">
         <a class="tour-booking-help" href="${CONTACT.phoneHref}">
@@ -1137,6 +1135,35 @@
     document.documentElement.style.setProperty('--tour-header-h', yukseklik + 'px');
   }
 
+  /* Sabit tur başlığı aşağı kaydırınca daralır: alt satır gizlenir,
+     yükseklik düşer. Tur ADI hep görünür kalır -- müşteri hangi turu
+     incelediğini kaybetmesin diye zaten sabitlendi.
+
+     Eşik galeri yüksekliğine değil sabit bir değere bağlı: galeri
+     yüksekliği cihazdan cihaza değişiyor ve eşiği ona bağlamak
+     başlığın kaydırma sırasında zıplamasına yol açıyordu.
+
+     Daraldığında yükseklik değiştiği için --tour-header-h yeniden
+     ölçülüyor; bölüm menüsü başlığın hemen altına yapışıyor ve
+     aradaki boşluk kaymıyor. */
+  function initStickyHeader() {
+    const h = document.querySelector('.tour-mobile-header');
+    if (!h) return;
+    const ESIK = 140;
+    let daralmis = null;
+
+    function uygula() {
+      const olmali = window.scrollY > ESIK;
+      if (olmali === daralmis) return;
+      daralmis = olmali;
+      h.classList.toggle('is-daralmis', olmali);
+      syncHeaderHeight();
+    }
+
+    uygula();
+    window.addEventListener('scroll', uygula, { passive: true });
+  }
+
   /* Mobil galeride kaçıncı fotoğrafta olduğumuzu gösteren sayaç. */
   function initGalleryCounter() {
     const grid = document.querySelector('.tour-gallery-grid');
@@ -1368,18 +1395,28 @@
        devam eder, ucuncu bir dugme eklemek de kod gerektirmez. */
     let pdfSuruyor = false;
 
+    /* Genis dugmede metin "Hazirlaniyor..."a doner; KARE paylas
+       dugmesinde donmez -- oraya metin koymak ikonu silip kutuyu
+       bozardi. O yalnizca pasiflesiyor ve .is-calisiyor aliyor. */
     function belgeyiAc(dugme, is) {
       if (pdfSuruyor) return;
       pdfSuruyor = true;
+      const ikonlu = dugme.hasAttribute('data-pdf-share');
       const ilkMetin = dugme.innerHTML;
       dugme.disabled = true;
-      dugme.innerHTML = ic('download') + 'Hazırlanıyor…';
+      dugme.classList.add('is-calisiyor');
+      if (!ikonlu) dugme.innerHTML = ic('download') + 'Hazırlanıyor…';
 
       /* "tekrar": belge hazir ama kaydetme/paylasim penceresi acilamadi,
          cunku uretim sirasinda dokunusun suresi doldu. Belge artik
-         bellekte; ikinci dokunus aninda sonuclanacak. */
+         bellekte; ikinci dokunus aninda sonuclanacak.
+
+         "dosyasiz": tarayici DOSYA paylasmayi desteklemiyor. Belgeyi
+         bosuna uretmek yerine sayfanin baglantisi paylasiliyor --
+         galerideki paylas dugmesiyle ayni davranis. */
       const durum = (d) => {
-        if (d === 'tekrar') toast('Kaydetmek için bir kez daha dokunun');
+        if (d === 'tekrar') toast('Bir kez daha dokunun');
+        if (d === 'dosyasiz') paylas();
       };
 
       is(durum)
@@ -1387,18 +1424,23 @@
         .then(() => {
           pdfSuruyor = false;
           dugme.disabled = false;
-          dugme.innerHTML = ilkMetin;
+          dugme.classList.remove('is-calisiyor');
+          if (!ikonlu) dugme.innerHTML = ilkMetin;
         });
     }
 
     if (window.Mola360TourPdf) {
       document.addEventListener('click', (e) => {
-        const dugme = e.target.closest('[data-pdf]');
-        if (dugme) belgeyiAc(dugme, (d) => Mola360TourPdf.indir(tour, d));
+        const indirGo = e.target.closest('[data-pdf]');
+        if (indirGo) {
+          belgeyiAc(indirGo, (d) => Mola360TourPdf.indir(tour, d));
+          return;
+        }
+        const paylasGo = e.target.closest('[data-pdf-share]');
+        if (paylasGo) belgeyiAc(paylasGo, (d) => Mola360TourPdf.paylas(tour, d));
       });
 
-      /* Ctrl+P sayfayi degil belgeyi yazdirsin. Durum metni ilk
-         dugmede gosteriliyor; hangisi oldugu onemli degil. */
+      /* Ctrl+P sayfayi degil belgeyi yazdirsin. */
       document.addEventListener('keydown', (e) => {
         if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
         if (String(e.key).toLowerCase() !== 'p') return;
@@ -1497,7 +1539,6 @@
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
   fill('tourSimilar', similarMarkup());
-  fill('tourPrint', printCardMarkup());
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
@@ -1505,6 +1546,7 @@
 
   syncHeaderHeight();
   window.addEventListener('resize', syncHeaderHeight);
+  initStickyHeader();
   window.addEventListener('orientationchange', syncHeaderHeight);
 
   renderReviews();

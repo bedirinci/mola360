@@ -1143,13 +1143,17 @@ describe('mobil başlık stili', () => {
   it('mobilde başlık banner’ın üzerine biniyor', () => {
     /* Başlık akıştan çıkmazsa oval alt köşelerin içinden sayfa zemini
        görünüyor ve çentikler boş duruyor. Akıştan çıkınca galeri en
-       üstten başlıyor ve çentiklerden fotoğrafın kendisi görünüyor. */
+       üstten başlıyor ve çentiklerden fotoğrafın kendisi görünüyor.
+
+       "fixed", "absolute" değil: tur adı kaydırırken yukarıda kalsın
+       diye. İkisi de akıştan çıkarıyor, yani yukarıdaki gerekçe aynen
+       geçerli; fark yalnızca sayfayla birlikte kayıp kaymaması. */
     const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
     /* Tek kural olmalı; ikiye bölünürse biri diğerini ezebilir. */
     const kurallar = mobil.match(/\.tour-mobile-header \{\n/g) || [];
     expect(kurallar.length, 'konum için birden fazla kural var').toBe(1);
     const kural = mobil.match(/\.tour-mobile-header \{\n([\s\S]*?)\}/)[1];
-    expect(kural).toContain('position: absolute');
+    expect(kural).toContain('position: fixed');
     expect(kural).toContain('top: 0');
     /* Başlık .site-header'ın içindeyken aldığı yığılma değeriyle aynı
        kalmalı; düşerse galerinin altında kalır. */
@@ -1632,9 +1636,8 @@ describe('PDF belgesi', () => {
     expect(belgeGovde).toContain("text: 'Dahil olmayanlar'");
   });
 
-  it('her sayfada kart ve iki betik var, sırası doğru', () => {
+  it('her sayfada iki betik var, sırası doğru', () => {
     sayfalar.forEach(({ slug, html }) => {
-      expect(html, slug + ' indirme kartı yok').toContain('id="tourPrint"');
       expect(html, slug + ' tour-pdf.js yüklenmiyor').toContain('src="../../assets/js/tour-pdf.js"');
       /* tour-pdf.js, tour-page.js'ten ÖNCE: düğme bağlanırken
          window.Mola360TourPdf hazır olmalı. */
@@ -1862,44 +1865,94 @@ describe('ikon ölçüleri', () => {
   });
 });
 
-describe('PDF indirme girişleri', () => {
-  it('sayfada iki giriş var ve ikisi de aynı kancayı kullanıyor', () => {
-    /* Kart programin altinda (ne oldugunu anlatir), dugme rezervasyon
-       panelinde (kisa yol). Ikisi de [data-pdf]; id kullanilsaydi ayni
-       id iki kez gecerdi. */
-    /* Yalnizca dugme isaretlemesi sayiliyor; "data-pdf" adi JS'teki
-       secicilerde ve yorumda da geciyor. */
-    const dugmeler = sayfaJs.match(/<button[^>]*\bdata-pdf\b[^>]*>/g) || [];
-    expect(dugmeler.length, 'iki [data-pdf] düğmesi bekleniyor: ' + dugmeler.length).toBe(2);
-    expect(sayfaJs, 'eski tekil id geri gelmiş').not.toContain('id="tourPrintBtn"');
-    expect(sayfaJs, 'id ile seçim geri gelmiş').not.toContain("getElementById('tourPrintBtn')");
+describe('PDF indirme ve paylaşma düğmeleri', () => {
+  it('düğme satırı program bölümünün EN ALTINDA', () => {
+    /* Bir donem kendi bolumu vardi (#tourPrint) ve sayfanin %90'indaydi.
+       Bolum kaldirildi; iki dugme programin sonuna eklendi. */
+    const fn = sayfaJs.match(/function itineraryMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn, 'düğmeler programın sonuna eklenmiyor').toContain('docActionsMarkup()');
+    expect(sayfaJs, 'eski kart geri gelmiş').not.toContain('printCardMarkup');
+    expect(sayfaJs, 'eski bölüm doldurması geri gelmiş').not.toContain("fill('tourPrint'");
   });
 
-  it('dinleyici delege — panel yeniden çizilse de çalışır', () => {
-    /* Dugmeye dogrudan baglanmak yerine belge duzeyinde [data-pdf]
-       yakalaniyor; boylece ucuncu bir dugme eklemek kod gerektirmiyor. */
-    expect(sayfaJs).toMatch(/document\.addEventListener\('click'[\s\S]{0,200}closest\('\[data-pdf\]'\)/);
-  });
-
-  it('kart programın hemen altında, sayfanın dibinde değil', () => {
-    /* Kart bir donem "benzer turlar"dan sonra, sayfanin %90'indaydi;
-       mobilde 16 ekran asagi. Olculdu ve yukari alindi. */
+  it('eski PDF bölümü hiçbir sayfada kalmadı', () => {
     sayfalar.forEach(({ slug, html }) => {
-      const program = html.indexOf('id="program"');
-      const pdf = html.indexOf('id="tourPrint"');
-      const benzer = html.indexOf('id="tourSimilar"');
-      expect(pdf, slug + ' PDF bölümü yok').toBeGreaterThan(-1);
-      expect(pdf, slug + ': PDF kartı programdan önce').toBeGreaterThan(program);
-      expect(pdf, slug + ': PDF kartı hâlâ benzer turlardan sonra').toBeLessThan(benzer);
+      expect(html, slug + ' hâlâ #tourPrint taşıyor').not.toContain('id="tourPrint"');
     });
   });
 
-  it('kart metni artık yazdırma penceresinden söz etmiyor', () => {
-    /* Belge PR #53'ten beri DOGRUDAN iniyor; "acilan yazdirma
-       penceresinde PDF olarak kaydet" cumlesi o degisiklikten kalmisti
-       ve kullaniciya olmayan bir sey tarif ediyordu. */
-    expect(sayfaJs, 'bayat yazdırma talimatı geri gelmiş')
-      .not.toMatch(/yazdırma penceresinde/i);
+  it('indir ve paylaş ayrı düğmeler, ayrı işlevler', () => {
+    const fn = sayfaJs.match(/function docActionsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('Tur programını PDF indir');
+    expect(fn, 'indir düğmesi yok').toMatch(/<button[^>]*\bdata-pdf\b[^>]*>/);
+    expect(fn, 'paylaş düğmesi yok').toMatch(/<button[^>]*\bdata-pdf-share\b[^>]*>/);
+    /* Ikon-only dugme ekran okuyucuda adsiz kalmasin. */
+    expect(fn, 'paylaş düğmesinin erişilebilir adı yok').toContain('aria-label=');
+    /* Iki dugme AYRI isleve baglanmali; ikisi de indir() cagirsaydi
+       paylas dugmesi anlamsiz olurdu. */
+    expect(sayfaJs).toContain('Mola360TourPdf.indir(tour, d)');
+    expect(sayfaJs).toContain('Mola360TourPdf.paylas(tour, d)');
+  });
+
+  it('kare düğmenin metni ezilmiyor', () => {
+    /* "Hazirlaniyor..." metni genis dugmede gosteriliyor; kare dugmeye
+       yazilsaydi ikonu silip kutuyu bozardi. */
+    const fn = sayfaJs.match(/function belgeyiAc\(dugme, is\) \{([\s\S]*?)\n    \}/)[1];
+    expect(fn).toContain("hasAttribute('data-pdf-share')");
+    /* IKI yer de korunmali: metni yazan satir ve geri alan satir.
+       Tek bir "if (!ikonlu) dugme.innerHTML" aramasi yetmiyordu --
+       biri korumasiz kalsa oteki eslesip testi geciriyordu. */
+    expect(fn, 'kare düğmeye de "Hazırlanıyor" yazılıyor')
+      .toMatch(/if \(!ikonlu\) dugme\.innerHTML = ic\('download'\)/);
+    expect(fn, 'kare düğmenin içeriği geri yazılıyor')
+      .toMatch(/if \(!ikonlu\) dugme\.innerHTML = ilkMetin/);
+  });
+
+  it('paylaş düğmesi kare: genişlik yükseklikten türüyor', () => {
+    /* Sabit "width" yazilsaydi indir dugmesinin yuksekligi degisince
+       kare bozulurdu; nitekim once 46x52 ve 21x52 cikti. Grid satiri +
+       height:100% + aspect-ratio bunu kesin yapiyor. */
+    const satir = turStil.match(/\.tour-doc-actions \{([^}]*)\}/)[1];
+    expect(satir, 'grid değil — kare genişliği içerikten hesaplanır').toContain('display: grid');
+    const kare = turStil.match(/\.tour-doc-actions \.tour-doc-share \{([^}]*)\}/);
+    expect(kare, 'kare düğme kuralı düşük özgüllükte').not.toBe(null);
+    expect(kare[1]).toContain('aspect-ratio: 1');
+    expect(kare[1]).toContain('height: 100%');
+  });
+
+  it('dosya paylaşımı yoksa bağlantı paylaşılıyor', () => {
+    /* Firefox ve eski surumler dosya paylasamiyor. Belgeyi bosuna
+       uretmek yerine sayfanin baglantisi paylasiliyor. */
+    expect(pdfJs, 'paylas dışa aktarılmamış').toMatch(/paylas:\s*paylas/);
+    expect(pdfJs).toContain("bildir('dosyasiz')");
+    expect(sayfaJs, '"dosyasiz" durumu karşılanmıyor').toMatch(/'dosyasiz'\)\s*paylas\(\)/);
+  });
+});
+
+describe('yapışkan tur başlığı', () => {
+  it('başlık sayfayla kaymıyor', () => {
+    /* Musteri hangi turu inceledigini kaybetmesin diye tur adi yukarida
+       kaliyor. Onceden "absolute"ti ve banner'la birlikte kayboluyordu. */
+    const mobil = turStil.match(/@media \(max-width: 680px\) \{([\s\S]*?)\n\}/)[1];
+    const kural = mobil.match(/\.tour-mobile-header \{\n([\s\S]*?)\}/)[1];
+    expect(kural).toContain('position: fixed');
+  });
+
+  it('bölüm menüsü başlığın altına yapışıyor, üstüne binmiyor', () => {
+    /* Ikisi de top:0 olsaydi menu sabit basligin altinda kalirdi.
+       Masaustunde baslik gizli oldugu icin degisken 0. */
+    const kural = turStil.match(/\.tour-section-nav \{([\s\S]*?)\}/)[1];
+    expect(kural).toMatch(/top:\s*var\(--tour-header-h/);
+  });
+
+  it('aşağı kaydırınca başlık daralıyor', () => {
+    /* Telefonda iki satirlik sabit baslik ekranin fazlasini yer;
+       kaydirinca alt satir gizleniyor, tur ADI kaliyor. */
+    expect(sayfaJs, 'daraltma kancası yok').toContain('is-daralmis');
+    expect(turStil).toMatch(/\.tour-mobile-header\.is-daralmis[^{]*\.tour-mobile-subtitle[^{]*\{[^}]*display:\s*none/);
+    /* Yukseklik degistigi icin menunun hizasi yeniden olculmeli. */
+    const fn = sayfaJs.match(/function initStickyHeader\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn, 'daralınca --tour-header-h güncellenmiyor').toContain('syncHeaderHeight()');
   });
 });
 

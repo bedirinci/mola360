@@ -134,28 +134,55 @@ Sayfanın altındaki kart **dosyayı doğrudan indiriyor**; yazdırma
 penceresi açılmıyor. Belgeyi `assets/js/tour-pdf.js` pdfmake ile
 üretiyor.
 
-**Sayfada iki giriş var.** Belgeyi indirmenin iki yolu:
+**Belgeye iki düğmeden ulaşılıyor**, ikisi de program bölümünün en
+altında: geniş "Tur programını PDF indir" ve yanında kare bir paylaş
+düğmesi.
 
-| giriş | yer | mobilde | işi |
+| düğme | işi | iOS | masaüstü |
 |---|---|---|---|
-| kart | programın hemen altında | ~7 ekran | belgede ne olduğunu anlatır |
-| düğme | rezervasyon panelinde | ~1.5 ekran | kısa yol |
+| indir | dosyayı kaydetmeye yöneltir | sistem paylaşım sayfası | kaydetme penceresi |
+| paylaş | dosyayı paylaşmaya yöneltir | sistem paylaşım sayfası | paylaşım penceresi |
 
-Kart bir dönem sayfanın **en altındaydı** — "benzer turlar"dan sonra,
-yani içeriğin **%90'ında**, mobilde 16 ekran aşağıda. Ölçüldü ve
-yukarı alındı: belgeyi indirmek en çok programı okuduktan sonra
-anlamlı. Asıl görünürlüğü ise paneldeki düğme sağlıyor.
+iOS'ta ikisi de aynı sayfayı açar — orada hem "Dosyalara Kaydet" hem
+"WhatsApp'a gönder" vardır. Fark masaüstünde belirginleşir.
 
-Her iki düğme de `id` yerine **`[data-pdf]`** taşıyor ve tek bir delege
-dinleyiciye bağlı. `id` kullanılsaydı aynı id sayfada iki kez geçerdi;
-delege dinleyici sayesinde panel ileride yeniden çizilse de çalışmaya
-devam eder ve üçüncü bir düğme eklemek kod gerektirmez.
+Tarayıcı **dosya** paylaşamıyorsa (Firefox, eski sürümler) belge hiç
+üretilmez — boş yere bekletmenin anlamı yok — ve sayfanın **bağlantısı**
+paylaşılır; galerideki paylaş düğmesiyle aynı davranış.
 
-**Kart metnindeki bayat talimat.** Kartta uzun süre "Açılan yazdırma
-penceresinde 'PDF olarak kaydet'i seçin" yazıyordu. Belge PR #53'ten
-beri doğrudan iniyor, öyle bir pencere açılmıyor — cümle kullanıcıya
-olmayan bir şey tarif ediyordu. Kaldırıldı; test geri gelmesini
-engelliyor.
+**Kare düğmenin genişliği yüksekliğinden türüyor.** Satır `flex` değil
+`grid`: flex'te `width: auto` içerikten hesaplandığı için kare önce
+46×52, sonra 21×52 çıktı. Grid satırında `height: 100%` yüksekliği
+kesin yapıyor ve `aspect-ratio: 1` genişliği ondan türetiyor. Böylece
+indir düğmesinin yüksekliği değişse de kare bozulmuyor.
+
+**"Hazırlanıyor…" metni yalnızca geniş düğmede.** Kare düğmeye
+yazılsaydı ikonu silip kutuyu bozardı; o yalnızca pasifleşiyor.
+
+**Bir dönem bunun kendi bölümü vardı** (`#tourPrint`): ikon, başlık ve
+açıklama taşıyan bir kart. Sayfanın **%90'ındaydı**, mobilde 16 ekran
+aşağıda. Önce programın altına taşındı, sonra kart tümden kaldırıldı —
+düğme zaten programın altında duruyor, bağlam belli, ayrı bir kart
+gerekmiyor.
+
+## Tur adı yukarıda sabit kalıyor
+
+Müşteri uzun sayfada hangi turu incelediğini kaybetmesin diye mobil
+başlık `position: fixed`. Önceden `absolute`'tu: banner'la birlikte
+yukarı kayıp kayboluyordu.
+
+Aşağı kaydırınca başlık **daralıyor** — alt satır (kategori/konum)
+gizleniyor, yükseklik 60px'ten 46px'e iniyor. Tur adı kalıyor; asıl iş
+o. Telefonda iki satırlık sabit başlık ekranın fazlasını yer.
+
+Bölüm menüsü `top: var(--tour-header-h)` ile başlığın **altına**
+yapışıyor. İkisi de `top: 0` olsaydı menü sabit başlığın altında
+kalırdı. Başlık daralınca yükseklik değiştiği için `--tour-header-h`
+yeniden ölçülüyor, yoksa aralarında boşluk kalırdı.
+
+Masaüstünde mobil başlık gizli olduğundan değişken `0px`; ayrıca
+`@media (min-width: 681px)` bloğundaki kural menüyü sitenin ortak
+başlığının altına yapıştırmaya devam ediyor.
 
 **Neden kütüphane.** Tarayıcı kendi baskı çıktısını programa vermiyor —
 `window.print()` tek API ve dosya üretmiyor. Gerçek indirme için PDF'i
