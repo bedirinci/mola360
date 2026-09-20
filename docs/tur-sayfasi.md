@@ -705,13 +705,30 @@ verdi:
 ## WhatsApp kartındaki çevrimiçi ışığı
 
 Alt satırda yeşil bir nokta ve "Çevrimiçi" yazıyor. **Işık sabit değil,
-destek saatine bağlı.** Sabit yeşil olsaydı gece 3'te de "Çevrimiçi"
-yazardı — sitede duran yanlış bir bilgi olurdu.
+saate bağlı.** Sabit yeşil olsaydı gece 3'te de "Çevrimiçi" yazardı —
+sitede duran yanlış bir bilgi olurdu.
+
+**WhatsApp'ın saatleri telefon hattından ayrı ve daha geniş:**
+
+| kanal | saatler | nerede duruyor |
+|---|---|---|
+| telefon | 09:00 – 22:00 | `CONTACT.hours`, yalnızca ekranda yazıyor |
+| WhatsApp | 08:00 – 23:59 | `whatsappOpenHour` / `whatsappCloseHour`, ışığı besliyor |
 
 | durum | ışık | metin |
 |---|---|---|
-| 09:00 – 22:00 | yeşil | Çevrimiçi |
-| dışında | sönük gri | Şu an kapalı · 09:00'da açılır |
+| 08:00 – 23:59 | yeşil | Çevrimiçi |
+| dışında | sönük gri | Şu an kapalı · 08:00'da açılır |
+
+Yani sabah 08:30'da telefon kartı "09:00 – 22:00" yazarken WhatsApp
+"Çevrimiçi" diyor. Çelişki değil: WhatsApp penceresi bilerek daha
+geniş. Test bu ilişkiyi kilitliyor — WhatsApp penceresi telefonunkini
+**kapsamak zorunda**; daraltılırsa test düşüyor.
+
+`whatsappCloseHour: 24` "gece yarısına kadar" demek. İstenen üst sınır
+23:59 ve `supportOnline` üst sınırı dışarıda bıraktığı için
+(`saat < kapanis`) 23:59:59'a kadar açık, 00:00'da kapalı oluyor.
+`23.98` gibi bir değer 23:59'u dışarıda bırakırdı.
 
 Üç karar:
 

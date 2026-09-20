@@ -331,12 +331,34 @@ describe('destek çevrimiçi göstergesi', () => {
     expect(supportOnline(TR('2026-09-20T19:00:00Z'), 9, 22), 'tam 22:00 kapalı olmalı').toBe(false);
   });
 
-  it('ekrandaki saat metni ile sayısal saatler birbirini tutuyor', () => {
-    /* "hours" gorunen metin, supportOpenHour/CloseHour mantik. Birini
-       degistirip otekini unutmak mumkun olmasin. */
+  /* Yukaridakiler saf fonksiyonu sinar. Asagidakiler EKRANDA gecerli
+     olan gercek yapilandirmayi sinar: WhatsApp 08:00 - 23:59. */
+  const wa = (iso) => supportOnline(TR(iso),
+    CONTACT.whatsappOpenHour, CONTACT.whatsappCloseHour);
+
+  it('WhatsApp penceresi: 08:00 açık, 07:59 kapalı', () => {
+    expect(wa('2026-09-20T05:00:00Z'), 'tam 08:00 açık olmalı').toBe(true);
+    expect(wa('2026-09-20T04:59:00Z'), '07:59 kapalı olmalı').toBe(false);
+  });
+
+  it('WhatsApp penceresi: 23:59 hâlâ açık, 00:00 kapalı', () => {
+    /* Istenen ust sinir 23:59. Kapanis 24 yazildigi icin gece yarisina
+       kadar acik kaliyor; 23.98 gibi bir deger 23:59'u DISARIDA
+       birakirdi. */
+    expect(wa('2026-09-20T20:59:00Z'), '23:59 açık olmalı').toBe(true);
+    expect(wa('2026-09-20T21:00:00Z'), '00:00 kapalı olmalı').toBe(false);
+    expect(wa('2026-09-20T22:00:00Z'), 'gece 01:00 kapalı olmalı').toBe(false);
+  });
+
+  it('WhatsApp penceresi telefon hattını KAPSIYOR', () => {
+    /* Tasarim karari: WhatsApp bilerek daha genis. Daraltilirsa
+       telefon acikken WhatsApp "kapali" gorunur, bu tuhaf olurdu. */
     const m = CONTACT.hours.match(/(\d{2}):00\s*[–-]\s*(\d{2}):00/);
-    expect(m, 'saat metni beklenen biçimde değil: ' + CONTACT.hours).not.toBe(null);
-    expect(Number(m[1])).toBe(CONTACT.supportOpenHour);
-    expect(Number(m[2])).toBe(CONTACT.supportCloseHour);
+    expect(m, 'telefon saat metni beklenen biçimde değil: ' + CONTACT.hours).not.toBe(null);
+    const telAcilis = Number(m[1]), telKapanis = Number(m[2]);
+    expect(CONTACT.whatsappOpenHour,
+      'WhatsApp telefondan geç açılıyor').toBeLessThanOrEqual(telAcilis);
+    expect(CONTACT.whatsappCloseHour,
+      'WhatsApp telefondan erken kapanıyor').toBeGreaterThanOrEqual(telKapanis);
   });
 });

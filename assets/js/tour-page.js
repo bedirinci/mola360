@@ -100,14 +100,17 @@
      "Cevrimici" yazardi -- sitede duran yanlis bir bilgi olurdu.
      Saatler CONTACT'tan geliyor ve Turkiye saatine gore okunuyor.
 
-     Kapaliyken isik sonuyor ve metin ne zaman acilacagini soyluyor;
-     WhatsApp'in asil avantaji zaten her saat YAZILABILMESI, cevabin
-     mesaide gelmesi. */
+     Saatler TELEFONDAN AYRI: WhatsApp 08:00-23:59, telefon hatti
+     09:00-22:00. Bu yuzden sabah 08:30'da telefon karti "09:00-22:00"
+     yazarken WhatsApp "Cevrimici" diyor -- celiski degil, WhatsApp
+     penceresi bilerek daha genis.
+
+     Kapaliyken isik sonuyor ve metin ne zaman acilacagini soyluyor. */
   function destekDurumu() {
-    const acik = supportOnline(new Date(), CONTACT.supportOpenHour, CONTACT.supportCloseHour);
+    const acik = supportOnline(new Date(), CONTACT.whatsappOpenHour, CONTACT.whatsappCloseHour);
     const metin = acik
       ? 'Çevrimiçi'
-      : `Şu an kapalı · ${String(CONTACT.supportOpenHour).padStart(2, '0')}:00'da açılır`;
+      : `Şu an kapalı · ${String(CONTACT.whatsappOpenHour).padStart(2, '0')}:00'da açılır`;
     return `<span class="tour-durum${acik ? ' is-acik' : ''}">`
          + `<i aria-hidden="true"></i>${metin}</span>`;
   }

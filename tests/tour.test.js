@@ -1892,7 +1892,12 @@ describe('rezervasyon panelindeki iletişim kartları', () => {
     const fn = sayfaJs.match(/function destekDurumu\(\)\s*\{([\s\S]*?)\n  \}/)[1];
     /* Isik SAATE bagli olmali; sabit yesil yanlis bilgi olurdu. */
     expect(fn, 'ışık saate bağlı değil').toContain('supportOnline(');
-    expect(fn).toContain('CONTACT.supportOpenHour');
+    /* Cagrinin TAM sekli sinaniyor: iki saat de CONTACT'tan gelmeli.
+       Parca parca "toContain" ile bakmak yetmiyordu -- acilis sabit
+       sayiya cevrildiginde metin asagidaki kapali mesajinda hala
+       gectigi icin test geciyordu. */
+    expect(fn, 'saatler CONTACT\'tan gelmiyor ya da çağrı değişmiş').toMatch(
+      /supportOnline\(\s*new Date\(\)\s*,\s*CONTACT\.whatsappOpenHour\s*,\s*CONTACT\.whatsappCloseHour\s*\)/);
     expect(fn).toContain('Çevrimiçi');
     /* Renk tek basina bilgi tasimasin: kapaliyken metin de degissin. */
     expect(fn, 'kapalıyken metin değişmiyor').toMatch(/Şu an kapalı/);
