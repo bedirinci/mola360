@@ -90,6 +90,17 @@ html,body {
    olduğu için sayfanın altında açık renk bir şerit görünmez; body kendi
    açık zeminini zaten ayrıca taşıyor. */
 html {
+  /* Telefon yan cevrilince WebKit "metin otomatik buyutme" devreye
+     girip bazi paragraflari kendiliginden buyutuyordu: govde metni
+     ustundeki KALIN etiketten daha iri gorunuyordu. Tarayici bunu
+     yalnizca bazi bloklara uyguladigi icin yazi olculeri birbirine
+     gore bozuluyor -- hepsi birden buyumuyor.
+
+     100% = "yazi boyutlarini oldugu gibi birak". Kullanicinin kendi
+     yakinlastirma ayarini engellemez; yalnizca tarayicinin kendi
+     kafasina gore yaptigi buyutmeyi kapatir. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   background: var(--navy-deep);
   overflow-y: scroll;
   scrollbar-gutter: stable;

@@ -534,6 +534,67 @@ Not: hatayı önce hesaplanmış CSS değerlerine bakarak teşhis etmeye
 gövdedeydi. Yakınlaştırılmış ekran görüntüsü karenin içinin boş olduğunu
 gösterene kadar hata görünmedi.
 
+## Yan çevirince yazı ölçüleri bozuluyordu
+
+Telefon yatay tutulduğunda bazı paragraflar kendiliğinden büyüyor,
+gövde metni üstündeki **kalın** etiketten daha iri görünüyordu. Hepsi
+birden büyümediği için ölçüler birbirine göre bozuluyordu — asıl
+şikâyet de buydu.
+
+Sebep WebKit'in "metin otomatik büyütme" (text autosizing) davranışı:
+dar ekrana sığdırılmış geniş blokların yazısını okunur kılmak için
+tarayıcı kendiliğinden büyütüyor, ama bunu **blok blok** uyguluyor.
+
+Bunun neden yalnızca tur sayfalarında görüldüğü, hatayı bulmayı
+kolaylaştıran ipucu oldu: anasayfanın `viewport` etiketinde
+`user-scalable=no` var ve WebKit yakınlaştırılamayan sayfalarda bu
+büyütmeyi hiç uygulamıyor. Tur sayfalarında o etiket **bilerek** yok
+(çift dokunuşla yakınlaştırma işinde alınan karar; `tests/tour.test.js`
+içindeki viewport testi koruyor).
+
+Bu yüzden çözüm olarak `user-scalable=no` kopyalanmadı — hatayı
+kapatırdı ama kullanıcının parmakla yakınlaştırmasını da elinden
+alırdı. Onun yerine `assets/css/style.css` içindeki `html` kuralına:
+
+```css
+-webkit-text-size-adjust: 100%;
+text-size-adjust: 100%;
+```
+
+`100%` = "yazı boyutlarını olduğu gibi bırak". Kullanıcının kendi
+yakınlaştırmasını engellemez; yalnızca tarayıcının kendi kafasına göre
+yaptığı büyütmeyi kapatır.
+
+Ölçüm (dikey 390×844 → yatay 844×390): gövde ve etiket ölçülerinin
+tamamı birebir aynı kaldı; yalnızca bilerek `clamp(...vw...)` ile
+yazılmış başlıklar ölçekleniyor (`h1` 21 → 26.2px, `h2` 17 → 17.7px).
+
+**Doğrulanamayan kısım:** WebKit'in otomatik büyütmesi buradaki
+Chromium'da yeniden üretilemiyor, dolayısıyla düzeltme gerçek iOS
+Safari'de sınanmadı. Yukarıdaki ölçüm yalnızca bir gerileme olmadığını
+gösteriyor.
+
+## Rezervasyon özetindeki iki hata
+
+**Kapatma ikonu görünmüyordu.** Başlıktaki düğme `${tourSvg('close')}`
+yazıyordu; `tourSvg()` çıplak bir `<svg>` döndürüyor, CSS'te ise
+yalnızca `.tour-icon-btn .icon { width: 19px; height: 19px }` var. Sarmalayıcı
+`<span class="icon">` olmadığı için kural hiç eşleşmedi ve çarpı 19px
+yerine 38px çıkıp dairenin dışına taştı. `ic('close')` (sarmalayan
+yardımcı) ile düzeltildi: ölçülen svg 38×38 → 19×19.
+
+`ikon ölçüleri` testi bunu genel bir kurala bağlıyor: çıplak `tourSvg()`
+basan her sınıfın `tour.css` içinde bir `.<sınıf> svg` ölçü kuralı
+olmak zorunda. Böylece aynı tuzak başka bir düğmede tekrarlanırsa test
+düşer.
+
+**WhatsApp düğmesi eklendi.** Telefonun altına, o da beyaz (`ghost`).
+İkon `TOUR_ICONS`'a konmadı: o setteki ikonlar çizgiyle çiziliyor
+(`fill: none`), WhatsApp logosu ise dolu bir şekil — çizgi kurallarıyla
+içi boş bir ana hat olarak çıkardı. Yol `home-blocks.js`'teki
+`WHATSAPP_ICON_PATH`'ten geliyor; anasayfadaki WhatsApp düğmesiyle aynı
+kaynak, iki kopya tutulmuyor.
+
 ## Sıradaki işler
 
 1. **Ödeme adımı.** `Rezervasyon yap` şu an özet katmanını açıyor ve

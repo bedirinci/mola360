@@ -56,6 +56,7 @@ const ortakStil = readFileSync(new URL('../assets/css/style.css', import.meta.ur
 const turStil = readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8');
 const arayuz = readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8');
 const pdfJs = readFileSync(new URL('../assets/js/tour-pdf.js', import.meta.url), 'utf8');
+const bloklar = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
 
 /* Her turun kendi HTML dosyası var: /tur/<slug>/index.html. Statik
    bilgiler (H1, sekme başlığı, kırılma noktaları) elle yazıldığı için
@@ -1798,5 +1799,89 @@ describe('parlama efekti yok', () => {
        duzlesirdi. */
     expect(ortakStil).toMatch(/--shadow:\s*0 3px 12px rgba\(21,32,72/);
     expect(ortakStil).toMatch(/--shadow-lg:\s*0 8px 22px rgba\(21,32,72/);
+  });
+});
+
+/* ---------------- yan cevirme, ikon olculeri, iletisim ---------------- */
+describe('yan çevirince yazı ölçüleri', () => {
+  it('tarayıcının kendi yazı büyütmesi kapalı', () => {
+    /* Telefon yan çevrilince WebKit "metin otomatik büyütme" devreye
+       girip BAZI paragrafları büyütüyordu: gövde metni üstündeki kalın
+       etiketten daha iri görünüyordu. Hepsi birden büyümediği için
+       ölçüler birbirine göre bozuluyor.
+
+       Neden yalnızca tur sayfalarında görülüyor: anasayfanın viewport
+       etiketinde user-scalable=no var, WebKit de yakınlaştırılamayan
+       sayfalarda bu büyütmeyi hiç uygulamıyor. Tur sayfalarında o etiket
+       bilerek yok (aşağıdaki viewport testi bunu koruyor), dolayısıyla
+       çözüm CSS'ten gelmeli: user-scalable=no kopyalamak hatayı
+       kapatırdı ama kullanıcının parmakla yakınlaştırmasını da alırdı. */
+    const kural = ortakStil.match(/\nhtml \{([\s\S]*?)\n\}/)[1];
+    /* Iki ayri satir aranirken duz "toContain" ise yaramaz: eki olan
+       "-webkit-text-size-adjust" metni standart adi da icerdigi icin
+       standart satir silinse bile test gecerdi. Satir basina bakiliyor. */
+    const satirlar = kural.split('\n').map(s => s.trim());
+    expect(satirlar).toContain('-webkit-text-size-adjust: 100%;');
+    expect(satirlar).toContain('text-size-adjust: 100%;');
+  });
+
+  it('akışkan yazı ölçüleri clamp ile sınırlı', () => {
+    /* vw tabanlı ölçüler yan çevrilince üç katına çıkabilir; alt ve üst
+       sınır olmadan başlıklar ekranı doldurur. */
+    const vwOlculeri = turStil.match(/font-size:[^;]*vw[^;]*/g) || [];
+    expect(vwOlculeri.length).toBeGreaterThan(0);
+    vwOlculeri.forEach(k =>
+      expect(k, 'sınırsız vw ölçüsü: ' + k).toContain('clamp('));
+  });
+});
+
+describe('ikon ölçüleri', () => {
+  /* ic() ikonu <span class="icon"> icine sarar; tourSvg() ciplak bir
+     <svg> dondurur. CSS yalnizca ".X .icon" boyutu veriyorsa ciplak svg
+     o kuraldan etkilenmez ve dugmeyi baştan basa kaplar.
+
+     Rezervasyon ozeti sayfasinin kapatma dugmesinde tam olarak bu oldu:
+     19px olmasi gereken carpi 38px cikti ve dairenin disina tasti. */
+  const ciplak = [...sayfaJs.matchAll(
+    /class="([a-z0-9 -]+)"[^>]*>\$\{tourSvg\(/g)].map(m => m[1].split(/\s+/)[0]);
+
+  it('çıplak tourSvg kullanan her sınıfın svg ölçü kuralı var', () => {
+    expect(ciplak.length, 'örüntü hiç eşleşmedi, test ölmüş olabilir')
+      .toBeGreaterThan(3);
+    [...new Set(ciplak)].forEach(sinif => {
+      const kural = new RegExp('\\.' + sinif + '\\s+svg\\b');
+      expect(kural.test(turStil),
+        '.' + sinif + ' çıplak <svg> basıyor ama ".' + sinif +
+        ' svg" ölçü kuralı yok').toBe(true);
+    });
+  });
+
+  it('rezervasyon özeti kapatma düğmesi ic() kullanıyor', () => {
+    const blok = sayfaJs.match(/data-sheet="close" aria-label="Kapat">([^<]*)</)[1];
+    expect(blok, 'çıplak tourSvg geri gelmiş').toContain("ic('close')");
+  });
+});
+
+describe('rezervasyon özetindeki iletişim düğmeleri', () => {
+  it('telefonun altında WhatsApp düğmesi var, ikisi de beyaz', () => {
+    const blok = sayfaJs.match(/<div class="tour-sheet-actions">([\s\S]*?)<\/div>/)[1];
+    expect(blok).toContain('CONTACT.phoneHref');
+    expect(blok).toContain('CONTACT.whatsappHref');
+    /* Sira: once telefon, sonra WhatsApp. */
+    expect(blok.indexOf('phoneHref')).toBeLessThan(blok.indexOf('whatsappHref'));
+    /* Ikisi de beyaz (ghost); yesil olan yalnizca "Anladim". */
+    const wa = blok.match(/<a class="([^"]+)" href="\$\{CONTACT\.whatsappHref\}/)[1];
+    expect(wa).toContain('ghost');
+    expect(blok).toContain('rel="noopener"');
+  });
+
+  it('WhatsApp logosu DOLU çiziliyor ve yolu tek kaynaktan geliyor', () => {
+    /* TOUR_ICONS'taki ikonlar cizgi ile ciziliyor (fill: none); WhatsApp
+       logosu dolu bir sekil, o kurallarla ici bos bir ana hat olurdu. */
+    const govde = sayfaJs.match(/const whatsappIkon = \(\) =>([\s\S]*?);\n/)[1];
+    expect(govde).toContain('fill="currentColor"');
+    expect(govde, 'yol elle kopyalanmış').toContain('WHATSAPP_ICON_PATH');
+    /* Kaynak home-blocks.js; tur sayfasi onu zaten yukluyor. */
+    expect(bloklar).toContain('const WHATSAPP_ICON_PATH');
   });
 });
