@@ -1560,20 +1560,50 @@ describe('PDF belgesi', () => {
     expect(sayfaJs).toContain('Mola360TourPdf.indir(tour');
   });
 
-  it('iPhone’da paylaşım sayfası ÖNCE denenir', () => {
-    /* Blob adresli bir <a download> iOS Safari'de dosyayı indirmiyor,
-       sekmede açıyor -- şikâyet edilen davranış buydu. Doğru yol sistem
-       paylaşım sayfası: "Dosyalara Kaydet" oradan çıkıyor. */
-    const govde = pdfJs.match(/function sun\(tur, blob, bildir\) \{([\s\S]*?)\n  \}/)[1];
-    /* Koşulun KENDİSİ aranıyor: yalnızca "navigator.share geçiyor mu"
-       diye bakmak yolu kısa devre yapan bir değişikliği kaçırıyor. */
-    expect(govde, 'paylaşım yolu devre dışı bırakılmış')
-      .toMatch(/if \(navigator\.canShare && typeof navigator\.share === 'function'\)/);
-    expect(govde).toMatch(/navigator\.canShare\(\{ files: \[dosya\] \}\)/);
-    expect(govde).toContain("new File([blob]");
-    /* Sıra önemli: paylaşım → kaydetme penceresi → doğrudan indirme. */
-    expect(govde.indexOf('navigator.share')).toBeLessThan(govde.indexOf('showSaveFilePicker'));
+  it('indirme blob’u application/octet-stream', () => {
+    /* ASIL DUZELTME BURADA. Blob "application/pdf" tipiyle verilince
+       Safari dosyayi TANIYOR ve indirmek yerine sekmede aciyor --
+       sikayet edilen davranis buydu.
+
+       "application/octet-stream" ile tarayici dosyayi gosteremiyor ve
+       kendi indirme onayini aciyor: "... dosyasini indirmek istiyor
+       musunuz? / Goruntule / Indir". Tip geri "application/pdf"
+       yapilirsa hata sessizce geri gelir; bu yuzden kilitli. */
+    const govde = pdfJs.match(/function bagIleIndir\(pdfBlob, ad\) \{([\s\S]*?)\n  \}/)[1];
+    expect(govde, 'baytlar yeniden sarılmıyor')
+      .toMatch(/new Blob\(\[pdfBlob\], \{ type: 'application\/octet-stream' \}\)/);
+    expect(govde).toContain('a.download = ad');
+  });
+
+  it('indir düğmesi paylaşım sayfasını AÇMIYOR', () => {
+    /* Indir ve paylas ayri dugmeler. Indir dosyayi indirmeli; paylasim
+       sayfasini acmak paylas dugmesinin isi. */
+    const govde = pdfJs.match(/function kaydet\(tur, blob, bildir\) \{([\s\S]*?)\n  \}/)[1];
+    expect(govde, 'indirme yolunda paylaşım var').not.toContain('navigator.share');
+    expect(govde, 'indirme yolunda paylaşım var').not.toContain('navigator.canShare');
+    /* Sira: masaustu kaydetme penceresi -> dogrudan indirme. */
     expect(govde.indexOf('showSaveFilePicker')).toBeLessThan(govde.lastIndexOf('bagIleIndir'));
+  });
+
+  it('paylaşım yolu yalnızca paylaş düğmesinde', () => {
+    /* navigator.share YALNIZCA paylas() icinde gecmeli; indir yoluna
+       sizarsa iOS'ta yine paylasim sayfasi acilir. */
+    const paylasGovde = pdfJs.match(/function paylas\(tur, durum\) \{([\s\S]*?)\n  \}\n/)[1];
+    expect(paylasGovde).toContain('navigator.share');
+    /* Paylasilan dosya GERCEK tipini korumali: alici uygulama onu PDF
+       olarak tanisin. octet-stream yalnizca indirme icin.
+
+       GONDERILEN dosya hedefleniyor. Duz "application/pdf gectiI mi"
+       aramasi yetmiyordu: ayni metin yetenek yoklamasindaki sahte
+       dosyada da geciyor ve gercek paylasim octet-stream'e cevrilse
+       bile test geciyordu. */
+    expect(paylasGovde, 'paylaşılan dosyanın tipi PDF değil').toMatch(
+      /files: \[new File\(\[blob\], dosyaAdi\(tur\), \{ type: 'application\/pdf' \}\)\]/);
+    /* Yetenek yoklamasi da PDF ile yapilmali: bir tarayici metin
+       paylasip PDF paylasmiyor olabilir, o zaman yanlis sonuc cikar. */
+    expect(paylasGovde, 'yetenek yoklaması PDF ile yapılmıyor')
+      .toMatch(/new File\(\[new Blob\(\[\]\)\], '[^']*\.pdf', \{ type: 'application\/pdf' \}\)/);
+    expect(pdfJs, 'eski sun() geri gelmiş').not.toContain('function sun(');
   });
 
   it('dokunuş süresi dolarsa ikinci dokunuş anında çalışır', () => {
@@ -1582,7 +1612,10 @@ describe('PDF belgesi', () => {
        dolabiliyor (NotAllowedError). Belge saklandığı için ikinci
        dokunuş anında sonuçlanıyor. */
     expect(pdfJs).toContain('let hazirBlob = null');
-    expect(pdfJs).toContain("if (hazirBlob) return Promise.resolve(sun(");
+    expect(pdfJs).toContain("if (hazirBlob) return Promise.resolve(kaydet(");
+    /* Kaydetme penceresi SecurityError, paylasim NotAllowedError
+       atiyor; ikisi de "tekrar"a dusuyor. */
+    expect(pdfJs).toContain("'SecurityError'");
     expect(pdfJs).toContain("'NotAllowedError'");
     expect(pdfJs).toContain("bildir('tekrar')");
     expect(sayfaJs).toContain("d === 'tekrar'");

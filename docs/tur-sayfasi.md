@@ -143,12 +143,40 @@ düğmesi.
 | indir | dosyayı kaydetmeye yöneltir | sistem paylaşım sayfası | kaydetme penceresi |
 | paylaş | dosyayı paylaşmaya yöneltir | sistem paylaşım sayfası | paylaşım penceresi |
 
-iOS'ta ikisi de aynı sayfayı açar — orada hem "Dosyalara Kaydet" hem
-"WhatsApp'a gönder" vardır. Fark masaüstünde belirginleşir.
+### iPhone'da indirme: blob tipi
 
-Tarayıcı **dosya** paylaşamıyorsa (Firefox, eski sürümler) belge hiç
-üretilmez — boş yere bekletmenin anlamı yok — ve sayfanın **bağlantısı**
-paylaşılır; galerideki paylaş düğmesiyle aynı davranış.
+İndir düğmesi bir dönem **paylaşım sayfasını** açıyordu. Sebebi, blob
+adresli `<a download>` denendiğinde Safari'nin dosyayı indirmek yerine
+**sekmede açmasıydı**; paylaşım sayfası o zaman geçici çözüm olarak
+seçilmişti.
+
+Asıl sebep sonradan anlaşıldı: blob `application/pdf` tipiyle
+üretiliyordu ve **Safari PDF'i tanıdığı için gösteriyordu**. Baytlar
+`application/octet-stream` olarak yeniden sarılınca tarayıcı dosyayı
+gösteremiyor ve kendi indirme onayını açıyor:
+
+> "…dosyasını indirmek istiyor musunuz?"  [Görüntüle] [İndir]
+
+Dosya adı `.pdf` uzantısını koruyor; indikten sonra sistem onu yine PDF
+olarak açıyor. Değişen tek şey tarayıcıya "bunu gösterme, indir"
+demek.
+
+**İki tip bilerek farklı:**
+
+| yol | tip | neden |
+|---|---|---|
+| indirme | `application/octet-stream` | Safari göstermesin, indirsin |
+| paylaşma | `application/pdf` | alıcı uygulama PDF olarak tanısın |
+
+Paylaşım sayfası artık yalnızca **paylaş** düğmesinde. İkisi ayrı düğme
+olduğu için indir düğmesinin paylaşım sayfasını açması için sebep
+kalmadı.
+
+**Doğrulanamayan kısım:** Bu ortamda gerçek iOS Safari yok. Ölçülen
+şeyler: indirme yolunda `navigator.share` çağrılmıyor, blob tipi
+`application/octet-stream`, inen dosya geçerli bir PDF (`%PDF-` imzası,
+73 KB). Safari'nin onay ekranını gösterdiği gerçek cihazda
+doğrulanmalı.
 
 **Kare düğmenin genişliği yüksekliğinden türüyor.** Satır `flex` değil
 `grid`: flex'te `width: auto` içerikten hesaplandığı için kare önce
