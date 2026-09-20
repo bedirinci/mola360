@@ -542,7 +542,12 @@ const cardSections = [
   ]},
   {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
     {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
-    {img:'hotel5', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Kordon Butik Otel', meta1:'Alsancak, İzmir · Sahile Yürüme Mesafesi', meta2:'Bugün', priceMain:'1950', unit:'/gece'},
+    /* href tasiyan kart, icerik sayfasi yazilmis otel demek. Adres
+       /otel/<slug>/ bicimindedir ve slug hotel-data.js'teki HOTELS
+       anahtariyla ayni olmak zorundadir; fiyat o otelin EN UCUZ odasinin
+       gecelik ucreti, puan da yorum dagilimindan turetilen 10'luk skor
+       olmak zorunda. tests/hotel.test.js ucunu de karsilastirir. */
+    {img:'hotel5', href:'otel/kordon-butik-otel/', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Kordon Butik Otel', meta1:'Alsancak, İzmir · Sahile Yürüme Mesafesi', meta2:'Bugün', priceMain:'1950', unit:'/gece'},
     {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
     {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Göreme Mağara Otel', meta1:'Göreme, Nevşehir · Tarihi Doku', meta2:'Bu hafta', priceMain:'2450', unit:'/gece'},
   ]},

@@ -201,3 +201,44 @@ Doğrulanmama sebebi öncekiyle aynı: ağ politikası
 Böylece doğrulanması gereken dosya sayısı dokuza çıktı: Efes turundan
 beş (`efesTiyatro`, `efesYamacEvler`, `meryemAna`, `artemis`, `sirince`),
 Kapadokya turundan dört. Hepsi `TOUR_IMAGE_FILES` içinde tek satır.
+
+
+## Beşinci tur: otel içerik sayfasının görselleri
+
+`otel/kordon-butik-otel/` için `assets/js/hotel-data.js` içinde
+`HOTEL_IMAGE_FILES` adlı üçüncü bir kayıt seti açıldı. Adres yine
+`Special:FilePath` ile dosya adından üretiliyor; `TOUR_IMAGE_FILES` ile
+ORTAK olan anahtarlarda dosya adı birebir aynı yazıldı ve
+`tests/hotel.test.js` iki dosyanın aynı adresi ürettiğini doğruluyor.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `kordonBoyu` | `Izmir Alsancak Kordon 6339.jpg` | Zaten kullanımdaydı (`izmirKordon`) |
+| `izmirKonak` | `Izmir Konak Square.jpg` | Zaten kullanımdaydı |
+| `kemeralti` | `Kemeraltı market 02.jpg` | Zaten kullanımdaydı (lisans bilinen tek dosya) |
+| `izmirMuze` | `İzmir Archaeological Museum 2462 1.jpg` | Zaten kullanımdaydı |
+| `goreme` | `Goreme Open Air Museum.jpg` | `TOUR_IMAGE_FILES` ile ortak |
+| `otelOda` | `Hotel room with double bed.jpg` | **Doğrulanmadı** |
+| `otelSuit` | `Hotel suite interior.jpg` | **Doğrulanmadı** |
+| `otelTeras` | `Hotel rooftop terrace.jpg` | **Doğrulanmadı** |
+| `otelKahvalti` | `Turkish breakfast.jpg` | **Doğrulanmadı** |
+| `otelLobi` | `Hotel lobby.jpg` | **Doğrulanmadı** |
+| `kemerMarina` | `Kemer Marina.jpg` | **Doğrulanmadı** |
+| `termalYalova` | `Termal Yalova.jpg` | **Doğrulanmadı** |
+
+Doğrulanmama sebebi öncekilerle aynı: ağ politikası
+`commons.wikimedia.org`'a CONNECT'i 403 ile reddediyor.
+
+**Bu turda bir fark var ve saklanmıyor.** Önceki turlarda dosya adları
+belirli bir yeri (Efes, Şirince, Göreme) anlatıyordu; burada yedi kayıt
+**genel** konuları anlatıyor (otel odası, kahvaltı, lobi). Genel adlı bir
+dosyanın Commons'ta o adla var olma ihtimali, özel adlı bir dosyaya göre
+daha düşük. Ad tutmazsa sayfa bozulmuyor — `ui.js`'in nötr yer tutucusu
+devreye giriyor ve tarayıcının kırık resim simgesi çıkmıyor; tarayıcıda
+ölçüldü. Yine de **otelin gerçek fotoğrafları bağlanana kadar bu yedi
+kayıt geçici sayılmalı**: bir otel sayfasında stok fotoğraf, yanlış
+fotoğraftan yalnızca bir adım iyidir.
+
+Doğrulanması gereken dosya sayısı böylece dokuzdan on altıya çıktı.
+Yayına almadan önce bu belgenin başındaki üç madde (lisans/yazar
+doğrulaması, kendi sunucuya alma, gözle kontrol) bunlar için de geçerli.

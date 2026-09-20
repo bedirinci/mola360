@@ -703,7 +703,12 @@ describe('eski tur.html adresi', () => {
 
 describe('anasayfa bağlantısı', () => {
   const kartBloku = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-  const bagliSatirlar = kartBloku.split('\n').filter(satir => satir.includes("href:'"));
+  /* Anasayfada artik iki tur icerik sayfasi bagi var: /tur/<slug>/ ve
+     /otel/<slug>/. Bu dosya yalnizca TUR baglarini denetler; otel
+     baglarinin karsiligi tests/hotel.test.js icinde ayni bicimde
+     duruyor. Filtre olmasaydi otel bagi eklenince buradaki sayi ve
+     bicim beklentileri -- otelde bir sorun olmadigi halde -- duserdi. */
+  const bagliSatirlar = kartBloku.split('\n').filter(satir => satir.includes("href:'tur/"));
 
   it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
     const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);
