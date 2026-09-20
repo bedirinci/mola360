@@ -83,14 +83,20 @@
 
   /* WhatsApp ikonu TOUR_ICONS'ta degil: o setteki ikonlar CIZGI ile
      ciziliyor (fill: none, stroke: currentColor), WhatsApp logosu ise
-     DOLU bir sekil. Cizgi kurallariyla basilsaydi logo ici bos bir
-     ana hat olarak cikardi.
+     DOLU bir sekil.
+
+     Dolgu "tour-wa-icon" SINIFIYLA veriliyor, svg'ye fill="..." niteligi
+     koyarak DEGIL. Once oyle yazilmisti ve hic calismadi: fill/stroke
+     birer sunum niteligi, CSS kurallari onlari her zaman yener. Yani
+     style.css'teki ".icon svg { fill: none; stroke: currentColor }"
+     kazaniyor, logo cizgiyle cizilip 19px'te tikanmis bir yumru
+     oluyordu. Geri alma kurali tour.css'te.
 
      Yol home-blocks.js'teki WHATSAPP_ICON_PATH'ten geliyor; anasayfadaki
      WhatsApp dugmesiyle ayni kaynak, iki kopya tutulmuyor. */
   const whatsappIkon = () =>
-    '<span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"'
-    + ' fill="currentColor"><path d="' + WHATSAPP_ICON_PATH + '"/></svg></span>';
+    '<span class="icon tour-wa-icon"><svg aria-hidden="true" focusable="false"'
+    + ' viewBox="0 0 24 24"><path d="' + WHATSAPP_ICON_PATH + '"/></svg></span>';
 
   function fill(id, html) {
     const el = document.getElementById(id);

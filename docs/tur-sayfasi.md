@@ -590,10 +590,49 @@ düşer.
 
 **WhatsApp düğmesi eklendi.** Telefonun altına, o da beyaz (`ghost`).
 İkon `TOUR_ICONS`'a konmadı: o setteki ikonlar çizgiyle çiziliyor
-(`fill: none`), WhatsApp logosu ise dolu bir şekil — çizgi kurallarıyla
-içi boş bir ana hat olarak çıkardı. Yol `home-blocks.js`'teki
-`WHATSAPP_ICON_PATH`'ten geliyor; anasayfadaki WhatsApp düğmesiyle aynı
-kaynak, iki kopya tutulmuyor.
+(`fill: none`), WhatsApp logosu ise dolu bir şekil. Yol
+`home-blocks.js`'teki `WHATSAPP_ICON_PATH`'ten geliyor; anasayfadaki
+WhatsApp düğmesiyle aynı kaynak, iki kopya tutulmuyor.
+
+Üçüncü düğme eklenince masaüstündeki 2 sütunlu grid dengesiz kaldı:
+"Anladım" yarım genişlikte durup sağında boşluk bıraktı. Onay düğmesi
+artık `grid-column: 1 / -1` ile alt satırı tek başına kaplıyor.
+
+## Sunum niteliği CSS'i yenemez — WhatsApp logosu iki kez yanlış çizildi
+
+İlk sürümde dolgu `<svg fill="currentColor">` **niteliğiyle** verilmişti.
+Ekranda hiçbir şey değişmedi: `fill` ve `stroke` birer *sunum niteliği*
+(presentation attribute), CSS'in en altında durur ve **herhangi bir**
+kural onları yener. `style.css`'teki
+
+```css
+.icon svg { fill: none; stroke: currentColor; stroke-width: 1.8; }
+```
+
+kazandı; logo dolgu yerine 1.8px çizgiyle çizildi ve 19px'e inince
+ahizenin ince detayı tıkanıp tanınmaz bir yumruya dönüştü.
+
+Doğrusu kuralı CSS'ten geri almak — anasayfa bunu zaten yapıyordu
+(`.home-support-wa-icon svg`). Tur sayfasında karşılığı:
+
+```css
+.tour-wa-icon.icon svg { fill: currentColor; stroke: none; }
+```
+
+Seçici bilerek iki sınıflı: `.icon svg` ile aynı özgüllükte olsaydı
+kazanması dosya sırasına kalırdı.
+
+**Bu hatayı ilk turda kendi doğrulamam kaçırdı.** Tarayıcıda
+`svg.getAttribute('fill')` okudum ve `"currentColor"` görüp geçtim —
+oysa o yalnızca kaynakta ne yazdığını söyler, ne uygulandığını değil.
+`getComputedStyle(svg).fill` okunsaydı `none` çıkardı. Ders: bir stilin
+**uygulandığını** doğrulamak için hesaplanan değere bakılır, niteliğe
+değil.
+
+Test de aynı hatayı yapıyordu: kaynakta `fill="currentColor"` arıyordu,
+yani tam olarak işe yaramayan şeyi doğruluyor ve geçiyordu. Artık
+niteliği değil CSS kuralını arıyor, üstelik niteliğin geri gelmesini
+ayrıca yasaklıyor (işe yaramaz ama yaradığı sanılır).
 
 ## Sıradaki işler
 
