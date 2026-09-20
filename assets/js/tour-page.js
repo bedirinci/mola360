@@ -81,6 +81,17 @@
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
   const ic = (name) => '<span class="icon">' + tourSvg(name) + '</span>';
 
+  /* WhatsApp ikonu TOUR_ICONS'ta degil: o setteki ikonlar CIZGI ile
+     ciziliyor (fill: none, stroke: currentColor), WhatsApp logosu ise
+     DOLU bir sekil. Cizgi kurallariyla basilsaydi logo ici bos bir
+     ana hat olarak cikardi.
+
+     Yol home-blocks.js'teki WHATSAPP_ICON_PATH'ten geliyor; anasayfadaki
+     WhatsApp dugmesiyle ayni kaynak, iki kopya tutulmuyor. */
+  const whatsappIkon = () =>
+    '<span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"'
+    + ' fill="currentColor"><path d="' + WHATSAPP_ICON_PATH + '"/></svg></span>';
+
   function fill(id, html) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
@@ -916,7 +927,7 @@
       <div class="tour-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="tourSheetTitle">
         <div class="tour-sheet-head">
           <h2 id="tourSheetTitle">Rezervasyon özeti</h2>
-          <button class="tour-icon-btn" type="button" data-sheet="close" aria-label="Kapat">${tourSvg('close')}</button>
+          <button class="tour-icon-btn" type="button" data-sheet="close" aria-label="Kapat">${ic('close')}</button>
         </div>
         <p class="tour-sheet-tour">${tour.title}</p>
         <ul class="tour-sheet-lines">
@@ -935,6 +946,8 @@
           Yukarıdaki özet, ödeme ekranına taşınacak bilgilerin tamamıdır.</span></p>
         <div class="tour-sheet-actions">
           <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
+          <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
+             target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
           <button class="tour-cta" type="button" data-sheet="close">Anladım</button>
         </div>
       </div>`;
