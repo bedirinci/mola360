@@ -648,6 +648,60 @@ yani tam olarak işe yaramayan şeyi doğruluyor ve geçiyordu. Artık
 niteliği değil CSS kuralını arıyor, üstelik niteliğin geri gelmesini
 ayrıca yasaklıyor (işe yaramaz ama yaradığı sanılır).
 
+## Logonun halkası bir yanda kalınlaşıyordu
+
+Küçük ölçüde "iki ikon üst üste binmiş" gibi görünüyordu. Sebep stil
+değil, **yolun geometrisi**.
+
+Logo iç içe iki daireden oluşuyor: dış baloncuk (r=10) ve onu halka
+yapan delik (r=8.13). İkisinin eşmerkezli olması gerekir. Değillerdi:
+deliği çizen yayın **başlangıç noktası** merkeze 8.39 uzaktaydı, yani
+kendi dairesinin dışında duruyordu. SVG yayı iki uç noktadan geçmek
+zorunda olduğu için merkez `(12.06, 12.60)`'a — dış merkezden 0.61 birim
+aşağı — kayıyordu.
+
+Rasterleştirip halka kalınlığını 5 derecede bir ölçtüm:
+
+| açı | kalınlık |
+|---|---|
+| tepe | 2.48 birim |
+| sağ / sol | 1.87 birim |
+| dip | 1.27 birim |
+
+En kalın/en ince oranı **1.74×**. Şikâyet edilen şey buydu.
+
+Önce yay başlangıcını daireye oturtmayı denedim; oran 2.98×'e **çıktı**,
+çünkü uç noktalar değişince yay bayrakları diğer merkez adayını
+seçiyordu. Bayrak kombinasyonlarını tarayınca da temiz bir sonuç
+çıkmadı — "en iyi" görünen adaylarda delik tümden kapanmıştı.
+
+Sonuçta iki baloncuk konturu tam geometriyle **yeniden üretildi**: her
+iki yay da `(12.04, 12)` merkezli, yarıçaplar 10 ve 8.13, kuyruk
+uçları korundu. Ahize alt yolu aynen bırakıldı. Ölçüm: kalınlık
+1.845–1.904, oran **1.03×**.
+
+Yol `home-blocks.js`'te tek kopya olduğu için anasayfadaki WhatsApp
+düğmesi de aynı düzeltmeden yararlandı; orada da aynı hata vardı.
+
+`tests/home-blocks.test.js` artık yolu ayrıştırıp eşmerkezliliği
+doğruluyor: dış yayın iki ucundan merkezi çözüyor, sonra deliğin
+uçlarının o merkeze 8.13 uzaklıkta olduğunu sınıyor. Eski hatalı yol
+geri konulduğunda test düşüyor.
+
+### Ölçüm yöntemine dair iki hata
+
+Bu işte kendi ölçümümü iki kez yanlış kurdum, ikisi de yanıltıcı sonuç
+verdi:
+
+1. Halkayı **merkezden dışarı** tararken ışın ahizeye çarpıyordu ve
+   kalınlık 0.1 birim gibi saçma değerler çıkıyordu. Doğrusu dışarıdan
+   içeri taramak — ahize halka bölgesine girmiyor.
+2. Ekran görüntüsü kırparken `clip`'e `getBoundingClientRect()` değerini
+   verdim. `clip` **belge** koordinatı ister, o ise **görünüm**
+   koordinatı döndürür; sayfanın 5200px aşağısındaki düğme yerine en
+   üstteki logo çıktı ve bir an "düğmenin üstünü bir katman kapatıyor"
+   sandım. Kaydırma farkı eklenince düzeldi.
+
 ## Sıradaki işler
 
 1. **Ödeme adımı.** `Rezervasyon yap` şu an özet katmanını açıyor ve
