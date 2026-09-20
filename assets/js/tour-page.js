@@ -94,6 +94,24 @@
 
      Yol home-blocks.js'teki WHATSAPP_ICON_PATH'ten geliyor; anasayfadaki
      WhatsApp dugmesiyle ayni kaynak, iki kopya tutulmuyor. */
+  /* WhatsApp kartinin alt satiri: yesil isik + "Cevrimici".
+
+     Isik destek saatine BAGLI. Sabit yesil olsaydi gece 3'te de
+     "Cevrimici" yazardi -- sitede duran yanlis bir bilgi olurdu.
+     Saatler CONTACT'tan geliyor ve Turkiye saatine gore okunuyor.
+
+     Kapaliyken isik sonuyor ve metin ne zaman acilacagini soyluyor;
+     WhatsApp'in asil avantaji zaten her saat YAZILABILMESI, cevabin
+     mesaide gelmesi. */
+  function destekDurumu() {
+    const acik = supportOnline(new Date(), CONTACT.supportOpenHour, CONTACT.supportCloseHour);
+    const metin = acik
+      ? 'Çevrimiçi'
+      : `Şu an kapalı · ${String(CONTACT.supportOpenHour).padStart(2, '0')}:00'da açılır`;
+    return `<span class="tour-durum${acik ? ' is-acik' : ''}">`
+         + `<i aria-hidden="true"></i>${metin}</span>`;
+  }
+
   const whatsappIkon = () =>
     '<span class="icon tour-wa-icon"><svg aria-hidden="true" focusable="false"'
     + ' viewBox="0 0 24 24"><path d="' + WHATSAPP_ICON_PATH + '"/></svg></span>';
@@ -707,7 +725,7 @@
           ${ic('phone')}<span><strong>${CONTACT.phoneLabel}</strong>${CONTACT.hours}</span></a>
         <a class="tour-booking-help" href="${CONTACT.whatsappHref}"
            target="_blank" rel="noopener">
-          ${whatsappIkon()}<span><strong>WhatsApp'tan yaz</strong>${CONTACT.hours}</span></a>
+          ${whatsappIkon()}<span><strong>WhatsApp'tan yaz</strong>${destekDurumu()}</span></a>
       </div>`;
   }
 

@@ -1755,6 +1755,33 @@
    kart birbirinden uzak dururdu -- ikisi ayni isi goruyor, yakin durmali. */
 .tour-booking-contact { display: grid; gap: 8px; }
 
+/* WhatsApp kartinin alt satirindaki durum isigi.
+
+   Parlama YOK: docs/arayuz-kurallari.md sitede hale/glow birakmamayi
+   sart kosuyor. Isik duz bir daire; yaniyor ya da sonuk.
+
+   Renk tek basina bilgi tasimiyor -- yanindaki metin de degisiyor
+   ("Cevrimici" / "Su an kapali ..."), yani rengi ayirt edemeyen biri
+   icin de anlasilir. */
+.tour-booking-help .tour-durum {
+  /* Secici bilerek iki sinifli. Ustteki ".tour-booking-help span" kurali
+     (0,1,1) bu span'i de yakaliyor ve onu SUTUN yapiyordu: isik yazinin
+     ustune binip ortalaniyordu. Tek sinifla yazilsaydi (0,1,0) kalir ve
+     kaybederdi. flex-direction acikca geri aliniyor. */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.tour-durum i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);   /* kapali: sonuk */
+  flex-shrink: 0;
+}
+.tour-durum.is-acik i { background: var(--green-dark); }
+
 /* ---------------- mobil yapışkan şerit ---------------- */
 .tour-sticky-bar {
   position: fixed;

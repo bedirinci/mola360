@@ -87,8 +87,40 @@ const CONTACT = {
   phoneLabel: '0850 000 00 00',
   phoneHref: 'tel:+908500000000',
   hours: 'Her Gün 09:00 – 22:00',
+  /* Ekranda yazan "hours" metnini ayristirmak kirilgan oldugu icin
+     saatler ayrica SAYI olarak duruyor. Ikisi birbirine uymazsa test
+     dusuyor -- metni degistirip sayilari unutmak mumkun olmasin. */
+  supportOpenHour: 9,
+  supportCloseHour: 22,
   whatsappHref: 'https://wa.me/900000000000'
 };
+
+/* Destek su anda acik mi? Saatler TURKIYE saatine gore; ziyaretcinin
+   cihaz saati baska bir ulkede olabilir, o yuzden yerel saat degil
+   Europe/Istanbul okunuyor.
+
+   Saf fonksiyon: "simdi"yi disaridan aliyor, boylece test edilebiliyor. */
+function supportOnline(simdi, acilis, kapanis) {
+  const saat = istanbulSaati(simdi);
+  if (saat === null) return false;          // saat okunamadiysa "acik" deme
+  return saat >= acilis && saat < kapanis;
+}
+
+/* Verilen anin Turkiye'deki saatini (0-23, ondalikli) dondurur. */
+function istanbulSaati(simdi) {
+  try {
+    const parcalar = new Intl.DateTimeFormat('tr-TR', {
+      timeZone: 'Europe/Istanbul',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(simdi);
+    const al = (tur) => Number(parcalar.find(p => p.type === tur).value);
+    const s = al('hour'), d = al('minute');
+    if (!Number.isFinite(s) || !Number.isFinite(d)) return null;
+    return s + d / 60;
+  } catch (e) {
+    return null;
+  }
+}
 
 /* WhatsApp logosu. Dis baloncuk r=10, ic delik r=8.13, ikisi de (12.04,12)
    merkezli -- halka her noktada ayni kalinlikta (~1.87).
@@ -680,6 +712,8 @@ if (typeof module !== 'undefined' && module.exports) {
     SEO_FAQ,
     filterUpcomingItems,
     isValidEmail,
-    isValidPhone
+    isValidPhone,
+    supportOnline,
+    istanbulSaati
   };
 }
