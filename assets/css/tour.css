@@ -68,12 +68,25 @@
      (style.css'teki mobil .site-header kuralı) — yığılma sırası
      değişmesin diye burada birebir tekrarlanıyor. */
   .tour-mobile-header {
-    position: absolute;
+    /* SABIT: tur adi kaydirirken yukarida kaliyor, boylece musteri
+       hangi turu inceledigini her an goruyor. Onceden "absolute"ti ve
+       banner'la birlikte yukari kayip kayboluyordu.
+
+       Akistan cikmis oldugu icin galeri yine sayfanin en ustunden
+       basliyor; yalnizca uzerine biniyor. */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 3000;
   }
+
+  /* Asagi kaydirinca baslik daralir: alt satir (kategori/konum) gizlenir
+     ve dikey bosluk kucultulur. Tur ADI kalir -- asil is o. Telefonda
+     iki satirlik sabit baslik ekranin fazlasini yer. */
+  .tour-mobile-header.is-daralmis .tour-mobile-subtitle { display: none; }
+  .tour-mobile-header.is-daralmis { padding-top: 6px; padding-bottom: 6px; }
+  .tour-mobile-header.is-daralmis .tour-mobile-title { font-size: 15px; }
   /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
   .tour-body .tour-page { padding-top: 0; }
   /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;
@@ -494,7 +507,9 @@
 /* ---------------- bölüm menüsü ---------------- */
 .tour-section-nav {
   position: sticky;
-  top: 0;
+  /* Mobilde tur basligi SABIT duruyor; menu onun altina yapissin yoksa
+     ustune biner. Masaustunde baslik gizli oldugu icin degisken 0. */
+  top: var(--tour-header-h, 0px);
   z-index: 30;
   display: flex;
   gap: 4px;
@@ -1786,6 +1801,41 @@
 }
 .tour-durum.is-acik i { background: var(--green-dark); }
 
+/* ---------------- program altındaki belge düğmeleri ---------------- */
+
+/* Genis "indir" + yanindaki KARE "paylas". Kare dugme buyuyup
+   kucullmesin diye flex:none; indir dugmesi kalan yeri doldurur. */
+/* Grid, flex degil: kare dugmenin genisligini YUKSEKLIGINDEN turetmek
+   icin yukseklik "kesin" olmali. Flex'te "width:auto" icerikten
+   hesaplandigi icin kare 21x52 gibi cikiyordu; grid satirinda
+   height:100% kesin bir deger veriyor ve aspect-ratio calisiyor. */
+.tour-doc-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 16px;
+}
+.tour-doc-get { min-width: 0; }
+/* Secici iki sinifli: ".tour-icon-btn" sabit 40x40 veriyor ve tek
+   sinifla yazilsaydi ayni ozgullukte kalip dosya sirasina gore
+   kazanirdi. height:auto acikca yaziliyor, yoksa sabit yukseklik
+   "align-self: stretch"i eziyor -- nitekim once 40x40 cikti. */
+.tour-doc-actions .tour-doc-share {
+  height: 100%;
+  /* KARE olmali. Yukseklik indir dugmesine esitleniyor (stretch),
+     genislik de aspect-ratio ile ondan turetiliyor; boylece indir
+     dugmesinin yuksekligi degisirse kare bozulmuyor. Sabit bir "width"
+     yazilsaydi 46x52 gibi dikdortgen cikardi -- nitekim once oyle oldu. */
+  width: auto;
+  aspect-ratio: 1;
+  border-radius: 12px;
+}
+.tour-doc-actions .tour-doc-share .icon { width: 19px; height: 19px; }
+/* Belge uretilirken: dugme pasif, ikon soluk. Metin YOK -- kare kutuya
+   metin sigmaz, ikonu silmek de dugmeyi bos birakirdi. */
+.tour-doc-actions .is-calisiyor { opacity: .55; }
+
 /* ---------------- mobil yapışkan şerit ---------------- */
 .tour-sticky-bar {
   position: fixed;
@@ -2089,32 +2139,6 @@
 /* ---------------- PDF belgesi ----------------
    Ekrandaki küçük kart. Belgenin kendisi ekranda görünmez, yalnızca
    baskıda çizilir (aşağıdaki @media print bloğu). */
-.tour-print { margin-top: var(--tour-gap); }
-.tour-print-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--card);
-}
-.tour-print-icon {
-  flex: none;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: #F1F4FB;
-  color: var(--navy);
-}
-.tour-print-icon .icon { width: 21px; height: 21px; }
-.tour-print-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.tour-print-text strong { font-size: 14.5px; color: var(--navy-deep); }
-.tour-print-text span { font-size: 12.8px; color: var(--text-muted); line-height: 1.45; }
-.tour-print-card .tour-cta { flex: none; }
 @media (max-width: 680px) {
   .tour-print-card { flex-wrap: wrap; }
   .tour-print-card .tour-cta { width: 100%; justify-content: center; }
