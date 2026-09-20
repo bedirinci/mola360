@@ -4989,7 +4989,9 @@ ul {
   position: relative;
   display: block;
   flex: 0 0 86%;
-  height: 190px;
+  /* Sabit yukseklik dar ekranlarda basligi uzatip CTA'yi ve rozeti
+     kirpiyordu; min-height ile kart icerige gore uzar. */
+  min-height: 190px;
   /* Kartın SOL kenarı hizalanır: ok ile kaydırırken hareket tahmin
      edilebilir olur, ilk kart da açılışta ortaya kaçmaz. */
   scroll-snap-align: start;
@@ -5464,7 +5466,7 @@ ul {
      adım kısa kalıp "fazla kaydırıyor" hissi veriyordu. */
   .home-promo {
     flex: 0 0 calc((100% - var(--scroller-gap)) / 2);
-    height: 230px;
+    min-height: 230px;
   }
   .home-promo-content {
     max-width: 68%;
@@ -5501,6 +5503,8 @@ ul {
   .home-support-btn {
     white-space: nowrap;
   }
+  /* Numara tek bir butun; satir sonunda bolunmesi okunaksiz yapiyordu. */
+  .home-support-phone-text strong { white-space: nowrap; }
 }
 
 /* Tam ekran diyaloglar açılırken odak, kapsayıcının kendisine taşınıyor
@@ -5730,3 +5734,63 @@ ul {
 }
 .seo-credits a { color: var(--text-muted); text-decoration: underline; }
 .seo-credits a:hover { color: var(--green-dark); }
+
+
+/* =====================================================
+   ARA BANT: 681px - 1049px
+   Bu aralikta masaustu duzeni (sol sutun + ana alan) aciliyor ama
+   sol sutun 252-286px aldigi icin icerik alanina ~600px kaliyor.
+   Yazi olcegi masaustunde kaldigindan metinler tasiyordu:
+   telefon numarasi 3-4 satira boluniyor, "WhatsApp Canlı Destek"
+   butonun disina tasiyor, kampanya basligi 5-6 satir olup CTA'yi
+   kirpiyordu. Burada ara bir olcek tanimlanir.
+   1050px ve uzerinde bu blok devre disi kalir.
+   ===================================================== */
+@media (min-width: 681px) and (max-width: 1049px) {
+
+  /* ---- Destek: telefon tam satir, iki buton altinda yan yana ----
+     Uc kutuyu yan yana sikistirmak yerine iki satira bolmek, her
+     ogeye numarayi ve etiketi tek satirda tasiyacak genisligi verir. */
+  .home-support-row { flex-wrap: wrap; }
+  .home-support-phone { flex: 1 1 100%; }
+  .home-support-row .home-support-btn { flex: 1 1 calc(50% - 5px); }
+  .home-support-phone-text strong { white-space: nowrap; }
+  .home-support-btn { font-size: 13.5px; padding: 11px 12px; gap: 7px; }
+  .home-support-btn .icon { width: 17px; height: 17px; }
+
+  /* ---- Kampanya kartlari ----
+     Baslik kucultulur ve icerik alani genisletilir; boylece basligin
+     satir sayisi duser ve CTA karta sigar. */
+  .home-promo-content { max-width: 78%; padding: 14px; gap: 5px; }
+  .home-promo-content strong { font-size: 18px; line-height: 1.25; }
+  .home-promo-text { font-size: 12.5px; }
+
+  /* ---- Mekan kartlari ----
+     Baslik uc noktayla kesiliyordu; iki satira izin verilir.
+     Saat metni de tek satirda kalir. */
+  .venue-title {
+    font-size: 14px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .venue-hours { white-space: nowrap; font-size: 11.5px; }
+  .venue-meta { font-size: 12px; }
+  .venue-media { width: 92px; height: 92px; }
+
+  /* ---- Sol sutun ----
+     Sadakat basligi ve istatistik etiketleri tek satirda kalir. */
+  .desktop-sidebar .mobile-profile-loyalty-head { gap: 6px; }
+  .desktop-sidebar .mobile-profile-loyalty-head strong { white-space: nowrap; }
+  .desktop-sidebar .mobile-profile-stats span,
+  .desktop-sidebar .mobile-profile-stat span { font-size: 9.5px; }
+}
+
+/* 1050px ustunde de sadakat basligi tek satirda kalsin: bu kural daha
+   once masaustu paketiyle birlikte geri alinmisti. */
+@media (min-width: 1050px) {
+  .desktop-sidebar .mobile-profile-loyalty-head { gap: 6px; }
+  .desktop-sidebar .mobile-profile-loyalty-head strong { white-space: nowrap; }
+}
