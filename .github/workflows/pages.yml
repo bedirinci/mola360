@@ -2,11 +2,7 @@ name: Deploy static site to GitHub Pages
 
 on:
   push:
-    # GECIS: dal "mola360" -> "main" olarak yeniden adlandirilacak.
-    # Ikisi de dinleniyor ki adlandirma anindan itibaren dagitim
-    # kesintisiz devam etsin. Adlandirma bittikten sonra bu liste
-    # yalnizca ["main"] olarak sadelestirilecek.
-    branches: ["mola360", "main"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
