@@ -876,14 +876,55 @@
   let sonOdak = null;
   let kilitliY = 0;
 
+  /* Katman acikken arkadaki sayfa kaymasin.
+
+     Yalnizca html'e "overflow: hidden" yazmak YETMIYOR: iOS Safari o
+     kurali dokunmatik kaydirmada uygulamiyor, sayfa parmakla yine
+     kayiyordu ("bazen arkadaki sayfayi scroll edebiliyorum").
+
+     Calisan yol GOVDEYI SABITLEMEK: body "fixed" olunca belgenin
+     kaydirilacak yuksekligi kalmiyor, dolayisiyla kaydiracak bir sey
+     de yok. Sayfa yukari ziplamasin diye o anki konum "top: -Ypx" ile
+     korunuyor ve kilit acilinca geri veriliyor.
+
+     Katmanin kendisi ve mobil baslik "position: fixed"; body'nin
+     konumu onlari etkilemiyor (sabit ogeler icin kapsayici blok
+     yalnizca transform/filter gibi ozelliklerle olusur).
+
+     Katman paneli kendi "overflow-y: auto"suna sahip, yani icerideki
+     kaydirma calismaya devam ediyor. */
+  let kilitSayaci = 0;
+
   function lockScroll(on) {
+    const govde = document.body;
+
     if (on) {
+      /* Iki katman ust uste acilirsa konum ikinci kilitte SIFIRLANMASIN:
+         yalnizca ilk kilit konumu okur. */
+      kilitSayaci += 1;
+      if (kilitSayaci > 1) return;
+
       kilitliY = window.scrollY || document.documentElement.scrollTop || 0;
+      govde.style.position = 'fixed';
+      govde.style.top = -kilitliY + 'px';
+      govde.style.left = '0';
+      govde.style.right = '0';
+      govde.style.width = '100%';
       document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.documentElement.style.removeProperty('overflow');
-      window.scrollTo(0, kilitliY);
+      return;
     }
+
+    kilitSayaci = Math.max(0, kilitSayaci - 1);
+    if (kilitSayaci > 0) return;
+
+    govde.style.removeProperty('position');
+    govde.style.removeProperty('top');
+    govde.style.removeProperty('left');
+    govde.style.removeProperty('right');
+    govde.style.removeProperty('width');
+    document.documentElement.style.removeProperty('overflow');
+    /* Sabitleme sirasinda tarayici konumu unuttu; geri veriliyor. */
+    window.scrollTo(0, kilitliY);
   }
 
   function lightboxMarkup() {

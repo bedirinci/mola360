@@ -1962,6 +1962,55 @@ describe('PDF indirme ve paylaşma düğmeleri', () => {
   });
 });
 
+describe('katman açıkken arka sayfa kilidi', () => {
+  const kilit = () => sayfaJs.match(/function lockScroll\(on\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('gövde sabitleniyor — html overflow tek başına yetmiyor', () => {
+    /* iOS Safari "html { overflow: hidden }" kuralini dokunmatik
+       kaydirmada uygulamiyor; sayfa parmakla yine kayiyordu. Calisan
+       yol govdeyi sabitlemek: belgenin kaydirilacak yuksekligi
+       kalmiyor. */
+    const k = kilit();
+    expect(k, 'gövde sabitlenmiyor').toMatch(/govde\.style\.position = 'fixed'/);
+    expect(k, 'konum korunmuyor — sayfa yukarı zıplar')
+      .toMatch(/govde\.style\.top = -kilitliY \+ 'px'/);
+  });
+
+  it('kilit açılınca konum geri veriliyor', () => {
+    const k = kilit();
+    expect(k).toMatch(/govde\.style\.removeProperty\('position'\)/);
+    expect(k).toMatch(/govde\.style\.removeProperty\('top'\)/);
+    expect(k, 'sayfa eski konumuna dönmüyor').toMatch(/window\.scrollTo\(0, kilitliY\)/);
+  });
+
+  it('üst üste iki katmanda konum kaybolmuyor', () => {
+    /* Ikinci kilit konumu yeniden okusaydi 0 yazardi (govde zaten
+       sabit, scrollY 0). Sayac ilk kilidi ve son acmayi ayirt ediyor. */
+    const k = kilit();
+    expect(k, 'kilit sayacı yok').toContain('kilitSayaci');
+    expect(k, 'ikinci kilit konumu eziyor').toMatch(/kilitSayaci > 1\)\s*return/);
+    expect(k, 'ilk açma kilidi erken kaldırıyor').toMatch(/kilitSayaci > 0\)\s*return/);
+  });
+
+  it('hem rezervasyon özeti hem ışık kutusu kilitliyor', () => {
+    /* Ikisi de tam ekran katman; ikisinde de arka sayfa durmali. */
+    const ac = sayfaJs.match(/function openSheet\(\) \{([\s\S]*?)\n  \}/)[1];
+    const kapa = sayfaJs.match(/function closeSheet\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(ac).toContain('lockScroll(true)');
+    expect(kapa).toContain('lockScroll(false)');
+    /* lockScroll dort yerde cagriliyor: iki katman x ac/kapa. */
+    expect((sayfaJs.match(/lockScroll\((true|false)\)/g) || []).length).toBe(4);
+  });
+
+  it('panelin kendi kaydırması kapanmıyor', () => {
+    /* Govde sabitlenince sayfa duruyor ama katman panelinin icindeki
+       kaydirma calismaya devam etmeli, yoksa uzun ozet okunamaz. */
+    const kural = turStil.match(/\.tour-sheet-panel \{([\s\S]*?)\}/)[1];
+    expect(kural).toMatch(/overflow-y:\s*auto/);
+    expect(kural).toMatch(/max-height:/);
+  });
+});
+
 describe('yapışkan tur başlığı', () => {
   it('başlık sayfayla kaymıyor', () => {
     /* Musteri hangi turu inceledigini kaybetmesin diye tur adi yukarida
