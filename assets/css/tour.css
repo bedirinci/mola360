@@ -81,31 +81,6 @@
     z-index: 3000;
   }
 
-  /* Asagi kaydirinca baslik daralir: alt satir (kategori/konum) gizlenir
-     ve dikey bosluk kucultulur. Tur ADI kalir -- asil is o. Telefonda
-     iki satirlik sabit baslik ekranin fazlasini yer. */
-  .tour-mobile-header.is-daralmis .tour-mobile-subtitle { display: none; }
-  .tour-mobile-header.is-daralmis { padding-top: 6px; padding-bottom: 6px; }
-  .tour-mobile-header.is-daralmis .tour-mobile-title { font-size: 15px; }
-
-  /* Daralmis halde alt kose yuvarlakligi KALKIYOR.
-
-     Yuvarlaklik, baslik banner fotografinin uzerindeyken anlamliydi:
-     kose centiklerinden fotografin kendisi goruruyordu. Baslik sabit
-     hale gelince centiklerin arkasinda fotograf degil sayfa zemini
-     kaliyor ve iki kosede acik renk birer bosluk goruruyor -- ozellikle
-     altindaki bolum menusuyle birlestigi yerde.
-
-     Sayfanin en ustunde (daralmamis halde) yuvarlaklik duruyor; orada
-     arkasi hala fotograf.
-
-     Ortak kural .notif-panel-header ve .auth-modal-hero ile paylasiliyor
-     (style.css), o yuzden burada yalnizca tur basligi icin geri
-     aliniyor. */
-  .tour-mobile-header.is-daralmis {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
   /* Başlık yer kaplamadığından galeri sayfanın en üstünden başlar. */
   .tour-body .tour-page { padding-top: 0; }
   /* Üst kısmı başlığın altında kaldığı için görsel biraz uzatıldı;
@@ -535,7 +510,11 @@
   /* Yapışınca iç boşluk büyüyecek; tek yerden gelsin diye değişkende. */
   --tour-nav-pad: 6px;
   padding: var(--tour-nav-pad);
-  background: rgba(255,255,255,.92);
+  /* Çubuğun zemini de değişkende: yapışıkken başlığın köşe oyuğunu
+     dolduran şerit AYNI değeri kullanıyor, böylece oyuk ile çubuk
+     birbirinden farklı bir renge kayamaz. */
+  --tour-nav-bg: rgba(255,255,255,.92);
+  background: var(--tour-nav-bg);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -568,8 +547,45 @@
        Ekranın en kenarında oldukları için zaten görünmüyorlar. */
     border-left-color: transparent;
     border-right-color: transparent;
-    background: rgba(255,255,255,.97);
-    box-shadow: 0 4px 14px rgba(21,32,72,.1);
+    /* ÜST kenarlık da saydam. Yapışıkken çubuğun üst kenarı başlığın
+       alt kenarına dayanıyor; orada kalan 1 px'lik gri çizgi, köşe
+       oyuğunu aşağıdaki çubuktan ayıran bir dikiş gibi görünüyordu.
+       Anasayfadaki filtre çubuğunun da orada kenarlığı yok. */
+    border-top-color: transparent;
+    --tour-nav-bg: rgba(255,255,255,.97);
+
+    /* İKİ gölge. İkincisi normal düşen gölge; BİRİNCİSİ menünün hemen
+       üstüne, başlığın alt köşe yuvarlaklığı yüksekliğinde düz bir
+       şerit basar.
+
+       Neden gerekiyor: başlığın alt köşeleri yuvarlak, menü ise yapışık
+       haldeyken düz. İkisi birleştiğinde iki köşede birer oyuk kalıyor
+       ve oradan arkadaki içerik görünüyordu. Anasayfada arama kutusuyla
+       filtre çubuğunun buluştuğu yerde aynı durum var ve orada da aynı
+       şekilde çözülüyor (.filter-bar.is-stuck::before).
+
+       Şerit ÇUBUĞUN KENDİ zeminiyle doldurulur (sayfa zeminiyle değil):
+       oyuk, hemen altındaki çubuğun devamı gibi görünsün diye. Sayfa
+       zemini denendi ve oyuk gri bir kama olarak ayrı ayrı okunuyordu --
+       anasayfada iki yüzey zaten aynı renk olduğu için orada bu ayrım
+       hiç doğmuyor.
+
+       Neden gölge, neden ::before değil: menüde overflow-x: auto var,
+       bu da kutunun DIŞINA taşan mutlak konumlu çocukları kırpıyor --
+       anasayfadaki şeridin buradaki karşılığı görünmez olurdu (orada
+       yana kaydırma ayrı bir iç kutuda olduğu için sorun çıkmıyor).
+       Elemanın KENDİ gölgesi bu kırpmaya takılmaz; ayrıca dış gölge
+       kutunun içine hiç çizilmediği için backdrop-filter'a da karışmaz.
+
+       Şerit başlığın ARKASINDA kalır (menü z-index 30, başlık 3000):
+       lacivert alanda görünmez, yalnızca köşe oyuklarında ortaya çıkar.
+       Listede önce yazıldığı için düşen gölgenin yukarı taşan
+       bulanıklığını da kapatır. Yalnızca .is-stuck'ta uygulanır; sayfanın
+       en üstünde oyukların arkasında banner fotoğrafı var, orada beyaz
+       bir şerit yanlış olurdu. */
+    box-shadow:
+      0 calc(-1 * (var(--m360-header-radius) + 1px)) 0 var(--tour-nav-bg),
+      0 4px 14px rgba(21,32,72,.1);
   }
 }
 
