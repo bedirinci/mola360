@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["mola360", "main"]
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
