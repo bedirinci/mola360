@@ -702,6 +702,45 @@ verdi:
    üstteki logo çıktı ve bir an "düğmenin üstünü bir katman kapatıyor"
    sandım. Kaydırma farkı eklenince düzeldi.
 
+## WhatsApp kartındaki çevrimiçi ışığı
+
+Alt satırda yeşil bir nokta ve "Çevrimiçi" yazıyor. **Işık sabit değil,
+destek saatine bağlı.** Sabit yeşil olsaydı gece 3'te de "Çevrimiçi"
+yazardı — sitede duran yanlış bir bilgi olurdu.
+
+| durum | ışık | metin |
+|---|---|---|
+| 09:00 – 22:00 | yeşil | Çevrimiçi |
+| dışında | sönük gri | Şu an kapalı · 09:00'da açılır |
+
+Üç karar:
+
+**Saat Türkiye'ye göre okunuyor**, ziyaretçinin cihaz saatine göre
+değil (`Intl.DateTimeFormat` + `Europe/Istanbul`). Yurt dışından giren
+biri kendi saatiyle yanlış bir durum görmesin diye.
+
+**Saatler `CONTACT` içinde hem metin hem sayı olarak duruyor**
+(`hours` ekranda görünen, `supportOpenHour`/`supportCloseHour` mantık).
+Ekrandaki metni ayrıştırmak kırılgan olurdu. İkisi birbirini tutmazsa
+test düşüyor — birini değiştirip ötekini unutmak mümkün değil.
+
+**Renk tek başına bilgi taşımıyor.** Kapalıyken yalnızca nokta sönmüyor,
+metin de değişiyor; rengi ayırt edemeyen biri için de anlaşılır.
+
+Işığa parlama/hale eklenmedi: `docs/arayuz-kurallari.md` bunu site
+genelinde yasaklıyor. Nokta düz bir daire.
+
+### Yine aynı cascade tuzağı
+
+Durum satırı ilk yazıldığında ışık yazının **üstüne** binip ortalandı.
+Sebep `.tour-booking-help span` kuralı: o kural sütun yönlü flex veriyor
+ve `(0,1,1)` özgüllüğüyle tek sınıflı `.tour-durum`'u `(0,1,0)` yeniyor.
+Geri alan kural bu yüzden `.tour-booking-help .tour-durum` olarak
+yazıldı ve `flex-direction: row` açıkça belirtildi.
+
+Bu, bu depoda üçüncü kez aynı biçimde çıkan hata — bir kuralın varlığı
+yetmiyor, **kazandığını** da doğrulamak gerekiyor.
+
 ## Sıradaki işler
 
 1. **Ödeme adımı.** `Rezervasyon yap` şu an özet katmanını açıyor ve

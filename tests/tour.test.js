@@ -1886,6 +1886,30 @@ describe('rezervasyon panelindeki iletişim kartları', () => {
     expect(b).not.toMatch(/ic\('whatsapp'\)/);
   });
 
+  it('WhatsApp kartının alt satırı durum ışığı', () => {
+    const b = blok();
+    expect(b, 'alt satır hâlâ düz saat metni').toContain('destekDurumu()');
+    const fn = sayfaJs.match(/function destekDurumu\(\)\s*\{([\s\S]*?)\n  \}/)[1];
+    /* Isik SAATE bagli olmali; sabit yesil yanlis bilgi olurdu. */
+    expect(fn, 'ışık saate bağlı değil').toContain('supportOnline(');
+    expect(fn).toContain('CONTACT.supportOpenHour');
+    expect(fn).toContain('Çevrimiçi');
+    /* Renk tek basina bilgi tasimasin: kapaliyken metin de degissin. */
+    expect(fn, 'kapalıyken metin değişmiyor').toMatch(/Şu an kapalı/);
+  });
+
+  it('durum ışığında parlama yok ve satır yatay', () => {
+    /* docs/arayuz-kurallari.md: sitede hale/glow yok. */
+    const kural = turStil.match(/\.tour-durum i \{([^}]*)\}/);
+    expect(kural, '.tour-durum i kuralı yok').not.toBe(null);
+    expect(kural[1], 'ışığa gölge/parlama eklenmiş').not.toMatch(/box-shadow/);
+    /* ".tour-booking-help span" kuralı bu span'i SUTUN yapiyordu;
+       geri alan kural iki sınıflı olmak zorunda. */
+    const yon = turStil.match(/\.tour-booking-help \.tour-durum \{([^}]*)\}/);
+    expect(yon, 'düşük özgüllüklü seçici — üstteki kural kazanır').not.toBe(null);
+    expect(yon[1].replace(/\s+/g, ' ')).toMatch(/flex-direction:\s*row/);
+  });
+
   it('iki kart arasındaki boşluk sarmalayıcıdan geliyor', () => {
     const kural = turStil.match(/\.tour-booking-contact\s*\{([^}]*)\}/);
     expect(kural, '.tour-booking-contact kuralı yok').not.toBe(null);

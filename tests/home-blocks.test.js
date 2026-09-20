@@ -17,6 +17,8 @@ import {
   filterUpcomingItems,
   isValidEmail,
   isValidPhone,
+  supportOnline,
+  istanbulSaati,
 } from '../assets/js/home-blocks.js';
 
 const ornek = [
@@ -297,5 +299,44 @@ describe('WhatsApp logosunun geometrisi', () => {
       .toBeCloseTo(8.13, 1);
     expect(uzak([bx, by], C), 'delik yayının sonu kendi dairesinin dışında')
       .toBeCloseTo(8.13, 1);
+  });
+});
+
+
+describe('destek çevrimiçi göstergesi', () => {
+  /* WhatsApp kartindaki yesil isik bu fonksiyona bagli. Sabit yesil
+     olsaydi gece 3'te de "Cevrimici" yazardi. */
+  const TR = (iso) => new Date(iso);   // Turkiye = UTC+3
+
+  it('saatler Türkiye saatine göre okunuyor, cihazın yereline göre değil', () => {
+    /* 06:00Z = Turkiye'de 09:00. Cihaz nerede olursa olsun ayni. */
+    expect(istanbulSaati(TR('2026-09-20T06:00:00Z'))).toBeCloseTo(9, 5);
+    expect(istanbulSaati(TR('2026-09-20T00:00:00Z'))).toBeCloseTo(3, 5);
+  });
+
+  it('mesai içinde açık', () => {
+    expect(supportOnline(TR('2026-09-20T06:01:00Z'), 9, 22)).toBe(true);   // 09:01
+    expect(supportOnline(TR('2026-09-20T12:00:00Z'), 9, 22)).toBe(true);   // 15:00
+    expect(supportOnline(TR('2026-09-20T18:59:00Z'), 9, 22)).toBe(true);   // 21:59
+  });
+
+  it('mesai dışında kapalı', () => {
+    expect(supportOnline(TR('2026-09-20T05:59:00Z'), 9, 22)).toBe(false);  // 08:59
+    expect(supportOnline(TR('2026-09-20T19:01:00Z'), 9, 22)).toBe(false);  // 22:01
+    expect(supportOnline(TR('2026-09-20T00:00:00Z'), 9, 22)).toBe(false);  // 03:00
+  });
+
+  it('sınırlar: açılışta açık, kapanışta kapalı', () => {
+    expect(supportOnline(TR('2026-09-20T06:00:00Z'), 9, 22), 'tam 09:00 açık olmalı').toBe(true);
+    expect(supportOnline(TR('2026-09-20T19:00:00Z'), 9, 22), 'tam 22:00 kapalı olmalı').toBe(false);
+  });
+
+  it('ekrandaki saat metni ile sayısal saatler birbirini tutuyor', () => {
+    /* "hours" gorunen metin, supportOpenHour/CloseHour mantik. Birini
+       degistirip otekini unutmak mumkun olmasin. */
+    const m = CONTACT.hours.match(/(\d{2}):00\s*[–-]\s*(\d{2}):00/);
+    expect(m, 'saat metni beklenen biçimde değil: ' + CONTACT.hours).not.toBe(null);
+    expect(Number(m[1])).toBe(CONTACT.supportOpenHour);
+    expect(Number(m[2])).toBe(CONTACT.supportCloseHour);
   });
 });
