@@ -24,7 +24,8 @@ const turSayfalari = [
   /* Otel icerik sayfasi da ayni cerceveyi yukluyor: baslik, arama,
      bildirimler ve giris modali orada da calisiyor. Liste artik
      "alt klasordeki icerik sayfalari" listesi; tur/otel ayrimi yok. */
-  ['otel/kordon-butik-otel/', oku('otel/kordon-butik-otel/index.html')]
+  ['otel/kordon-butik-otel/', oku('otel/kordon-butik-otel/index.html')],
+  ['aktivite/kapadokya-balon-turu/', oku('aktivite/kapadokya-balon-turu/index.html')]
 ];
 const sayfalar = [['index.html', anasayfa], ...turSayfalari];
 

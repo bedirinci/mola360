@@ -14,6 +14,7 @@
       besleniyor. */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
 import {
   KATALOG_KAYNAKLARI,
   formatReviewCount,
@@ -25,6 +26,7 @@ import {
   catalogCards,
   catalogAllCards,
   mergeCatalogCards,
+  katalogYardimci,
 } from '../assets/js/catalog.js';
 import { TOURS, ratingSummary, basePrice } from '../assets/js/tour-data.js';
 import { HOTELS, hotelScore, hotelNightlyFrom } from '../assets/js/hotel-data.js';
@@ -312,6 +314,50 @@ describe('anasayfa katalogu yukluyor', () => {
     const fn = app.match(/function compactCardMarkup\(sec, it\)\s*\{([\s\S]*?)\n\}/)[1];
     expect(fn).toContain('data-href');
     expect(fn).toContain('<a href="${it.href}">${it.title}</a>');
+  });
+});
+
+/* ---------------- eksik veri dosyasi ----------------
+   Tarayicida yasanmis bir hata: anasayfa aktivite kayitlarini
+   yuklemiyordu ve catalog.js YUKLENIRKEN oluyordu
+   ("activityPriceFrom is not defined"). Sonuc, eksik olan tek turun
+   degil, TUM turetilmis kartlarin birden kaybolmasiydi.
+
+   Test tarayiciyi taklit ediyor: dosyalar tek bir kapsamda pespese
+   calistiriliyor (klasik <script> etiketleri gibi) ve aktivite ile otel
+   verisi BILEREK yuklenmiyor. */
+describe('eksik veri dosyasi', () => {
+  const calistir = (dosyalar, ifade) => {
+    const ctx = vm.createContext({ Math, Date, JSON, Object, Array, Number, String, isNaN, console });
+    const kod = dosyalar.map(d => oku(d)).join('\n') + '\n' + ifade;
+    return vm.runInContext(kod, ctx);
+  };
+
+  it('katalog eksik dosyayla yuklenirken patlamiyor', () => {
+    expect(() => calistir(['assets/js/tour-data.js', 'assets/js/catalog.js'], '1')).not.toThrow();
+  });
+
+  it('yuklu olan tur calismaya devam ediyor', () => {
+    /* Turlar var, otel ve aktivite yok: seritler bos donmeli ama tur
+       kartlari uretilmeye devam etmeli. */
+    const sonuc = JSON.parse(calistir(
+      ['assets/js/tour-data.js', 'assets/js/catalog.js'],
+      'JSON.stringify({'
+      + ' turlar: catalogCards("turlar", "2026-09-21").map(k => k.href),'
+      + ' oteller: catalogCards("oteller", "2026-09-21").map(k => k.href),'
+      + ' aktiviteler: catalogCards("aktiviteler", "2026-09-21").map(k => k.href) })'));
+    expect(sonuc.turlar).toContain('tur/efes-sirince/');
+    expect(sonuc.oteller).toEqual([]);
+    expect(sonuc.aktiviteler).toEqual([]);
+  });
+
+  it('yardimci cozumleyici bulamadiginda null donuyor', () => {
+    /* Node'da adlar modulden gelir (tour-data.js bir CJS modulu, genel
+       kapsamda durmaz); tarayicida genel kapsamdan. Ikisi de yoksa
+       sonuc null -- eskiden burada ReferenceError atiliyordu. */
+    expect(katalogYardimci('yokBoyleBirFonksiyon', null)).toBe(null);
+    expect(katalogYardimci('asDate', null)).toBe(null);
+    expect(typeof katalogYardimci('asDate', { asDate: () => 1 })).toBe('function');
   });
 });
 
