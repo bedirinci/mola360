@@ -1,7 +1,7 @@
 # İçerik kataloğu (`assets/js/catalog.js`)
 
-İçerik sayfası olan her kayıt — tur, otel, ileride etkinlik, aktivite,
-mekân — anasayfada **kendiliğinden** görünür. Bu belge mekanizmayı ve
+İçerik sayfası olan her kayıt — tur, otel, aktivite, etkinlik, mekân —
+anasayfada **kendiliğinden** görünür. Bu belge mekanizmayı ve
 neden böyle kurulduğunu anlatıyor.
 
 ## Sorun
@@ -105,7 +105,8 @@ düşerse filtre yalan söyler.
 | Oteller | `HOTELS` | |
 | Aktiviteler | `ACTIVITIES` | |
 | Popüler Etkinlikler | `EVENTS` | Sezonu biten etkinlik kart üretmiyor |
-| Yaklaşan Planlar | `TOURS` + `EVENTS` | Otel ve aktivite burada **yok**: ikisinin de yaklaşan bir tarihi yok — biri her gün açık, diğeri her sabah yapılıyor. Şerit türü değil zamanı gösteriyor; etkinliğin sayılı temsilleri olduğu için o burada. |
+| Popüler Mekanlar | `PLACES` | Kart açık/kapalı durumunu da taşıyor |
+| Yaklaşan Planlar | `TOURS` + `EVENTS` | Otel, aktivite ve mekan burada **yok**: hiçbirinin yaklaşan tek bir tarihi yok — biri her gün açık, biri her sabah yapılıyor, biri çalışma saatlerinde açık. Şerit türü değil zamanı gösteriyor; etkinliğin sayılı temsilleri olduğu için o burada. |
 
 ### Kart üretici `null` dönebilir
 
@@ -114,6 +115,19 @@ duruyor (kayıtlar yüklü), ama kart üretici o kayıt için `null` dönüyor
 ve `catalogCards` onu atlıyor. Geçmiş bir festivali "yaklaşan" diye
 kartta tutmak, elle yazılmış kartların düştüğü tuzağın ta kendisi
 olurdu.
+
+### Kart bir tür için fazladan alan taşıyabilir
+
+Mekan kartı diğerlerinden bir alan fazla üretiyor: **açık/kapalı
+durumu** (`open`, `hours`, `venueType`, `area`). Şeridin kendi
+işaretlemesi bu alanları zaten bekliyordu — elle yazılmış mekan
+kartlarında da durum yazıyordu, ama sabit bir metin olarak. Katalog
+kartı aynı alanları **kayıttan ve o andaki saatten** dolduruyor.
+
+Ortak alanlar (fiyat, puan, yorum, tarih) her türde aynı; fazladan
+alanlar yalnızca o şeridin işaretlemesinin okuduğu yerde duruyor. Kart
+üreticisi saf fonksiyon olduğu için bu alanlar da doğrudan testli
+(`tests/venue.test.js`).
 
 ## Yeni içerik türü eklemek
 
@@ -179,6 +193,27 @@ ad**. `typeof` tanımsız bir ad için hata atmaz, `const` bağlamalarını da
 görür. Aynı vm testi artık gün adının çözüldüğünü de ölçüyor
 (`cardDateText` → "Bu Cumartesi"); mutasyonla doğrulandı.
 
+## Ad çakışması: tek kapsamın ikinci tuzağı
+
+Mekan kayıtları önce `VENUES` adıyla yazıldı. `home-blocks.js` **zaten**
+`VENUES` adlı bir dizi tutuyor (şeritteki gezilecek yer kartları).
+Anasayfadaki bütün betikler klasik `<script>` ile **tek bir kapsama**
+yükleniyor: ikinci `const VENUES` tanımı `SyntaxError` atardı ve bu kez
+tek bir tür değil, anasayfanın **tüm** betikleri düşerdi.
+
+Eksik dosya hatasıyla aynı kökten: tek kapsam, Node'un modül sınırlarını
+vermiyor. Testler de aynı sebeple göremezdi — vitest'te her dosya kendi
+modülü, adlar çakışmıyor.
+
+Ad `PLACES` oldu. `tests/katalog.test.js` artık anasayfanın **bütün**
+betiklerini `node:vm` ile tek kapsamda çalıştırıp çakışma olmadığını
+ölçüyor; `tests/venue.test.js` de veri dosyasında `const PLACES` arıyor.
+İkisi de `PLACES`'ı `VENUES` yapan bir mutasyonla doğrulandı.
+
+Yeni bir veri dosyası eklerken kural: **dışa açılan her üst düzey ad,
+anasayfaya yüklenen diğer dosyalardaki adlarla çakışmamalı.** vm testi
+bunu kendiliğinden yakalıyor.
+
 ## Kopya koruması
 
 Türetilmiş kartlar şeridin **başına** giriyor: içerik sayfası olan
@@ -217,10 +252,12 @@ gerçek bir `<a>` ve kartın tamamında `data-href` taşıyor.
 
 ## Bedeli
 
-Anasayfa artık `tour-data.js` ve `hotel-data.js`'i de yüklüyor (kart için
-gereken alanlar o kayıtların içinde). Bu, anasayfaya sıkıştırılmamış
-~90 KB ekliyor ve kayıtların çoğu (program, yorumlar, SSS) anasayfada
-kullanılmıyor.
+Anasayfa artık beş veri dosyasını da yüklüyor — `tour-data.js`,
+`hotel-data.js`, `activity-data.js`, `event-data.js`, `venue-data.js`
+(kart için gereken alanlar o kayıtların içinde). Bu, anasayfaya
+sıkıştırılmamış ~220 KB ekliyor ve kayıtların çoğu (program, yorumlar,
+SSS, menü) anasayfada kullanılmıyor. Her yeni içerik türü bu sayıyı
+büyütüyor; altıncı türde tekrar bakılmalı.
 
 Şimdilik kabul edildi: tek kaynak olmasının değeri, bu boyuttan büyük.
 Envanter bir sunucudan gelmeye başladığında doğru çözüm, kart alanlarını
@@ -241,4 +278,8 @@ Chromium, dış ağ kesik (390×844 ve 1440×900):
   veriyor; tıklandığında `/otel/kordon-butik-otel/` açılıyor.
 - "Oteller" kategorisi seçilince sonuçların başında Kordon Butik Otel
   çıkıyor.
+- "Popüler Mekanlar" şeridinde Kum Beach Club ve Kordon Spa & Masaj,
+  elle yazılmış mekan kartlarının **önünde** ve durumları canlı
+  ("Açık"); "beach" araması `/mekan/kum-beach-club/`'a giden bir bağ
+  veriyor.
 - Konsolda hata yok, yatay taşma yok.
