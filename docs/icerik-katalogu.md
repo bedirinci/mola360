@@ -104,7 +104,16 @@ düşerse filtre yalan söyler.
 | Konaklamalı Turlar | `TOURS`, `type: 'stay'` | |
 | Oteller | `HOTELS` | |
 | Aktiviteler | `ACTIVITIES` | |
-| Yaklaşan Planlar | `TOURS` (hepsi) | Otel ve aktivite burada **yok**: ikisinin de yaklaşan bir tarihi yok — biri her gün açık, diğeri her sabah yapılıyor. Şerit türü değil zamanı gösteriyor. |
+| Popüler Etkinlikler | `EVENTS` | Sezonu biten etkinlik kart üretmiyor |
+| Yaklaşan Planlar | `TOURS` + `EVENTS` | Otel ve aktivite burada **yok**: ikisinin de yaklaşan bir tarihi yok — biri her gün açık, diğeri her sabah yapılıyor. Şerit türü değil zamanı gösteriyor; etkinliğin sayılı temsilleri olduğu için o burada. |
+
+### Kart üretici `null` dönebilir
+
+Sezonu bitmiş bir etkinlik anasayfada görünmemeli. Kütükteki satır
+duruyor (kayıtlar yüklü), ama kart üretici o kayıt için `null` dönüyor
+ve `catalogCards` onu atlıyor. Geçmiş bir festivali "yaklaşan" diye
+kartta tutmak, elle yazılmış kartların düştüğü tuzağın ta kendisi
+olurdu.
 
 ## Yeni içerik türü eklemek
 
@@ -158,6 +167,17 @@ tek bir kapsamda peş peşe çalıştırılıyor (klasik `<script>` etiketleri
 gibi) ve otel ile aktivite verisi bilerek yüklenmiyor — katalog
 yüklenirken patlamıyor, turlar üretilmeye devam ediyor, diğer şeritler
 boş dönüyor.
+
+**Düzeltmenin kendisi ikinci bir hata doğurdu.** `globalThis` araması
+`const` ile tanımlanmış adları **bulamaz** — globalThis'e yalnızca
+`function` bildirimleri yazılır. `GUNLER_TR` bulunamayınca anasayfadaki
+kartın tarihi **"Bu undefined"** oldu; Node'da adlar modülden geldiği
+için testler görmedi, tarayıcıda görüldü.
+
+Şimdiki çözüm ikisini birden kapatıyor: **`typeof` ile korunmuş doğrudan
+ad**. `typeof` tanımsız bir ad için hata atmaz, `const` bağlamalarını da
+görür. Aynı vm testi artık gün adının çözüldüğünü de ölçüyor
+(`cardDateText` → "Bu Cumartesi"); mutasyonla doğrulandı.
 
 ## Kopya koruması
 

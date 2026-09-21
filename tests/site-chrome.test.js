@@ -25,7 +25,8 @@ const turSayfalari = [
      bildirimler ve giris modali orada da calisiyor. Liste artik
      "alt klasordeki icerik sayfalari" listesi; tur/otel ayrimi yok. */
   ['otel/kordon-butik-otel/', oku('otel/kordon-butik-otel/index.html')],
-  ['aktivite/kapadokya-balon-turu/', oku('aktivite/kapadokya-balon-turu/index.html')]
+  ['aktivite/kapadokya-balon-turu/', oku('aktivite/kapadokya-balon-turu/index.html')],
+  ['etkinlik/aspendos-opera-bale-festivali/', oku('etkinlik/aspendos-opera-bale-festivali/index.html')]
 ];
 const sayfalar = [['index.html', anasayfa], ...turSayfalari];
 

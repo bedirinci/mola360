@@ -28,6 +28,8 @@ const KATALOG_OTEL_VERI = (typeof require === 'function' && typeof module !== 'u
   ? require('./hotel-data.js') : null;
 const KATALOG_AKTIVITE_VERI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
   ? require('./activity-data.js') : null;
+const KATALOG_ETKINLIK_VERI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
+  ? require('./event-data.js') : null;
 
 /* Yardımcılar Node'da require'dan, tarayıcıda genel kapsamdan gelir.
 
@@ -43,26 +45,62 @@ const KATALOG_AKTIVITE_VERI = (typeof require === 'function' && typeof module !=
    yüklü olmadığı için satır sessizce atlanıyor ve diğer türler
    çalışmaya devam ediyor. tests/katalog.test.js bunu eksik dosyayla
    ölçüyor. */
-function katalogYardimci(ad, modul) {
+function katalogYardimci(ad, modul, yerel) {
   if (modul && typeof modul[ad] === 'function') return modul[ad];
+  if (typeof yerel === 'function') return yerel;
+  /* Fonksiyon BİLDİRİMLERİ (function x(){}) tarayıcıda globalThis'e
+     yazılır; son çare olarak oraya da bakılıyor. */
   const kapsam = (typeof globalThis !== 'undefined') ? globalThis : null;
   const genel = kapsam ? kapsam[ad] : undefined;
   return typeof genel === 'function' ? genel : null;
 }
 
-function katalogSabit(ad, modul, yedek) {
-  if (modul && modul[ad]) return modul[ad];
-  const kapsam = (typeof globalThis !== 'undefined') ? globalThis : null;
-  return (kapsam && kapsam[ad]) || yedek;
-}
+/* Yardımcılar Node'da require'dan, tarayıcıda ÜST KAPSAMDAN gelir ve
+   ikisi de ÇAĞRI ANINDA çözülür.
 
-const kAsDate        = (...a) => katalogYardimci('asDate', KATALOG_TUR_VERI)(...a);
-const kToISODate     = (...a) => katalogYardimci('toISODate', KATALOG_TUR_VERI)(...a);
-const kRatingOzet    = (...a) => katalogYardimci('ratingSummary', KATALOG_TUR_VERI)(...a);
-const kBasePrice     = (...a) => katalogYardimci('basePrice', KATALOG_TUR_VERI)(...a);
-const kSonrakiKalkis = (...a) => katalogYardimci('nextDepartureDates', KATALOG_TUR_VERI)(...a);
-const kGunlerTR      = () => katalogSabit('GUNLER_TR', KATALOG_TUR_VERI, []);
-const kAylarTR       = () => katalogSabit('AYLAR_TR', KATALOG_TUR_VERI, []);
+   İki hata bu satırların altında yatıyordu ve ikisi de tarayıcıda
+   görüldü:
+
+   1. Adlar dosyanın en üstünde çözülüyordu ve veri dosyası yüklenmemiş
+      bir sayfada ReferenceError atıyordu: catalog.js yüklenirken ölüyor,
+      eksik olan tek türün değil BÜTÜN kartların hepsi birden
+      kayboluyordu.
+   2. Düzeltme globalThis üzerinden arıyordu. Ama `const` ile tanımlanmış
+      bir ad globalThis'te DURMAZ (yalnızca function bildirimleri durur);
+      GUNLER_TR ve AYLAR_TR bulunamayınca kart tarihi "Bu undefined"
+      yazdı.
+
+   Çözüm ikisini de kapatıyor: doğrudan ad, ama `typeof` ile korunmuş.
+   typeof tanımsız bir ad için hata atmaz, "undefined" döner. */
+function kAsDate(v) {
+  const f = katalogYardimci('asDate', KATALOG_TUR_VERI, typeof asDate !== 'undefined' ? asDate : null);
+  return f ? f(v) : null;
+}
+function kToISODate(v) {
+  const f = katalogYardimci('toISODate', KATALOG_TUR_VERI, typeof toISODate !== 'undefined' ? toISODate : null);
+  return f ? f(v) : '';
+}
+function kRatingOzet(v) {
+  const f = katalogYardimci('ratingSummary', KATALOG_TUR_VERI, typeof ratingSummary !== 'undefined' ? ratingSummary : null);
+  return f ? f(v) : { total: 0, average: 0, rows: [] };
+}
+function kBasePrice(v) {
+  const f = katalogYardimci('basePrice', KATALOG_TUR_VERI, typeof basePrice !== 'undefined' ? basePrice : null);
+  return f ? f(v) : 0;
+}
+function kSonrakiKalkis(a, b, c, d) {
+  const f = katalogYardimci('nextDepartureDates', KATALOG_TUR_VERI,
+    typeof nextDepartureDates !== 'undefined' ? nextDepartureDates : null);
+  return f ? f(a, b, c, d) : [];
+}
+function kGunlerTR() {
+  if (KATALOG_TUR_VERI && KATALOG_TUR_VERI.GUNLER_TR) return KATALOG_TUR_VERI.GUNLER_TR;
+  return (typeof GUNLER_TR !== 'undefined' && GUNLER_TR) ? GUNLER_TR : [];
+}
+function kAylarTR() {
+  if (KATALOG_TUR_VERI && KATALOG_TUR_VERI.AYLAR_TR) return KATALOG_TUR_VERI.AYLAR_TR;
+  return (typeof AYLAR_TR !== 'undefined' && AYLAR_TR) ? AYLAR_TR : [];
+}
 
 /* ---------------- yorum sayısı ----------------
    Kartta tam sayı yazmıyor; "1.247 değerlendirme" kart genişliğine
@@ -159,11 +197,11 @@ function hotelCatalogCard(otel, bugun) {
     type: 'Otel',
     title: kart.title || otel.title,
     badges: kart.badges || [otel.categoryShort],
-    rating: String(katalogYardimci('hotelScore', KATALOG_OTEL_VERI)(otel.ratingBreakdown)),
+    rating: String(katalogYardimci('hotelScore', KATALOG_OTEL_VERI, typeof hotelScore !== 'undefined' ? hotelScore : null)(otel.ratingBreakdown)),
     reviews: formatReviewCount(puan.total),
     meta1: kart.meta1 || (otel.area + ' · ' + otel.distanceLabel),
     meta2: cardDateText(ilkGiris, bugun),
-    priceMain: String(katalogYardimci('hotelNightlyFrom', KATALOG_OTEL_VERI)(otel)),
+    priceMain: String(katalogYardimci('hotelNightlyFrom', KATALOG_OTEL_VERI, typeof hotelNightlyFrom !== 'undefined' ? hotelNightlyFrom : null)(otel)),
     unit: '/gece'
   };
 }
@@ -192,7 +230,37 @@ function activityCatalogCard(aktivite, bugun) {
     reviews: formatReviewCount(puan.total),
     meta1: kart.meta1 || (aktivite.area + ' · ' + aktivite.durationLabel),
     meta2: cardDateText(ilkGun, bugun),
-    priceMain: String(katalogYardimci('activityPriceFrom', KATALOG_AKTIVITE_VERI)(aktivite)),
+    priceMain: String(katalogYardimci('activityPriceFrom', KATALOG_AKTIVITE_VERI, typeof activityPriceFrom !== 'undefined' ? activityPriceFrom : null)(aktivite)),
+    sponsored: !!kart.sponsored
+  };
+}
+
+/* ---------------- etkinlik kartı ----------------
+   Etkinliğin diğer üç türden farkı: sabit temsil tarihleri var ve
+   biterler. Karttaki tarih TEMSİL TAKVİMİNDEN geliyor.
+
+   SEZONU BİTEN ETKİNLİK KART ÜRETMİYOR (null dönüyor): geçmiş bir
+   festivali "yaklaşan" diye anasayfada tutmak, elle yazılmış kartların
+   düştüğü tuzağın ta kendisi olurdu. catalogCards null kartı atlıyor. */
+function eventCatalogCard(etkinlik, bugun) {
+  const sonraki = katalogYardimci('nextPerformance', KATALOG_ETKINLIK_VERI, typeof nextPerformance !== 'undefined' ? nextPerformance : null)(etkinlik, bugun);
+  if (!sonraki) return null;
+
+  const kart = etkinlik.card || {};
+  const puan = kRatingOzet(etkinlik.ratingBreakdown);
+  return {
+    img: kart.img,
+    href: 'etkinlik/' + etkinlik.slug + '/',
+    type: 'Etkinlik',
+    title: kart.title || etkinlik.title,
+    badges: kart.badges || [etkinlik.categoryShort],
+    rating: String(puan.average),
+    reviews: formatReviewCount(puan.total),
+    meta1: kart.meta1 || (etkinlik.venueName + ' · ' + etkinlik.area),
+    meta2: cardDateText(sonraki.date, bugun),
+    priceMain: String(katalogYardimci('eventPriceFrom', KATALOG_ETKINLIK_VERI, typeof eventPriceFrom !== 'undefined' ? eventPriceFrom : null)(etkinlik)),
+    inDays: cardDaysUntil(sonraki.date, bugun),
+    dayKey: cardDayKey(sonraki.date, bugun),
     sponsored: !!kart.sponsored
   };
 }
@@ -228,6 +296,11 @@ const KATALOG_KAYNAKLARI = [
     kart: hotelCatalogCard
   },
   {
+    anchor: 'etkinlikler',
+    kayitlar: () => (typeof EVENTS !== 'undefined' ? EVENTS : (KATALOG_ETKINLIK_VERI && KATALOG_ETKINLIK_VERI.EVENTS)),
+    kart: eventCatalogCard
+  },
+  {
     anchor: 'aktiviteler',
     kayitlar: () => (typeof ACTIVITIES !== 'undefined' ? ACTIVITIES : (KATALOG_AKTIVITE_VERI && KATALOG_AKTIVITE_VERI.ACTIVITIES)),
     kart: activityCatalogCard
@@ -236,10 +309,16 @@ const KATALOG_KAYNAKLARI = [
     /* Tarihi olan her içerik buraya da girer: şerit "yaklaşan" olanı
        gösteriyor, türünü değil. Otelin ve aktivitenin sabit bir tarihi
        olmadığı için (biri her gün açık, diğeri her sabah yapılıyor)
-       onların kayıtları burada yok. */
+       onların kayıtları burada yok; etkinliğin sayılı temsilleri var,
+       o yüzden burada. */
     anchor: 'yaklasan-planlar',
     kayitlar: () => (typeof TOURS !== 'undefined' ? TOURS : (KATALOG_TUR_VERI && KATALOG_TUR_VERI.TOURS)),
     kart: tourCatalogCard
+  },
+  {
+    anchor: 'yaklasan-planlar',
+    kayitlar: () => (typeof EVENTS !== 'undefined' ? EVENTS : (KATALOG_ETKINLIK_VERI && KATALOG_ETKINLIK_VERI.EVENTS)),
+    kart: eventCatalogCard
   }
 ];
 
@@ -254,7 +333,10 @@ function catalogCards(anchor, bugun) {
     Object.keys(kayitlar).forEach(slug => {
       const kayit = kayitlar[slug];
       if (kaynak.filtre && !kaynak.filtre(kayit)) return;
-      out.push(kaynak.kart(kayit, bugun));
+      /* Kart üretici null dönebilir: sezonu bitmiş bir etkinlik
+         anasayfada görünmemeli. */
+      const kart = kaynak.kart(kayit, bugun);
+      if (kart) out.push(kart);
     });
   });
   return out;
@@ -308,6 +390,8 @@ if (typeof module !== 'undefined' && module.exports) {
     cardDayKey,
     tourCatalogCard,
     hotelCatalogCard,
+    activityCatalogCard,
+    eventCatalogCard,
     catalogCards,
     catalogAllCards,
     mergeCatalogCards
