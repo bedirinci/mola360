@@ -196,11 +196,19 @@ describe('seritlere dagilim', () => {
   });
 
   it('taninmayan serit bos donuyor', () => {
-    /* Katalogda karsiligi olmayan bir serit (henuz icerik sayfasi
-       yazilmamis bir tur) elle yazilmis kartlariyla kaliyor. Mekanlar
-       simdilik boyle; tur, otel, aktivite ve etkinlik kayitli. */
-    expect(catalogCards('mekanlar', BUGUN)).toEqual([]);
+    /* Katalogda karsiligi olmayan bir serit elle yazilmis kartlariyla
+       kaliyor. Bes tur de kayitli (tur, otel, aktivite, etkinlik,
+       mekan); "firsatlar" bir kategori, serit degil. */
+    expect(catalogCards('firsatlar', BUGUN)).toEqual([]);
     expect(catalogCards('yok-boyle-bir-serit', BUGUN)).toEqual([]);
+  });
+
+  it('mekanlar katalogda kayitli ama yaklasan planlarda degil', () => {
+    /* Mekanin yaklasan bir tarihi yok, kapisi acik. */
+    const mekanlar = catalogCards('mekanlar', BUGUN).map(k => k.href);
+    expect(mekanlar.length).toBeGreaterThan(0);
+    const yaklasan = catalogCards('yaklasan-planlar', BUGUN).map(k => k.href);
+    expect(yaklasan.some(h => h.startsWith('mekan/'))).toBe(false);
   });
 
   it('etkinlik hem kendi seridinde hem yaklasan planlarda', () => {
@@ -246,9 +254,8 @@ describe('seritlerle birlestirme', () => {
       { title: 'Sealight Resort', priceMain: '2100' },
       { title: 'Termal Vadi Resort', priceMain: '1590' }
     ]},
-    /* Katalogda karsiligi olmayan bir serit: mekanlarin henuz icerik
-       sayfasi yok. */
-    { anchor: 'mekanlar', items: [{ title: 'Kordon Boyu', priceMain: '0' }] }
+    /* Katalogda karsiligi olmayan bir serit. */
+    { anchor: 'firsatlar', items: [{ title: 'Erken rezervasyon', priceMain: '0' }] }
   ]);
 
   it('turetilen kart seridin basina giriyor', () => {
@@ -275,7 +282,7 @@ describe('seritlerle birlestirme', () => {
   it('katalogda karsiligi olmayan serit dokunulmadan kaliyor', () => {
     const s = mergeCatalogCards(serit(), BUGUN);
     expect(s[1].items).toHaveLength(1);
-    expect(s[1].items[0].title).toBe('Kordon Boyu');
+    expect(s[1].items[0].title).toBe('Erken rezervasyon');
   });
 
   it('bos veya gecersiz girdi patlamiyor', () => {
@@ -397,6 +404,26 @@ describe('eksik veri dosyasi', () => {
       'JSON.stringify(catalogCards("turlar", "2026-09-21")[0])'));
     expect(kart.meta2).toBeTruthy();
     expect(kart.meta2).not.toContain('undefined');
+  });
+
+  it('anasayfanin butun betikleri tek kapsamda cakismiyor', () => {
+    /* Klasik <script> etiketleri UST KAPSAMI PAYLASIR: iki dosyada ayni
+       `const` adi olursa "Identifier ... has already been declared" ile
+       butun sayfa oluyor. Node'da her modul kendi kapsaminda oldugu
+       icin testler bunu goremez.
+
+       Somut risk: home-blocks.js `const VENUES` tanimliyor; mekan
+       kayitlari da VENUES adini kullansaydi anasayfa tumden olurdu.
+       Bu yuzden kayit adi PLACES. Test, anasayfanin yukledigi butun
+       betikleri tarayicidaki sirayla tek kapsamda calistiriyor. */
+    const betikler = [...anasayfa.matchAll(/<script src="([^"]+)"/g)].map(m => m[1])
+      .filter(yol => yol.startsWith('assets/js/'));
+    expect(betikler.length).toBeGreaterThan(5);
+
+    /* site-chrome.js ve ui.js DOM'a dokunuyor; burada aranan sey ad
+       cakismasi oldugu icin yalnizca veri/mantik dosyalari yukleniyor. */
+    const domsuz = betikler.filter(y => !/site-chrome|ui\.js|app\.js/.test(y));
+    expect(() => calistir(domsuz, '1')).not.toThrow();
   });
 
   it('yardimci cozumleyici bulamadiginda null donuyor', () => {

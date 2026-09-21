@@ -505,16 +505,25 @@ function seoFaqMarkup(item, index) {
 
 const HOME_BLOCK_MARKUP = {
   /* Mekanlar: yatay kaydirma yok; her mekan tam genislikte bir satir. */
+  /* Mekanlar blogu: icerik sayfasi OLAN mekanlar katalogdan geliyor ve
+     listenin basinda duruyor; sayfasi olmayan gezi noktalari (VENUES)
+     arkalarinda kaliyor. Katalog yuklenmemis bir sayfada (ornegin tur
+     sayfasi) kosul sessizce bos dizi veriyor.
+
+     Bolumun id'si var cunku mekan sayfalarinin kirilma noktasi ve
+     etiketleri index.html#mekanlar adresine gidiyor; capa olmadan o
+     baglar sayfanin tepesine dusuyordu. */
   venues: () => `
-    <section class="section home-venues">
+    <section class="section home-venues" id="mekanlar">
       ${homeSectionHead('Mekanlar', 'Tümünü Gör')}
       <div class="venue-list">
-        ${VENUES.map(v => `
-          <a class="venue-card" href="#">
+        ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : [])
+          .concat(VENUES).map(v => `
+          <a class="venue-card" href="${v.href || '#'}">
             <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
             <span class="venue-body">
               <span class="venue-top">
-                <span class="venue-type">${v.type}</span>
+                <span class="venue-type">${v.venueType || v.type}</span>
                 <span class="venue-status${v.open ? ' is-open' : ''}">${v.open ? 'Açık' : 'Kapalı'}</span>
               </span>
               <strong class="venue-title">${v.title}</strong>

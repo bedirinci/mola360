@@ -1144,6 +1144,42 @@ function getSearchImage(item) {
   return cardImages[item.img] || ('https://picsum.photos/seed/'+encodeURIComponent(item.img)+'/400/300');
 }
 
+/* ---------------- arama kaynagi ----------------
+   Arama ekrani (one cikanlar, kategori sonuclari, sonuc listesi)
+   cardSections'tan besleniyordu. Ama her icerik turunun anasayfada bir
+   SERIDI yok: mekanlar kendi blogunda duruyor, cardSections'ta karsiligi
+   yok. Serit yoksa arama da gormuyordu, yani mekan sayfasina aramadan
+   ulasilamiyordu.
+
+   Kaynak artik ikisinin birlesimi: seritlerdeki kartlar + katalogdan
+   gelip hicbir seride girmeyenler. Adres ya da baslik ayni olan kayit
+   iki kez eklenmiyor. */
+function aramaKayitlari() {
+  const kayitlar = [];
+  const gorulen = new Set();
+  const anahtar = (item, bolum) =>
+    (item.href || (bolum + '|' + item.title)).toLocaleLowerCase('tr-TR');
+
+  cardSections.forEach(sec => {
+    (sec.items || []).forEach(item => {
+      const k = anahtar(item, sec.title);
+      if (gorulen.has(k)) return;
+      gorulen.add(k);
+      kayitlar.push({ ...item, sectionTitle: sec.title });
+    });
+  });
+
+  if (typeof catalogAllCards === 'function') {
+    catalogAllCards().forEach(kart => {
+      const k = anahtar(kart, kart.type || '');
+      if (gorulen.has(k)) return;
+      gorulen.add(k);
+      kayitlar.push({ ...kart, sectionTitle: kart.type || '' });
+    });
+  }
+  return kayitlar;
+}
+
 /* Sayfanin koku: arama sonucundaki bag anasayfada "otel/..." , alt
    klasordeki bir sayfada "../../otel/..." olmali. Deger <body data-root>
    niteliginden geliyor; anasayfada nitelik yok, onek bos kaliyor. */
@@ -1199,9 +1235,12 @@ function renderSearchHome() {
     </button>
   `).join('');
 
-  const featured = cardSections.flatMap(sec =>
-    sec.items.slice(0, 2).map(item => ({...item, sectionTitle:sec.title}))
-  ).slice(0, 4);
+  /* One cikanlar: icerik sayfasi OLAN kayitlar once, cunku tiklaninca
+     gidilecek bir yer var. */
+  const tumKayitlar = aramaKayitlari();
+  const featured = tumKayitlar.filter(i => i.href)
+    .concat(tumKayitlar.filter(i => !i.href))
+    .slice(0, 4);
 
   const featuredHtml = featured.map(item => `
     ${searchResultMarkup(item)}
@@ -1213,14 +1252,11 @@ function renderSearchHome() {
   let categoryResultsHtml = '';
   if (activeSearchCategory) {
     const q = normalizeSearchText(activeSearchCategory);
-    const catResults = [];
-    cardSections.forEach(sec => {
-      sec.items.forEach(item => {
-        const haystack = normalizeSearchText([
-          item.title, sec.title, ...(item.badges || []), item.meta1, item.meta2
-        ].join(' '));
-        if (haystack.includes(q)) catResults.push({...item, sectionTitle:sec.title});
-      });
+    const catResults = tumKayitlar.filter(item => {
+      const haystack = normalizeSearchText([
+        item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
+      ].join(' '));
+      return haystack.includes(q);
     });
 
     const catResultHtml = catResults.map(item => `
@@ -1287,13 +1323,11 @@ function renderSearchResults(query) {
   const categoryMatches = searchCategories.filter(c => normalizeSearchText(c.name).includes(q));
   const results = [];
 
-  cardSections.forEach(sec => {
-    sec.items.forEach(item => {
-      const haystack = normalizeSearchText([
-        item.title, sec.title, ...(item.badges || []), item.meta1, item.meta2
-      ].join(' '));
-      if (haystack.includes(q)) results.push({...item, sectionTitle:sec.title});
-    });
+  aramaKayitlari().forEach(item => {
+    const haystack = normalizeSearchText([
+      item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
+    ].join(' '));
+    if (haystack.includes(q)) results.push(item);
   });
 
   const catHtml = categoryMatches.length ? `

@@ -298,3 +298,38 @@ o adla bulunma ihtimali daha düşük. Ad tutmazsa `ui.js`'in nötr yer
 tutucusu devreye giriyor, kırık resim simgesi çıkmıyor.
 
 Doğrulanması gereken dosya sayısı on dokuzdan yirmi beşe çıktı.
+
+
+## Sekizinci tur: mekan içerik sayfasının görselleri
+
+`mekan/kum-beach-club/` ve `mekan/kordon-spa-masaj/` için
+`assets/js/venue-data.js` içinde `VENUE_IMAGE_FILES` adlı altıncı kayıt
+seti açıldı. Yöntem aynı: adres `Special:FilePath` ile dosya adından
+üretiliyor ve daha önceki setlerle ortak olan anahtarlarda dosya adı
+birebir aynı yazıldı.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `alacati` | `Alaçatı değirmenler 01.jpg` | Zaten kullanımdaydı |
+| `kemeralti` | `Kemeraltı market 02.jpg` | Zaten kullanımdaydı |
+| `kordonBoyu` | `Izmir Alsancak Kordon 6339.jpg` | Zaten kullanımdaydı |
+| `cesmePlaj` | `Cesme beach Izmir.jpg` | Zaten kullanımdaydı |
+| `sezlong` | `Beach club sunbeds.jpg` | **Doğrulanmadı** |
+| `beachBar` | `Beach bar at sunset.jpg` | **Doğrulanmadı** |
+| `denizManzara` | `Aegean sea view Turkey.jpg` | **Doğrulanmadı** |
+| `masajOda` | `Massage room in spa.jpg` | **Doğrulanmadı** |
+| `spaKarsilama` | `Spa reception area.jpg` | **Doğrulanmadı** |
+| `sicakTas` | `Hot stone massage.jpg` | **Doğrulanmadı** |
+| `aromaYag` | `Aromatherapy massage oils.jpg` | **Doğrulanmadı** |
+
+`tests/venue.test.js` dört ortak anahtarın önceki setlerle **birebir
+aynı adresi** ürettiğini doğruluyor.
+
+Bu turda eklenen yedi yeni adın hepsi **genel konu adı** (şezlong,
+sahil barı, masaj odası…) — yer adı taşıyan dosyalara göre Commons'ta
+o adla bulunma ihtimali en düşük grup bu. Mekan içeriğinin doğası gereği
+böyle: bir beach club'ın iç mekânı, bir masaj odası Commons'ta yer adıyla
+aranamıyor. Ad tutmazsa `ui.js`'in nötr yer tutucusu devreye giriyor,
+kırık resim simgesi çıkmıyor.
+
+Doğrulanması gereken dosya sayısı yirmi beşten otuz ikiye çıktı.

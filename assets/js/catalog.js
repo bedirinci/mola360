@@ -30,6 +30,8 @@ const KATALOG_AKTIVITE_VERI = (typeof require === 'function' && typeof module !=
   ? require('./activity-data.js') : null;
 const KATALOG_ETKINLIK_VERI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
   ? require('./event-data.js') : null;
+const KATALOG_MEKAN_VERI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
+  ? require('./venue-data.js') : null;
 
 /* Yardımcılar Node'da require'dan, tarayıcıda genel kapsamdan gelir.
 
@@ -265,6 +267,46 @@ function eventCatalogCard(etkinlik, bugun) {
   };
 }
 
+/* ---------------- mekân kartı ----------------
+   Mekânın diğer dört türden farkı: bir TARİHİ yok, bir YERİ var. Kartta
+   tarih yerine "şu an açık mı" yazıyor ve o bilgi saate göre değişiyor.
+
+   Mekân kartı anasayfada iki ayrı yerde kullanılıyor: kategori
+   sonuçları/arama için standart kart alanları (title, meta1,
+   priceMain), "Mekanlar" bloğu için de o bloğun kendi alanları (type,
+   area, hours, open). İkisi de aynı nesnede; blok hangisini okuyorsa
+   onu kullanıyor. */
+function venueCatalogCard(mekan, bugun) {
+  const kart = mekan.card || {};
+  const puan = kRatingOzet(mekan.ratingBreakdown);
+  const durumFn = katalogYardimci('venueOpenNow', KATALOG_MEKAN_VERI,
+    typeof venueOpenNow !== 'undefined' ? venueOpenNow : null);
+  const fiyatFn = katalogYardimci('venuePriceFrom', KATALOG_MEKAN_VERI,
+    typeof venuePriceFrom !== 'undefined' ? venuePriceFrom : null);
+  /* Kart "şu anı" gösteriyor: bugun parametresi testlerin sabit bir an
+     verebilmesi için, verilmezse gerçek zaman. */
+  const an = (bugun instanceof Date) ? bugun : (kAsDate(bugun) || new Date());
+  const durum = durumFn ? durumFn(mekan, an) : { open: false, text: '' };
+
+  return {
+    img: kart.img,
+    href: 'mekan/' + mekan.slug + '/',
+    type: 'Mekan',
+    title: kart.title || mekan.title,
+    badges: kart.badges || [mekan.categoryShort],
+    rating: String(puan.average),
+    reviews: formatReviewCount(puan.total),
+    meta1: kart.meta1 || (mekan.area + ' · ' + mekan.kindLabel),
+    meta2: durum.open ? 'Şu an açık' : (durum.text || 'Şu an kapalı'),
+    priceMain: String(fiyatFn ? fiyatFn(mekan) : 0),
+    /* "Mekanlar" bloğunun kendi kart alanları. */
+    venueType: mekan.kindLabel,
+    area: mekan.area,
+    hours: durum.open ? ('Açık · ' + durum.text) : (durum.text || 'Kapalı'),
+    open: !!durum.open
+  };
+}
+
 /* ---------------- kaynak kütüğü ----------------
    Yeni içerik türü eklemek buraya bir satır:
 
@@ -294,6 +336,13 @@ const KATALOG_KAYNAKLARI = [
     anchor: 'oteller',
     kayitlar: () => (typeof HOTELS !== 'undefined' ? HOTELS : (KATALOG_OTEL_VERI && KATALOG_OTEL_VERI.HOTELS)),
     kart: hotelCatalogCard
+  },
+  {
+    /* Mekân "Yaklaşan Planlar"a girmiyor: yaklaşan bir tarihi yok,
+       kapısı açık. Otel ve aktivite gibi. */
+    anchor: 'mekanlar',
+    kayitlar: () => (typeof PLACES !== 'undefined' ? PLACES : (KATALOG_MEKAN_VERI && KATALOG_MEKAN_VERI.PLACES)),
+    kart: venueCatalogCard
   },
   {
     anchor: 'etkinlikler',
@@ -392,6 +441,7 @@ if (typeof module !== 'undefined' && module.exports) {
     hotelCatalogCard,
     activityCatalogCard,
     eventCatalogCard,
+    venueCatalogCard,
     catalogCards,
     catalogAllCards,
     mergeCatalogCards
