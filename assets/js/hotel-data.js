@@ -350,6 +350,17 @@ const HOTELS = {
     /* Başlık satırında ve künyede geçen kısa konum cümlesi. */
     distanceLabel: 'Kordon’a 120 m',
 
+    /* Anasayfa kartı: bu kayıt catalog.js tarafından anasayfadaki
+       "Oteller" şeridine kendiliğinden giriyor. Gecelik fiyat (en ucuz
+       oda), 10'luk puan, yorum sayısı ve müsaitlik tarihi KAYITTAN
+       türetiliyor; burada yalnızca türetilemeyenler duruyor. */
+    card: {
+      img: 'hotel5',
+      title: 'Kordon Butik Otel',
+      badges: ['Şehir Oteli'],
+      meta1: 'Alsancak, İzmir · Sahile Yürüme Mesafesi'
+    },
+
     badges: [
       { icon: 'bolt',    label: 'Anında onay' },
       { icon: 'refresh', label: '72 saate kadar ücretsiz iptal' },

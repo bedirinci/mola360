@@ -198,15 +198,19 @@ listede bir fiyat, detayda başka bir fiyat görmek güveni bitirir.
 
 ## Anasayfa bağlantısı
 
-Kordon Butik Otel kartı artık `href:'otel/kordon-butik-otel/'` taşıyor.
-Bu, `cardSections` içindeki ikinci içerik sayfası bağı türü; ilki
-`tur/<slug>/`.
+Otel kartı anasayfaya **elle yazılmıyor**: `assets/js/catalog.js` onu
+`HOTELS` kaydından üretip "Oteller" şeridine koyuyor; kategori sonuçları
+ve arama ekranı da aynı diziden beslendiği için otel oraya da giriyor.
+Kartın gecelik fiyatı (en ucuz oda), 10'luk puanı, yorum sayısı ve
+müsaitlik tarihi kayıttan türetiliyor — kopyalanmadıkları için
+eskiyemiyorlar. Mekanizmanın tamamı `docs/icerik-katalogu.md` içinde.
 
-`tests/tour.test.js` içindeki "anasayfa bağlantısı" bölümü bu yüzden
-**yalnızca tur bağlarını** süzüyor (`href:'tur/`). Süzme olmasaydı otel
-bağı eklenince oradaki sayı ve biçim beklentileri — otelde bir sorun
-olmadığı hâlde — düşerdi. Otel bağlarının aynı denetimleri
-`tests/hotel.test.js` içinde duruyor.
+Kayda eklenen tek şey türetilemeyenler: `card.img` (anasayfanın görsel
+anahtarı), `card.title` (dar karta sığan kısa ad), `card.badges` ve
+`card.meta1`.
+
+`tests/hotel.test.js` her otelin anasayfaya ve kendi kategori şeridine
+girdiğini, kart fiyatının/puanının kayıttan geldiğini doğruluyor.
 
 ## Sayfa etiketleri
 

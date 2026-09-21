@@ -594,6 +594,21 @@ const TOURS = {
     region: 'Ege',
     code: 'MLA-EFS-01',
 
+    /* Anasayfa kartı: bu kayıt catalog.js tarafından anasayfadaki
+       "Günübirlik Turlar" ve "Yaklaşan Planlar" şeritlerine kendiliğinden
+       giriyor. Fiyat, puan, yorum sayısı ve tarih KAYITTAN türetiliyor;
+       burada yalnızca türetilemeyenler duruyor:
+         img    anasayfanın görsel anahtarı (app.js/cardImages)
+         title  dar karta sığan kısa ad (yazılmazsa tam başlık kullanılır)
+         badges kart rozetleri
+         meta1  kartın ilk meta satırı */
+    card: {
+      img: 'efes',
+      title: 'Efes Antik Kenti ve Şirince Turu',
+      badges: ['Günübirlik'],
+      meta1: 'İzmir Çıkışlı · Rehberli · Yemek Dahil'
+    },
+
     badges: [
       { icon: 'bolt',    label: 'Anında onay' },
       { icon: 'refresh', label: '48 saate kadar ücretsiz iptal' },
@@ -858,6 +873,14 @@ const TOURS = {
     area: 'Göreme, Nevşehir',
     region: 'İç Anadolu',
     code: 'MLA-KPD-04',
+
+    /* Anasayfa kartı — açıklama efes-sirince kaydında. */
+    card: {
+      img: 'kapadokya2',
+      title: 'Kapadokya Turu — 3 Gece 4 Gün',
+      badges: ['Kültür', 'Yurt İçi'],
+      meta1: '3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı'
+    },
 
     badges: [
       { icon: 'bolt',    label: 'Anında onay' },

@@ -35,6 +35,10 @@ import {
   resolveHotel,
 } from '../assets/js/hotel-data.js';
 import { TOUR_ICONS, TOUR_IMAGE_FILES, commonsImageUrl, formatTRY } from '../assets/js/tour-data.js';
+import { catalogCards, catalogAllCards, cardDateText } from '../assets/js/catalog.js';
+
+/* Tarih tureten testler sabit bir "bugun" kullaniyor. */
+const BUGUN = '2026-09-21';
 
 const oku = (yol) => readFileSync(new URL('../' + yol, import.meta.url), 'utf8');
 
@@ -496,51 +500,71 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartBloku = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-  const otelSatirlar = kartBloku.split('\n').filter(satir => satir.includes("href:'otel/"));
+  /* Otel kartlari anasayfaya ELLE yazilmiyor: catalog.js onlari HOTELS
+     kayitlarindan uretip "Oteller" seridine karistiriyor
+     (docs/icerik-katalogu.md). Testler bu yuzden app.js metnine degil
+     uretilen kartlara bakiyor. */
+  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('otel/'));
 
-  it('her otel sayfasi anasayfadan baglaniyor', () => {
-    const baglar = otelSatirlar.map(satir => satir.match(/href:'([^']+)'/)[1]);
+  it('her otel anasayfaya kendiliginden giriyor', () => {
+    const baglar = otelKartlari.map(k => k.href);
     Object.keys(HOTELS).forEach(slug =>
-      expect(baglar, slug + ' anasayfadan baglanmiyor').toContain('otel/' + slug + '/'));
-    expect(baglar).toHaveLength(Object.keys(HOTELS).length);
+      expect(baglar, slug + ' anasayfaya girmiyor').toContain('otel/' + slug + '/'));
+  });
+
+  it('her otel kendi kategori seridine giriyor', () => {
+    Object.values(HOTELS).forEach(o => {
+      const seritte = catalogCards(o.categoryAnchor, BUGUN).map(k => k.href);
+      expect(seritte, o.slug + ' -> #' + o.categoryAnchor + ' seridinde yok')
+        .toContain('otel/' + o.slug + '/');
+    });
   });
 
   it('baglar /otel/<slug>/ biciminde ve slug gercek bir otel', () => {
-    otelSatirlar.forEach(satir => {
-      const href = satir.match(/href:'([^']+)'/)[1];
-      expect(href, href + ' /otel/<slug>/ biciminde degil').toMatch(/^otel\/[a-z0-9-]+\/$/);
-      const slug = href.replace(/^otel\//, '').replace(/\/$/, '');
+    otelKartlari.forEach(kart => {
+      expect(kart.href, kart.href + ' /otel/<slug>/ biciminde degil').toMatch(/^otel\/[a-z0-9-]+\/$/);
+      const slug = kart.href.replace(/^otel\//, '').replace(/\/$/, '');
       expect(HOTELS[slug], slug + ' HOTELS icinde yok').toBeTruthy();
+      expect(HOTELS[slug].slug).toBe(slug);
     });
   });
 
   it('anasayfadaki fiyat en ucuz odanin gecelik ucreti', () => {
     /* Listede bir fiyat, detayda baska bir fiyat gormek guveni bitirir. */
-    otelSatirlar.forEach(satir => {
-      const slug = satir.match(/href:'otel\/([^/]+)\//)[1];
-      const fiyat = Number(satir.match(/priceMain:'(\d+)'/)[1]);
-      expect(fiyat, slug + ' kart fiyati otel fiyatiyla ayni degil')
+    otelKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^otel\//, '').replace(/\/$/, '');
+      expect(Number(kart.priceMain), slug + ' kart fiyati otel fiyatiyla ayni degil')
         .toBe(hotelNightlyFrom(HOTELS[slug]));
-      expect(satir, slug + ' kart birimi /gece degil').toContain("unit:'/gece'");
+      expect(kart.unit, slug + ' kart birimi /gece degil').toBe('/gece');
     });
   });
 
   it('anasayfadaki puan otel sayfasindaki skorla ayni', () => {
-    /* Otel puani 10 uzerinden ve yorum dagilimindan turetiliyor;
-       kartta elle yazilan sayi ondan kayarsa iki yerde iki puan olur. */
-    otelSatirlar.forEach(satir => {
-      const slug = satir.match(/href:'otel\/([^/]+)\//)[1];
-      const puan = satir.match(/rating:'([\d.]+)'/)[1];
-      expect(Number(puan), slug + ' kart puani skordan farkli')
+    /* Otel puani 10 uzerinden ve yorum dagilimindan turetiliyor. */
+    otelKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^otel\//, '').replace(/\/$/, '');
+      expect(Number(kart.rating), slug + ' kart puani skordan farkli')
         .toBe(hotelScore(HOTELS[slug].ratingBreakdown));
     });
   });
 
-  it('kart basligi otel adiyla ayni', () => {
-    otelSatirlar.forEach(satir => {
-      const slug = satir.match(/href:'otel\/([^/]+)\//)[1];
-      expect(satir, slug + ' kart basligi farkli').toContain("title:'" + HOTELS[slug].title + "'");
+  it('musaitlik tarihi otelin kendi kuralindan geliyor', () => {
+    /* Ayni gun giris satilmiyor (leadDays: 1), yani en erken giris yarin.
+       Kart elle yaziliyken orada "Bugun" yaziyordu ve otel sayfasindaki
+       takvimle celisiyordu. */
+    otelKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^otel\//, '').replace(/\/$/, '');
+      const ilkGiris = hotelCheckout(BUGUN, HOTELS[slug].pricing.leadDays);
+      const beklenen = HOTELS[slug].pricing.leadDays === 0 ? 'Bugün' : cardDateText(ilkGiris, BUGUN);
+      expect(kart.meta2, slug + ' musaitlik metni bekleneni vermiyor').toBe(beklenen);
+    });
+  });
+
+  it('kart basligi kayittan geliyor', () => {
+    otelKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^otel\//, '').replace(/\/$/, '');
+      const o = HOTELS[slug];
+      expect(kart.title, slug + ' kart basligi farkli').toBe((o.card && o.card.title) || o.title);
     });
   });
 });
