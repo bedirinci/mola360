@@ -1139,7 +1139,11 @@ const TOURS = {
       { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
       { label: 'Buluşma noktası',      href: '#bulusma' },
       { label: 'İptal ve iade',        href: '#bilgiler' },
-      { label: 'Efes ve Şirince turu', href: 'tur/efes-sirince/' }
+      { label: 'Efes ve Şirince turu', href: 'tur/efes-sirince/' },
+      /* Balon, bu turun ek hizmetlerinden biri ve artık kendi içerik
+         sayfası var: aynı ürün, aynı fiyat. tests/activity.test.js
+         ikisinin fiyatını karşılaştırıyor. */
+      { label: 'Kapadokya balon turu',  href: 'aktivite/kapadokya-balon-turu/' }
     ],
   }
 };

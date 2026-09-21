@@ -96,6 +96,16 @@ Hafta sonu filtreleri (`Bu Cuma / Bu Cumartesi / Bu Pazar`) yalnızca bu
 haftanın o gününü kapsıyor: iki hafta sonraki cumartesi o filtreye
 düşerse filtre yalan söyler.
 
+## Kayıtlı türler
+
+| Şerit | Kaynak | Not |
+|---|---|---|
+| Günübirlik Turlar | `TOURS`, `type: 'daily'` | |
+| Konaklamalı Turlar | `TOURS`, `type: 'stay'` | |
+| Oteller | `HOTELS` | |
+| Aktiviteler | `ACTIVITIES` | |
+| Yaklaşan Planlar | `TOURS` (hepsi) | Otel ve aktivite burada **yok**: ikisinin de yaklaşan bir tarihi yok — biri her gün açık, diğeri her sabah yapılıyor. Şerit türü değil zamanı gösteriyor. |
+
 ## Yeni içerik türü eklemek
 
 Kütüğe bir satır:
@@ -117,6 +127,37 @@ hem "Yaklaşan Planlar"da. Otel orada yok, çünkü sabit bir tarihi yok —
 
 "Yüklü değilse atlanır" kuralı, katalogu yükleyip o veri dosyasını
 yüklemeyen bir sayfanın patlamaması için. Testi var.
+
+## Eksik veri dosyası: bir kez kırıldı
+
+Aktivite sayfası eklenirken anasayfa `activity-data.js`'i yüklemiyordu
+ve `catalog.js` **yüklenirken** ölüyordu:
+
+```
+Uncaught ReferenceError: activityPriceFrom is not defined
+```
+
+Sebep, yardımcıların dosyanın en üstünde çözülmesiydi:
+
+```js
+const kAktiviteFiyat = KATALOG_AKTIVITE_VERI ? KATALOG_AKTIVITE_VERI.activityPriceFrom
+                                             : activityPriceFrom;   // <-- burada patlıyor
+```
+
+Sonuç, eksik olan tek türün değil, anasayfadaki **bütün** türetilmiş
+kartların birden kaybolmasıydı — kütüğün "kayıt kümesi yüklü değilse
+satır atlanır" sözü, satıra hiç gelinemediği için işe yaramıyordu.
+
+Çözüm: çözümleme **tembel ve korumalı** (`katalogYardimci`). Ad
+modülde de genel kapsamda da yoksa `null` dönüyor; o kaynağın kayıtları
+zaten yüklü olmadığı için satır sessizce atlanıyor ve diğer türler
+çalışmaya devam ediyor.
+
+`tests/katalog.test.js` bunu tarayıcıyı taklit ederek ölçüyor: dosyalar
+tek bir kapsamda peş peşe çalıştırılıyor (klasik `<script>` etiketleri
+gibi) ve otel ile aktivite verisi bilerek yüklenmiyor — katalog
+yüklenirken patlamıyor, turlar üretilmeye devam ediyor, diğer şeritler
+boş dönüyor.
 
 ## Kopya koruması
 

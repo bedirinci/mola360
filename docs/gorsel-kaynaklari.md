@@ -242,3 +242,32 @@ fotoğraftan yalnızca bir adım iyidir.
 Doğrulanması gereken dosya sayısı böylece dokuzdan on altıya çıktı.
 Yayına almadan önce bu belgenin başındaki üç madde (lisans/yazar
 doğrulaması, kendi sunucuya alma, gözle kontrol) bunlar için de geçerli.
+
+
+## Altıncı tur: aktivite içerik sayfasının görselleri
+
+`aktivite/kapadokya-balon-turu/` için `assets/js/activity-data.js`
+içinde `ACTIVITY_IMAGE_FILES` adlı dördüncü kayıt seti açıldı. Yöntem
+aynı: adres `Special:FilePath` ile dosya adından üretiliyor ve
+`TOUR_IMAGE_FILES` ile ortak olan anahtarlarda dosya adı birebir aynı
+yazıldı; `tests/activity.test.js` iki dosyanın aynı adresi ürettiğini
+doğruluyor.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `kapadokyaBalon` | `Hot air balloons in Cappadocia.jpg` | Zaten kullanımdaydı |
+| `balonUcus` | `Hot air balloon ride at sunrise in Cappadocia 2.JPG` | Zaten kullanımdaydı |
+| `goreme` | `Goreme Open Air Museum.jpg` | Zaten kullanımdaydı |
+| `uchisar` | `Uchisar Castle Cappadocia.jpg` | Zaten kullanımdaydı |
+| `balonSisirme` | `Hot air balloon inflation Cappadocia.jpg` | **Doğrulanmadı** |
+| `guvercinlik` | `Pigeon Valley Cappadocia.jpg` | **Doğrulanmadı** |
+| `kizilVadi` | `Red Valley Cappadocia.jpg` | **Doğrulanmadı** |
+
+Bu turda eklenen **üç** yeni dosyanın üçü de yer adı taşıyor (Güvercinlik
+Vadisi, Kızıl Vadi) ya da konuyu doğrudan anlatıyor (balon şişirme);
+otel turundaki genel adlı stok görsellere göre Commons'ta karşılığının
+bulunma ihtimali daha yüksek. Yine de doğrulanamadı: ağ politikası
+`commons.wikimedia.org`'a CONNECT'i reddediyor. Ad tutmazsa `ui.js`'in
+nötr yer tutucusu devreye giriyor, kırık resim simgesi çıkmıyor.
+
+Doğrulanması gereken dosya sayısı on altıdan on dokuza çıktı.
