@@ -3,6 +3,7 @@ Gezi, etkinlik ve konaklama rezervasyon platformu. Frontend + backend + admin pa
 
 ## Dokümanlar
 
+- `docs/admin-paneli.md` — yönetim paneli (`/admin/`)
 - `docs/arayuz-kurallari.md` — site geneli görsel kurallar (parlama yok)
 - `docs/tur-sayfasi.md` — tur içerik sayfası
 - `docs/otel-sayfasi.md` — otel içerik sayfası
@@ -20,6 +21,9 @@ npm install
 npm run dev      # http://localhost:8000
 npm test
 ```
+
+Yönetim paneli: http://localhost:8000/admin/ (varsayılan şifre
+`mola360`, ayrıntısı `docs/admin-paneli.md`).
 
 **`index.html`'i çift tıklayıp açmayın.** `file://` ile açılan sayfada
 kart bağları ölü görünür: bağlar `/otel/<slug>/` gibi **dizin
