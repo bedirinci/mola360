@@ -3,6 +3,7 @@ Gezi, etkinlik ve konaklama rezervasyon platformu. Frontend + backend + admin pa
 
 ## Dokümanlar
 
+- `docs/yonetim-sistemi.md` — yönetim sistemi mimarisi (backend, veritabanı, fazlar)
 - `docs/admin-paneli.md` — yönetim paneli (`/admin/`)
 - `docs/arayuz-kurallari.md` — site geneli görsel kurallar (parlama yok)
 - `docs/tur-sayfasi.md` — tur içerik sayfası
@@ -24,6 +25,19 @@ npm test
 
 Yönetim paneli: http://localhost:8000/admin/ (varsayılan şifre
 `mola360`, ayrıntısı `docs/admin-paneli.md`).
+
+## Yönetim sistemi (backend + veritabanı)
+
+```bash
+docker compose up
+# API   http://localhost:4000/api/admin/health
+# Site  http://localhost:8000
+```
+
+Site statik kalmaya devam ediyor; veritabanı tek gerçek kaynak ve
+"Yayınla" işlemi statik dosyaları ondan üretiyor. Mimari, verilen
+kararların gerekçeleri ve yol haritası `docs/yonetim-sistemi.md` içinde;
+backend'in kendi belgesi `backend/README.md`.
 
 **`index.html`'i çift tıklayıp açmayın.** `file://` ile açılan sayfada
 kart bağları ölü görünür: bağlar `/otel/<slug>/` gibi **dizin

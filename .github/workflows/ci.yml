@@ -27,3 +27,41 @@ jobs:
 
       - name: Testleri calistir
         run: npm test
+
+  backend:
+    runs-on: ubuntu-latest
+    # Backend testleri GERCEK PostgreSQL'e karsi kosuyor: sema guvenceleri
+    # (cift satis engeli, durum makinesi, turetilen sutunlar) sahte bir
+    # katmanla dogrulanamaz.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mola360
+          POSTGRES_PASSWORD: mola360
+          POSTGRES_DB: mola360_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U mola360"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Bagimliliklari yukle
+        working-directory: backend
+        run: npm ci
+
+      - name: Testleri calistir
+        working-directory: backend
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgres://mola360:mola360@localhost:5432/mola360_test
+          DATABASE_URL: postgres://mola360:mola360@localhost:5432/mola360_test
