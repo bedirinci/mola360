@@ -196,10 +196,31 @@ describe('seritlere dagilim', () => {
   });
 
   it('taninmayan serit bos donuyor', () => {
-    /* Katalogda karsiligi olmayan bir serit (ornegin "Etkinlikler",
-       henuz icerik sayfasi yok) elle yazilmis kartlariyla kaliyor. */
-    expect(catalogCards('etkinlikler', BUGUN)).toEqual([]);
+    /* Katalogda karsiligi olmayan bir serit (henuz icerik sayfasi
+       yazilmamis bir tur) elle yazilmis kartlariyla kaliyor. Mekanlar
+       simdilik boyle; tur, otel, aktivite ve etkinlik kayitli. */
+    expect(catalogCards('mekanlar', BUGUN)).toEqual([]);
     expect(catalogCards('yok-boyle-bir-serit', BUGUN)).toEqual([]);
+  });
+
+  it('etkinlik hem kendi seridinde hem yaklasan planlarda', () => {
+    /* Sayili temsili olan tek tur: otel her gun acik, aktivite her
+       sabah yapiliyor, ikisinin de "yaklasan" bir tarihi yok. */
+    const etkinlikler = catalogCards('etkinlikler', BUGUN).map(k => k.href);
+    const yaklasan = catalogCards('yaklasan-planlar', BUGUN).map(k => k.href);
+    expect(etkinlikler.length).toBeGreaterThan(0);
+    etkinlikler.forEach(href => expect(yaklasan).toContain(href));
+    expect(yaklasan.some(h => h.startsWith('otel/'))).toBe(false);
+    expect(yaklasan.some(h => h.startsWith('aktivite/'))).toBe(false);
+  });
+
+  it('kart uretici null donerse kart atlaniyor', () => {
+    /* Sezonu bitmis etkinlik anasayfada gorunmemeli; kutuk satiri
+       degil, KART bosa duser. */
+    const bos = { anchor: 'deneme-null', kayitlar: () => ({ a: { slug: 'a' } }), kart: () => null };
+    KATALOG_KAYNAKLARI.push(bos);
+    expect(catalogCards('deneme-null', BUGUN)).toEqual([]);
+    KATALOG_KAYNAKLARI.pop();
   });
 
   it('kaynak kutugu ileride eklenecek turler icin hazir', () => {
@@ -225,7 +246,9 @@ describe('seritlerle birlestirme', () => {
       { title: 'Sealight Resort', priceMain: '2100' },
       { title: 'Termal Vadi Resort', priceMain: '1590' }
     ]},
-    { anchor: 'etkinlikler', items: [{ title: 'Harbiye Konserleri', priceMain: '890' }] }
+    /* Katalogda karsiligi olmayan bir serit: mekanlarin henuz icerik
+       sayfasi yok. */
+    { anchor: 'mekanlar', items: [{ title: 'Kordon Boyu', priceMain: '0' }] }
   ]);
 
   it('turetilen kart seridin basina giriyor', () => {
@@ -252,7 +275,7 @@ describe('seritlerle birlestirme', () => {
   it('katalogda karsiligi olmayan serit dokunulmadan kaliyor', () => {
     const s = mergeCatalogCards(serit(), BUGUN);
     expect(s[1].items).toHaveLength(1);
-    expect(s[1].items[0].title).toBe('Harbiye Konserleri');
+    expect(s[1].items[0].title).toBe('Kordon Boyu');
   });
 
   it('bos veya gecersiz girdi patlamiyor', () => {
@@ -349,6 +372,31 @@ describe('eksik veri dosyasi', () => {
     expect(sonuc.turlar).toContain('tur/efes-sirince/');
     expect(sonuc.oteller).toEqual([]);
     expect(sonuc.aktiviteler).toEqual([]);
+  });
+
+  it('tarayicidaki gibi tek kapsamda gun adlari cozuluyor', () => {
+    /* GERCEK HATA: yardimcilar globalThis uzerinden araniyordu, ama
+       `const` ile tanimlanmis bir ad globalThis'te DURMAZ -- yalnizca
+       function bildirimleri durur. GUNLER_TR bulunamayinca anasayfadaki
+       kart "Bu undefined" yazdi. Node'da adlar modulden geldigi icin
+       testler bunu gormedi; bu test tarayiciyi taklit ediyor. */
+    const metin = calistir(
+      ['assets/js/tour-data.js', 'assets/js/catalog.js'],
+      'cardDateText("2026-09-26", "2026-09-21")');
+    expect(metin).toBe('Bu Cumartesi');
+
+    const uzak = calistir(
+      ['assets/js/tour-data.js', 'assets/js/catalog.js'],
+      'cardDateText("2026-10-20", "2026-09-21")');
+    expect(uzak).toBe('20 Ekim, Salı');
+  });
+
+  it('tek kapsamda uretilen kartta tarih dolu', () => {
+    const kart = JSON.parse(calistir(
+      ['assets/js/tour-data.js', 'assets/js/catalog.js'],
+      'JSON.stringify(catalogCards("turlar", "2026-09-21")[0])'));
+    expect(kart.meta2).toBeTruthy();
+    expect(kart.meta2).not.toContain('undefined');
   });
 
   it('yardimci cozumleyici bulamadiginda null donuyor', () => {

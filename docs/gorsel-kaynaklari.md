@@ -271,3 +271,30 @@ bulunma ihtimali daha yüksek. Yine de doğrulanamadı: ağ politikası
 nötr yer tutucusu devreye giriyor, kırık resim simgesi çıkmıyor.
 
 Doğrulanması gereken dosya sayısı on altıdan on dokuza çıktı.
+
+
+## Yedinci tur: etkinlik içerik sayfasının görselleri
+
+`etkinlik/aspendos-opera-bale-festivali/` için `assets/js/event-data.js`
+içinde `EVENT_IMAGE_FILES` adlı beşinci kayıt seti açıldı. Yöntem aynı.
+
+| Anahtar | Dosya | Durum |
+|---|---|---|
+| `aspendos` | `Aspendos Turkey.JPG` | Zaten kullanımdaydı (`cardImages`) |
+| `aspendosSahne` | `Aspendos theatre stage.jpg` | **Doğrulanmadı** |
+| `aspendosGece` | `Aspendos theatre at night.jpg` | **Doğrulanmadı** |
+| `opera` | `Opera performance on stage.jpg` | **Doğrulanmadı** |
+| `bale` | `Ballet performance on stage.jpg` | **Doğrulanmadı** |
+| `orkestra` | `Symphony orchestra in concert.jpg` | **Doğrulanmadı** |
+| `kaleici` | `Kaleici Antalya.jpg` | **Doğrulanmadı** |
+
+`tests/event.test.js` `aspendos` anahtarının `app.js`'teki `cardImages`
+kaydıyla **birebir aynı adresi** ürettiğini doğruluyor; aynı fotoğraf iki
+farklı adrese gitmiyor.
+
+Bu turdaki altı yeni addan üçü yer adı taşıyor (Aspendos, Kaleiçi),
+üçü genel sahne konusu (opera, bale, orkestra) — ikincilerin Commons'ta
+o adla bulunma ihtimali daha düşük. Ad tutmazsa `ui.js`'in nötr yer
+tutucusu devreye giriyor, kırık resim simgesi çıkmıyor.
+
+Doğrulanması gereken dosya sayısı on dokuzdan yirmi beşe çıktı.
