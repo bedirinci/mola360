@@ -49,6 +49,12 @@ jobs:
               grep -nE '(\.\./)*assets/(css|js)/' "$SAYFA" || true
             done
 
+      # Backend yayina CIKMAZ. Statik sitenin yaninda sunucu kaynagi
+      # sunmanin faydasi yok; ayrica yerelde olusturulan bir .env
+      # yanlislikla commit edilirse yayina cikmasin diye.
+      - name: Backend kaynagini yayin disinda birak
+        run: rm -rf backend docker-compose.yml
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,66 @@
+# mola360 — yerel geliştirme yığını
+#
+#   docker compose up
+#
+# Üç servis:
+#   db     PostgreSQL 16 (veri adlandırılmış birimde kalıcı)
+#   api    yönetim API'si + admin paneli  → http://localhost:4000
+#   site   statik site (mevcut hâliyle)   → http://localhost:8000
+#
+# Host seçilmediği için burada tam çalışan bir ortam kuruluyor; aynı
+# Dockerfile Fly.io, Railway, Render veya bir VPS'te de çalışır.
+# Taşınması gereken tek şey ortam değişkenleri.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mola360
+      POSTGRES_PASSWORD: mola360
+      POSTGRES_DB: mola360
+    ports: ['5432:5432']
+    volumes:
+      - mola360-db:/var/lib/postgresql/data
+    # Sağlık kontrolü olmadan api, db hazır olmadan başlayıp ölüyor.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mola360 -d mola360']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgres://mola360:mola360@db:5432/mola360
+      SESSION_SECRET: gelistirme-icin-yeterince-uzun-bir-sir
+      COOKIE_SECURE: 'false'
+      SITE_ORIGIN: http://localhost:8000
+      ADMIN_ORIGIN: http://localhost:4000
+      # İlk yönetici. Üretimde ASLA sabit şifre vermeyin: değişkeni boş
+      # bırakın, seed rastgele üretip bir kez ekrana yazar.
+      ADMIN_EMAIL: admin@mola360.local
+      ADMIN_PASSWORD: GelistirmeSifresi123
+    ports: ['4000:4000']
+    depends_on:
+      db: { condition: service_healthy }
+    volumes:
+      # Kaynak bağlanıyor ki `node --watch` değişiklikleri görsün.
+      - ./backend/src:/app/src:ro
+      - ./backend/migrations:/app/migrations:ro
+      - ./backend/scripts:/app/scripts:ro
+      - ./assets/js:/site/assets/js:ro
+    command: sh -c "npm run migrate && npm run seed && npm run import:legacy && npm run dev"
+
+  site:
+    image: node:22-alpine
+    working_dir: /site
+    volumes:
+      - .:/site:ro
+    ports: ['8000:8000']
+    command: node scripts/sunucu.js 8000
+
+volumes:
+  mola360-db:
