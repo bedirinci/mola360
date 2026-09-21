@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Gezi, etkinlik ve konaklama rezervasyon platformu.",
   "scripts": {
+    "dev": "node scripts/sunucu.js",
     "test": "vitest run"
   },
   "devDependencies": {
