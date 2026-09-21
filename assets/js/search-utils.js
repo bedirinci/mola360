@@ -21,7 +21,15 @@ function getSearchCategoryIcon(name) {
   return iconMap[name] || 'compass';
 }
 
-function getSearchCardType(sectionTitle) {
+/* Sonuc kartinin ustundeki tur etiketi. Kayit kendi turunu bildiriyorsa
+   (icerik katalogundan gelen kartlar bildirir) o kullanilir; bildirmiyorsa
+   seridin basligindan tahmin edilir.
+
+   Tahmin tek basina yetmiyor: katalog bir turu hem "Gunubirlik Turlar"
+   hem "Yaklasan Planlar" seridine koyuyor ve ikincisinin basliginda "tur"
+   gecmedigi icin ayni tur orada "Etkinlik" diye etiketleniyordu. */
+function getSearchCardType(sectionTitle, tip) {
+  if (tip) return tip;
   if (sectionTitle.includes('Otel')) return 'Otel';
   if (sectionTitle.includes('Aktivit')) return 'Aktivite';
   if (sectionTitle.includes('Tur')) return 'Tur';

@@ -47,6 +47,11 @@ import {
   tourSlugFromQuery,
   resolveTour,
 } from '../assets/js/tour-data.js';
+import { catalogCards, catalogAllCards, cardDateText, formatReviewCount } from '../assets/js/catalog.js';
+
+/* Tarih türeten testler sabit bir "bugün" kullanıyor: gerçek tarihle
+   çalışan bir test, çalıştığı güne göre başka sonuç verir. */
+const BUGUN = '2026-09-21';
 
 const sayfaJs = readFileSync(new URL('../assets/js/tour-page.js', import.meta.url), 'utf8');
 const veriJs = readFileSync(new URL('../assets/js/tour-data.js', import.meta.url), 'utf8');
@@ -703,7 +708,11 @@ describe('eski tur.html adresi', () => {
 
 describe('anasayfa bağlantısı', () => {
   const kartBloku = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-  const bagliSatirlar = kartBloku.split('\n').filter(satir => satir.includes("href:'"));
+  /* Tur kartlari anasayfaya ELLE yazilmiyor: catalog.js onlari TOURS
+     kayitlarindan uretip seritlere karistiriyor (docs/icerik-katalogu.md).
+     Bu yuzden asagidaki testler app.js metnine degil, uretilen kartlara
+     bakiyor. Katalogun kendi kurallari tests/katalog.test.js icinde. */
+  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('tur/'));
 
   it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
     const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);
@@ -718,34 +727,66 @@ describe('anasayfa bağlantısı', () => {
     });
   });
 
-  it('her içerik sayfası anasayfadan bağlanıyor', () => {
-    const baglar = bagliSatirlar.map(satir => satir.match(/href:'([^']+)'/)[1]);
+  it('her tur anasayfaya kendiliğinden giriyor', () => {
+    /* Yeni bir tur kaydı eklemek anasayfaya dokunmayı gerektirmemeli:
+       sayfası olan ama hiçbir yerden görünmeyen tur olmasın. */
+    const baglar = turKartlari.map(k => k.href);
     Object.keys(TOURS).forEach(slug => {
-      expect(baglar, slug + ' anasayfadan bağlanmıyor').toContain('tur/' + slug + '/');
+      expect(baglar, slug + ' anasayfaya girmiyor').toContain('tur/' + slug + '/');
     });
-    expect(baglar).toHaveLength(Object.keys(TOURS).length);
+  });
+
+  it('her tur kendi kategori şeridine giriyor', () => {
+    /* Günübirlik tur "Günübirlik Turlar" şeridine, konaklamalı olan
+       "Konaklamalı Turlar" şeridine. Kaydın categoryAnchor'ı ile
+       katalogun koyduğu şerit ayrışamaz. */
+    Object.values(TOURS).forEach(t => {
+      const seritte = catalogCards(t.categoryAnchor, BUGUN).map(k => k.href);
+      expect(seritte, t.slug + ' -> #' + t.categoryAnchor + ' şeridinde yok')
+        .toContain('tur/' + t.slug + '/');
+    });
   });
 
   it('bağlar /tur/<slug>/ biçiminde ve slug gerçek bir tur', () => {
-    bagliSatirlar.forEach(satir => {
-      const href = satir.match(/href:'([^']+)'/)[1];
-      expect(href, href + ' /tur/<slug>/ biçiminde değil').toMatch(/^tur\/[a-z0-9-]+\/$/);
-      const slug = href.replace(/^tur\//, '').replace(/\/$/, '');
+    turKartlari.forEach(kart => {
+      expect(kart.href, kart.href + ' /tur/<slug>/ biçiminde değil').toMatch(/^tur\/[a-z0-9-]+\/$/);
+      const slug = kart.href.replace(/^tur\//, '').replace(/\/$/, '');
       expect(TOURS[slug], slug + ' TOURS içinde yok').toBeTruthy();
-      /* Adresteki slug, tur kaydındaki slug ile aynı olmalı. */
       expect(TOURS[slug].slug).toBe(slug);
     });
   });
 
   it('anasayfadaki fiyat tur sayfasındaki fiyatla aynı', () => {
     /* Listede bir fiyat, detayda başka bir fiyat görmek güveni bitirir.
+       Kart fiyatı elle yazılmadığı için kopyalanıp eskiyemiyor; test
+       yine de türetmenin doğru alanı okuduğunu doğruluyor.
        basePrice() tur tipini bilir: günübirlikte yetişkin tarifesi,
        konaklamalıda iki kişilik odada kişi başı. */
-    bagliSatirlar.forEach(satir => {
-      const slug = satir.match(/href:'tur\/([^/]+)\//)[1];
-      const fiyat = Number(satir.match(/priceMain:'(\d+)'/)[1]);
-      expect(fiyat, slug + ' kart fiyatı tur fiyatıyla aynı değil')
+    turKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^tur\//, '').replace(/\/$/, '');
+      expect(Number(kart.priceMain), slug + ' kart fiyatı tur fiyatıyla aynı değil')
         .toBe(basePrice(TOURS[slug]));
+    });
+  });
+
+  it('anasayfadaki puan ve yorum sayısı tur kaydından geliyor', () => {
+    turKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^tur\//, '').replace(/\/$/, '');
+      const puan = ratingSummary(TOURS[slug].ratingBreakdown);
+      expect(kart.rating, slug + ' kart puanı farklı').toBe(String(puan.average));
+      expect(kart.reviews, slug + ' yorum sayısı farklı').toBe(formatReviewCount(puan.total));
+    });
+  });
+
+  it('karttaki tarih tur sayfasındaki ilk kalkışla aynı gün', () => {
+    /* Elle yazılan tarih ("20 Ekim, Salı") birkaç hafta sonra geçmiş bir
+       günü gösteriyordu. Artık kalkış takviminden türetiliyor. */
+    turKartlari.forEach(kart => {
+      const slug = kart.href.replace(/^tur\//, '').replace(/\/$/, '');
+      const t = TOURS[slug];
+      const ilk = nextDepartureDates(BUGUN, t.pricing.departureDays, 1, t.pricing.leadDays)[0];
+      expect(kart.meta2, slug + ' kart tarihi kalkıştan farklı').toBe(cardDateText(ilk, BUGUN));
+      expect(kart.meta2).not.toBe('');
     });
   });
 

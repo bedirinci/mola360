@@ -193,6 +193,19 @@ aşağıda. Önce programın altına taşındı, sonra kart tümden kaldırıld�
 düğme zaten programın altında duruyor, bağlam belli, ayrı bir kart
 gerekmiyor.
 
+## Anasayfaya çıkış: içerik kataloğu
+
+Tur kartları anasayfaya elle yazılmıyor. `assets/js/catalog.js` her tur
+kaydından kart üretip kaydın kendi kategorisine (`categoryAnchor`) ve
+"Yaklaşan Planlar" şeridine koyuyor; kategori sonuçları ile arama ekranı
+da aynı diziden besleniyor. Karttaki fiyat, puan, yorum sayısı ve kalkış
+tarihi kayıttan türetiliyor, yani kopyalanıp eskiyemiyorlar — "20 Ekim,
+Salı" gibi elle yazılmış sabit bir tarih artık yok. Ayrıntı:
+`docs/icerik-katalogu.md`.
+
+Kayıttaki `card` alanı yalnızca türetilemeyenleri taşır: görsel anahtarı,
+dar karta sığan kısa ad, rozetler ve ilk meta satırı.
+
 ## Katman açıkken arka sayfa kilidi
 
 Rezervasyon özeti veya ışık kutusu açıkken arkadaki sayfa kaymamalı.

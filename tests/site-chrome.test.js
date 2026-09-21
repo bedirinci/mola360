@@ -6,10 +6,10 @@
    mumkun kilan iki sarti koruyor:
 
    1) Hicbir sayfa basligin kendi kopyasini tasimayacak.
-   2) app.js artik yalnizca anasayfada degil tur sayfalarinda da
-      yuklendigi icin, anasayfaya ozgu elemanlara korumasiz
-      dokunmayacak -- yoksa tur sayfasinda ilk hatada butun betik
-      duruyor ve baslik olu kaliyor. */
+   2) app.js artik yalnizca anasayfada degil icerik sayfalarinda (tur ve
+      otel) da yuklendigi icin, anasayfaya ozgu elemanlara korumasiz
+      dokunmayacak -- yoksa o sayfalarda ilk hatada butun betik duruyor
+      ve baslik olu kaliyor. */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
@@ -19,10 +19,14 @@ const cerceve = oku('assets/js/site-chrome.js');
 const app = oku('assets/js/app.js');
 const anasayfa = oku('index.html');
 const turSayfalari = [
-  ['efes-sirince', oku('tur/efes-sirince/index.html')],
-  ['kapadokya-3-gece', oku('tur/kapadokya-3-gece/index.html')]
+  ['tur/efes-sirince/', oku('tur/efes-sirince/index.html')],
+  ['tur/kapadokya-3-gece/', oku('tur/kapadokya-3-gece/index.html')],
+  /* Otel icerik sayfasi da ayni cerceveyi yukluyor: baslik, arama,
+     bildirimler ve giris modali orada da calisiyor. Liste artik
+     "alt klasordeki icerik sayfalari" listesi; tur/otel ayrimi yok. */
+  ['otel/kordon-butik-otel/', oku('otel/kordon-butik-otel/index.html')]
 ];
-const sayfalar = [['index.html', anasayfa], ...turSayfalari.map(([s, h]) => ['tur/' + s + '/', h])];
+const sayfalar = [['index.html', anasayfa], ...turSayfalari];
 
 describe('ortak çerçeve tek kaynak', () => {
   it('her sayfa çerçeveyi yüklüyor', () => {

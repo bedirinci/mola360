@@ -517,17 +517,11 @@ const cardSections = [
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
   {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'kapadokya2', href:'tur/kapadokya-3-gece/', badges:['Kültür','Yurt İçi'], rating:'4.7', reviews:'970+', title:'Kapadokya Turu — 3 Gece 4 Gün', meta1:'3 Gece 4 Gün · İstanbul, İzmir ve Ankara Çıkışlı', meta2:'20 Ekim, Salı', priceMain:'8990'},
     {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
     {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
     {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
   ]},
   {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    /* href tasiyan kart, icerik sayfasi yazilmis tur demek. Adres
-       /tur/<slug>/ bicimindedir ve slug tour-data.js'teki TOURS anahtariyla
-       ayni olmak zorundadir; fiyat da o kaydin fiyatiyla ayni olmalidir.
-       tests/tour.test.js ikisini de karsilastirir. */
-    {img:'efes', href:'tur/efes-sirince/', badges:['Günübirlik'], rating:'4.8', reviews:'1,2b+', title:'Efes Antik Kenti ve Şirince Turu', meta1:'İzmir Çıkışlı · Rehberli · Yemek Dahil', meta2:'Bu Cumartesi', priceMain:'1290'},
     {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
     {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
     {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},
@@ -542,11 +536,26 @@ const cardSections = [
   ]},
   {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
     {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
-    {img:'hotel5', badges:['Şehir Oteli'], rating:'8.9', reviews:'210+', title:'Kordon Butik Otel', meta1:'Alsancak, İzmir · Sahile Yürüme Mesafesi', meta2:'Bugün', priceMain:'1950', unit:'/gece'},
     {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
     {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Göreme Mağara Otel', meta1:'Göreme, Nevşehir · Tarihi Doku', meta2:'Bu hafta', priceMain:'2450', unit:'/gece'},
   ]},
 ];
+
+/* ---------------- icerik kataloğu ----------------
+   Icerik sayfasi olan kayitlar (tur, otel, ileride etkinlik/aktivite/
+   mekan) anasayfaya ELLE yazilmiyor: catalog.js onlari kendi kayitlarindan
+   uretip asagidaki seritlere karistiriyor. Boylece yeni bir sayfa yazmak
+   tek dosyaya dokunmak demek ve karttaki fiyat/puan/tarih kaydin
+   kendisinden geliyor -- eskiyemiyor.
+
+   Anasayfanin butun listeleri (seritler, kategori sonuclari, arama
+   ekrani) cardSections'tan beslendigi icin kayit hepsine ayni anda
+   giriyor.
+
+   Kosul, catalog.js'i YUKLEMEYEN sayfalar icin: tur ve otel icerik
+   sayfalari app.js'i yukluyor ama katalogu yuklemiyor; orada bu satir
+   sessizce atlanir. */
+if (typeof mergeCatalogCards === 'function') mergeCatalogCards(cardSections);
 
 /* ---------------- paylaşılan resize yayını ----------------
    Daha önce her yatay şerit ve her ok grubu için ayrı bir
@@ -729,8 +738,15 @@ function poiCardMarkup(sec, it){
 /* Kompakt kart: gorsel uzerinde tarih rozeti, altinda tur etiketi, baslik,
    yer ve fiyat. cardStyle:'compact' tasiyan seritlerde kullanilir. */
 function compactCardMarkup(sec, it){
+  /* Icerik sayfasi olan kayit bu seritte de tiklanabilir olmali: katalog
+     turleri hem kendi kategorisine hem "Yaklasan Planlar"a koyuyor ve iki
+     yerde ayni kartin biri tiklanip digeri tiklanmiyor olamaz. Baslik
+     gercek bir <a>, data-href ise kartin tamami icin. */
+  const baslik = it.href
+    ? `<a href="${it.href}">${it.title}</a>`
+    : it.title;
   return `
-        <article class="compact-card">
+        <article class="compact-card"${it.href ? ` data-href="${it.href}"` : ''}>
           <div class="compact-card-media">
             <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="" loading="lazy">
             <span class="compact-card-when"><span class="icon">${svg('calendar')}</span>${it.meta2}</span>
@@ -743,7 +759,7 @@ function compactCardMarkup(sec, it){
                 ? `<span class="compact-card-sponsored">Sponsorlu</span>`
                 : `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>`}
             </div>
-            <h3 class="compact-card-title">${it.title}</h3>
+            <h3 class="compact-card-title">${baslik}</h3>
             <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>
             <span class="compact-card-price">${it.priceMain} TL</span>
           </div>
@@ -786,7 +802,7 @@ initHomeBlocks();
    bu yuzden once onlar elenir. Tek delege dinleyici: kartlar sonradan
    yeniden cizildiginde (zaman filtreleri) yeniden baglanmak gerekmez. */
 document.addEventListener('click', (e) => {
-  const kart = e.target.closest('.poi-card[data-href]');
+  const kart = e.target.closest('.poi-card[data-href], .compact-card[data-href]');
   if (!kart || e.target.closest('a, button')) return;
   window.location.href = kart.getAttribute('data-href');
 });
@@ -1131,6 +1147,33 @@ function getSearchImage(item) {
   return cardImages[item.img] || ('https://picsum.photos/seed/'+encodeURIComponent(item.img)+'/400/300');
 }
 
+/* Sayfanin koku: arama sonucundaki bag anasayfada "otel/..." , alt
+   klasordeki bir sayfada "../../otel/..." olmali. Deger <body data-root>
+   niteliginden geliyor; anasayfada nitelik yok, onek bos kaliyor. */
+const SITE_KOK = (document.body && document.body.getAttribute('data-root')) || '';
+
+/* Arama sonucu kartinin tek isaretlemesi: uc yerde (one cikanlar,
+   kategori sonuclari, arama sonuclari) ayni kart basiliyordu ve uc kopya
+   birbirinden ayrisabiliyordu.
+
+   ICERIK SAYFASI OLAN kayit gercek bir <a>: sonuca tiklayinca o sayfa
+   aciliyor. Once hepsi <button> idi ve tiklayinca yalnizca arama kutusuna
+   baslik yaziliyordu -- yani icerik sayfasi olan bir kayda aramadan
+   ULASILAMIYORDU. Sayfasi olmayan ornek kartlar eskisi gibi aramayi
+   doldurmaya devam ediyor. */
+function searchResultMarkup(item) {
+  const govde = `
+        <span class="m360-search-result-media"><img src="${getSearchImage(item)}" alt="${item.title}" loading="lazy"></span>
+        <span class="m360-search-result-info">
+          <span class="type">${getSearchCardType(item.sectionTitle, item.type)}</span>
+          <strong>${item.title}</strong>
+          <p>${item.meta1 || ''}</p>
+        </span>`;
+  return item.href
+    ? `<a class="m360-search-result" href="${SITE_KOK}${item.href}">${govde}</a>`
+    : `<button type="button" class="m360-search-result" data-search-term="${item.title}">${govde}</button>`;
+}
+
 // Arama ekranında seçili olan kategori (varsa). Kategoriye tıklanınca
 // diğer bölümler (Son Aramalar, Popüler Aramalar, Öne Çıkanlar) kaybolmaz;
 // sadece seçilen kategori görsel olarak işaretlenir ve sonuçlar altta gösterilir.
@@ -1164,14 +1207,7 @@ function renderSearchHome() {
   ).slice(0, 4);
 
   const featuredHtml = featured.map(item => `
-    <button type="button" class="m360-search-result" data-search-term="${item.title}">
-      <span class="m360-search-result-media"><img src="${getSearchImage(item)}" alt="${item.title}" loading="lazy"></span>
-      <span class="m360-search-result-info">
-        <span class="type">${getSearchCardType(item.sectionTitle)}</span>
-        <strong>${item.title}</strong>
-        <p>${item.meta1 || ''}</p>
-      </span>
-    </button>
+    ${searchResultMarkup(item)}
   `).join('');
 
   // Bir kategori seçiliyse, kategoriye ait sonuçları en altta ayrı bir
@@ -1191,14 +1227,7 @@ function renderSearchHome() {
     });
 
     const catResultHtml = catResults.map(item => `
-      <button type="button" class="m360-search-result" data-search-term="${item.title}">
-        <span class="m360-search-result-media"><img src="${getSearchImage(item)}" alt="${item.title}" loading="lazy"></span>
-        <span class="m360-search-result-info">
-          <span class="type">${getSearchCardType(item.sectionTitle)}</span>
-          <strong>${item.title}</strong>
-          <p>${item.meta1 || ''}</p>
-        </span>
-      </button>
+      ${searchResultMarkup(item)}
     `).join('');
 
     categoryResultsHtml = `
@@ -1284,14 +1313,7 @@ function renderSearchResults(query) {
     </section>` : '';
 
   const resultHtml = results.slice(0, 12).map(item => `
-    <button type="button" class="m360-search-result" data-search-term="${item.title}">
-      <span class="m360-search-result-media"><img src="${getSearchImage(item)}" alt="${item.title}" loading="lazy"></span>
-      <span class="m360-search-result-info">
-        <span class="type">${getSearchCardType(item.sectionTitle)}</span>
-        <strong>${item.title}</strong>
-        <p>${item.meta1 || ''}</p>
-      </span>
-    </button>
+    ${searchResultMarkup(item)}
   `).join('');
 
   const resultsHtml = resultHtml ? `
