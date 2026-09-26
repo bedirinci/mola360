@@ -816,3 +816,33 @@
   text-decoration: none;
 }
 .dty-list-link:hover { text-decoration: underline; }
+
+/* ---------------- arama sayfası ---------------- */
+.lst-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 6px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.lst-search:focus-within { border-color: var(--green); }
+.lst-search .icon { display: inline-flex; width: 20px; height: 20px; color: var(--green-dark); }
+.lst-search .icon svg { width: 20px; height: 20px; }
+.lst-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.lst-search button { height: 40px; padding: 0 18px; border-radius: 10px; }
+.lst-state-search { margin-top: 28px; }

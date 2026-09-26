@@ -316,9 +316,18 @@ function lspBosListeMarkup(model) {
     + '</main>';
 }
 
+/* Arama sayfasının kutusu: GET formu, JS olmadan da çalışır. */
+function lspAramaFormu(q) {
+  return '<form class="lst-search" action="arama/" method="get" role="search">'
+    + '<span class="icon" aria-hidden="true">' + LSP_IKON.ara + '</span>'
+    + '<input type="search" name="q" value="' + lspKacis(q || '') + '" placeholder="Tur, otel, etkinlik, şehir ara…" aria-label="Arama" autocomplete="off" enterkeyhint="search">'
+    + '<button class="btn-primary" type="submit">Ara</button></form>';
+}
+
 function lspListeIskeleti(model, seo) {
   return '<main class="lst-page" id="lstPage">'
     + lspKirintiMarkup(model.kirinti)
+    + (model.kind === 'search' ? lspAramaFormu(model.q) : '')
     + '<header class="lst-head"><h1>' + lspKacis(model.baslik) + '</h1>'
     + '<p class="lst-summary">' + lspKacis(lspSayimMetni(seo.adet, model.birim)
       + (seo.enDusuk ? ' · en düşük ' + seo.enDusuk : '')) + '</p></header>'
@@ -351,13 +360,18 @@ function lspListeIskeleti(model, seo) {
 
 /* Liste ekranını kurar ve süzgeçleri bağlar. */
 function lspListeKur(kok, model, seo, bugun) {
+  /* Arama sayfasında varsayılan sıralama "en alakalı"; diğer
+     sayfalarda bu seçenek yok. */
+  const arama = model.kind === 'search';
+  const varsayilan = arama ? 'alaka' : 'onerilen';
   const alanlar = MolaVeri.yuzeyTanimlari(bugun);
   const oku = lspMotor('suzOku');
   const yaz = lspMotor('suzYaz');
   const degistir = lspMotor('suzDegistir');
   const sahip = lspMotor('suzSahipOlunanlar');
-  const siralamalar = (typeof SUZ_SIRALAMALAR !== 'undefined') ? SUZ_SIRALAMALAR : [];
-  let durum = oku(location.search, alanlar);
+  const siralamalar = ((typeof SUZ_SIRALAMALAR !== 'undefined') ? SUZ_SIRALAMALAR : [])
+    .filter(x => arama || !x.arama);
+  let durum = oku(location.search, alanlar, varsayilan);
   const kapaliGruplar = new Set();
   const tumuAcik = new Set();
   let sayac = 0;
@@ -375,7 +389,7 @@ function lspListeKur(kok, model, seo, bugun) {
     const sahipOlunan = sahip(alanlar);
     const yabanci = location.search.replace(/^\?/, '').split('&')
       .filter(p => p && sahipOlunan.indexOf(decodeURIComponent(p.split('=')[0])) === -1);
-    const qs = [yaz(durum, alanlar)].concat(yabanci).filter(Boolean).join('&');
+    const qs = [yaz(durum, alanlar, varsayilan)].concat(yabanci).filter(Boolean).join('&');
     history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   };
 
@@ -556,6 +570,50 @@ function lspYakinda(kok, model) {
     });
 }
 
+/* ---------------- arama sayfası ----------------
+   /arama/?q=kapadokya — liste şablonu, temel süzgeç metin araması
+   (veri kapısı: kapiAramaPuani). Sorgu yoksa ya da sonuç çıkmazsa
+   kutu ve öneriler. Arama sayfası dizine girmez. */
+function lspSorgu(arama) {
+  const p = (typeof suzParametreler === 'function') ? suzParametreler(arama) : {};
+  return String(p.q || '').trim().slice(0, 80);
+}
+
+function lspAramaKur(kok, bugun) {
+  const q = lspSorgu(location.search);
+  const model = MolaVeri.aramaModeli(q);
+  const seo = MolaVeri.listeSeo(Object.assign({}, model, { temel: model.temel || { q: '' } }), bugun) || {};
+  const adet = q ? MolaVeri.listele({ q }, bugun).length : 0;
+  lspMetaYaz({ title: model.baslik + ' — mola360', description: 'mola360 içinde ara: tur, otel, aktivite, etkinlik ve mekân.',
+    noindex: true, canonical: null });
+  if (q && typeof gecAramaEkle === 'function') gecAramaEkle(q);
+  if (q && adet) {
+    const bitti = lspListeKur(kok, model, Object.assign({}, seo, { adet }), bugun);
+    lspBaslikYuksekligi();
+    window.addEventListener('resize', lspBaslikYuksekligi);
+    return bitti;
+  }
+  /* Sorgu yok ya da sonuç yok: kutu, eşleşen sayfalar ve öne çıkanlar. */
+  const T = (typeof TAXONOMY_TYPES !== 'undefined') ? TAXONOMY_TYPES : {};
+  const baglar = model.altlar.length ? model.altlar
+    : Object.keys(T).map(t => ({ name: T[t].plural, path: T[t].base }));
+  return MolaVeri.liste({ temel: {}, durum: { secim: {}, siralama: 'onerilen', sayfa: 1 }, bugun }).then(sonuc => {
+    kok.innerHTML = lspMobilBaslikMarkup('Arama', q ? 'Sonuç yok' : 'mola360', '')
+      + '<main class="lst-page" id="lstPage">' + lspKirintiMarkup(model.kirinti)
+      + lspAramaFormu(q)
+      + '<section class="lst-state lst-state-search">'
+      + '<h1>' + lspKacis(q ? '“' + q + '” için sonuç bulamadık' : 'Ne aramıştın?') + '</h1>'
+      + '<p>' + (q ? 'Yazımı kontrol edebilir, daha genel bir kelime deneyebilir ya da aşağıdaki sayfalara göz atabilirsin.'
+        : 'Tur, otel, etkinlik, aktivite, mekân ya da şehir adı yazabilirsin.') + '</p>'
+      + '<nav class="lst-chips lst-state-links" aria-label="Öne çıkan sayfalar">'
+      + baglar.map(b => '<a class="lst-chip" href="' + lspHref(b.path) + '">' + lspKacis(b.name) + '</a>').join('') + '</nav>'
+      + '</section>'
+      + '<section class="lst-suggest"><h2>Öne çıkanlar</h2><div class="lst-grid">'
+      + lspKartlarMarkup(sonuc ? sonuc.satirlar.slice(0, 8) : [], bugun) + '</div></section>'
+      + '</main>';
+  });
+}
+
 /* ---------------- açılış ----------------
    Yalnızca yönlendirici sayfada (<body data-sayfa="yonlendirici">)
    çalışır; başka sayfa bu dosyayı yüklese bile bir şey yapmaz. */
@@ -609,6 +667,8 @@ function lspBaslat() {
     if (typeof dtyKur === 'function') return dtyKur(kok, adres, bugun);
     return lspBulunamadi(kok, goreli, bugun);
   }
+
+  if (adres.kind === 'search') return lspAramaKur(kok, bugun);
 
   const model = MolaVeri.sayfaModeli(adres, bugun);
   if (!model) return lspBulunamadi(kok, goreli, bugun);

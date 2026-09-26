@@ -36,7 +36,9 @@
    kaldığı yerde). */
 const SUZ_SAYFA_BOYU = 24;
 
+/* arama: yalnızca arama sayfasında sunulur (orada varsayılan). */
 const SUZ_SIRALAMALAR = [
+  { slug: 'alaka',        name: 'En alakalı', arama: true },
   { slug: 'onerilen',     name: 'Önerilen' },
   { slug: 'fiyat-artan',  name: 'Fiyat: Artan' },
   { slug: 'fiyat-azalan', name: 'Fiyat: Azalan' },
@@ -254,6 +256,7 @@ function suzSirala(satirlar, anahtar) {
   };
   const sirala = {
     'onerilen': oneri,
+    'alaka': (a, b) => ((Number(b.alaka) || 0) - (Number(a.alaka) || 0)) || oneri(a, b),
     'fiyat-artan': fiyat(1),
     'fiyat-azalan': fiyat(-1),
     'tarih': (a, b) => {
@@ -290,7 +293,9 @@ function suzParametreler(sorgu) {
   return out;
 }
 
-function suzOku(sorgu, alanlar) {
+/* varsayilan: sayfanın varsayılan sıralaması (arama sayfasında
+   'alaka'); adreste yazılmaz. */
+function suzOku(sorgu, alanlar, varsayilan) {
   const p = suzParametreler(sorgu);
   const secim = {};
   (alanlar || []).forEach(alan => {
@@ -310,7 +315,7 @@ function suzOku(sorgu, alanlar) {
     }
     if (degerler.length) secim[alan.key] = degerler;
   });
-  const siralama = SUZ_SIRALAMALAR.some(x => x.slug === p.sirala) ? p.sirala : 'onerilen';
+  const siralama = SUZ_SIRALAMALAR.some(x => x.slug === p.sirala) ? p.sirala : (varsayilan || 'onerilen');
   const sayfa = /^\d+$/.test(p.sayfa || '') ? Math.max(1, Math.min(50, Number(p.sayfa))) : 1;
   return { secim, siralama, sayfa };
 }
@@ -321,7 +326,7 @@ function suzSahipOlunanlar(alanlar) {
   return (alanlar || []).map(a => a.key).concat(['sirala', 'sayfa']);
 }
 
-function suzYaz(durum, alanlar) {
+function suzYaz(durum, alanlar, varsayilan) {
   const d = durum || {};
   const s = d.secim || {};
   const out = [];
@@ -329,7 +334,7 @@ function suzYaz(durum, alanlar) {
     const v = s[alan.key];
     if (v && v.length) out.push(alan.key + '=' + v.map(x => encodeURIComponent(x)).join(','));
   });
-  if (d.siralama && d.siralama !== 'onerilen') out.push('sirala=' + d.siralama);
+  if (d.siralama && d.siralama !== (varsayilan || 'onerilen')) out.push('sirala=' + d.siralama);
   if (d.sayfa && d.sayfa > 1) out.push('sayfa=' + d.sayfa);
   return out.join('&');
 }

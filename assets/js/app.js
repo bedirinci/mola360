@@ -492,11 +492,22 @@ const searchCategories = [
 ];
 
 // Arama ekranında örnek olarak gösterilen son aramalar.
-const recentSearchTerms = [
-  'İstanbul konserleri',
-  'Kapadokya otelleri',
-  'İzmir mekanları'
-];
+/* Son aramalar ziyaretçinin kendi geçmişi (visitor-history.js); elle
+   yazılmış örnek liste kaldırıldı. Geçmiş yoksa bölüm çizilmiyor. */
+function sonAramalar() {
+  return (typeof gecOku === 'function') ? gecOku('arama') : [];
+}
+
+/* Arama sayfası: tam sonuçlar, süzgeçler ve sıralama (/arama/?q=). */
+function aramaSayfasiAdresi(metin) {
+  return SITE_KOK + 'arama/?q=' + encodeURIComponent(String(metin || '').trim());
+}
+function aramaSayfasinaGit(metin) {
+  const m = String(metin || '').trim();
+  if (!m) return;
+  if (typeof gecAramaEkle === 'function') gecAramaEkle(m);
+  window.location.href = aramaSayfasiAdresi(m);
+}
 
 // Arama ekranında gösterilen önerilen aramalar (trend/öneri niteliğinde, sabit liste).
 const suggestedSearchTerms = [
@@ -1153,12 +1164,13 @@ const searchOverlay = document.getElementById('searchOverlay');
 const searchOverlayInput = document.getElementById('searchOverlayInput');
 const searchOverlayClose = document.getElementById('searchOverlayClose');
 /* Markup degisirse tum arama bloğu sessizce cokmesin diye korumali erisim. */
+/* Enter: tam sonuç sayfası (süzgeç ve sıralamayla). Anlık sonuçlar
+   yazarken kutunun altında kalıyor. */
 if (searchOverlayInput) searchOverlayInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') {
     event.preventDefault();
     const term = searchOverlayInput.value.trim();
-    if (term) renderSearchResults(term);
-    searchOverlayInput.blur();
+    if (term) aramaSayfasinaGit(term);
   }
 });
 
@@ -1256,7 +1268,7 @@ function renderSearchHome() {
     <button type="button" class="m360-pill" data-search-term="${term}">${term}</button>
   `).join('');
 
-  const recentHtml = recentSearchTerms.map(term => `
+  const recentHtml = sonAramalar().map(term => `
     <button type="button" class="search-recent-item m360-recent-search-item" data-search-term="${term}">
       <span class="icon clock-icon">${svg('clock')}</span>
       <span class="recent-term">${term}</span>
@@ -1319,12 +1331,12 @@ function renderSearchHome() {
       <div class="m360-pill-list">${suggestedHtml}</div>
     </section>
 
-    <section class="m360-search-section">
+    ${recentHtml ? `<section class="m360-search-section">
       <div class="m360-search-section-title">
-        <h3>Son Aramalar</h3><button class="m360-see-all" type="button">Tümünü Gör</button>
+        <h3>Son Aramalar</h3>
       </div>
       <div class="search-recent-list m360-search-list">${recentHtml}</div>
-    </section>
+    </section>` : ''}
 
     <section class="m360-search-section">
       <div class="m360-search-section-title">
@@ -1350,14 +1362,32 @@ function renderSearchResults(query) {
   }
 
   const categoryMatches = searchCategories.filter(c => normalizeSearchText(c.name).includes(q));
-  const results = [];
 
-  aramaKayitlari().forEach(item => {
-    const haystack = normalizeSearchText([
-      item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
-    ].join(' '));
-    if (haystack.includes(q)) results.push(item);
-  });
+  /* Sonuçlar veri kapısının aramasından (arama sayfasıyla AYNI kural:
+     MolaVeri.hizliAra / liste({ temel: { q } })). Kapı yüklü değilse
+     eski yol: kart metninde geçiyor mu. */
+  const kapi = (typeof MolaVeri !== 'undefined') ? MolaVeri : null;
+  const kartUret = (typeof KATALOG_KART !== 'undefined') ? KATALOG_KART : null;
+  let results = [];
+  let toplam = 0;
+  let sayfalar = [];
+  if (kapi && kartUret) {
+    toplam = kapi.listele({ q: query }).length;
+    results = kapi.hizliAra(query, undefined, 12).map(k => {
+      const uret = kartUret[kapi.icerikTipi(k)];
+      const kart = uret ? uret(k) : null;
+      return kart ? { ...kart, sectionTitle: kart.type || '' } : null;
+    }).filter(Boolean);
+    sayfalar = kapi.aramaSayfalari(query);
+  } else {
+    aramaKayitlari().forEach(item => {
+      const haystack = normalizeSearchText([
+        item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
+      ].join(' '));
+      if (haystack.includes(q)) results.push(item);
+    });
+    toplam = results.length;
+  }
 
   const catHtml = categoryMatches.length ? `
     <section class="m360-search-section">
@@ -1372,21 +1402,31 @@ function renderSearchResults(query) {
       </div>
     </section>` : '';
 
+  /* Adı sorguyla eşleşen liste sayfaları: "Kapadokya Turları" gibi. */
+  const sayfaHtml = sayfalar.length ? `
+    <section class="m360-search-section">
+      <div class="m360-search-section-title"><h3>Sayfalar</h3></div>
+      <div class="m360-pill-list">${sayfalar.map(x => `<a class="m360-pill" href="${SITE_KOK}${x.path}/">${x.name}</a>`).join('')}</div>
+    </section>` : '';
+
   const resultHtml = results.slice(0, 12).map(item => `
     ${searchResultMarkup(item)}
   `).join('');
 
+  const tumu = toplam ? `<a class="m360-search-all" href="${aramaSayfasiAdresi(query)}" data-arama-sayfasi>Tüm sonuçları gör (${toplam})</a>` : '';
+
   const resultsHtml = resultHtml ? `
     <section class="m360-search-section">
-      <div class="m360-search-section-title"><h3>Sonuçlar</h3><span>${results.length} eşleşme</span></div>
+      <div class="m360-search-section-title"><h3>Sonuçlar</h3><span>${toplam} eşleşme</span></div>
       <div class="m360-search-list">${resultHtml}</div>
+      ${tumu}
     </section>` : `
     <div class="m360-search-empty">
       <strong>Aradığın şeyi bulamadık.</strong>
       <span>Etkinlik, tur, otel, aktivite veya kategori adıyla tekrar deneyebilirsin.</span>
     </div>`;
 
-  home.innerHTML = catHtml + resultsHtml;
+  home.innerHTML = catHtml + sayfaHtml + resultsHtml;
 }
 
 /* Arama ekranının kendi ayrı kilit mekanizması vardı; kullandığı
@@ -1395,13 +1435,30 @@ function renderSearchResults(query) {
 function lockSearchPageScroll()   { refreshScrollLock(); }
 function unlockSearchPageScroll() { refreshScrollLock(); }
 
+/* Masaüstünde arama katmanının kendi kutusu gizli: katman başlıktaki
+   kutunun altına açılıyor ve yazı BAŞLIKTAKİ kutuya yazılıyor. Önceden o
+   kutu salt okunurdu ve masaüstünde arama hiç yazılamıyordu (odak
+   görünmeyen katman kutusuna gidiyordu). */
+function masaustuAramaKutusu() {
+  const ust = document.querySelector('.search-overlay-top');
+  if (!ust || getComputedStyle(ust).display !== 'none') return null;
+  return document.querySelector('#headerSearchTrigger input');
+}
+
 function openSearchOverlay() {
   activeSearchCategory = null;
-  renderSearchHome();
+  const baslikKutusu = masaustuAramaKutusu();
+  if (baslikKutusu && baslikKutusu.value.trim()) renderSearchResults(baslikKutusu.value);
+  else renderSearchHome();
   searchOverlay.classList.add('open');
   document.body.classList.add('search-modal-open');
   lockSearchPageScroll();
 
+  if (baslikKutusu) {
+    baslikKutusu.readOnly = false;
+    setTimeout(() => baslikKutusu.focus({preventScroll:true}), 30);
+    return;
+  }
   /* iOS'ta klavye açılırken zoom oluşmaması için 16px input + kısa gecikme. */
   setTimeout(() => {
     searchOverlayInput.focus({preventScroll:true});
@@ -1421,6 +1478,8 @@ function closeSearchOverlay() {
   searchOverlay.classList.remove('open');
   document.body.classList.remove('search-modal-open');
   searchOverlayInput.blur();
+  const baslikKutusu = document.querySelector('#headerSearchTrigger input');
+  if (baslikKutusu) { baslikKutusu.readOnly = true; baslikKutusu.blur(); }
   unlockSearchPageScroll();
 }
 
@@ -1454,7 +1513,25 @@ searchOverlayInput.addEventListener('focus', () => setTimeout(updateSearchOverla
 searchOverlayInput.addEventListener('blur', () => setTimeout(updateSearchOverlayKeyboardInset, 300));
 
 onId('headerSearchTrigger', 'click', openSearchOverlay);
-onId('headerSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
+onId('headerSearchTrigger', 'keydown', (e)=>{
+  /* Kutu yazılabilir durumdayken tuşlar kutunun: boşluk yazılabilmeli,
+     Enter tam sonuç sayfasına gitmeli. */
+  if (e.target.tagName === 'INPUT' && !e.target.readOnly) {
+    if (e.key === 'Enter') { e.preventDefault(); aramaSayfasinaGit(e.target.value); }
+    else if (e.key === 'Escape') closeSearchOverlay();
+    return;
+  }
+  if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); }
+});
+(function baslikAramaKutusunuBagla(){
+  const kutu = document.querySelector('#headerSearchTrigger input');
+  if (!kutu) return;
+  kutu.addEventListener('input', () => {
+    if (!searchOverlayInput) return;
+    searchOverlayInput.value = kutu.value;
+    searchOverlayInput.dispatchEvent(new Event('input'));
+  });
+})();
 onId('mobileSearchTrigger', 'click', openSearchOverlay);
 onId('mobileSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
 onId('searchOverlayBack', 'click', closeSearchOverlay);
@@ -1474,14 +1551,17 @@ searchOverlayClear.addEventListener('click', ()=>{
 });
 
 onId('searchHomeContent', 'click', (e)=>{
+  if (e.target.closest('[data-arama-sayfasi]') && searchOverlayInput && typeof gecAramaEkle === 'function') {
+    gecAramaEkle(searchOverlayInput.value);
+    return;
+  }
   const removeButton = e.target.closest('.search-recent-remove');
   if (removeButton) {
     e.preventDefault();
     e.stopPropagation();
     const item = removeButton.closest('[data-search-term]');
     const term = item?.dataset.searchTerm || '';
-    const index = recentSearchTerms.indexOf(term);
-    if (index !== -1) recentSearchTerms.splice(index, 1);
+    if (typeof gecAramaSil === 'function') gecAramaSil(term);
     renderSearchHome();
     return;
   }

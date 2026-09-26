@@ -268,6 +268,101 @@ function kapiKalkisSehirleri(kayit) {
   return ((kayit && kayit.taxonomy && kayit.taxonomy.facets && kayit.taxonomy.facets.departFrom) || []).slice();
 }
 
+/* ---------------- arama ----------------
+   Metin araması tek kuralla: başlıktaki arama kutusu, arama sayfası
+   (/arama/?q=) ve backend'in arama uç noktası aynı eşleşmeyi verir.
+
+   Aranan alanlar ve ağırlıkları:
+     5  başlık (kelime başı)       3  başlık (kelimenin içi)
+     2  sınıflandırma: kategori, tema, koleksiyon, şehir, bölge, tip adı
+     1  yer, kart satırı, rozet, mekân adı
+   Sorgudaki HER kelime bir yerde geçmeli (VE). Türkçe ek için: sorgu
+   kelimesi en az 4 harflik bir kelimeyle başlıyorsa da eşleşir
+   ("kapadokyada" → "kapadokya", "otelleri" → "otel"). Büyük/küçük harf
+   ve şapka/nokta farkı yok sayılır. */
+function kapiNormal(metin) {
+  return String(metin || '').toLocaleLowerCase('tr-TR').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function kapiAramaAlanlari(kayit) {
+  const T = kapiTaksonomi();
+  const tip = kapiIcerikTipi(kayit);
+  const t = kayit.taxonomy || {};
+  const kart = kayit.card || {};
+  const sehir = kapiSehir(t.city);
+  const bolge = kapiUrunBolgesi(kayit);
+  const adlar = (liste, kaynak) => (liste || []).map(s => (kaynak.find(x => x.slug === s) || {}).name).filter(Boolean);
+  const sinif = []
+    .concat(adlar(t.categories, T.categories.filter(c => c.type === tip)))
+    .concat(adlar(t.themes, T.themes))
+    .concat(adlar(t.collections, T.collections))
+    .concat(sehir ? [sehir.name] : [])
+    .concat(bolge ? [bolge.name] : [])
+    .concat(tip && T.types[tip] ? [T.types[tip].name, T.types[tip].plural] : [])
+    .concat(tip === 'tour' && T.tourKinds[kayit.type] ? [T.tourKinds[kayit.type].name] : []);
+  return {
+    baslik: kapiNormal(kayit.title),
+    sinif: kapiNormal(sinif.join(' ')),
+    diger: kapiNormal([kayit.area, kart.meta1, (kart.badges || []).join(' '), kayit.venueName, kayit.categoryShort].join(' '))
+  };
+}
+
+/* Bir kelimenin bir metindeki en iyi eşleşmesi: 2 kelime başı, 1 içinde,
+   0 yok. */
+function kapiKelimeEslesmesi(kelime, metin) {
+  if (!metin) return 0;
+  const kelimeler = metin.split(' ');
+  if (kelimeler.some(w => w.indexOf(kelime) === 0)) return 2;
+  if (metin.indexOf(kelime) !== -1) return 1;
+  /* Türkçe ek: "kapadokyada" → "kapadokya". */
+  if (kelimeler.some(w => w.length >= 4 && kelime.indexOf(w) === 0)) return 2;
+  return 0;
+}
+
+function kapiAramaPuani(kayit, sorgu) {
+  const kelimeler = kapiNormal(sorgu).split(' ').filter(Boolean);
+  if (!kelimeler.length || !kayit) return 0;
+  const a = kapiAramaAlanlari(kayit);
+  let toplam = 0;
+  for (const k of kelimeler) {
+    const b = kapiKelimeEslesmesi(k, a.baslik);
+    const s = kapiKelimeEslesmesi(k, a.sinif);
+    const d = kapiKelimeEslesmesi(k, a.diger);
+    const puan = Math.max(b === 2 ? 5 : b === 1 ? 3 : 0, s ? 2 : 0, d ? 1 : 0);
+    if (!puan) return 0;
+    toplam += puan;
+  }
+  return toplam;
+}
+
+/* Başlıktaki arama kutusunun anlık sonuçları (senkron, ilk N). Arama
+   sayfası aynı eşleşmeyi MolaVeri.liste({ temel: { q } }) ile alıyor. */
+function kapiHizliAra(sorgu, bugun, adet) {
+  return kapiListele({ q: sorgu }, bugun)
+    .map(k => ({ k, p: kapiAramaPuani(k, sorgu), v: kapiPuan5(k, kapiIcerikTipi(k)).adet }))
+    .sort((x, y) => (y.p - x.p) || (y.v - x.v))
+    .slice(0, Math.max(0, Number(adet) || 8))
+    .map(x => x.k);
+}
+
+/* Sorguyla adı eşleşen sınıflandırma sayfaları: arama sayfasında ve
+   kutuda "Kapadokya Turları" gibi bir kısayol. */
+function kapiAramaSayfalari(sorgu) {
+  const kelimeler = kapiNormal(sorgu).split(' ').filter(Boolean);
+  if (!kelimeler.length) return [];
+  const T = kapiTaksonomi();
+  const adaylar = []
+    .concat(T.categories.map(c => ({ name: c.name, path: T.types[c.type].base + '/' + c.slug })))
+    .concat(T.listings.map(l => ({ name: l.name, path: l.base + '/' + l.slug })))
+    .concat(T.themes.map(x => ({ name: x.name, path: 'temalar/' + x.slug })))
+    .concat(T.collections.map(x => ({ name: x.name, path: 'koleksiyonlar/' + x.slug })));
+  return adaylar.filter(x => {
+    const ad = kapiNormal(x.name);
+    return kelimeler.every(k => kapiKelimeEslesmesi(k, ad));
+  }).slice(0, 6);
+}
+
 /* ---------------- koleksiyon kuralı ---------------- */
 function kapiKuralaUyar(kural, ozet, bugun) {
   const r = kural || {};
@@ -339,6 +434,7 @@ function kapiFiltreyeUyar(kayit, filtre, bugun) {
   /* Erken rezervasyon indirimi fiyat kurallarıyla gelecek (4. adım);
      bugün hiçbir ürünün böyle bir kuralı yok. */
   if (f.earlyBooking) return false;
+  if (f.q && !kapiAramaPuani(kayit, f.q)) return false;
   return true;
 }
 
@@ -570,6 +666,7 @@ function kapiAdres(yol) {
     const kayit = kapiUrun(detayTipi, parca[1]);
     return kayit ? { kind: 'product', type: detayTipi, slug: kayit.slug, path: temiz } : null;
   }
+  if (temiz === 'arama') return { kind: 'search', path: temiz };
   if (temiz === 'temalar') return { kind: 'theme-index', path: temiz };
   if (temiz === 'koleksiyonlar') return { kind: 'collection-index', path: temiz };
   const r = T.resolve ? T.resolve(temiz) : null;
@@ -697,6 +794,23 @@ function kapiSayfaModeli(adres, bugun) {
   return m;
 }
 
+/* Arama sayfasının modeli: sorgu adresin ?q= parametresinden. Arama
+   sayfası dizine girmez (sonsuz sayıda ince sayfa üretir). */
+function kapiAramaModeli(sorgu) {
+  const q = String(sorgu || '').trim().slice(0, 80);
+  return {
+    kind: 'search',
+    path: 'arama',
+    q,
+    baslik: q ? '“' + q + '” için sonuçlar' : 'Arama',
+    tip: null,
+    temel: q ? { q } : null,
+    birim: 'sonuç',
+    kirinti: [{ name: 'Anasayfa', path: '' }, { name: 'Arama', path: 'arama' }],
+    altlar: kapiAramaSayfalari(q).map(x => ({ name: x.name, path: x.path, adet: null, aktif: false }))
+  };
+}
+
 /* Sayfanın çipleri: menüde alt düğümü varsa onlar, yaprak sayfaysa
    kardeşleri (bulunduğu sayfa işaretli). Menüde olmayan sayfa (tema,
    koleksiyon, menu:false kategori) kendi ailesini gösterir. Ürünü
@@ -751,8 +865,14 @@ function kapiListeSorgusu(sorgu) {
     const s = sorgu || {};
     const motor = kapiFn('suzListe', KAPI_MOTOR, typeof suzListe !== 'undefined' ? suzListe : null);
     if (!motor) return null;
+    const q = s.temel && s.temel.q;
     const satirlar = kapiListele(s.temel || {}, s.bugun)
-      .map(k => kapiListeSatiri(k, s.bugun)).filter(Boolean);
+      .map(k => {
+        const satir = kapiListeSatiri(k, s.bugun);
+        /* Arama sonucunda "en alakalı" sıralamasının puanı. */
+        if (satir && q) satir.alaka = kapiAramaPuani(k, q);
+        return satir;
+      }).filter(Boolean);
     return motor(satirlar, s.alanlar || kapiYuzeyTanimlari(s.bugun), s.durum || {});
   });
 }
@@ -944,6 +1064,9 @@ const MolaVeri = {
   /* liste sayfaları (sayfa yükü) */
   adres: kapiAdres,
   listeYolu: kapiListeYolu,
+  hizliAra: kapiHizliAra,
+  aramaModeli: kapiAramaModeli,
+  aramaSayfalari: kapiAramaSayfalari,
   benzerler: kapiBenzerler,
   sayfaModeli: kapiSayfaModeli,
   listeSeo: kapiListeSeo,
@@ -964,6 +1087,8 @@ if (typeof module !== 'undefined' && module.exports) {
     kapiPansiyonlar,
     kapiKalkisSehirleri,
     kapiYolTemizle,
+    kapiNormal,
+    kapiAramaPuani,
     kapiPuan5,
     kapiSabitTarihler,
     musaitlikKaydi,
