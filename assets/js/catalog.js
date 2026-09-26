@@ -159,10 +159,11 @@ function katalogPuan(kayit, oteldeOnluk) {
   };
 }
 
-/* Kartın bağı: sayfası olan kayıt kendi adresine gider; örnek özet
-   kaydın sayfası yok, kart tıklanamaz (ölü bağ vermek yerine). */
+/* Kartın bağı: ürünün adresi. Dosyası olan ürün kendi sayfasına, dosyası
+   olmayan (örnek özet kayıt) yönlendiriciye düşer ve özet sayfası açılır
+   (404.html, detail-shell.js). Her kart tıklanabilir. */
 function katalogBag(yol, kayit) {
-  return kayit && kayit.sample ? null : yol + '/' + kayit.slug + '/';
+  return kayit ? yol + '/' + kayit.slug + '/' : null;
 }
 
 /* ---------------- tarih metni ----------------
@@ -209,6 +210,8 @@ function tourCatalogCard(tur, bugun) {
   return {
     img: kart.img,
     href: katalogBag('tur', tur),
+    /* Örnek özet kayıt: sayfası özet (detail-shell.js). */
+    ornek: !!tur.sample,
     /* Arama sonucundaki tur etiketi: serit basligindan tahmin
        edilmesin diye kayittan geliyor. */
     type: 'Tur',
@@ -248,6 +251,7 @@ function hotelCatalogCard(otel, bugun) {
   return {
     img: kart.img,
     href: katalogBag('otel', otel),
+    ornek: !!otel.sample,
     type: 'Otel',
     title: kart.title || otel.title,
     badges: kart.badges || [otel.categoryShort],
@@ -282,6 +286,7 @@ function activityCatalogCard(aktivite, bugun) {
   return {
     img: kart.img,
     href: katalogBag('aktivite', aktivite),
+    ornek: !!aktivite.sample,
     type: 'Aktivite',
     title: kart.title || aktivite.title,
     badges: kart.badges || [aktivite.categoryShort],
@@ -316,6 +321,7 @@ function eventCatalogCard(etkinlik, bugun) {
   return {
     img: kart.img,
     href: katalogBag('etkinlik', etkinlik),
+    ornek: !!etkinlik.sample,
     type: 'Etkinlik',
     title: kart.title || etkinlik.title,
     badges: kart.badges || [etkinlik.categoryShort],
@@ -355,6 +361,7 @@ function venueCatalogCard(mekan, bugun) {
   return {
     img: kart.img,
     href: katalogBag('mekan', mekan),
+    ornek: !!mekan.sample,
     type: 'Mekan',
     title: kart.title || mekan.title,
     badges: kart.badges || [mekan.categoryShort],

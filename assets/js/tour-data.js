@@ -7,8 +7,10 @@
    tests/tour.test.js onları doğrudan çağırır. Sayfa bir tuşa basıldığında
    yeniden hesap yapmaz, bu fonksiyonların sonucunu basar.
 
-   Yeni tur eklemek: TOURS'a bir kayıt daha. Sayfa ?tur=<slug> ile o kaydı
-   açar, slug bilinmiyorsa DEFAULT_TOUR_SLUG'a düşer. */
+   Yeni tur eklemek: TOURS'a bir kayıt daha. Adresi /tur/<slug>/; dosyası
+   yoksa yönlendirici (404.html) aynı şablonu kuruyor. Bilinmeyen slug
+   "bulunamadı" ekranına düşer; varsayılan bir tura DÜŞMEZ (başka bir
+   ürünü o adreste göstermek yanlış içerik olurdu). */
 
 /* ---------------- görseller ----------------
    Adresler Wikimedia Commons dosya adından deterministik olarak kurulur;
@@ -1183,11 +1185,6 @@ const TOURS = {
 
 const DEFAULT_TOUR_SLUG = 'efes-sirince';
 
-function resolveTour(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(TOURS, anahtar)) return TOURS[anahtar];
-  return TOURS[DEFAULT_TOUR_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -1227,7 +1224,6 @@ if (typeof module !== 'undefined' && module.exports) {
     filterReviews,
     reviewerInitials,
     tourSlugFromPath,
-    tourSlugFromQuery,
-    resolveTour
+    tourSlugFromQuery
   };
 }

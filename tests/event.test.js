@@ -29,7 +29,6 @@ import {
   eventPriceFrom,
   eventListPriceFrom,
   eventSlugFromPath,
-  resolveEvent,
 } from '../assets/js/event-data.js';
 import { TOUR_ICONS, ratingSummary, refundAmount } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText, eventCatalogCard } from '../assets/js/catalog.js';
@@ -289,8 +288,8 @@ describe('adres ve kayit cozumleme', () => {
     expect(eventSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilana duser', () => {
-    expect(resolveEvent('yok').slug).toBe(DEFAULT_EVENT_SLUG);
+  it('taninmayan slug varsayilana DUSMUYOR', () => {
+    expect(MolaVeri.urun('event', 'yok')).toBe(null);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -449,7 +448,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('etkinlik/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('etkinlik/'));
 
   it('her etkinlik anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);

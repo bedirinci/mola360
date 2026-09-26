@@ -596,11 +596,6 @@ const ACTIVITIES = {
 
 const DEFAULT_ACTIVITY_SLUG = 'kapadokya-balon-turu';
 
-function resolveActivity(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(ACTIVITIES, anahtar)) return ACTIVITIES[anahtar];
-  return ACTIVITIES[DEFAULT_ACTIVITY_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -616,7 +611,6 @@ if (typeof module !== 'undefined' && module.exports) {
     activityPriceFrom,
     activityListPriceFrom,
     weatherRefundAmount,
-    activitySlugFromPath,
-    resolveActivity
+    activitySlugFromPath
   };
 }

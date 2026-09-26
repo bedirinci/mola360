@@ -544,11 +544,6 @@ const EVENTS = {
 
 const DEFAULT_EVENT_SLUG = 'aspendos-opera-bale-festivali';
 
-function resolveEvent(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(EVENTS, anahtar)) return EVENTS[anahtar];
-  return EVENTS[DEFAULT_EVENT_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -566,7 +561,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcEventTotal,
     eventPriceFrom,
     eventListPriceFrom,
-    eventSlugFromPath,
-    resolveEvent
+    eventSlugFromPath
   };
 }

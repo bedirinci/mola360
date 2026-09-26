@@ -26,7 +26,6 @@ import {
   activityListPriceFrom,
   weatherRefundAmount,
   activitySlugFromPath,
-  resolveActivity,
 } from '../assets/js/activity-data.js';
 import { TOUR_ICONS, TOUR_IMAGE_FILES, TOURS, commonsImageUrl, ratingSummary, refundAmount } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText } from '../assets/js/catalog.js';
@@ -285,9 +284,9 @@ describe('adres ve kayit cozumleme', () => {
     expect(activitySlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilana duser', () => {
-    expect(resolveActivity('yok').slug).toBe(DEFAULT_ACTIVITY_SLUG);
-    expect(resolveActivity('').slug).toBe(DEFAULT_ACTIVITY_SLUG);
+  it('taninmayan slug varsayilana DUSMUYOR', () => {
+    expect(MolaVeri.urun('activity', 'yok')).toBe(null);
+    expect(MolaVeri.urun('activity', '')).toBe(null);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -454,7 +453,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa ve tur baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const aktiviteKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('aktivite/'));
+  const aktiviteKartlari = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('aktivite/'));
 
   it('her aktivite anasayfaya kendiliginden giriyor', () => {
     const baglar = aktiviteKartlari.map(k => k.href);

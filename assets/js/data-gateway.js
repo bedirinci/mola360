@@ -511,6 +511,38 @@ function kapiListeYolu(kayit) {
   return T.types[tip].base + (tur && tur.listing ? '/' + tur.listing : '');
 }
 
+/* ---------------- benzer ürünler ----------------
+   Kurala dayalı: aynı tipten, satışta olan ürünler; puan ortak
+   sınıflandırmadan. Ana kategori ortaksa 3, her ortak tema 2, aynı bölge
+   1, turda aynı tur tipi (günübirlik/konaklamalı) 1. Eşitlikte çok
+   yorumlu önde. Hiç ortak yanı olmayan ürün "benzer" sayılmıyor.
+   Backend geldiğinde satış ve görüntülenme verisi eklenecek (3. adım). */
+function kapiBenzerler(kayit, bugun, adet) {
+  const tip = kapiIcerikTipi(kayit);
+  if (!tip) return [];
+  const t = kayit.taxonomy || {};
+  const anaKategori = (t.categories || [])[0] || null;
+  const temalar = t.themes || [];
+  const bolge = kapiUrunBolgesi(kayit);
+  const puanla = (k) => {
+    const kt = k.taxonomy || {};
+    let p = 0;
+    if (anaKategori && (kt.categories || []).indexOf(anaKategori) !== -1) p += 3;
+    p += temalar.filter(x => (kt.themes || []).indexOf(x) !== -1).length * 2;
+    const b = kapiUrunBolgesi(k);
+    if (b && bolge && b.slug === bolge.slug) p += 1;
+    if (tip === 'tour' && k.type === kayit.type) p += 1;
+    return p;
+  };
+  return kapiListele({ type: tip }, bugun)
+    .filter(k => k.slug !== kayit.slug)
+    .map(k => ({ k, p: puanla(k), v: kapiPuan5(k, tip).adet }))
+    .filter(x => x.p > 0)
+    .sort((a, b) => (b.p - a.p) || (b.v - a.v) || String(a.k.title).localeCompare(String(b.k.title), 'tr'))
+    .slice(0, Math.max(0, Number(adet) || 4))
+    .map(x => x.k);
+}
+
 /* ---------------- adres çözümü ----------------
    Tek yönlendirici sayfanın (404.html) karar noktası: adres neye
    karşılık geliyor? Dönüş kind:
@@ -887,6 +919,7 @@ const MolaVeri = {
   /* liste sayfaları (sayfa yükü) */
   adres: kapiAdres,
   listeYolu: kapiListeYolu,
+  benzerler: kapiBenzerler,
   sayfaModeli: kapiSayfaModeli,
   listeSeo: kapiListeSeo,
   yuzeyTanimlari: kapiYuzeyTanimlari,

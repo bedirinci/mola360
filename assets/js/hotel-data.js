@@ -685,11 +685,6 @@ const HOTELS = {
 
 const DEFAULT_HOTEL_SLUG = 'kordon-butik-otel';
 
-function resolveHotel(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(HOTELS, anahtar)) return HOTELS[anahtar];
-  return HOTELS[DEFAULT_HOTEL_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -708,7 +703,6 @@ if (typeof module !== 'undefined' && module.exports) {
     hotelNightlyListFrom,
     hotelScore,
     hotelScoreText,
-    hotelSlugFromPath,
-    resolveHotel
+    hotelSlugFromPath
   };
 }

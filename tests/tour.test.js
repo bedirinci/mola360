@@ -45,7 +45,6 @@ import {
   reviewerInitials,
   tourSlugFromPath,
   tourSlugFromQuery,
-  resolveTour,
 } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText, formatReviewCount } from '../assets/js/catalog.js';
 
@@ -425,17 +424,19 @@ describe('slug çözümleme', () => {
     expect(tourSlugFromQuery('?tur=%E0%A4%A')).toBe('');
   });
 
-  it('bilinmeyen veya boş slug varsayılan tura düşer', () => {
-    expect(resolveTour('efes-sirince')).toBe(tur);
-    expect(resolveTour('EFES-SIRINCE'.toLowerCase())).toBe(tur);
-    expect(resolveTour('olmayan-tur')).toBe(tur);
-    expect(resolveTour('')).toBe(tur);
-    expect(resolveTour(undefined)).toBe(tur);
+  it('bilinmeyen veya boş slug varsayılan tura DÜŞMEZ', () => {
+    /* Eskiden resolveTour bilinmeyen adreste Efes turunu gösteriyordu:
+       yanlış ürün, yanlış fiyat. Artık kapı null dönüyor ve adres
+       "bulunamadı" ekranına düşüyor (tests/yonlendirici.test.js). */
+    expect(MolaVeri.urun('tour', 'efes-sirince').slug).toBe(tur.slug);
+    expect(MolaVeri.urun('tour', 'olmayan-tur')).toBe(null);
+    expect(MolaVeri.urun('tour', '')).toBe(null);
+    expect(MolaVeri.urun('tour', undefined)).toBe(null);
   });
 
   it('prototip anahtarları tur sanılmaz', () => {
-    expect(resolveTour('constructor')).toBe(tur);
-    expect(resolveTour('__proto__')).toBe(tur);
+    expect(MolaVeri.urun('tour', 'constructor')).toBe(null);
+    expect(MolaVeri.urun('tour', '__proto__')).toBe(null);
   });
 });
 
@@ -747,7 +748,7 @@ describe('anasayfa bağlantısı', () => {
      kayitlarindan uretip seritlere karistiriyor (docs/icerik-katalogu.md).
      Bu yuzden asagidaki testler app.js metnine degil, uretilen kartlara
      bakiyor. Katalogun kendi kurallari tests/katalog.test.js icinde. */
-  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('tur/'));
+  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('tur/'));
 
   it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
     const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);

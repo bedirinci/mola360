@@ -665,3 +665,145 @@
 @media (prefers-reduced-motion: reduce) {
   .lst-filters, .lst-filters.is-open { transition: none; }
 }
+
+/* ---------------- ürün özeti (örnek kayıt) ----------------
+   Yönlendiriciden açılan, ayrıntılı içeriği henüz olmayan ürün
+   (detail-shell.js). Kaydın taşıdığı bilgi: görsel, fiyat, seçenekler,
+   yaklaşan tarihler, sınıflandırma çipleri, benzer ürünler. */
+.dty-ozet { margin-top: 8px; }
+.dty-hero {
+  position: relative;
+  height: clamp(220px, 34vw, 400px);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #E6E9F1;
+}
+.dty-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.dty-badges {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dty-badges .poi-badge { font-size: 11.5px; padding: 6px 12px; }
+.dty-grid { display: grid; gap: 20px; margin-top: 18px; }
+@media (min-width: 1025px) {
+  .dty-grid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px;
+    align-items: start;
+  }
+  .dty-card {
+    position: sticky;
+    top: calc(var(--desktop-header-height) + 16px);
+  }
+}
+.dty-main h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  color: var(--navy-deep);
+}
+.dty-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.dty-dot { color: var(--text-faint); }
+.dty-rating { color: var(--text); font-weight: 700; }
+.dty-rating > span[aria-hidden] { color: #F5A623; }
+.dty-muted { color: var(--text-muted); font-weight: 500; }
+.dty-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+}
+.dty-facts div {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+.dty-facts dt {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.dty-facts dd {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.dty-chips { flex-wrap: wrap; margin: 16px 0 0; overflow: visible; }
+.dty-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #DCEBC6;
+  border-radius: 12px;
+  background: #F3F8EC;
+  color: #3F5A1C;
+}
+.dty-note strong { display: block; font-size: 14px; }
+.dty-note p { margin-top: 4px; font-size: 13.5px; line-height: 1.5; }
+.dty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.dty-card-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.dty-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.dty-price s { color: var(--text-faint); font-size: 14px; }
+.dty-price strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  color: var(--navy-deep);
+}
+.dty-price span { font-size: 13px; color: var(--text-muted); }
+.dty-dates { display: flex; flex-wrap: wrap; gap: 6px; }
+.dty-date {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 600;
+}
+.dty-everyday { font-size: 13.5px; }
+.dty-cta {
+  height: 46px;
+  margin-top: 4px;
+  border-radius: 12px;
+  opacity: .55;
+  cursor: not-allowed;
+}
+.dty-list-link {
+  color: var(--green-dark);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.dty-list-link:hover { text-decoration: underline; }

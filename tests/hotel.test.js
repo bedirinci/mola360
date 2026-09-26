@@ -32,7 +32,6 @@ import {
   hotelScore,
   hotelScoreText,
   hotelSlugFromPath,
-  resolveHotel,
 } from '../assets/js/hotel-data.js';
 import { TOUR_ICONS, TOUR_IMAGE_FILES, commonsImageUrl, formatTRY } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText } from '../assets/js/catalog.js';
@@ -317,10 +316,10 @@ describe('adres ve kayit cozumleme', () => {
     expect(hotelSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilan otele duser', () => {
-    expect(resolveHotel('yok-boyle-bir-otel').slug).toBe(DEFAULT_HOTEL_SLUG);
-    expect(resolveHotel('').slug).toBe(DEFAULT_HOTEL_SLUG);
-    expect(resolveHotel('KORDON-BUTIK-OTEL'.toLowerCase()).slug).toBe('kordon-butik-otel');
+  it('taninmayan slug varsayilan otele DUSMUYOR', () => {
+    expect(MolaVeri.urun('hotel', 'yok-boyle-bir-otel')).toBe(null);
+    expect(MolaVeri.urun('hotel', '')).toBe(null);
+    expect(MolaVeri.urun('hotel', 'KORDON-BUTIK-OTEL').slug).toBe(DEFAULT_HOTEL_SLUG);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -535,7 +534,7 @@ describe('anasayfa baglantisi', () => {
      kayitlarindan uretip "Oteller" seridine karistiriyor
      (docs/icerik-katalogu.md). Testler bu yuzden app.js metnine degil
      uretilen kartlara bakiyor. */
-  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('otel/'));
+  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('otel/'));
 
   it('her otel anasayfaya kendiliginden giriyor', () => {
     const baglar = otelKartlari.map(k => k.href);

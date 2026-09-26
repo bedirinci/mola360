@@ -31,7 +31,6 @@ import {
   venuePriceFrom,
   venuePriceUnit,
   venueSlugFromPath,
-  resolveVenue,
 } from '../assets/js/venue-data.js';
 import { TOUR_ICONS, ratingSummary } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, venueCatalogCard } from '../assets/js/catalog.js';
@@ -353,8 +352,8 @@ describe('adres ve kayit cozumleme', () => {
     expect(venueSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilana duser', () => {
-    expect(resolveVenue('yok').slug).toBe(DEFAULT_VENUE_SLUG);
+  it('taninmayan slug varsayilana DUSMUYOR', () => {
+    expect(MolaVeri.urun('venue', 'yok')).toBe(null);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -558,7 +557,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('mekan/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('mekan/'));
 
   it('her mekan anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);

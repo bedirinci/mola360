@@ -568,6 +568,23 @@ function lspBaslat() {
   const kokYol = (() => { try { return new URL(document.baseURI).pathname; } catch (_) { return '/'; } })();
   const goreli = lspGoreliYol(location.pathname, kokYol);
 
+  /* Sayfa içi bağlar (#yorumlar gibi): <base> kökü gösterdiği için
+     tarayıcı onları ANASAYFAYA çözer. Başka bir dinleyici (bölüm menüsü)
+     işi üstlenmediyse burada sayfa içinde kaydırılıyor. Belgenin
+     kabarcık aşamasında: önce öğenin kendi dinleyicileri çalışıyor. */
+  document.addEventListener('click', (e) => {
+    if (e.defaultPrevented) return;
+    const bag = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!bag) return;
+    e.preventDefault();
+    const id = bag.getAttribute('href').slice(1);
+    const hedef = id ? document.getElementById(id) : null;
+    if (hedef) {
+      hedef.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(history.state, '', location.pathname + location.search + '#' + id);
+    }
+  });
+
   /* Başlıktaki arama ve boş sayfadaki "Sitede ara" düğmesi aynı ekranı
      açar (app.js). */
   kok.addEventListener('click', (e) => {

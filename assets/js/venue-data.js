@@ -861,11 +861,6 @@ const PLACES = {
 
 const DEFAULT_VENUE_SLUG = 'kum-beach-club';
 
-function resolveVenue(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(PLACES, anahtar)) return PLACES[anahtar];
-  return PLACES[DEFAULT_VENUE_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -884,7 +879,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcVenueBooking,
     venuePriceFrom,
     venuePriceUnit,
-    venueSlugFromPath,
-    resolveVenue
+    venueSlugFromPath
   };
 }

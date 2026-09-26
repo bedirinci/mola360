@@ -257,12 +257,19 @@ describe('örnek kayıtlar', () => {
     }
   });
 
-  it('kartı tıklanamıyor: sayfası olmayan ürüne ölü bağ verilmiyor', () => {
+  it('kartı özet sayfasına gidiyor ve örnek olarak işaretli', () => {
+    /* Örnek kaydın dosyası yok; adresi yönlendiriciye düşüyor ve özet
+       sayfası açılıyor (detail-shell.js). Kart tıklanabilir ama "örnek"
+       işaretini taşıyor: arama ve testler onu sayfası olan üründen
+       ayırabiliyor. */
     const ornekBasliklar = new Set(Object.values(SAMPLE_PRODUCTS)
       .flatMap(g => Object.values(g)).map(k => k.card.title || k.title));
     const kartlar = catalogAllCards(BUGUN).filter(k => ornekBasliklar.has(k.title));
     expect(kartlar.length).toBeGreaterThan(20);
-    kartlar.forEach(k => expect(k.href, k.title).toBeNull());
+    kartlar.forEach(k => {
+      expect(k.ornek, k.title).toBe(true);
+      expect(k.href, k.title).toMatch(/^(tur|otel|aktivite|etkinlik|mekan)\/[a-z0-9-]+\/$/);
+    });
   });
 
   it('arama bütün örnek ürünleri buluyor', () => {
