@@ -438,6 +438,8 @@ function kapiListeSatiri(kayit, bugun) {
     path: T.types[tip].path + '/' + kayit.slug,
     title: kayit.title,
     price: ozet.price,
+    /* TL fiyat süzgeci ve fiyat sıralaması bununla: tahsilat TL. */
+    priceTRY: ozet.price > 0 ? kapiTLKarsiligi(ozet.price, ozet.currency) : 0,
     listPrice: ozet.listPrice,
     currency: ozet.currency,
     discounted: ozet.discounted,
@@ -480,7 +482,7 @@ function kapiYuzeyTanimlari(bugun) {
     { key: 'tip', name: 'Tür', kind: 'coklu',
       options: Object.keys(T.types).map(t => ({ slug: T.types[t].path, name: T.types[t].plural })) },
     { key: 'ay', name: 'Tarih', kind: 'coklu', options: ayListesi,
-      note: 'Her gün satılan oteller, aktiviteler ve mekânlar her ayda listelenir.' },
+      note: 'Her gün satılan oteller, aktiviteler ve mekânlar her ayda listelenir.', notKosulu: 'joker' },
     { key: 'sure', name: 'Süre', kind: 'coklu',
       options: adli(deger('SUZ_SURE_DILIMLERI', typeof SUZ_SURE_DILIMLERI !== 'undefined' ? SUZ_SURE_DILIMLERI : undefined)) },
     { key: 'bolge', name: 'Bölge', kind: 'coklu', options: adli(T.regions) },
@@ -490,9 +492,9 @@ function kapiYuzeyTanimlari(bugun) {
     { key: 'tema', name: 'Tema', kind: 'coklu', options: adli(T.themes) },
     { key: 'kimle', name: 'Kimin için', kind: 'coklu',
       options: adli(T.collections.filter(c => c.mode === 'manual')) },
-    { key: 'fiyat', name: 'Fiyat', kind: 'aralik', field: 'price', currency: 'TRY',
+    { key: 'fiyat', name: 'Fiyat', kind: 'aralik', field: 'priceTRY',
       options: deger('SUZ_FIYAT_DILIMLERI', typeof SUZ_FIYAT_DILIMLERI !== 'undefined' ? SUZ_FIYAT_DILIMLERI : undefined).slice(),
-      note: 'Döviz fiyatlı ürünler TL fiyat süzgecinde listelenmez.' },
+      note: 'Döviz fiyatlı ürünler günün kuruyla TL\'ye çevrilerek süzülür; ödeme TL alınır.', notKosulu: 'doviz' },
     { key: 'puan', name: 'Puan', kind: 'esik', field: 'rating',
       options: deger('SUZ_PUAN_ESIKLERI', typeof SUZ_PUAN_ESIKLERI !== 'undefined' ? SUZ_PUAN_ESIKLERI : undefined).slice() },
     { key: 'indirimli', name: 'Fırsat', kind: 'bayrak', field: 'discounted',
@@ -822,6 +824,27 @@ function kapiSeo(tip, kayit) {
   };
 }
 
+/* ---------------- kur ----------------
+   Tahsilat TL: döviz fiyatlı ürünün TL karşılığı günün kuruyla. Sayfa
+   yükü (senkron): kur günde bir değişiyor, sunucu sayfaya gömecek.
+   Bağlayıcı kur rezervasyonda sabitlenir; buradaki karşılık "yaklaşık". */
+function kapiKur(paraBirimi) {
+  const kod = paraBirimi || 'TRY';
+  if (kod === 'TRY') return { oran: 1, tarih: null, kaynak: null };
+  const tablo = kapiDeger('ORNEK_KURLAR', KAPI_ENVANTER, typeof ORNEK_KURLAR !== 'undefined' ? ORNEK_KURLAR : undefined);
+  const oran = tablo && tablo.oranlar ? Number(tablo.oranlar[kod]) : NaN;
+  return Number.isFinite(oran) && oran > 0 ? { oran, tarih: tablo.tarih, kaynak: tablo.kaynak } : null;
+}
+
+/* TL karşılığı (tam TL'ye yukarı yuvarlı; müşteri aleyhine aşağı
+   yuvarlanmış bir tahmin göstermemek için). Kur yoksa null. */
+function kapiTLKarsiligi(tutar, paraBirimi) {
+  const k = kapiKur(paraBirimi);
+  const t = Number(tutar);
+  if (!k || !Number.isFinite(t)) return null;
+  return (paraBirimi || 'TRY') === 'TRY' ? t : Math.ceil(t * k.oran);
+}
+
 /* ---------------- canlı sorgu: kontenjan ----------------
    Promise döner. Bugün cevap örnek kontenjandan (inventory-data.js),
    backend geldiğinde:
@@ -916,6 +939,8 @@ const MolaVeri = {
   temaUrunleri: (slug, bugun) => kapiListele({ theme: slug }, bugun),
   koleksiyonUrunleri: (slug, bugun) => kapiListele({ collection: slug }, bugun),
   seo: kapiSeo,
+  kur: kapiKur,
+  tlKarsiligi: kapiTLKarsiligi,
   /* liste sayfaları (sayfa yükü) */
   adres: kapiAdres,
   listeYolu: kapiListeYolu,

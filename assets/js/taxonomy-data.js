@@ -80,8 +80,10 @@ const TAXONOMY_TOUR_KINDS = {
 
    name       liste başlığı (çoğul): "Konserler"
    nameShort  rozet/çip (tekil, kısa): "Konser"
-   menu:false menüde olmayan, mevcut bir ürün için eklenen kategori;
-              docs/veri-sozlesmesi.md bölüm 5'te onaya sunulu. */
+   menu:false adresi olan ama menüde görünmeyen kategori. Bugün yok:
+              onaya sunulan dört kategori (Şehir Otelleri, Resort
+              Oteller, Sahne Sanatları, Spa & Masaj) onaylanıp menüye
+              girdi. */
 const TAXONOMY_CATEGORIES = [
   /* ---- turlar: destinasyona göre ---- */
   { type: 'tour', slug: 'yurt-ici-turlar',        name: 'Yurt İçi Turlar',        nameShort: 'Yurt İçi',       parent: null },
@@ -95,6 +97,11 @@ const TAXONOMY_CATEGORIES = [
   { type: 'tour', slug: 'gap-turlari',            name: 'GAP Turları',            nameShort: 'GAP',            parent: 'yurt-ici-turlar' },
   { type: 'tour', slug: 'ege-turlari',            name: 'Ege Turları',            nameShort: 'Ege',            parent: 'yurt-ici-turlar' },
   { type: 'tour', slug: 'akdeniz-turlari',        name: 'Akdeniz Turları',        nameShort: 'Akdeniz',        parent: 'yurt-ici-turlar' },
+  /* Kullanıcı onayıyla eklendi (2. adım sonrası): menüdeki bölgelerin
+     hiçbirine girmeyen yurt içi turlar için. */
+  { type: 'tour', slug: 'marmara-turlari',        name: 'Marmara Turları',        nameShort: 'Marmara',        parent: 'yurt-ici-turlar' },
+  { type: 'tour', slug: 'dogu-anadolu-turlari',   name: 'Doğu Anadolu Turları',   nameShort: 'Doğu Anadolu',   parent: 'yurt-ici-turlar' },
+  { type: 'tour', slug: 'kis-turlari',            name: 'Kış Turları',            nameShort: 'Kış',            parent: 'yurt-ici-turlar' },
 
   { type: 'tour', slug: 'yurt-disi-turlar',       name: 'Yurt Dışı Turlar',       nameShort: 'Yurt Dışı',      parent: null },
   { type: 'tour', slug: 'balkan-turlari',         name: 'Balkan Turları',         nameShort: 'Balkanlar',      parent: 'yurt-disi-turlar' },
@@ -112,8 +119,8 @@ const TAXONOMY_CATEGORIES = [
   { type: 'hotel', slug: 'butik-oteller',  name: 'Butik Oteller',  nameShort: 'Butik Otel',  parent: null },
   { type: 'hotel', slug: 'termal-oteller', name: 'Termal Oteller', nameShort: 'Termal Otel', parent: null },
   { type: 'hotel', slug: 'bungalovlar',    name: 'Bungalovlar',    nameShort: 'Bungalov',    parent: null },
-  { type: 'hotel', slug: 'sehir-otelleri', name: 'Şehir Otelleri', nameShort: 'Şehir Oteli', parent: null, menu: false },
-  { type: 'hotel', slug: 'resort-oteller', name: 'Resort Oteller',  nameShort: 'Resort',      parent: null, menu: false },
+  { type: 'hotel', slug: 'sehir-otelleri', name: 'Şehir Otelleri', nameShort: 'Şehir Oteli', parent: null },
+  { type: 'hotel', slug: 'resort-oteller', name: 'Resort Oteller',  nameShort: 'Resort',      parent: null },
 
   /* ---- aktiviteler: aktivite türüne göre ---- */
   { type: 'activity', slug: 'tekne-turlari', name: 'Tekne Turları',  nameShort: 'Tekne Turu', parent: null },
@@ -132,7 +139,7 @@ const TAXONOMY_CATEGORIES = [
   { type: 'event', slug: 'sergiler',           name: 'Sergiler',           nameShort: 'Sergi',    parent: null },
   { type: 'event', slug: 'spor-etkinlikleri',  name: 'Spor Etkinlikleri',  nameShort: 'Spor',     parent: null },
   { type: 'event', slug: 'cocuk-etkinlikleri', name: 'Çocuk Etkinlikleri', nameShort: 'Çocuk',    parent: null },
-  { type: 'event', slug: 'sahne-sanatlari',    name: 'Sahne Sanatları',    nameShort: 'Sahne',    parent: null, menu: false },
+  { type: 'event', slug: 'sahne-sanatlari',    name: 'Sahne Sanatları',    nameShort: 'Sahne',    parent: null },
 
   /* ---- mekânlar: mekân türüne göre ---- */
   { type: 'venue', slug: 'restoranlar',        name: 'Restoranlar',        nameShort: 'Restoran',     parent: null },
@@ -140,7 +147,7 @@ const TAXONOMY_CATEGORIES = [
   { type: 'venue', slug: 'beach-club',         name: 'Beach Club',         nameShort: 'Beach Club',   parent: null },
   { type: 'venue', slug: 'eglence-mekanlari',  name: 'Eğlence Mekanları',  nameShort: 'Eğlence',      parent: null },
   { type: 'venue', slug: 'kahvalti-mekanlari', name: 'Kahvaltı Mekanları', nameShort: 'Kahvaltı',     parent: null },
-  { type: 'venue', slug: 'spa-masaj',          name: 'Spa & Masaj',        nameShort: 'Masaj Salonu', parent: null, menu: false }
+  { type: 'venue', slug: 'spa-masaj',          name: 'Spa & Masaj',        nameShort: 'Masaj Salonu', parent: null }
 ];
 
 /* ---- temalar: NE yapmak istediğin ----
@@ -253,7 +260,9 @@ const TAXONOMY_STATIC_PAGES = [
 ];
 
 /* ---- menü ----
-   SONRA_BUNU_OKU belgesindeki ağacın birebir karşılığı. Her satırın bir
+   SONRA_BUNU_OKU belgesindeki ağaç + onaylanan eklemeler (Marmara, Doğu
+   Anadolu ve Kış Turları; Şehir/Resort Oteller, Sahne Sanatları, Spa &
+   Masaj). Her satırın bir
    adresi var ve tests/taksonomi.test.js o adresin bir kategoriye, liste
    sayfasına, temaya, koleksiyona veya içerik dışı sayfaya ÇÖZÜLDÜĞÜNÜ
    ölçüyor: hedefi olmayan menü satırı yazılamıyor. */
@@ -271,6 +280,9 @@ const TAXONOMY_MENU = [
       { label: 'GAP Turları',             path: 'turlar/gap-turlari' },
       { label: 'Ege Turları',             path: 'turlar/ege-turlari' },
       { label: 'Akdeniz Turları',         path: 'turlar/akdeniz-turlari' },
+      { label: 'Marmara Turları',         path: 'turlar/marmara-turlari' },
+      { label: 'Doğu Anadolu Turları',    path: 'turlar/dogu-anadolu-turlari' },
+      { label: 'Kış Turları',             path: 'turlar/kis-turlari' },
       { label: 'Tüm Yurt İçi Turlar',     path: 'turlar/yurt-ici-turlar' }
     ] },
     { label: 'Yurt Dışı Turlar', path: 'turlar/yurt-disi-turlar', children: [
@@ -297,6 +309,8 @@ const TAXONOMY_MENU = [
     { label: 'Termal Oteller',        path: 'oteller/termal-oteller' },
     { label: 'Bungalovlar',           path: 'oteller/bungalovlar' },
     { label: 'Butik Oteller',         path: 'oteller/butik-oteller' },
+    { label: 'Şehir Otelleri',        path: 'oteller/sehir-otelleri' },
+    { label: 'Resort Oteller',        path: 'oteller/resort-oteller' },
     { label: 'Balayı Otelleri',       path: 'oteller/balayi-otelleri' },
     { label: 'Aile Otelleri',         path: 'oteller/aile-otelleri' },
     { label: 'Her Şey Dahil Oteller', path: 'oteller/her-sey-dahil-oteller' },
@@ -320,6 +334,7 @@ const TAXONOMY_MENU = [
     { label: 'Sergiler',           path: 'etkinlikler/sergiler' },
     { label: 'Spor Etkinlikleri',  path: 'etkinlikler/spor-etkinlikleri' },
     { label: 'Çocuk Etkinlikleri', path: 'etkinlikler/cocuk-etkinlikleri' },
+    { label: 'Sahne Sanatları',    path: 'etkinlikler/sahne-sanatlari' },
     { label: 'Tüm Etkinlikler',    path: 'etkinlikler' }
   ] },
   { label: 'Mekanlar', path: 'mekanlar', children: [
@@ -328,6 +343,7 @@ const TAXONOMY_MENU = [
     { label: 'Beach Club',         path: 'mekanlar/beach-club' },
     { label: 'Eğlence Mekanları',  path: 'mekanlar/eglence-mekanlari' },
     { label: 'Kahvaltı Mekanları', path: 'mekanlar/kahvalti-mekanlari' },
+    { label: 'Spa & Masaj',        path: 'mekanlar/spa-masaj' },
     { label: 'Tüm Mekanlar',       path: 'mekanlar' }
   ] },
   { label: 'Fırsatlar', path: 'firsatlar', children: [

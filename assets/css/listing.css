@@ -781,6 +781,15 @@
   color: var(--navy-deep);
 }
 .dty-price span { font-size: 13px; color: var(--text-muted); }
+.dty-tl {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.dty-tl strong { color: var(--navy); }
 .dty-dates { display: flex; flex-wrap: wrap; gap: 6px; }
 .dty-date {
   padding: 6px 10px;

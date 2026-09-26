@@ -52,10 +52,10 @@ const SUZ_SURE_DILIMLERI = [
   { slug: '6-gece-ustu', name: '6 gece ve üzeri', min: 6, max: Infinity }
 ];
 
-/* Fiyat dilimleri TL: [alt, üst). Döviz fiyatlı ürün TL diliminde
-   aranmıyor; kur rezervasyonda sabitleniyor, liste dönüştürmüyor
-   (docs/veri-sozlesmesi.md bölüm 7). Adres serbest aralık da kabul
-   ediyor: ?fiyat=500-2000. */
+/* Fiyat dilimleri TL: [alt, üst). Tahsilat TL olduğu için döviz fiyatlı
+   ürün TL karşılığıyla (günün kuru) aranıyor; bağlayıcı kur
+   rezervasyonda sabitleniyor (docs/veri-sozlesmesi.md bölüm 7). Adres
+   serbest aralık da kabul ediyor: ?fiyat=500-2000. */
 const SUZ_FIYAT_DILIMLERI = [
   { slug: '0-1000',      name: '1.000 TL altı' },
   { slug: '1000-2500',   name: '1.000 – 2.500 TL' },
@@ -115,6 +115,8 @@ function suzSureDilimi(geceler) {
              (null → her değere uyar)
      aralik  satir[field] sayısı [alt, üst) içinde mi (currency verilmişse
              yalnızca o para birimindeki satırlar)
+   notKosulu: alanın notu ne zaman görünür — 'joker' (listede "her
+   değer" satırı var), 'doviz' (döviz fiyatlı satır var), yoksa her zaman.
      esik    satir[field] >= değer
      bayrak  satir[field] doğru mu */
 function suzEslesir(satir, alan, degerler) {
@@ -183,10 +185,10 @@ function suzYuzeyler(satirlar, alanlar, secim) {
        fiyatlılar TL süzgecinde yok" notu yalnızca döviz fiyatlı ürün
        varsa. */
     const tur = alan.kind || 'coklu';
-    const notGerekli = tur === 'coklu'
+    const notGerekli = alan.notKosulu === 'joker'
       ? taban.some(satir => satir.facets && satir.facets[alan.key] === null)
-      : (tur === 'aralik' && alan.currency
-        ? taban.some(satir => (satir.currency || 'TRY') !== alan.currency)
+      : (alan.notKosulu === 'doviz'
+        ? taban.some(satir => (satir.currency || 'TRY') !== 'TRY')
         : true);
     return {
       key: alan.key,
@@ -230,11 +232,15 @@ function suzBaslikKarsilastir(a, b) {
   return String(a.title || '').localeCompare(String(b.title || ''), 'tr');
 }
 
-/* Karışık para birimi: TL fiyatlılar önce, döviz fiyatlılar sonra
-   kendi içinde. Fiyatı olmayan (0) en sonda. */
+/* Fiyat sıralaması TL karşılığıyla (priceTRY; tahsilat TL). TL
+   karşılığı bilinmeyen döviz fiyatlı satır (kur yok) sonda kendi
+   içinde; fiyatı olmayan (0) en sonda. */
 function suzFiyatAnahtari(satir) {
-  const p = Number(satir.price) || 0;
-  return [(satir.currency || 'TRY') === 'TRY' ? 0 : 1, p > 0 ? 0 : 1, p];
+  const tl = satir.priceTRY !== undefined && satir.priceTRY !== null
+    ? Number(satir.priceTRY) || 0
+    : ((satir.currency || 'TRY') === 'TRY' ? Number(satir.price) || 0 : null);
+  if (tl === null) return [1, (Number(satir.price) || 0) > 0 ? 0 : 1, Number(satir.price) || 0];
+  return [0, tl > 0 ? 0 : 1, tl];
 }
 
 function suzSirala(satirlar, anahtar) {

@@ -211,24 +211,17 @@ değişince ürün koleksiyondan kendiliğinden çıkmalı.
 | Aktiviteler, Etkinlikler, Mekanlar alt başlıkları | Kategori | |
 | Fırsatlar alt başlıkları | Liste sayfası (tipler arası, `/firsatlar/…`) | |
 
-**Onayına sunulanlar:**
+**Onaylananlar** (kullanıcı kararı, 2. adımdan sonra):
 
-1. **Menüde olmayan dört kategori** mevcut ürünlere yer açmak için
-   eklendi (`menu: false`; adresleri var, menüde görünmüyorlar):
-   - Spa & Masaj → Kordon Spa & Masaj
-   - Sahne Sanatları → Aspendos Opera ve Bale Festivali (opera ve bale
-     menüdeki etkinlik türlerine sığmıyor; festival olduğu için
-     Festivaller'de de)
-   - Şehir Otelleri → Kordon Butik Otel (Butik Oteller'de de)
-   - Resort Oteller → Sealight Resort (örnek ürün)
-2. **Son Dakika** hem koleksiyon hem Fırsatlar başlığı. Tek tanım
-   tutuldu (kurala göre koleksiyon); Fırsatlar menüsündeki bağlantı aynı
-   listeye gidiyor. İki ayrı tanım zamanla ayrışırdı.
-3. **Menüde karşılığı olmayan yurt içi bölgeler.** Sapanca (Marmara),
-   İznik (Marmara), Erciyes (İç Anadolu) ve Doğu Ekspresi (Doğu Anadolu)
-   örnek turları menüdeki alt kategorilerin hiçbirine girmiyor; doğrudan
-   "Yurt İçi Turlar"a bağlandılar. "Marmara Turları", "Doğu Anadolu
-   Turları" veya "Kış Turları" gibi kategoriler istenirse eklenir.
+1. **Dört kategori menüye girdi:** Spa & Masaj (Kordon Spa & Masaj),
+   Sahne Sanatları (Aspendos; festival olduğu için Festivaller'de de),
+   Şehir Otelleri (Kordon Butik Otel; Butik Oteller'de de), Resort
+   Oteller (Sealight Resort).
+2. **Üç yeni yurt içi kategori:** Marmara Turları (Sapanca, İznik),
+   Doğu Anadolu Turları (Doğu Ekspresi), Kış Turları (Erciyes).
+3. **Son Dakika** tek tanımla (kurala göre koleksiyon); Fırsatlar
+   menüsündeki bağlantı aynı listeye gidiyor. İki ayrı tanım zamanla
+   ayrışırdı.
 
 ## 6. Kontenjan (müsaitlik)
 
@@ -299,9 +292,19 @@ yazılıyor ki tarihler geçtikçe bayatlamasın.
 - Karttaki "başlangıç fiyatı" tipin kendi fonksiyonundan türetilir
   (`basePrice`, `hotelNightlyFrom`, `activityPriceFrom`,
   `eventPriceFrom`, `venuePriceFrom`). Kartta fiyat elle yazılmaz.
-- Rezervasyon anında kur sabitlenir ve rezervasyona yazılır (4. adım).
-  **Açık soru:** Döviz fiyatlı turda müşterinin kartından TL mi
-  çekilecek, döviz mi?
+- **Tahsilat TL** (kullanıcı kararı): döviz fiyatlı üründe fiyat kendi
+  para biriminde gösterilir, müşterinin kartından TL çekilir. Kur
+  rezervasyon anında sabitlenir ve rezervasyona yazılır (4. adım);
+  sonradan kur değişse de rezervasyon kendi kuruyla kalır.
+- Listede TL fiyat süzgeci ve fiyat sıralaması döviz fiyatlı ürünün
+  **TL karşılığıyla** çalışır (`listeSatiri.priceTRY`, günün kuru,
+  tam TL'ye yukarı yuvarlı). Özet sayfası "yaklaşık TL karşılığı"nı
+  gösterir. Kur `MolaVeri.kur(paraBirimi)` → `{ oran, tarih, kaynak }`;
+  bugün örnek değer (`inventory-data.js` `ORNEK_KURLAR`), canlıda
+  sözleşmeli bankanın günlük satış kuru (backend yazar).
+- SEO açıklamasındaki "fiyatlar X TL'den başlıyor" yalnızca TL fiyatlı
+  ürünlerden (kesin tutar); döviz karşılığı tahmin olduğu için oraya
+  girmez.
 - Kapora (`deposit`) ve taksit bilgisi veri olarak tutulur, koda sabit
   yazılmaz (4. adım). Taksit seçenekleri ürüne değil **bankaya/kart
   ailesine** bağlıdır; ayrı bir tablo olacak.

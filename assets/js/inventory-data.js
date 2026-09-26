@@ -1,4 +1,4 @@
-/* ---------------- örnek kontenjan (backend yerine geçici) ----------------
+/* ---------------- örnek kontenjan ve kur (backend yerine geçici) ----------------
    BU DOSYA BACKEND GELİNCE SİLİNECEK. Görevi, backend'in kontenjan
    uç noktasının vereceği cevabın AYNISINI bugün depodaki veriden
    üretmek: ekranlar gerçek bir kontenjan cevabıyla çalışmayı şimdiden
@@ -215,6 +215,22 @@ function ornekMusaitlik(tip, kayit, secenek) {
   return cevap;
 }
 
+/* ---------------- örnek döviz kuru ----------------
+   Döviz fiyatlı üründe (yurt dışı turlar) fiyat kendi para biriminde
+   gösteriliyor ama TAHSİLAT TL (kullanıcı kararı). Listedeki TL fiyat
+   süzgeci, fiyat sıralaması ve "yaklaşık TL karşılığı" bu kurla
+   hesaplanıyor. Bağlayıcı kur rezervasyon anında sabitlenip
+   rezervasyona yazılacak (4. adım).
+
+   BU DEĞERLER ÖRNEK: gerçek kur değil. Canlıda kaynak, sözleşmeli
+   bankanın günlük döviz satış kuru; backend her gün yazacak ve kapı
+   (MolaVeri.kur) aynı biçimde verecek. */
+const ORNEK_KURLAR = {
+  tarih: '2026-09-21',
+  kaynak: 'örnek',
+  oranlar: { EUR: 50, USD: 43 }
+};
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { SAMPLE_BOOKINGS, envanterBirimleri, ornekMusaitlik, envSaat };
+  module.exports = { SAMPLE_BOOKINGS, ORNEK_KURLAR, envanterBirimleri, ornekMusaitlik, envSaat };
 }

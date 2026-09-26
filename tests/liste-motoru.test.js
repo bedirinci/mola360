@@ -20,12 +20,12 @@ const M = require('../assets/js/listing-engine.js');
 const ALANLAR = [
   { key: 'tip', name: 'Tür', kind: 'coklu', options: [{ slug: 'tur', name: 'Turlar' }, { slug: 'otel', name: 'Oteller' }] },
   { key: 'ay', name: 'Tarih', kind: 'coklu', options: [{ slug: '2026-10', name: 'Ekim 2026' }, { slug: '2026-11', name: 'Kasım 2026' }],
-    note: 'Her gün satılanlar her ayda listelenir.' },
+    note: 'Her gün satılanlar her ayda listelenir.', notKosulu: 'joker' },
   { key: 'bolge', name: 'Bölge', kind: 'coklu', options: [
     { slug: 'ege', name: 'Ege' }, { slug: 'akdeniz', name: 'Akdeniz' }, { slug: 'karadeniz', name: 'Karadeniz' }] },
   { key: 'ulasim', name: 'Ulaşım', kind: 'coklu', options: [{ slug: 'otobus', name: 'Otobüs' }, { slug: 'ucak', name: 'Uçak' }] },
   { key: 'fiyat', name: 'Fiyat', kind: 'aralik', field: 'price', currency: 'TRY', options: M.SUZ_FIYAT_DILIMLERI,
-    note: 'Döviz fiyatlılar TL süzgecinde yok.' },
+    note: 'Döviz fiyatlılar TL süzgecinde yok.', notKosulu: 'doviz' },
   { key: 'puan', name: 'Puan', kind: 'esik', field: 'rating', options: M.SUZ_PUAN_ESIKLERI },
   { key: 'indirimli', name: 'Fırsat', kind: 'bayrak', field: 'discounted',
     options: [{ slug: '1', name: 'Yalnızca indirimliler', etiket: 'İndirimli' }] }
@@ -232,6 +232,25 @@ describe('sıralama', () => {
     const once = slugs(SATIRLAR);
     M.suzSirala(SATIRLAR, 'fiyat-artan');
     expect(slugs(SATIRLAR)).toEqual(once);
+  });
+});
+
+describe('TL karşılığı (tahsilat TL)', () => {
+  /* Gerçek sayfada fiyat alanı priceTRY: döviz fiyatlı ürün günün
+     kuruyla TL'ye çevrilmiş olarak süzülüyor ve sıralanıyor. */
+  const TL_ALAN = [{ key: 'fiyat', name: 'Fiyat', kind: 'aralik', field: 'priceTRY', options: M.SUZ_FIYAT_DILIMLERI }];
+  const S = [
+    satir({ slug: 'tl', price: 7000, priceTRY: 7000 }),
+    satir({ slug: 'eur', price: 149, currency: 'EUR', priceTRY: 7450 }),
+    satir({ slug: 'kursuz', price: 99, currency: 'USD', priceTRY: null })
+  ];
+  it('döviz fiyatlı ürün TL diliminde karşılığıyla', () => {
+    expect(slugs(M.suzUygula(S, TL_ALAN, { fiyat: ['5000-10000'] }))).toEqual(['tl', 'eur']);
+    expect(slugs(M.suzUygula(S, TL_ALAN, { fiyat: ['0-1000'] }))).toEqual([]);
+  });
+  it('sıralama TL karşılığıyla; kuru bilinmeyen sonda', () => {
+    expect(slugs(M.suzSirala(S, 'fiyat-artan'))).toEqual(['tl', 'eur', 'kursuz']);
+    expect(slugs(M.suzSirala(S, 'fiyat-azalan'))).toEqual(['eur', 'tl', 'kursuz']);
   });
 });
 

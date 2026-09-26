@@ -263,6 +263,30 @@ describe('liste sorgusu', () => {
   });
 });
 
+describe('kur ve TL karşılığı', () => {
+  it('TL fiyatlı ürün olduğu gibi; döviz fiyatlı günün kuruyla, yukarı yuvarlı', () => {
+    expect(MolaVeri.tlKarsiligi(1290, 'TRY')).toBe(1290);
+    const kur = MolaVeri.kur('EUR');
+    expect(kur.oran).toBeGreaterThan(0);
+    expect(MolaVeri.tlKarsiligi(149, 'EUR')).toBe(Math.ceil(149 * kur.oran));
+    expect(MolaVeri.kur('XYZ')).toBe(null);
+    expect(MolaVeri.tlKarsiligi(10, 'XYZ')).toBe(null);
+  });
+
+  it('liste satırında TL karşılığı; TL fiyat süzgeci döviz fiyatlı turu da buluyor', async () => {
+    const ege = MolaVeri.listeSatiri(MolaVeri.urun('tour', 'ege-adalari-balayi'), BUGUN);
+    expect(ege.currency).toBe('EUR');
+    expect(ege.priceTRY).toBe(MolaVeri.tlKarsiligi(ege.price, 'EUR'));
+    const alanlar = MolaVeri.yuzeyTanimlari(BUGUN);
+    const dilim = alanlar.find(a => a.key === 'fiyat').options
+      .find(o => { const [a, b] = o.slug.split('-').map(x => x === '' ? null : Number(x)); return ege.priceTRY >= a && (b === null || ege.priceTRY < b); });
+    const sonuc = await MolaVeri.liste({ temel: { type: 'tour' }, alanlar, durum: { secim: { fiyat: [dilim.slug] } }, bugun: BUGUN });
+    expect(sonuc.satirlar.map(s => s.slug)).toContain('ege-adalari-balayi');
+    /* Not yalnızca döviz fiyatlı ürün olan listede. */
+    expect(sonuc.yuzeyler.find(y => y.key === 'fiyat').note).toContain('TL');
+  });
+});
+
 describe('liste sayfası SEO', () => {
   const seo = (yol) => MolaVeri.listeSeo(MolaVeri.sayfaModeli(MolaVeri.adres(yol), BUGUN), BUGUN);
 

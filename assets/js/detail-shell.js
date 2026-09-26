@@ -208,7 +208,9 @@ function dtyOzetMarkup(tip, kayit, secenek) {
     + '<aside class="dty-card" aria-label="Fiyat">'
     + (fiyat ? '<span class="dty-card-label">Başlangıç fiyatı</span>'
       + '<div class="dty-price">' + (liste ? '<s>' + dtyKacis(liste) + '</s>' : '') + '<strong>' + dtyKacis(fiyat) + '</strong>'
-      + (birim ? '<span>' + birim + '</span>' : '') + '</div>' : '')
+      + (birim ? '<span>' + birim + '</span>' : '') + '</div>'
+      + (o.tlKarsiligi ? '<p class="dty-tl">Ödeme TL alınır: bugünkü kurla yaklaşık <strong>' + dtyKacis(o.tlKarsiligi)
+        + '</strong>. Kur rezervasyon anında sabitlenir.</p>' : '') : '')
     + (tarihler.length
       ? '<span class="dty-card-label">Yaklaşan tarihler</span><div class="dty-dates">'
         + tarihler.map(t => '<span class="dty-date">' + dtyKacis(t) + '</span>').join('') + '</div>'
@@ -301,6 +303,9 @@ function dtyKur(kok, adres, bugun) {
     const liste = (typeof kapiSabitTarihler === 'function') ? (kapiSabitTarihler(kayit, tip, bugun) || []) : [];
     liste.slice(0, 6).forEach(d => tarihler.push(cardDateText(d, bugun)));
   }
+  /* Döviz fiyatlı ürün: tahsilat TL, yaklaşık karşılık gösteriliyor. */
+  const tl = (kayit.currency || 'TRY') !== 'TRY' && satir.priceTRY
+    ? dtyTutar(satir.priceTRY, 'TRY') : '';
   const herGun = satir.facets && satir.facets.ay === null
     ? (tip === 'hotel' ? 'Her gün giriş yapılabilir.' : 'Her gün yapılıyor.') : '';
   const benzer = MolaVeri.benzerler(kayit, bugun, 4);
@@ -313,7 +318,7 @@ function dtyKur(kok, adres, bugun) {
   const altBaslik = (kart.badges && kart.badges[0] ? kart.badges[0] + ' · ' : '') + (kayit.area || '');
   kok.innerHTML = (typeof lspMobilBaslikMarkup === 'function' ? lspMobilBaslikMarkup(kayit.title, altBaslik, listeYolu) : '')
     + dtyOzetMarkup(tip, kayit, {
-      kart, satir, gorsel, tarihler, herGun, listeYolu, listeAdi,
+      kart, satir, gorsel, tarihler, herGun, listeYolu, listeAdi, tlKarsiligi: tl,
       kirinti: (typeof lspKirintiMarkup === 'function') ? lspKirintiMarkup(kirinti) : '',
       benzerler: kartlar || null,
       benzerBaslik: benzer.length ? 'Benzer ' + cogul : 'Diğer ' + cogul
