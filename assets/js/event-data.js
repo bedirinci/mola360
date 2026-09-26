@@ -523,18 +523,17 @@ const EVENTS = {
         a: 'Temsil 20:30’da başlar ve kapılar kapanır. Geç gelen misafirler ilk aranın sonuna kadar bekler, sonra kendi koltuklarına yerleştirilir. Bilet geçerliliğini yitirmez ama kaçırılan perde için iade yapılmaz.' }
     ],
 
-    similar: [
-      { key: 'opera',    title: 'İstanbul Opera Festivali',  meta: 'Harbiye, İstanbul · 20:00', rating: '4,8', price: 890, unit: 'bilet başı' },
-      { key: 'orkestra', title: 'Efes Antik Tiyatro Konseri', meta: 'Selçuk, İzmir · 21:00',    rating: '4,7', price: 680, unit: 'bilet başı' },
-      { key: 'bale',     title: 'Ankara Bale Gecesi',        meta: 'Opera Sahnesi · 20:00',    rating: '4,6', price: 520, unit: 'bilet başı' },
-      { key: 'kaleici',  title: 'Kaleiçi Akşam Turu',        meta: 'Antalya · 2 saat',         rating: '4,5', price: 380, unit: 'kişi başı' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [],
 
     tags: [
-      { label: 'Etkinlikler',        href: 'index.html#etkinlikler' },
-      { label: 'Yaklaşan planlar',   href: 'index.html#yaklasan-planlar' },
-      { label: 'Aktiviteler',        href: 'index.html#aktiviteler' },
-      { label: 'Oteller',            href: 'index.html#oteller' },
+      { label: 'Etkinlikler',        href: 'etkinlikler/' },
+      { label: 'Yaklaşan planlar',   href: 'bu-hafta/' },
+      { label: 'Aktiviteler',        href: 'aktiviteler/' },
+      { label: 'Oteller',            href: 'oteller/' },
       { label: 'Temsil takvimi',     href: '#program' },
       { label: 'Bilet kategorileri', href: '#biletler' },
       { label: 'Mekân ve ulaşım',    href: '#mekan' },

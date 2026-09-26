@@ -494,23 +494,16 @@
       </div>`;
   }
 
+  /* Benzer şeridi: elle seçilmiş öneriler + kurala dayalı benzerler,
+     kartlar ürünlerin kendi kaydından (catalog.js/catalogBenzerMarkup).
+     Katalog yüklü değilse ya da benzer yoksa bölüm gizleniyor. */
   function similarMarkup() {
-    return `
-      <div class="tour-block-head"><h2>Benzer sahne programları</h2><p>Aynı sezonda, farklı şehirlerde.</p></div>
-      <div class="tour-similar-grid">
-        ${event.similar.map(s => `
-          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'etkinlikler/'}">
-            <span class="tour-similar-media">
-              <img src="${eventImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
-              <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
-            </span>
-            <span class="tour-similar-body">
-              <strong>${s.title}</strong>
-              <span class="tour-similar-meta">${s.meta}</span>
-              <span class="tour-similar-price">${formatTRY(s.price)}<span>${s.unit}</span></span>
-            </span>
-          </a>`).join('')}
-      </div>`;
+    if (typeof catalogBenzerMarkup !== 'function') return '';
+    return catalogBenzerMarkup(event, {
+      kok: KOK,
+      yildiz: ic('star'),
+      gorsel: (anahtar) => (typeof cardImages !== 'undefined' && cardImages[anahtar]) || ''
+    });
   }
 
   function tagHref(t) {
@@ -1411,7 +1404,9 @@
   fill('bilgiler', infoMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('tourSimilar', similarMarkup());
+  const benzerIcerik = similarMarkup();
+  fill('tourSimilar', benzerIcerik);
+  if (!benzerIcerik && document.getElementById('tourSimilar')) document.getElementById('tourSimilar').hidden = true;
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();

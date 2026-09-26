@@ -510,6 +510,72 @@ function catalogAllCards(bugun) {
   return out;
 }
 
+/* ---------------- detay sayfasında "Benzer" şeridi ----------------
+   Önce kaydın ELLE seçilmiş önerileri (similar: [{ slug }] aynı tipten ya
+   da [{ href }] başka tipten; yalnızca kimlik), kalan yer kurala dayalı
+   benzerlerle (MolaVeri.benzerler: ortak kategori, tema, bölge) doluyor.
+   Kart her zaman ürünün kendi kaydından: eskiden şeritteki başlık, puan
+   ve fiyat kayda elle kopyalanmıştı ve gerçek ürünle ayrışıyordu; bir
+   kısmı var olmayan ürünlere işaret ediyordu. */
+function catalogBenzerKartlari(kayit, bugun, adet) {
+  const kapi = katalogKapi();
+  if (!kapi || !kayit) return [];
+  const tip = kapi.icerikTipi(kayit);
+  const n = Math.max(1, Number(adet) || 4);
+  const secilen = (kayit.similar || []).map(s => {
+    if (s && s.slug) return kapi.urun(tip, s.slug);
+    if (s && s.href) {
+      const a = kapi.adres(s.href);
+      return a && a.kind === 'product' ? kapi.urun(a.type, a.slug) : null;
+    }
+    return null;
+  }).filter(Boolean);
+  const gorulen = new Set([tip + '/' + kayit.slug]);
+  const out = [];
+  secilen.concat(kapi.benzerler(kayit, bugun, n + secilen.length)).forEach(k => {
+    if (out.length >= n) return;
+    const t = kapi.icerikTipi(k);
+    if (gorulen.has(t + '/' + k.slug)) return;
+    gorulen.add(t + '/' + k.slug);
+    const kart = KATALOG_KART[t] ? KATALOG_KART[t](k, bugun) : null;
+    if (kart) out.push(Object.assign({ tip: t }, kart));
+  });
+  return out;
+}
+
+/* Şeridin işaretlemesi: beş detay sayfası aynı kalıbı kullanıyor.
+   kok: sayfa köküne göre önek ("../../"); gorsel: kartın görsel
+   anahtarından adres (anasayfanın görsel tablosu); yildiz: yıldız ikonu.
+   Şeritte kart yoksa boş metin: sayfa bölümü gizliyor. */
+function catalogBenzerMarkup(kayit, secenek) {
+  const o = secenek || {};
+  const kartlar = catalogBenzerKartlari(kayit, o.bugun, o.adet || 4);
+  if (!kartlar.length) return '';
+  const tipler = new Set(kartlar.map(k => k.tip));
+  const baslik = tipler.size === 1
+    ? ({ tour: 'Benzer turlar', hotel: 'Benzer oteller', activity: 'Benzer aktiviteler',
+         event: 'Benzer etkinlikler', venue: 'Benzer mekânlar' })[[...tipler][0]]
+    : 'Bunlar da ilgini çekebilir';
+  const para = (k) => ({ TRY: 'TL', EUR: 'EUR', USD: 'USD' })[k.currency || 'TRY'] || k.currency;
+  const gorsel = typeof o.gorsel === 'function' ? o.gorsel : (() => '');
+  return `
+      <div class="tour-block-head"><h2>${baslik}</h2><p>Aynı kategoride, temada ya da bölgede.</p></div>
+      <div class="tour-similar-grid">
+        ${kartlar.map(k => `
+          <a class="tour-similar-card" href="${(o.kok || '') + k.href}">
+            <span class="tour-similar-media">
+              <img src="${gorsel(k.img)}" alt="${k.title}" loading="lazy">
+              ${k.rating ? `<span class="tour-similar-rating">${k.tip === 'hotel' ? '' : (o.yildiz || '')}${String(k.rating).replace('.', ',')}</span>` : ''}
+            </span>
+            <span class="tour-similar-body">
+              <strong>${k.title}</strong>
+              <span class="tour-similar-meta">${k.meta1 || ''}</span>
+              <span class="tour-similar-price">${k.priceMain} ${para(k)}<span>${k.unit || ''}</span></span>
+            </span>
+          </a>`).join('')}
+      </div>`;
+}
+
 function katalogBaslikAnahtari(metin) {
   return String(metin || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
 }
@@ -563,6 +629,8 @@ if (typeof module !== 'undefined' && module.exports) {
     catalogCards,
     catalogAllCards,
     catalogRefCard,
+    catalogBenzerKartlari,
+    catalogBenzerMarkup,
     katalogPuan,
     mergeCatalogCards
   };

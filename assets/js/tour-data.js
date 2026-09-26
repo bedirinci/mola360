@@ -844,12 +844,11 @@ const TOURS = {
 
     /* slug tasiyan kayit gercek bir icerik sayfasina gider; tasimayan
        kayit anasayfaya. Yeni sayfa yazildikca slug eklenir. */
-    similar: [
-      { key: 'kapadokyaBalon', slug: 'kapadokya-3-gece', title: 'Kapadokya Turu — 3 Gece 4 Gün', meta: 'Uçaklı · 3 gece', rating: '4.7', price: 8990 },
-      { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
-      { key: 'alacati',   title: 'Alaçatı ve Çeşme Turu',        meta: 'İzmir çıkışlı · 8 saat',  rating: '4.6', price: 990 },
-      { key: 'bodrum',    title: 'Bodrum Tekne Turu',            meta: 'Bodrum çıkışlı · 6 saat', rating: '4.8', price: 1150 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'kapadokya-3-gece' }, { slug: 'pamukkale-hierapolis' }, { href: 'aktivite/bodrum-tekne-turu/' }],
     /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
        HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
        capasina, ya bu sayfanin bir bolumune, ya da diger tur
@@ -858,10 +857,10 @@ const TOURS = {
        gercek olana kadar sifir oldugunu soyluyor.
        href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
     tags: [
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Turun programı',       href: '#program' },
       { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
       { label: 'Buluşma noktası',      href: '#bulusma' },
@@ -1157,12 +1156,11 @@ const TOURS = {
     ],
 
 
-    similar: [
-      { key: 'efesKutuphane', slug: 'efes-sirince', title: 'Efes Antik Kenti ve Şirince Turu', meta: 'İzmir çıkışlı · 9 saat', rating: '4.8', price: 1290 },
-      { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
-      { key: 'ihlara',    title: 'Ihlara Vadisi Yürüyüş Turu',   meta: 'Nevşehir çıkışlı · 8 saat', rating: '4.6', price: 1150 },
-      { key: 'uchisar',   title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat', rating: '4.7', price: 750 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'efes-sirince' }, { slug: 'pamukkale-hierapolis' }, { href: 'aktivite/kapadokya-balon-turu/' }],
     /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
        HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
        capasina, ya bu sayfanin bir bolumune, ya da diger tur
@@ -1171,10 +1169,10 @@ const TOURS = {
        gercek olana kadar sifir oldugunu soyluyor.
        href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
     tags: [
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Gün gün program',      href: '#program' },
       { label: 'Konaklama',            href: '#konaklama' },
       { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },

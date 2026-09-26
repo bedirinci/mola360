@@ -478,23 +478,16 @@
       </div>`;
   }
 
+  /* Benzer şeridi: elle seçilmiş öneriler + kurala dayalı benzerler,
+     kartlar ürünlerin kendi kaydından (catalog.js/catalogBenzerMarkup).
+     Katalog yüklü değilse ya da benzer yoksa bölüm gizleniyor. */
   function similarMarkup() {
-    return `
-      <div class="tour-block-head"><h2>Benzer turlar</h2><p>Aynı bölgede, aynı günübirlik tempoda.</p></div>
-      <div class="tour-similar-grid">
-        ${tour.similar.map(s => `
-          <a class="tour-similar-card" href="${s.slug ? KOK + 'tur/' + s.slug + '/' : KOK + 'index.html'}">
-            <span class="tour-similar-media">
-              <img src="${tourImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
-              <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
-            </span>
-            <span class="tour-similar-body">
-              <strong>${s.title}</strong>
-              <span class="tour-similar-meta">${s.meta}</span>
-              <span class="tour-similar-price">${formatTRY(s.price)}<span>${p.unitNote}</span></span>
-            </span>
-          </a>`).join('')}
-      </div>`;
+    if (typeof catalogBenzerMarkup !== 'function') return '';
+    return catalogBenzerMarkup(tour, {
+      kok: KOK,
+      yildiz: ic('star'),
+      gorsel: (anahtar) => (typeof cardImages !== 'undefined' && cardImages[anahtar]) || ''
+    });
   }
 
   /* ---------------- PDF belgesi ----------------
@@ -1572,7 +1565,9 @@
   fill('bilgiler', infoMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('tourSimilar', similarMarkup());
+  const benzerIcerik = similarMarkup();
+  fill('tourSimilar', benzerIcerik);
+  if (!benzerIcerik && document.getElementById('tourSimilar')) document.getElementById('tourSimilar').hidden = true;
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();

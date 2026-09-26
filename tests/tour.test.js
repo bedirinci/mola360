@@ -458,7 +458,6 @@ describe('görseller', () => {
   it('kullanılan her görsel anahtarı kayıtlı', () => {
     const kullanilan = new Set();
     tur.gallery.forEach(g => kullanilan.add(g.key));
-    tur.similar.forEach(s => kullanilan.add(s.key));
     const eksik = [...kullanilan].filter(k => !TOUR_IMAGE_FILES[k]);
     expect(eksik, 'kayıtsız görsel anahtarı: ' + eksik.join(', ')).toEqual([]);
     kullanilan.forEach(k => expect(tourImage(k, 800)).toMatch(/^https:\/\/commons\.wikimedia\.org\//));
@@ -1148,19 +1147,21 @@ describe('her turun ortak alanları', () => {
 
   it('her turun görsel anahtarları kayıtlı', () => {
     Object.entries(TOURS).forEach(([anahtar, t]) => {
-      const kullanilan = t.gallery.map(g => g.key).concat(t.similar.map(x => x.key));
+      const kullanilan = t.gallery.map(g => g.key);
       const eksik = kullanilan.filter(k => !TOUR_IMAGE_FILES[k]);
       expect(eksik, anahtar + ' kayıtsız görsel: ' + eksik.join(', ')).toEqual([]);
     });
   });
 
-  it('benzer turlardaki slug gerçek bir tur ve kendisi değil', () => {
+  it('elle seçilmiş benzerler yalnızca kimlik ve gerçek bir ürün', () => {
+    /* Eskiden başlık, puan ve fiyat kopyası taşıyordu; kopya eskiyordu.
+       Artık kart ürünün kendi kaydından (catalogBenzerMarkup). */
     Object.entries(TOURS).forEach(([anahtar, t]) => {
-      t.similar.filter(x => x.slug).forEach(x => {
-        expect(TOURS[x.slug], anahtar + ' -> ' + x.slug + ' yok').toBeTruthy();
-        expect(x.slug, anahtar + ' kendine benzer tur olarak bağlanmış').not.toBe(anahtar);
-        /* Kart fiyatı hedef turun fiyatıyla aynı olmalı. */
-        expect(x.price, anahtar + ' -> ' + x.slug + ' fiyatı tutmuyor').toBe(basePrice(TOURS[x.slug]));
+      t.similar.forEach(x => {
+        expect(Object.keys(x).every(a => a === 'slug' || a === 'href'), anahtar + ' kopya alan taşıyor').toBe(true);
+        const hedef = x.slug ? MolaVeri.urun('tour', x.slug) : MolaVeri.adres(x.href);
+        expect(hedef, anahtar + ' -> ' + (x.slug || x.href) + ' yok').toBeTruthy();
+        expect(x.slug, anahtar + ' kendine benzer olarak bağlanmış').not.toBe(anahtar);
       });
     });
   });
@@ -1608,8 +1609,9 @@ describe('sayfa etiketleri', () => {
         }
 
         const [yol, capa] = href.split('#');
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + yol + ' diskte yok').toBe(true);
+        /* Dosyası olan sayfa ya da yönlendiricinin açtığı liste sayfası. */
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(yol),
+          slug + ' -> ' + yol + ' hedefsiz').toBe(true);
         if (capa) {
           expect(anaAnkrajlar, slug + ' -> #' + capa + ' anasayfada yok').toContain(capa);
         }

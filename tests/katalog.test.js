@@ -481,3 +481,46 @@ describe('katalog metin uretmiyor', () => {
       o.rooms.forEach(r => expect(katalogJs).not.toContain(String(r.nightly))));
   });
 });
+
+/* ---------------- detay sayfasının "Benzer" şeridi ----------------
+   Elle seçilmiş öneriler önce, sonra kurala dayalı benzerler; kart
+   ürünün kendi kaydından (kopya yok). */
+import { catalogBenzerKartlari, catalogBenzerMarkup } from '../assets/js/catalog.js';
+import { createRequire as benzerRequire } from 'node:module';
+const benzerKapi = benzerRequire(import.meta.url)('../assets/js/data-gateway.js').MolaVeri;
+
+describe('benzer şeridi', () => {
+  it('elle seçilenler önce, kendisi yok, tekrar yok, en fazla dört', () => {
+    const efes = benzerKapi.urun('tour', 'efes-sirince');
+    const kartlar = catalogBenzerKartlari(efes, BUGUN, 4);
+    expect(kartlar.length).toBe(4);
+    expect(kartlar.slice(0, 3).map(k => k.href))
+      .toEqual(['tur/kapadokya-3-gece/', 'tur/pamukkale-hierapolis/', 'aktivite/bodrum-tekne-turu/']);
+    expect(kartlar.map(k => k.href)).not.toContain('tur/efes-sirince/');
+    expect(new Set(kartlar.map(k => k.href)).size).toBe(kartlar.length);
+  });
+
+  it('karttaki fiyat ürünün kendi fiyatı', () => {
+    benzerKapi.urunler().filter(k => !k.sample).forEach(k => {
+      catalogBenzerKartlari(k, BUGUN, 4).forEach(kart => {
+        const a = benzerKapi.adres(kart.href);
+        const hedef = benzerKapi.urun(a.type, a.slug);
+        expect(Number(kart.priceMain), k.slug + ' → ' + kart.href).toBe(benzerKapi.ozet(hedef, BUGUN).price);
+      });
+    });
+  });
+
+  it('elle seçilmiş öneri yoksa kural dolduruyor', () => {
+    const aspendos = benzerKapi.urun('event', 'aspendos-opera-bale-festivali');
+    expect(aspendos.similar).toEqual([]);
+    const kartlar = catalogBenzerKartlari(aspendos, BUGUN, 4);
+    kartlar.forEach(k => expect(k.tip).toBe('event'));
+  });
+
+  it('işaretleme: kök öneki, başlık; kart yoksa boş', () => {
+    const html = catalogBenzerMarkup(benzerKapi.urun('tour', 'efes-sirince'), { kok: '../../', bugun: BUGUN });
+    expect(html).toContain('href="../../tur/kapadokya-3-gece/"');
+    expect(html).toContain('Bunlar da ilgini çekebilir');
+    expect(catalogBenzerMarkup(null, {})).toBe('');
+  });
+});

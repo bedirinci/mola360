@@ -658,12 +658,11 @@ const HOTELS = {
 
     /* slug taşıyan kayıt gerçek bir içerik sayfasına gider; taşımayan
        kayıt anasayfaya. Yeni otel sayfası yazıldıkça slug eklenir. */
-    similar: [
-      { key: 'kemerMarina',  title: 'Sealight Resort',    meta: 'Kemer, Antalya · Her şey dahil', score: '9,2', price: 2100 },
-      { key: 'termalYalova', title: 'Termal Vadi Resort', meta: 'Termal, Yalova · Termal havuz',  score: '8,7', price: 1590 },
-      { key: 'goreme',       title: 'Göreme Mağara Otel', meta: 'Göreme, Nevşehir · Butik',       score: '9,4', price: 2450 },
-      { key: 'kemeralti',    title: 'Kemeraltı Konak Otel', meta: 'Konak, İzmir · Tarihi konak',  score: '8,5', price: 1450 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'sealight-resort' }, { slug: 'termal-vadi-resort' }, { slug: 'goreme-magara-otel' }],
 
     /* Sayfa etiketleri: sayfanın en altındaki çip bulutu.
        HEPSİ gerçek bir hedefe gidiyor — ya anasayfadaki şerit çapasına,
@@ -672,10 +671,10 @@ const HOTELS = {
        madde 4. href kök-göreli yazılır, '#' ile başlayanlar olduğu gibi
        kalır. */
     tags: [
-      { label: 'Oteller',            href: 'index.html#oteller' },
-      { label: 'Günübirlik turlar',  href: 'index.html#turlar' },
-      { label: 'Konaklamalı turlar', href: 'index.html#konaklamali-turlar' },
-      { label: 'Aktiviteler',        href: 'index.html#aktiviteler' },
+      { label: 'Oteller',            href: 'oteller/' },
+      { label: 'Günübirlik turlar',  href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Konaklamalı turlar', href: 'turlar/konaklamali-turlar/' },
+      { label: 'Aktiviteler',        href: 'aktiviteler/' },
       { label: 'Oda tipleri',        href: '#odalar' },
       { label: 'Otel olanakları',    href: '#olanaklar' },
       { label: 'Konum ve ulaşım',    href: '#konum' },

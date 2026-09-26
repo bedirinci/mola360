@@ -334,38 +334,12 @@
         </button>
       </div>
 
-      <div class="sidebar-section">
+      <!-- Son Görüntülenenler: ziyaretçinin kendi geçmişi (visitor-history.js,
+           bu tarayıcıda). Kartlar ürünün kendi kaydından app.js'te
+           basılıyor; geçmiş yoksa bölüm gizli kalıyor. -->
+      <div class="sidebar-section" data-son-gorulenler-bolum hidden>
         <h4>Son Görüntülenenler</h4>
-        <div class="sidebar-recent-list">
-          <a href="#" class="sidebar-recent-card">
-            <span class="sidebar-recent-thumb">
-              <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&amp;fit=crop&amp;w=160&amp;h=160&amp;q=70" alt="">
-              <span class="sidebar-recent-badge">Konser</span>
-            </span>
-            <span class="sidebar-recent-info">
-              <strong>Bursa Kültürpark Konseri</strong>
-              <span class="sidebar-recent-meta"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></svg></span>Kültürpark · 20:30</span>
-              <span class="sidebar-recent-foot">
-                <span class="sidebar-recent-rating"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span>4.8</span>
-                <span class="sidebar-recent-price">320.00 TL</span>
-              </span>
-            </span>
-          </a>
-          <a href="#" class="sidebar-recent-card">
-            <span class="sidebar-recent-thumb">
-              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&amp;fit=crop&amp;w=160&amp;h=160&amp;q=70" alt="">
-              <span class="sidebar-recent-badge">Festival</span>
-            </span>
-            <span class="sidebar-recent-info">
-              <strong>Uludağ Kar Festivali</strong>
-              <span class="sidebar-recent-meta"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></svg></span>Uludağ · Tüm gün</span>
-              <span class="sidebar-recent-foot">
-                <span class="sidebar-recent-rating"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span>4.6</span>
-                <span class="sidebar-recent-price">250.00 TL</span>
-              </span>
-            </span>
-          </a>
-        </div>
+        <div class="sidebar-recent-list" data-son-gorulenler></div>
       </div>
 
       <div class="sidebar-section sidebar-section-help">

@@ -66,8 +66,8 @@ describe('içerik bütünlüğü', () => {
     expect(blok).not.toMatch(/icon:'star'/);
   });
 
-  it('mekanlar İzmir odaklı', () => {
-    const blok = bloklar.match(/const VENUES = \[([\s\S]*?)\n\];/)[1];
+  it('gezi noktaları İzmir odaklı', () => {
+    const blok = bloklar.match(/const GEZI_NOKTALARI = \[([\s\S]*?)\n\];/)[1];
     const alanlar = [...blok.matchAll(/area:'([^']+)'/g)].map(m => m[1]);
     expect(alanlar.length).toBeGreaterThanOrEqual(6);
     alanlar.forEach(a => expect(a, a).toMatch(/İzmir/));

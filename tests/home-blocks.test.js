@@ -7,7 +7,7 @@ import {
   homeThemeCards,
   homeCollectionCards,
   temaSayisiMetni,
-  VENUES,
+  GEZI_NOKTALARI,
   PROMO_BANDS,
   NEWSLETTER_PERKS,
   CONTACT,
@@ -160,17 +160,26 @@ describe('blok verileri', () => {
     expect(temalar.filter(t => koleksiyonlar.includes(t))).toEqual([]);
   });
 
-  it('mekan kayıtlarında gerekli alanlar var ve başlıklar tekil', () => {
-    /* Masaüstünde 6 mekan / 8 koleksiyon görünmesi isteniyor. */
-    expect(VENUES.length).toBeGreaterThanOrEqual(6);
-    VENUES.forEach(mekan => {
-      ['img', 'type', 'title', 'area', 'rating', 'reviews', 'hours'].forEach(alan => {
-        expect(String(mekan[alan] || '')).not.toBe('');
+  it('gezi noktalarında gerekli alanlar var, başlıklar tekil, uydurma puan yok', () => {
+    expect(GEZI_NOKTALARI.length).toBeGreaterThanOrEqual(6);
+    GEZI_NOKTALARI.forEach(yer => {
+      ['img', 'type', 'title', 'area', 'hours', 'hedef'].forEach(alan => {
+        expect(String(yer[alan] || ''), yer.title + ' ' + alan).not.toBe('');
       });
-      expect(typeof mekan.open).toBe('boolean');
+      /* Ölçülmüş puan ve anlık açık/kapalı verisi yok: yazılmıyor. */
+      ['rating', 'reviews', 'open'].forEach(alan => expect(yer[alan], yer.title).toBeUndefined());
+      /* Her kart gerçek bir sayfaya. */
+      expect(MolaVeri.adres(yer.hedef.split('?')[0]), yer.hedef).toBeTruthy();
     });
-    const basliklar = VENUES.map(m => m.title);
+    const basliklar = GEZI_NOKTALARI.map(m => m.title);
     expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('"Mekanlar" bloğunda yalnızca rezervasyonlu mekânlar', () => {
+    const blok = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    const venues = blok.match(/venues: \(\) => `([\s\S]*?)<\/section>`,/)[1];
+    expect(venues).not.toContain('GEZI_NOKTALARI');
+    expect(HOME_BLOCK_PLACEMENT['Aktiviteler']).toEqual(['venues', 'sights']);
   });
 
   it('kampanya bandı yaklaşan planların altında geliyor', () => {

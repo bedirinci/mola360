@@ -137,7 +137,7 @@ describe('benzer ürünler', () => {
         expect(MolaVeri.icerikTipi(b), k.slug).toBe(tip);
         expect(b.slug).not.toBe(k.slug);
         const bt = b.taxonomy || {};
-        const ortak = (t.categories || [])[0] && (bt.categories || []).includes(t.categories[0])
+        const ortak = (t.categories || []).some(c => (bt.categories || []).includes(c))
           || (t.themes || []).some(x => (bt.themes || []).includes(x))
           || (MolaVeri.bolge(k) && MolaVeri.bolge(b) && MolaVeri.bolge(k).slug === MolaVeri.bolge(b).slug)
           || (tip === 'tour' && k.type === b.type);

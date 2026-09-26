@@ -299,7 +299,6 @@ describe('gorseller ve ikonlar', () => {
   it('kullanilan her gorsel anahtari kayitli', () => {
     const kullanilan = new Set();
     aktivite.gallery.forEach(g => kullanilan.add(g.key));
-    aktivite.similar.forEach(s => kullanilan.add(s.key));
     aktivite.packages.forEach(p => kullanilan.add(p.key));
     [...kullanilan].forEach(k =>
       expect(ACTIVITY_IMAGE_FILES[k], 'kayitsiz gorsel anahtari: ' + k).toBeTruthy());
@@ -435,18 +434,19 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });
 
-  it('benzer kartlarin adresi diskte var', () => {
+  it('benzer kartlarin adresi gercek bir urun', () => {
     /* Benzer icerik baska turden olabildigi icin adres kayitta
-       dogrudan yazili; yazim hatasi olu bag demek. */
+       dogrudan yazili; yazim hatasi olu bag demek. Adres dosyasi olan
+       urun ya da yonlendiricinin actigi urun olabilir. */
     aktivite.similar.filter(s => s.href).forEach(s => {
-      const yol = s.href.endsWith('/') ? s.href + 'index.html' : s.href;
-      expect(existsSync(new URL('../' + yol, import.meta.url)), s.href + ' diskte yok').toBe(true);
+      const a = MolaVeri.adres(s.href);
+      expect(a && a.kind, s.href + ' urun degil').toBe('product');
     });
   });
 });

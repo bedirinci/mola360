@@ -659,8 +659,9 @@ function kapiHaftaAjandasi(bugun, gunSayisi) {
 
 /* ---------------- benzer ürünler ----------------
    Kurala dayalı: aynı tipten, satışta olan ürünler; puan ortak
-   sınıflandırmadan. Ana kategori ortaksa 3, her ortak tema 2, aynı bölge
-   1, turda aynı tur tipi (günübirlik/konaklamalı) 1. Eşitlikte çok
+   sınıflandırmadan. Ana kategori ortaksa 3 (değilse başka bir ortak
+   kategori 2), her ortak tema 2, aynı bölge 1, turda aynı tur tipi
+   (günübirlik/konaklamalı) 1. Eşitlikte çok
    yorumlu önde. Hiç ortak yanı olmayan ürün "benzer" sayılmıyor.
    Backend geldiğinde satış ve görüntülenme verisi eklenecek (3. adım). */
 function kapiBenzerler(kayit, bugun, adet) {
@@ -674,6 +675,8 @@ function kapiBenzerler(kayit, bugun, adet) {
     const kt = k.taxonomy || {};
     let p = 0;
     if (anaKategori && (kt.categories || []).indexOf(anaKategori) !== -1) p += 3;
+    /* Ana olmayan ortak kategori (Aspendos: Sahne Sanatları + Festivaller). */
+    else if ((t.categories || []).slice(1).some(c => (kt.categories || []).indexOf(c) !== -1)) p += 2;
     p += temalar.filter(x => (kt.themes || []).indexOf(x) !== -1).length * 2;
     const b = kapiUrunBolgesi(k);
     if (b && bolge && b.slug === bolge.slug) p += 1;

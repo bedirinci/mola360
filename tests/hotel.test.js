@@ -333,8 +333,7 @@ describe('gorseller ve ikonlar', () => {
     /* Kayitsiz anahtar bos src uretir; ui.js'in yer tutucusu bos src'yi
        yakalamaz, yani sessizce bos bir kutu kalir. */
     const kullanilan = new Set();
-    [otel.gallery, otel.similar].forEach(liste =>
-      liste.forEach(g => kullanilan.add(g.key)));
+    otel.gallery.forEach(g => kullanilan.add(g.key));
     otel.rooms.forEach(o => kullanilan.add(o.key));
     [...kullanilan].forEach(k =>
       expect(HOTEL_IMAGE_FILES[k], 'kayitsiz gorsel anahtari: ' + k).toBeTruthy());
@@ -501,8 +500,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });

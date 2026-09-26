@@ -82,6 +82,20 @@ function gecUrunler(kapi, adet, haric, depo) {
     .slice(0, Math.max(0, Number(adet) || GEC_SINIR.urun));
 }
 
+/* Tarayıcıda: ürün sayfası açıldığında (dosyası olan sayfa ya da
+   yönlendiriciden açılan) geçmişe yaz. Adres veri kapısına soruluyor;
+   ürün değilse bir şey yapılmıyor. Sayfanın betikleri yüklendikten sonra
+   (DOMContentLoaded) çalışıyor: kapı o zaman hazır. */
+function gecSayfayiKaydet() {
+  if (typeof MolaVeri === 'undefined' || typeof siteMenuSimdikiYol !== 'function') return;
+  const kok = (document.body && document.body.getAttribute('data-root')) || '';
+  const adres = MolaVeri.adres(siteMenuSimdikiYol(kok));
+  if (adres && adres.kind === 'product') gecUrunEkle(adres.type, adres.slug);
+}
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', gecSayfayiKaydet);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { GEC_ANAHTAR, GEC_SINIR, gecOku, gecAramaEkle, gecAramaSil, gecUrunEkle, gecUrunler };
 }

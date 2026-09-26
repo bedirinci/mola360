@@ -302,7 +302,6 @@ describe('gorseller ve ikonlar', () => {
   it('kullanilan her gorsel anahtari kayitli', () => {
     const kullanilan = new Set();
     etkinlik.gallery.forEach(g => kullanilan.add(g.key));
-    etkinlik.similar.forEach(s => kullanilan.add(s.key));
     etkinlik.categories.forEach(k => kullanilan.add(k.key));
     [...kullanilan].forEach(k =>
       expect(EVENT_IMAGE_FILES[k], 'kayitsiz gorsel anahtari: ' + k).toBeTruthy());
@@ -439,8 +438,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });

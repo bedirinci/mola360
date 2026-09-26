@@ -1159,6 +1159,39 @@ document.addEventListener('click', (e) => {
   if (label) label.textContent = expanded ? 'Daha az göster' : 'Devamını gör';
 });
 
+/* ---------------- son görüntülenenler ----------------
+   Kenar çubuğundaki bölüm ziyaretçinin kendi geçmişinden
+   (visitor-history.js). Kart ürünün kendi kaydından: ad, fiyat, puan
+   ve görsel güncel. Geçmiş yoksa bölüm gizli. Çekmece ve masaüstü kenar
+   çubuğu (kopya) birlikte doluyor. */
+function sonGorulenlerCiz() {
+  const kaplar = document.querySelectorAll('[data-son-gorulenler]');
+  if (!kaplar.length || typeof gecUrunler !== 'function' || typeof MolaVeri === 'undefined'
+      || typeof KATALOG_KART === 'undefined') return;
+  const kartlar = gecUrunler(MolaVeri, 4).map(k => {
+    const uret = KATALOG_KART[MolaVeri.icerikTipi(k)];
+    return uret ? uret(k) : null;
+  }).filter(Boolean);
+  const html = kartlar.map(k => `
+          <a href="${SITE_KOK}${k.href}" class="sidebar-recent-card">
+            <span class="sidebar-recent-thumb">
+              <img src="${cardImages[k.img] || ''}" alt="">
+              <span class="sidebar-recent-badge">${(k.badges && k.badges[0]) || k.type}</span>
+            </span>
+            <span class="sidebar-recent-info">
+              <strong>${k.title}</strong>
+              <span class="sidebar-recent-meta"><span class="icon">${svg('clock')}</span>${k.meta1 || ''}</span>
+              <span class="sidebar-recent-foot">
+                ${k.rating ? `<span class="sidebar-recent-rating"><span class="icon">${svg('star')}</span>${k.rating}</span>` : '<span></span>'}
+                <span class="sidebar-recent-price">${k.priceMain} ${paraBirimiEtiketi(k.currency)}</span>
+              </span>
+            </span>
+          </a>`).join('');
+  kaplar.forEach(el => { el.innerHTML = html; });
+  document.querySelectorAll('[data-son-gorulenler-bolum]').forEach(el => { el.hidden = !kartlar.length; });
+}
+document.addEventListener('DOMContentLoaded', sonGorulenlerCiz);
+
 /* ---------------- full-screen search overlay ---------------- */
 const searchOverlay = document.getElementById('searchOverlay');
 const searchOverlayInput = document.getElementById('searchOverlayInput');

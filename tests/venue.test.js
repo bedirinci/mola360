@@ -363,15 +363,14 @@ describe('adres ve kayit cozumleme', () => {
 
 /* ---------------- ad cakismasi ---------------- */
 describe('genel kapsam adlari', () => {
-  it('kayit adi VENUES degil', () => {
-    /* home-blocks.js zaten `const VENUES` tanimliyor ve anasayfada iki
-       dosya da yukleniyor. Klasik <script> etiketleri ust kapsami
-       paylasir; ayni adi ikinci kez tanimlamak butun sayfayi oldururdu.
-       (Tum betiklerin tek kapsamda calistigi test
-       tests/katalog.test.js icinde.) */
+  it('kayit adi ile anasayfanin gezi noktalari cakismiyor', () => {
+    /* Klasik <script> etiketleri ust kapsami paylasir; ayni adi ikinci
+       kez tanimlamak butun sayfayi oldururdu. Mekan kayitlari PLACES,
+       anasayfanin gezi noktalari GEZI_NOKTALARI. (Tum betiklerin tek
+       kapsamda calistigi test tests/katalog.test.js icinde.) */
     expect(veriJs).toContain('const PLACES');
-    expect(veriJs).not.toMatch(/^const VENUES\b/m);
-    expect(bloklar).toMatch(/^const VENUES\b/m);
+    expect(veriJs).not.toMatch(/^const (VENUES|GEZI_NOKTALARI)\b/m);
+    expect(bloklar).toMatch(/^const GEZI_NOKTALARI\b/m);
   });
 });
 
@@ -381,7 +380,6 @@ describe('gorseller ve ikonlar', () => {
     Object.values(PLACES).forEach(m => {
       const kullanilan = new Set();
       m.gallery.forEach(g => kullanilan.add(g.key));
-      m.similar.forEach(s => kullanilan.add(s.key));
       venueOptions(m).forEach(o => kullanilan.add(o.key));
       [...kullanilan].forEach(k =>
         expect(VENUE_IMAGE_FILES[k], m.slug + ' kayitsiz gorsel: ' + k).toBeTruthy());
@@ -534,8 +532,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });
@@ -546,11 +544,11 @@ describe('sayfa etiketleri', () => {
     expect(bloklar).toContain('id="mekanlar"');
   });
 
-  it('benzer kartlarin adresi diskte var', () => {
+  it('benzer kartlarin adresi gercek bir urun', () => {
     Object.values(PLACES).forEach(m =>
       m.similar.filter(s => s.href).forEach(s => {
-        const yol = s.href.endsWith('/') ? s.href + 'index.html' : s.href;
-        expect(existsSync(new URL('../' + yol, import.meta.url)), s.href + ' diskte yok').toBe(true);
+        const a = MolaVeri.adres(s.href);
+        expect(a && a.kind, s.href + ' urun degil').toBe('product');
       }));
   });
 });

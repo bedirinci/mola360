@@ -568,25 +568,20 @@ const ACTIVITIES = {
        kayıt anasayfaya. Tur ve otel sayfalarındaki "similar" alanından
        farkı: burada adres doğrudan yazılır, çünkü benzer içerik başka
        bir TÜRDEN de olabiliyor (tur, otel, aktivite). */
-    similar: [
-      { key: 'kapadokyaBalon', href: 'tur/kapadokya-3-gece/', title: 'Kapadokya Turu — 3 Gece 4 Gün',
-        meta: 'Uçaklı · 3 gece', rating: '4,7', price: 8990, unit: 'kişi başı' },
-      { key: 'uchisar',  title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat',
-        rating: '4,7', price: 750, unit: 'kişi başı' },
-      { key: 'goreme',   title: 'Göreme Açık Hava Müzesi Turu',  meta: 'Rehberli · 3 saat',
-        rating: '4,8', price: 620, unit: 'kişi başı' },
-      { key: 'kizilVadi', title: 'Kızıl Vadi Gün Batımı Yürüyüşü', meta: 'Çavuşin çıkışlı · 3 saat',
-        rating: '4,6', price: 480, unit: 'kişi başı' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ href: 'tur/kapadokya-3-gece/' }, { href: 'otel/goreme-magara-otel/' }],
 
     /* Sayfa etiketleri: hepsi gerçek bir hedefe gidiyor — anasayfadaki
        şerit çapası, bu sayfanın bölümü ya da yazılmış bir içerik
        sayfası. docs/seo-arastirma.md madde 4. */
     tags: [
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Uçuş paketleri',       href: '#paketler' },
       { label: 'Sabahın programı',     href: '#program' },
       { label: 'Katılım şartları',     href: '#bilgiler' },

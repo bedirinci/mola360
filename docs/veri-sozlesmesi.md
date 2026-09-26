@@ -419,7 +419,6 @@ yerlerini gerçek ürünler alacak.
 | Detay sayfalarındaki "Benzer" şeritleri: başlık, puan ve fiyat kopya | `*-data.js` içindeki `similar` | 3 (kural `MolaVeri.benzerler` olarak hazır; özet sayfası kullanıyor, detay şablonları 3. adımda geçecek) |
 | Anasayfa alt SEO bloğundaki şehir bağları ("İzmir turları" …) | `home-blocks.js` `SEO_LINK_GROUPS` | 3 (şehir sayfaları; bugün `#/…` yer tutucu) |
 | Kenar çubuğundaki "Son Görüntülenenler" | `index.html` | 3 (ziyaretçinin kendi geçmişinden) |
-| Anasayfadaki "Mekanlar" bloğunun gezi noktaları (Efes, Kemeraltı …) | `home-blocks.js` `VENUES` | 3 (rezervasyonlu mekân değiller; yeri ayrıca kararlaştırılacak) |
 | Kampanya bantları ("Son 3 gün" …): metin ve indirim | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı; bant bugün ilgili listeye gidiyor) |
 | "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
 

@@ -10,7 +10,7 @@
 const HOME_BLOCK_PLACEMENT = {
   'Yaklaşan Planlar': ['promo'],
   'Günübirlik Turlar': ['themes'],
-  'Aktiviteler': ['venues'],
+  'Aktiviteler': ['venues', 'sights'],
   'Oteller': ['collectionGrid', 'newsletter', 'support', 'seo']
 };
 
@@ -74,20 +74,21 @@ function homeCollectionCards() {
   return hbTaksonomi('TAXONOMY_COLLECTIONS').map(c => ({ slug: c.slug, img: c.img, title: c.name, text: c.text }));
 }
 
-/* ---- Mekanlar ----
-   Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
-   open:true olan mekan "Açık" rozetiyle isaretlenir. */
-/* ---- Mekanlar: Izmir ----
-   Her mekanin kendi fotografi var; gorseller Wikimedia Commons'tan,
-   dosya adi konuyu anlatacak sekilde secildi. Kaynak ve lisans listesi:
+/* ---- Gezilecek yerler: İzmir ----
+   Rezervasyonlu MEKÂN DEĞİLLER (ören yeri, çarşı, sahil): "Mekanlar"
+   bloğu yalnızca satılan mekânları gösteriyor, bunlar ayrı blokta.
+   Eskiden mekân kartlarının arasında elle yazılmış puan, yorum sayısı ve
+   "açık" durumuyla duruyorlardı; ölçülmüş bir veri olmadığı için
+   kaldırıldı. Her kart ilgili ürünlere gidiyor (hedef).
+   Görseller Wikimedia Commons'tan; kaynak ve lisans listesi:
    docs/gorsel-kaynaklari.md */
-const VENUES = [
-  { img:'efes',    type:'Ören Yeri',    title:'Efes Antik Kent',        area:'Selçuk, İzmir',   rating:'4.9', reviews:'12b+',  hours:'08:00 – 19:00', open:true },
-  { img:'kemeralti', type:'Çarşı',      title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
-  { img:'izmirKordon', type:'Sahil',    title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
-  { img:'alacati', type:'Gezi Noktası', title:'Alaçatı Yel Değirmenleri', area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
-  { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
-  { img:'izmirMuze', type:'Müze',       title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
+const GEZI_NOKTALARI = [
+  { img:'efes',       type:'Ören Yeri',   title:'Efes Antik Kent',              area:'Selçuk, İzmir',   hours:'08:00 – 19:00',  hedef:'tur/efes-sirince/' },
+  { img:'kemeralti',  type:'Çarşı',       title:'Kemeraltı Çarşısı',            area:'Konak, İzmir',    hours:'09:00 – 20:00',  hedef:'arama/?q=izmir' },
+  { img:'izmirKordon', type:'Sahil',      title:'Kordon Boyu',                  area:'Alsancak, İzmir', hours:'Her zaman açık', hedef:'arama/?q=kordon' },
+  { img:'alacati',    type:'Gezi Noktası', title:'Alaçatı Yel Değirmenleri',    area:'Çeşme, İzmir',    hours:'Her zaman açık', hedef:'arama/?q=alacati' },
+  { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir',    hours:'Her zaman açık', hedef:'turlar/izmir/' },
+  { img:'izmirMuze',  type:'Müze',        title:'İzmir Arkeoloji Müzesi',       area:'Konak, İzmir',    hours:'08:30 – 17:30',  hedef:'temalar/kultur-tarih/' }
 ];
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
@@ -536,10 +537,9 @@ function seoFaqMarkup(item, index) {
 
 const HOME_BLOCK_MARKUP = {
   /* Mekanlar: yatay kaydirma yok; her mekan tam genislikte bir satir. */
-  /* Mekanlar blogu: icerik sayfasi OLAN mekanlar katalogdan geliyor ve
-     listenin basinda duruyor; sayfasi olmayan gezi noktalari (VENUES)
-     arkalarinda kaliyor. Katalog yuklenmemis bir sayfada (ornegin tur
-     sayfasi) kosul sessizce bos dizi veriyor.
+  /* Mekanlar blogu: yalnizca REZERVASYONLU mekanlar, katalogdan (kaydin
+     kendisinden). Gezi noktalari (GEZI_NOKTALARI) ayri blokta. Katalog
+     yuklenmemis bir sayfada kosul sessizce bos dizi veriyor.
 
      Bolumun id'si var cunku mekan sayfalarinin kirilma noktasi ve
      etiketleri index.html#mekanlar adresine gidiyor; capa olmadan o
@@ -548,8 +548,7 @@ const HOME_BLOCK_MARKUP = {
     <section class="section home-venues" id="mekanlar">
       ${homeSectionHead('Mekanlar', 'Tümünü Gör', '', 'mekanlar/')}
       <div class="venue-list">
-        ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : [])
-          .concat(VENUES).map(v => `
+        ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : []).map(v => `
           <a class="venue-card" href="${v.href || '#'}">
             <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
             <span class="venue-body">
@@ -561,6 +560,26 @@ const HOME_BLOCK_MARKUP = {
               <span class="venue-meta"><span class="icon">${svg('mapPin')}</span>${v.area}</span>
               <span class="venue-foot">
                 <span class="venue-rating"><span class="icon">${svg('star')}</span>${v.rating}<span class="venue-reviews">(${v.reviews})</span></span>
+                <span class="venue-hours"><span class="icon">${svg('clock')}</span>${v.hours}</span>
+              </span>
+            </span>
+          </a>`).join('')}
+      </div>
+    </section>`,
+
+  /* Gezilecek yerler: mekân kartının görünümü, rezervasyon bilgisi yok. */
+  sights: () => `
+    <section class="section home-venues home-sights">
+      ${homeSectionHead("İzmir'de Gezilecek Yerler", '', 'Rezervasyon gerekmeyen gezi noktaları ve onları içeren planlar')}
+      <div class="venue-list">
+        ${GEZI_NOKTALARI.map(v => `
+          <a class="venue-card" href="${v.hedef}">
+            <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
+            <span class="venue-body">
+              <span class="venue-top"><span class="venue-type">${v.type}</span></span>
+              <strong class="venue-title">${v.title}</strong>
+              <span class="venue-meta"><span class="icon">${svg('mapPin')}</span>${v.area}</span>
+              <span class="venue-foot">
                 <span class="venue-hours"><span class="icon">${svg('clock')}</span>${v.hours}</span>
               </span>
             </span>
@@ -749,7 +768,7 @@ if (typeof module !== 'undefined' && module.exports) {
     homeThemeCards,
     homeCollectionCards,
     temaSayisiMetni,
-    VENUES,
+    GEZI_NOKTALARI,
     PROMO_BANDS,
     NEWSLETTER_PERKS,
     CONTACT,
