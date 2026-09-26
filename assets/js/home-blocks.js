@@ -26,30 +26,53 @@ const UPCOMING_FILTERS = [
 /* Gun filtreleri: kayittaki dayKey bu anahtarlarla eslesir. */
 const UPCOMING_DAY_KEYS = ['cuma', 'cumartesi', 'pazar'];
 
-/* ---- Temalar: NE yapmak istediğin (aktivite türü) ----
-   Koleksiyonlarla karışmaması için burada yalnızca aktivite türleri
-   bulunur; kitle/bütçe başlıkları GRID_COLLECTIONS'a aittir. */
-const THEME_COLLECTIONS = [
-  { img:'iznik2',     title:'Doğa & Yayla',       count:'31 tur' },
-  { img:'efes',       title:'Kültür & Tarih',     count:'24 tur' },
-  { img:'cunda2',     title:'Deniz & Tekne',      count:'18 tur' },
-  { img:'uludag',     title:'Kış Sporları',       count:'12 tur' },
-  { img:'coffee1',    title:'Gastronomi',         count:'15 etkinlik' },
-  { img:'paraglide3', title:'Macera & Adrenalin', count:'9 aktivite' }
-];
+/* ---- Temalar ve koleksiyonlar ----
+   Liste taxonomy-data.js'ten (temalar NE yapmak istediğin, koleksiyonlar
+   KİMİNLE / nasıl bir kaçamak). Bu dosya ondan ÖNCE yüklendiği için
+   listeler çağrı anında okunuyor.
 
-/* ---- Koleksiyonlar: KİMİNLE / hangi bütçeyle (kaydırmasız ızgara) ----
-   Aktivite türü değil, kitle ve durum başlıkları. */
-const GRID_COLLECTIONS = [
-  { img:'abant2',     title:'Ailece',           text:'Çocuklu ailelere uygun' },
-  { img:'assos',      title:'Romantik',         text:'İki kişilik kaçamaklar' },
-  { img:'market1',    title:'Bütçe Dostu',      text:'500 TL altı seçenekler' },
-  { img:'dogu2',      title:'Tek Başına',       text:'Yalnız gezenler için' },
-  { img:'rafting3',   title:'Arkadaş Grubu',    text:'Kalabalık gruplara' },
-  { img:'sapanca2',   title:'Son Dakika',       text:'Bu hafta kalkanlar' },
-  { img:'kapadokya2', title:'Uzun Hafta Sonu',  text:'2-3 gecelik kaçışlar' },
-  { img:'balloon3',   title:'Yeni Başlayanlar', text:'İlk kez deneyenlere' }
-];
+   Tema kartındaki sayı temadaki ürünlerden HESAPLANIYOR
+   (MolaVeri.temaUrunleri). Önceki sürümde "31 tur", "15 etkinlik" gibi
+   sayılar elle yazılıydı ve hiçbir ürüne karşılık gelmiyordu. Ürünü
+   olmayan tema anasayfada GÖSTERİLMİYOR: "0 tur" yazan bir kart boş kutu. */
+const HB_NODE = (typeof require === 'function' && typeof module !== 'undefined' && module.exports);
+const HB_TAKSONOMI = HB_NODE ? require('./taxonomy-data.js') : null;
+const HB_KAPI = HB_NODE ? require('./data-gateway.js') : null;
+
+function hbTaksonomi(ad) {
+  if (HB_TAKSONOMI && HB_TAKSONOMI[ad]) return HB_TAKSONOMI[ad];
+  if (ad === 'TAXONOMY_THEMES' && typeof TAXONOMY_THEMES !== 'undefined') return TAXONOMY_THEMES;
+  if (ad === 'TAXONOMY_COLLECTIONS' && typeof TAXONOMY_COLLECTIONS !== 'undefined') return TAXONOMY_COLLECTIONS;
+  return [];
+}
+function hbKapi() {
+  if (HB_KAPI && HB_KAPI.MolaVeri) return HB_KAPI.MolaVeri;
+  return (typeof MolaVeri !== 'undefined') ? MolaVeri : null;
+}
+
+const TEMA_BIRIMLERI = { tour: 'tur', hotel: 'otel', activity: 'aktivite', event: 'etkinlik', venue: 'mekan' };
+
+/* "12 tur", "4 etkinlik"; farklı tipler karışıksa "9 seçenek". Birim
+   ürünlerin kendisinden; karışık bir listeye "tur" demek yanlış olurdu. */
+function temaSayisiMetni(urunler, kapi) {
+  const tipler = new Set(urunler.map(u => kapi.icerikTipi(u)));
+  const birim = tipler.size === 1 ? TEMA_BIRIMLERI[[...tipler][0]] : 'seçenek';
+  return urunler.length + ' ' + birim;
+}
+
+function homeThemeCards(bugun) {
+  const kapi = hbKapi();
+  if (!kapi) return [];
+  return hbTaksonomi('TAXONOMY_THEMES').map(t => {
+    const urunler = kapi.temaUrunleri(t.slug, bugun);
+    return { slug: t.slug, img: t.img, title: t.name, adet: urunler.length,
+             count: urunler.length ? temaSayisiMetni(urunler, kapi) : '' };
+  }).filter(t => t.adet > 0);
+}
+
+function homeCollectionCards() {
+  return hbTaksonomi('TAXONOMY_COLLECTIONS').map(c => ({ slug: c.slug, img: c.img, title: c.name, text: c.text }));
+}
 
 /* ---- Mekanlar ----
    Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
@@ -565,7 +588,7 @@ const HOME_BLOCK_MARKUP = {
       ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç')}
       <div class="hscroll-wrap">
       <div class="theme-scroll">
-        ${THEME_COLLECTIONS.map(c => `
+        ${homeThemeCards().map(c => `
           <a class="theme-card" href="#">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="theme-card-shade"></span>
@@ -581,7 +604,7 @@ const HOME_BLOCK_MARKUP = {
     <section class="section home-collections">
       ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre')}
       <div class="collection-grid">
-        ${GRID_COLLECTIONS.map(c => `
+        ${homeCollectionCards().map(c => `
           <a class="collection-tile" href="#">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="collection-tile-shade"></span>
@@ -715,8 +738,9 @@ if (typeof module !== 'undefined' && module.exports) {
     HOME_BLOCK_PLACEMENT,
     UPCOMING_FILTERS,
     UPCOMING_DAY_KEYS,
-    THEME_COLLECTIONS,
-    GRID_COLLECTIONS,
+    homeThemeCards,
+    homeCollectionCards,
+    temaSayisiMetni,
     VENUES,
     PROMO_BANDS,
     NEWSLETTER_PERKS,

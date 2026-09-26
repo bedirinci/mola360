@@ -453,7 +453,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa ve tur baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const aktiviteKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('aktivite/'));
+  const aktiviteKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('aktivite/'));
 
   it('her aktivite anasayfaya kendiliginden giriyor', () => {
     const baglar = aktiviteKartlari.map(k => k.href);

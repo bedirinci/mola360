@@ -448,7 +448,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href.startsWith('etkinlik/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('etkinlik/'));
 
   it('her etkinlik anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);
@@ -497,7 +497,7 @@ describe('anasayfa baglantisi', () => {
        yazilmis kartlarin dustugu tuzagin ta kendisi olurdu. */
     expect(eventCatalogCard(etkinlik, SONRASI)).toBe(null);
     expect(catalogCards('etkinlikler', SONRASI)).toEqual([]);
-    expect(catalogCards('yaklasan-planlar', SONRASI).every(k => !k.href.startsWith('etkinlik/')))
+    expect(catalogCards('yaklasan-planlar', SONRASI).every(k => !k.href || !k.href.startsWith('etkinlik/')))
       .toBe(true);
   });
 

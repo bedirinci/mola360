@@ -557,7 +557,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href.startsWith('mekan/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('mekan/'));
 
   it('her mekan anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);

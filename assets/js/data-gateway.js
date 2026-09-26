@@ -29,6 +29,7 @@ const KAPI_ETKINLIK = kapiModul('./event-data.js');
 const KAPI_MEKAN = kapiModul('./venue-data.js');
 const KAPI_TAKSONOMI = kapiModul('./taxonomy-data.js');
 const KAPI_ENVANTER = kapiModul('./inventory-data.js');
+const KAPI_ORNEK = kapiModul('./sample-catalog-data.js');
 
 /* Kanonik adreslerin kökü. Alan adı (mola360.com) hazır olduğunda tek
    değişecek satır. */
@@ -149,7 +150,22 @@ function kapiIcerikTipi(kayit) {
   return KAPI_TIPLER[kayit.type] ? kayit.type : null;
 }
 
-/* ---------------- sayfa yükü: ürünler ---------------- */
+/* ---------------- sayfa yükü: ürünler ----------------
+   Bir tipin kayıtları = sayfası olan ürünler (TOURS …) + henüz sayfası
+   olmayan örnek özet kayıtlar (sample-catalog-data.js, sample: true).
+   İkisi aynı biçimde; aynı slug ikisinde birden varsa sayfası olan
+   kazanır. */
+function kapiKume(tip) {
+  const t = KAPI_TIPLER[tip];
+  if (!t) return null;
+  const tam = t.kayitlar();
+  const ornekHepsi = kapiDeger('SAMPLE_PRODUCTS', KAPI_ORNEK,
+    typeof SAMPLE_PRODUCTS !== 'undefined' ? SAMPLE_PRODUCTS : undefined);
+  const ornek = ornekHepsi ? ornekHepsi[tip] : null;
+  if (!tam && !ornek) return null;
+  return Object.assign({}, ornek || {}, tam || {});
+}
+
 
 /* Yayında olmayan kayıt public adreste görünmez (sözleşme bölüm 9).
    Örnek kayıtlarda status yoksa yayında sayılıyor. */
@@ -158,8 +174,7 @@ function kapiYayinda(kayit) {
 }
 
 function kapiUrun(tip, slug) {
-  const t = KAPI_TIPLER[tip];
-  const kume = t ? t.kayitlar() : null;
+  const kume = kapiKume(tip);
   const anahtar = String(slug || '').trim().toLowerCase();
   if (!kume || !anahtar || !Object.prototype.hasOwnProperty.call(kume, anahtar)) return null;
   const kayit = kume[anahtar];
@@ -170,7 +185,7 @@ function kapiUrunler(tip) {
   const tipler = tip ? [tip] : Object.keys(KAPI_TIPLER);
   const out = [];
   tipler.forEach(t => {
-    const kume = KAPI_TIPLER[t] ? KAPI_TIPLER[t].kayitlar() : null;
+    const kume = kapiKume(t);
     if (!kume) return;
     Object.keys(kume).forEach(s => { if (kapiYayinda(kume[s])) out.push(kume[s]); });
   });

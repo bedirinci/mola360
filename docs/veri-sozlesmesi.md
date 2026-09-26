@@ -21,6 +21,7 @@ ayrıca işaretli (bölüm 11).
     ├── bugün:  örnek veri
     │     tour-data.js, hotel-data.js, activity-data.js,
     │     event-data.js, venue-data.js   (ürün kayıtları)
+    │     sample-catalog-data.js         (henüz sayfası olmayan örnek ürünler)
     │     taxonomy-data.js               (kategori, tema, koleksiyon, destinasyon, liste sayfası)
     │     inventory-data.js              (örnek rezervasyonlar → kontenjan)
     │
@@ -128,7 +129,13 @@ ayrışamaz.
 | Eski alan | Artık neyin görüntüsü |
 |---|---|
 | `region` | `taxonomy.city` → şehrin bölgesinin adı |
-| `category`, `categoryShort`, `categoryPlural`, `categoryAnchor` | Turda tur tipi (günübirlik/konaklamalı), diğerlerinde ana kategori. Adı yanıltıcı; 2. adımda liste sayfaları açılınca yeniden adlandırılacak. |
+| `category`, `categoryShort`, `categoryPlural`, `categoryAnchor` (tur) | Tur tipi: günübirlik / konaklamalı (`TAXONOMY_TOUR_KINDS`) |
+| `categoryShort` (diğer tipler) | Ana kategorinin kısa adı (`nameShort`) |
+| `categoryPlural`, `categoryAnchor` (diğer tipler) | Tipin çoğul adı ve anasayfa çapası (`TAXONOMY_TYPES`) |
+
+Diğer tiplerdeki `category` metni ("Sahne Sanatları", "Mekan") henüz
+tutarlı bir kurala bağlı değil; yalnızca yönetim panelinin listesinde
+görünüyor. 2. adımda liste sayfaları açılınca kaldırılacak.
 
 ### 4.3 Satış ve deneyim
 
@@ -197,11 +204,22 @@ değişince ürün koleksiyondan kendiliğinden çıkmalı.
 
 **Onayına sunulanlar:**
 
-1. **Spa & Masaj** mekân kategorisi menüde yok, ama mevcut ürün
-   (`/mekan/kordon-spa-masaj/`) bir masaj salonu. Kategori olarak eklendi.
+1. **Menüde olmayan dört kategori** mevcut ürünlere yer açmak için
+   eklendi (`menu: false`; adresleri var, menüde görünmüyorlar):
+   - Spa & Masaj → Kordon Spa & Masaj
+   - Sahne Sanatları → Aspendos Opera ve Bale Festivali (opera ve bale
+     menüdeki etkinlik türlerine sığmıyor; festival olduğu için
+     Festivaller'de de)
+   - Şehir Otelleri → Kordon Butik Otel (Butik Oteller'de de)
+   - Resort Oteller → Sealight Resort (örnek ürün)
 2. **Son Dakika** hem koleksiyon hem Fırsatlar başlığı. Tek tanım
    tutuldu (kurala göre koleksiyon); Fırsatlar menüsündeki bağlantı aynı
    listeye gidiyor. İki ayrı tanım zamanla ayrışırdı.
+3. **Menüde karşılığı olmayan yurt içi bölgeler.** Sapanca (Marmara),
+   İznik (Marmara), Erciyes (İç Anadolu) ve Doğu Ekspresi (Doğu Anadolu)
+   örnek turları menüdeki alt kategorilerin hiçbirine girmiyor; doğrudan
+   "Yurt İçi Turlar"a bağlandılar. "Marmara Turları", "Doğu Anadolu
+   Turları" veya "Kış Turları" gibi kategoriler istenirse eklenir.
 
 ## 6. Kontenjan (müsaitlik)
 
@@ -292,7 +310,9 @@ rezervasyon kendi kuralıyla iade alır.
 | Fonksiyon | Tür | Döner | Backend gelince |
 |---|---|---|---|
 | `urun(type, slug)` | senkron | Ürün kaydı veya `null` (yayında değil / yok) | Sayfaya gömülü kayıt |
-| `urunler(type?)` | senkron | Ürün kayıtları dizisi | Ana sayfa yükü |
+| `urunler(type?)` | senkron | Ürün kayıtları dizisi (örnekler dahil) | Ana sayfa yükü |
+| `icerikTipi(kayit)` | senkron | Kaydın içerik tipi (turda `type` tur tipini taşıdığı için) | — |
+| `ozet(kayit, bugun)` | senkron | Filtre ve kurallar için: başlangıç fiyatı, liste fiyatı, para birimi, gece, ilk tarih | — |
 | `kategoriler(type)` | senkron | Kategori ağacı (düz dizi, `parent` ile) | Önbellekli uç nokta |
 | `kategori(type, slug)` | senkron | Tek kategori veya `null` | 〃 |
 | `temalar()`, `tema(slug)` | senkron | Tema(lar) | 〃 |
@@ -305,16 +325,35 @@ rezervasyon kendi kuralıyla iade alır.
 `ara(sorgu)` **Promise**; `fiyatTeklifi(secim)` ve `rezervasyonOlustur`
 **Promise** ve sunucuda hesaplanır.
 
-## 10. Bu adımda ne değişti, ne değişmedi
+**Örnek ürünler** (`sample-catalog-data.js`, `sample: true`): anasayfadaki
+eski elle yazılmış kartların kayıt hâli. Gerçek ürünle aynı alanları ve
+aynı sınıflandırmayı taşıyorlar; listelerde, temalarda, koleksiyonlarda
+ve aramada sayılıyorlar. Detay sayfaları olmadığı için kartları
+tıklanamıyor. Yönetim paneli ve backend geldiğinde yerlerini gerçek
+ürünler alacak.
+
+## 10. 1. adımda ne değişti, ne değişmedi
 
 **Değişti**
 
-- Beş sayfa kaydı `MolaVeri.urun` üzerinden okuyor.
-- Kalan yer örnek rezervasyonlardan hesaplanıyor; doldu ve yetersiz
-  durumları ilk kez ekranda karşılık buluyor.
-- Otelde kalan oda her gecenin en küçüğü.
-- Her ürün kaydında `taxonomy`, `currency` ve `seo` var.
-- Tema sayıları ürünlerden hesaplanıyor.
+- Beş detay sayfası kaydı `MolaVeri.urun` üzerinden okuyor.
+- Kalan yer örnek rezervasyonlardan hesaplanıyor; dolu tarih/seans
+  seçilemiyor, dolu veya yetmeyen kontenjanda rezervasyon düğmesi pasif.
+  Tarihin karma değerinden "son N yer" üreten fonksiyonlar kaldırıldı.
+- Otelde kalan oda her gecenin en küçüğü; mekânda varsayılan gün ilk açık
+  gün.
+- Her ürün kaydında `taxonomy`, `currency` ve `seo` var; görüntü
+  alanlarının ve sayfa kabuğundaki SEO başlığının kayıtla ayrışmadığı
+  test ediliyor.
+- Anasayfadaki 27 elle yazılmış kart ve "Günün En Çok Satanları" ürün
+  kaydına dönüştü; şeritler artık ürün seçiyor (`picks`), kart metni
+  yazmıyor. Taşımada hiçbir alanın kaybolmadığı
+  `tests/ornek-katalog.test.js`'te ölçülüyor.
+- Tema kartlarındaki sayılar ("31 tur" gibi) ürünlerden hesaplanıyor;
+  koleksiyonlar sınıflandırmadan geliyor.
+- Başlıktaki arama bütün ürünleri (örnekler dahil) buluyor. Bunun için
+  içerik sayfaları da beş veri dosyasını yüklüyor; backend gelince
+  arama uç noktasına geçilecek ve bu yük kalkacak.
 
 **Değişmedi**
 
@@ -324,6 +363,17 @@ rezervasyon kendi kuralıyla iade alır.
   sunucu gelene kadar duruyor. Kabuktaki başlık ile kaydın `seo` alanı
   arasındaki eşitliği test ölçüyor; **yeni ürün için kabuk yazılmayacak**
   (2. adım: tek yönlendirici sayfa).
+
+**Sonraki adımlara kalan elle yazılmış veri** (bilinçli; yeri belli):
+
+| Ne | Nerede | Adım |
+|---|---|---|
+| Detay sayfalarındaki "Benzer" şeritleri: başlık, puan ve fiyat kopya | `*-data.js` içindeki `similar` | 3 (kurala dayalı benzer ürünler) |
+| Kenar çubuğundaki "Son Görüntülenenler" | `index.html` | 3 (ziyaretçinin kendi geçmişinden) |
+| Anasayfadaki "Mekanlar" bloğunun gezi noktaları (Efes, Kemeraltı …) | `home-blocks.js` `VENUES` | 3 (rezervasyonlu mekân değiller; yeri ayrıca kararlaştırılacak) |
+| Kampanya bantları ("Son 3 gün" …) | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı) |
+| "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
+| Bilinmeyen slug'ı varsayılan ürüne düşüren `resolveTour` vb. | `*-data.js` | Sayfalar artık kullanmıyor; 2. adımda "bulunamadı" sayfasıyla kaldırılacak |
 
 ## 11. Backend'e eklenecekler
 

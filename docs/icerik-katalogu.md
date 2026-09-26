@@ -283,3 +283,30 @@ Chromium, dış ağ kesik (390×844 ve 1440×900):
   ("Açık"); "beach" araması `/mekan/kum-beach-club/`'a giden bir bağ
   veriyor.
 - Konsolda hata yok, yatay taşma yok.
+
+## Şerit seçimleri ve örnek ürünler (veri sözleşmesi, 1. adım)
+
+Anasayfadaki elle yazılmış kartların tamamı kayda dönüştü
+(`assets/js/sample-catalog-data.js`, `sample: true`). Bir şeride artık iki
+yoldan kart giriyor:
+
+1. **Kendiliğinden:** sayfası olan her ürün kendi tipinin şeridine
+   (yukarıdaki `KATALOG_KAYNAKLARI`, değişmedi).
+2. **Elle seçim:** şeridin `picks` listesi — `"tour/sile-agva"` gibi
+   içerik tipi + slug. Kart yine kaydın kendisinden, `catalogRefCard` ile
+   üretiliyor; şerit kart METNİ taşımıyor.
+
+"Günün En Çok Satanları" da bir sıralama listesi oldu (`top10`, ürün
+ref'leri); başlık ve görsel ürünün kaydından, sayfası olan ürün kendi
+adresine gidiyor.
+
+Örnek kaydın detay sayfası olmadığı için kartı tıklanamıyor (`href:
+null`); arama ve listeler onu yine buluyor. Taşımada hiçbir alanın
+kaybolmadığını `tests/ornek-katalog.test.js` eski kartların birebir
+kopyasıyla karşılaştırarak ölçüyor; bilerek değişen alanlar (aynı ürünün
+iki farklı yazımı, döviz fiyatlı yurt dışı tur, gerçek ürünün eski
+kopyası) orada gerekçesiyle listeli.
+
+Bu yapı backend'deki `homepage_blocks` tablosunun karşılığı (mod
+`mixed`: kendiliğinden + elle); 3. adımda yönetimden düzenlenebilir
+olacak.

@@ -4,8 +4,9 @@ import {
   HOME_BLOCK_PLACEMENT,
   UPCOMING_FILTERS,
   UPCOMING_DAY_KEYS,
-  THEME_COLLECTIONS,
-  GRID_COLLECTIONS,
+  homeThemeCards,
+  homeCollectionCards,
+  temaSayisiMetni,
   VENUES,
   PROMO_BANDS,
   NEWSLETTER_PERKS,
@@ -20,6 +21,8 @@ import {
   supportOnline,
   istanbulSaati,
 } from '../assets/js/home-blocks.js';
+import { MolaVeri } from '../assets/js/data-gateway.js';
+import { TAXONOMY_COLLECTIONS } from '../assets/js/taxonomy-data.js';
 
 const ornek = [
   { title: 'Uzak',      inDays: 12 },
@@ -105,17 +108,55 @@ describe('blok verileri', () => {
   });
 
   it('koleksiyon blokları beklenen sayıda', () => {
-    expect(THEME_COLLECTIONS.length).toBeGreaterThanOrEqual(6);
-    expect(GRID_COLLECTIONS.length).toBeGreaterThanOrEqual(8);
-    const basliklar = GRID_COLLECTIONS.map(k => k.title);
+    expect(homeThemeCards().length).toBeGreaterThanOrEqual(6);
+    expect(homeCollectionCards().length).toBeGreaterThanOrEqual(8);
+    const basliklar = homeCollectionCards().map(k => k.title);
     expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('tema sayısı temadaki ürünlerden hesaplanıyor, elle yazılmıyor', () => {
+    /* Eskiden "31 tur", "15 etkinlik" gibi sayılar elle yazılıydı ve hiçbir
+       ürüne karşılık gelmiyordu. */
+    const kaynak = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    expect(kaynak).not.toMatch(/count:\s*'\d+/);
+    for (const t of homeThemeCards('2026-09-21')) {
+      const urunler = MolaVeri.temaUrunleri(t.slug, '2026-09-21');
+      expect(t.adet, t.title).toBe(urunler.length);
+      expect(t.count.startsWith(urunler.length + ' '), t.title + ' · ' + t.count).toBe(true);
+    }
+  });
+
+  it('tema sayısının birimi ürünlerin tipinden', () => {
+    const kapi = MolaVeri;
+    const tur = kapi.urun('tour', 'efes-sirince');
+    const etkinlik = kapi.urun('event', 'aspendos-opera-bale-festivali');
+    expect(temaSayisiMetni([tur], kapi)).toBe('1 tur');
+    expect(temaSayisiMetni([etkinlik, etkinlik], kapi)).toBe('2 etkinlik');
+    expect(temaSayisiMetni([tur, etkinlik], kapi)).toBe('2 seçenek');
+  });
+
+  it('ürünü olmayan tema gösterilmiyor', () => {
+    /* Bütün temaların bugün ürünü var; ürünü olmayanı gizleyen kural,
+       temaların sayısından az kart dönmesiyle değil süzgeçle ölçülüyor. */
+    const kaynak = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    const fn = kaynak.match(/function homeThemeCards\(bugun\) \{([\s\S]*?)\n\}/)[1];
+    expect(fn).toContain('.filter(t => t.adet > 0)');
+  });
+
+  it('koleksiyonlar sınıflandırmadan: başlık, alt yazı, görsel', () => {
+    const kartlar = homeCollectionCards();
+    expect(kartlar.map(k => k.slug)).toEqual(TAXONOMY_COLLECTIONS.map(c => c.slug));
+    kartlar.forEach((k, i) => {
+      expect(k.title).toBe(TAXONOMY_COLLECTIONS[i].name);
+      expect(k.text).toBe(TAXONOMY_COLLECTIONS[i].text);
+    });
   });
 
   it('temalar ile koleksiyonlar aynı başlığı paylaşmaz', () => {
     /* Temalar aktivite türü, koleksiyonlar kitle/durum başlığı taşır;
        ikisi çakışırsa aynı fikir sayfada iki kez görünür. */
-    const temalar = THEME_COLLECTIONS.map(t => t.title);
-    const koleksiyonlar = GRID_COLLECTIONS.map(k => k.title);
+    const temalar = homeThemeCards().map(t => t.title);
+    const koleksiyonlar = homeCollectionCards().map(k => k.title);
     expect(temalar.filter(t => koleksiyonlar.includes(t))).toEqual([]);
   });
 

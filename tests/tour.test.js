@@ -744,7 +744,7 @@ describe('anasayfa bağlantısı', () => {
      kayitlarindan uretip seritlere karistiriyor (docs/icerik-katalogu.md).
      Bu yuzden asagidaki testler app.js metnine degil, uretilen kartlara
      bakiyor. Katalogun kendi kurallari tests/katalog.test.js icinde. */
-  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('tur/'));
+  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('tur/'));
 
   it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
     const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);

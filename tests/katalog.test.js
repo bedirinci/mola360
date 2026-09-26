@@ -307,12 +307,25 @@ describe('anasayfa katalogu yukluyor', () => {
     expect(app).toContain("if (typeof mergeCatalogCards === 'function') mergeCatalogCards(cardSections);");
   });
 
-  it('katalogu yuklemeyen sayfa app.js\'te patlamiyor', () => {
-    /* Tur ve otel icerik sayfalari app.js'i yukluyor ama katalogu
-       yuklemiyor; cagri korumali olmak zorunda. */
+  it('katalog app.js\'ten sonra yuklenen sayfada app.js patlamiyor', () => {
+    /* Icerik sayfalari app.js'i veri dosyalarindan ONCE yukluyor; katalog
+       orada app.js yuklenirken henuz yok. Cagri korumali olmak zorunda. */
     expect(app).toMatch(/typeof mergeCatalogCards === 'function'/);
-    ['tur/efes-sirince/index.html', 'otel/kordon-butik-otel/index.html'].forEach(yol =>
-      expect(oku(yol), yol + ' katalogu yukluyor').not.toContain('assets/js/catalog.js'));
+    ['tur/efes-sirince/index.html', 'otel/kordon-butik-otel/index.html'].forEach(yol => {
+      const betikler = [...oku(yol).matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
+      const appYeri = betikler.findIndex(b => b.endsWith('assets/js/app.js'));
+      const katalogYeri = betikler.findIndex(b => b.endsWith('assets/js/catalog.js'));
+      expect(katalogYeri, yol + ' katalogu yuklemiyor').toBeGreaterThan(-1);
+      expect(katalogYeri, yol).toBeGreaterThan(appYeri);
+    });
+  });
+
+  it('arama dizini arama acildiginda kuruluyor (katalog sonradan yuklense de)', () => {
+    /* Icerik sayfasinda katalog app.js'ten sonra geliyor; arama dizini
+       yukleme aninda degil cagri aninda kurulursa katalogu gorur. */
+    const fn = app.match(/function aramaKayitlari\(\) \{([\s\S]*?)\n\}/)[1];
+    expect(fn).toContain("typeof catalogAllCards === 'function'");
+    expect(app).not.toMatch(/^const aramaDizini\s*=/m);
   });
 
   it('icerik kartlari anasayfaya elle yazilmamis', () => {
@@ -424,6 +437,26 @@ describe('eksik veri dosyasi', () => {
        cakismasi oldugu icin yalnizca veri/mantik dosyalari yukleniyor. */
     const domsuz = betikler.filter(y => !/site-chrome|ui\.js|app\.js/.test(y));
     expect(() => calistir(domsuz, '1')).not.toThrow();
+  });
+
+  it('icerik sayfalarinin butun betikleri tek kapsamda cakismiyor', () => {
+    /* Icerik sayfalari arama icin artik bes veri dosyasinin hepsini,
+       veri kapisini ve katalogu yukluyor. Ayni risk orada da var. */
+    const kabuklar = ['tur/efes-sirince', 'tur/kapadokya-3-gece', 'otel/kordon-butik-otel',
+      'aktivite/kapadokya-balon-turu', 'etkinlik/aspendos-opera-bale-festivali',
+      'mekan/kum-beach-club', 'mekan/kordon-spa-masaj'];
+    for (const yol of kabuklar) {
+      const betikler = [...oku(yol + '/index.html').matchAll(/<script src="\.\.\/\.\.\/([^"]+)"/g)]
+        .map(m => m[1]).filter(y => y.startsWith('assets/js/'));
+      const domsuz = betikler.filter(y => !/site-chrome|ui\.js|app\.js|-page\.js|tour-pdf/.test(y));
+      expect(domsuz.length, yol).toBeGreaterThan(8);
+      expect(() => calistir(domsuz, '1'), yol).not.toThrow();
+      /* Tek kapsamda kapı ve katalog birlikte çalışıyor: arama dizini
+         bütün tiplerden kart üretiyor. */
+      const tipler = JSON.parse(calistir(domsuz,
+        'JSON.stringify([...new Set(catalogAllCards("2026-09-21").map(k => k.type))].sort())'));
+      expect(tipler, yol).toEqual(['Aktivite', 'Etkinlik', 'Mekan', 'Otel', 'Tur']);
+    }
   });
 
   it('yardimci cozumleyici bulamadiginda null donuyor', () => {

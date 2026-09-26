@@ -195,6 +195,10 @@ function ornekMusaitlik(tip, kayit, secenek) {
   envanterBirimleri(tip, kayit, bugun, bit).forEach((gun, sira) => {
     if (gun.date < bas) return;
     gun.units.forEach(birim => {
+      /* Kapasitesi tanımsız birim (ör. kontenjanı girilmemiş örnek kayıt)
+         için satır YAZILMIYOR: "0 yer" demek doldu demek olurdu; satırın
+         yokluğu ise "bilinmiyor", yani satış engellenmez. */
+      if (!(birim.capacity > 0)) return;
       const satilan = rezler
         .filter(r => r.order === sira && envEslesir(r, birim))
         .reduce((t, r) => t + (Number(r.quantity) || 0), 0);

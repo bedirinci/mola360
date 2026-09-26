@@ -113,6 +113,7 @@ const TAXONOMY_CATEGORIES = [
   { type: 'hotel', slug: 'termal-oteller', name: 'Termal Oteller', nameShort: 'Termal Otel', parent: null },
   { type: 'hotel', slug: 'bungalovlar',    name: 'Bungalovlar',    nameShort: 'Bungalov',    parent: null },
   { type: 'hotel', slug: 'sehir-otelleri', name: 'Şehir Otelleri', nameShort: 'Şehir Oteli', parent: null, menu: false },
+  { type: 'hotel', slug: 'resort-oteller', name: 'Resort Oteller',  nameShort: 'Resort',      parent: null, menu: false },
 
   /* ---- aktiviteler: aktivite türüne göre ---- */
   { type: 'activity', slug: 'tekne-turlari', name: 'Tekne Turları',  nameShort: 'Tekne Turu', parent: null },

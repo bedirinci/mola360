@@ -36,13 +36,17 @@ import { HOTELS } from '../assets/js/hotel-data.js';
 import { ACTIVITIES } from '../assets/js/activity-data.js';
 import { EVENTS } from '../assets/js/event-data.js';
 import { PLACES } from '../assets/js/venue-data.js';
+import { SAMPLE_PRODUCTS } from '../assets/js/sample-catalog-data.js';
 
+/* Sayfası olan kayıtlar + henüz sayfası olmayan örnek özet kayıtlar:
+   ikisi aynı sınıflandırma kurallarına tabi. */
 const URUNLER = [
   ...Object.values(TOURS).map(k => ({ tip: 'tour', k })),
   ...Object.values(HOTELS).map(k => ({ tip: 'hotel', k })),
   ...Object.values(ACTIVITIES).map(k => ({ tip: 'activity', k })),
   ...Object.values(EVENTS).map(k => ({ tip: 'event', k })),
   ...Object.values(PLACES).map(k => ({ tip: 'venue', k })),
+  ...Object.entries(SAMPLE_PRODUCTS).flatMap(([tip, g]) => Object.values(g).map(k => ({ tip, k }))),
 ];
 
 const tekil = (liste, anahtar) => {
@@ -285,7 +289,7 @@ describe('ürünlerin sınıflandırması', () => {
   });
 
   it('otel pansiyon kodları standart kodlardan', () => {
-    for (const k of Object.values(HOTELS)) {
+    for (const k of [...Object.values(HOTELS), ...Object.values(SAMPLE_PRODUCTS.hotel)]) {
       for (const b of k.boards) expect(taxonomyBoardByCode(b.id), k.slug + ' · ' + b.id).toBeTruthy();
     }
   });

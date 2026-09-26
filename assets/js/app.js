@@ -429,13 +429,32 @@ const cardImages = {
   "erciyes": "https://commons.wikimedia.org/wiki/Special:FilePath/Erciyes_Da%C4%9F%C4%B1_Kayseri.JPG?width=800"
 };
 
+/* Günün en çok satanları: SIRALAMA, ürün kopyası değil. Her satır bir
+   ürüne işaret ediyor ("içerik tipi/slug"); başlık ve görsel ürünün kendi
+   kaydından geliyor. Sıralama bugün elle; backend gelince satış
+   verisinden hesaplanacak (docs/veri-sozlesmesi.md). */
 const top10 = [
-  {img:'kapadokya',t:'Kapadokya Balon Turu',p:'2.450₺'},{img:'pamukkale',t:'Pamukkale Termal Tatili',p:'1.890₺'},
-  {img:'bodrum',t:'Bodrum Tekne Turu',p:'980₺'},{img:'efes',t:'Efes Antik Kent Turu',p:'750₺'},
-  {img:'uludag',t:'Uludağ Kayak Paketi',p:'3.200₺'},{img:'bogaz',t:'İstanbul Boğaz Turu',p:'650₺'},
-  {img:'ayder',t:'Karadeniz Yayla Turu',p:'2.100₺'},{img:'assos',t:'Assos Gün Batımı Turu',p:'1.150₺'},
-  {img:'sile',t:'Şile Kamp Deneyimi',p:'890₺'},{img:'iznik',t:'İznik Kültür Turu',p:'520₺'},
+  'activity/kapadokya-balon-turu', 'tour/pamukkale-hierapolis', 'activity/bodrum-tekne-turu',
+  'tour/efes-sirince', 'activity/uludag-kayak-paketi', 'activity/istanbul-bogaz-turu',
+  'tour/karadeniz-yaylalari', 'tour/assos-gun-batimi', 'activity/sile-kamp-deneyimi',
+  'tour/iznik-golu-antik-kent'
 ];
+
+/* Sıralamadaki ürünler kapıdan: bulunamayan (yayından kalkmış) satır
+   düşüyor, sıralama boşluk bırakmadan kayıyor. Sayfası olan ürün kendi
+   adresine, örnek özet kayıt hiçbir yere gitmiyor. */
+function enCokSatanlar() {
+  if (typeof MolaVeri === 'undefined') return [];
+  const YOL = { tour: 'tur', hotel: 'otel', activity: 'aktivite', event: 'etkinlik', venue: 'mekan' };
+  return top10.map(ref => {
+    const [tip, slug] = ref.split('/');
+    const kayit = MolaVeri.urun(tip, slug);
+    if (!kayit) return null;
+    const kart = kayit.card || {};
+    return { img: kart.img, t: kart.title || kayit.title,
+             href: kayit.sample ? '' : YOL[tip] + '/' + kayit.slug + '/' };
+  }).filter(Boolean);
+}
 const CAT_ICONS = {
   "firsatlar": "assets/img/kategori/firsatlar.webp",
   "turlar": "assets/img/kategori/turlar.webp",
@@ -485,56 +504,52 @@ const suggestedSearchTerms = [
   'Boğaz turu',
   'Kamp alanları'
 ];
+/* Anasayfa şeritleri. Kartların İÇERİĞİ burada yazmıyor: başlık, fiyat,
+   puan ve tarih ürün kaydından türetiliyor (catalog.js).
+
+   Bir şeride iki yoldan kart girer:
+     1) kendiliğinden: sayfası olan her ürün kendi tipinin şeridine
+        (catalog.js/KATALOG_KAYNAKLARI);
+     2) elle seçim (picks): "içerik tipi/slug" listesi. Bugün seçilenler
+        henüz sayfası olmayan örnek kayıtlar (sample-catalog-data.js).
+
+   Eskiden bu dizide kartlar elle yazılıydı: aynı ürün iki şeritte iki
+   farklı adla görünebiliyor, "Bu Cuma" yazan kart her hafta "Bu Cuma"
+   diyordu. Taşımada hiçbir alanın kaybolmadığını
+   tests/ornek-katalog.test.js ölçüyor.
+
+   Bu yapı backend'deki homepage_blocks tablosunun karşılığı: mode 'mixed'
+   (kendiliğinden + elle), 3. adımda yönetimden düzenlenebilir olacak. */
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', anchor:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Cemil Topuzlu Sahnesi, İstanbul · 21:00', meta2:'12 Eylül, Cuma', priceMain:'890'},
-    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'310+', title:'Çeşme Yaz Festivali', meta1:'Alaçatı Sahil, İzmir · Tüm gün', meta2:'19 Eylül, Cuma', priceMain:'650'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'21 Eylül, Pazartesi', priceMain:'420'},
+  {title:'Popüler Etkinlikler', anchor:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+    'event/harbiye-acikhava-konserleri', 'event/cesme-yaz-festivali', 'event/stand-up-gecesi'
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
-     inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
-  /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar".
-     Icerik Turkiye geneli: her gun filtresinde farkli sehirler bulunur. */
-  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
-    /* dayKey: gun filtreleri (Bu Cuma / Bu Cumartesi / Bu Pazar) bununla suzer.
-       inDays: siralama icin kalan gun. meta2: kartta gorunen tarih metni. */
-    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'240+', title:'İstanbul Gece Yarısı Koşusu', meta1:'Kadıköy Sahil, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'350', inDays:0, dayKey:'cuma'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'Bu Cuma', priceMain:'420', inDays:0, dayKey:'cuma'},
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Harbiye, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'890', inDays:0, dayKey:'cuma'},
-    {img:'concert2', badges:['Konser'], rating:'4.7', reviews:'120+', title:'Kordon Caz Akşamları', meta1:'Alsancak, İzmir · 20:00', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
-    {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Maşukiye Turu', meta1:'İstanbul Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'780', inDays:1, dayKey:'cumartesi'},
-    {img:'market1', badges:['Günübirlik'], rating:'4.4', reviews:'96+', title:'Alaçatı Pazar Turu', meta1:'İzmir Çıkışlı · 09:00', meta2:'Bu Pazar', priceMain:'350', inDays:2, dayKey:'pazar'},
-    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'210+', title:'İstanbul Kahve Festivali', meta1:'Küçükçiftlik Park · 11:00', meta2:'Bu Pazar', priceMain:'290', inDays:2, dayKey:'pazar'},
-    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · 08:00', meta2:'Bu Pazar', priceMain:'450', inDays:2, dayKey:'pazar'},
-    {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'155+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Ankara Çıkışlı · 08:30', meta2:'3 gün kaldı', priceMain:'620', inDays:3},
-    {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Uçaklı', meta2:'9 gün kaldı', priceMain:'8990', inDays:9},
-    {img:'erciyes', badges:['Kış Sporu'], rating:'4.6', reviews:'140+', title:'Erciyes Kayak Haftası', meta1:'Kayseri · 4 Gece 5 Gün', meta2:'12 gün kaldı', priceMain:'6400', inDays:12},
+     inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun;
+     ikisi de kaydin takviminden turetiliyor. Serit hem etkinlikleri hem
+     turlari tasidigi icin baslik "Planlar". */
+  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
+    'event/istanbul-gece-yarisi-kosusu', 'event/stand-up-gecesi', 'event/harbiye-acikhava-konserleri',
+    'event/kordon-caz-aksamlari', 'tour/sapanca-masukiye', 'tour/alacati-pazar-turu',
+    'event/istanbul-kahve-festivali', 'tour/iznik-golu-antik-kent', 'tour/abant-golcuk',
+    'tour/erciyes-kayak-haftasi'
   ]},
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
-    {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
-    {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
+  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+    'tour/karadeniz-yaylalari', 'tour/ege-adalari-balayi', 'tour/dogu-ekspresi'
   ]},
-  {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
-    {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
-    {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},
-    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · Rehberli', meta2:'19 Ekim, Pazar', priceMain:'450'},
+  {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+    'tour/sile-agva', 'tour/cunda-ayvalik', 'tour/abant-golcuk', 'tour/iznik-golu-antik-kent'
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', anchor:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'rafting3', badges:['Su Sporları'], rating:'4.8', reviews:'440+', title:'Köprülü Kanyon Rafting', meta1:'Antalya, Manavgat · Yarım Gün', meta2:'Her gün', priceMain:'850'},
-    {img:'paraglide3', badges:['Macera'], rating:'4.9', reviews:'1,2b+', title:'Ölüdeniz Yamaç Paraşütü', meta1:'Fethiye, Muğla · 20 dk Uçuş', meta2:'Her gün', priceMain:'1450'},
-    {img:'kayak3', badges:['Kış Sporu'], rating:'4.5', reviews:'330+', title:'Uludağ Kayak Dersi', meta1:'Bursa, Uludağ · 2 Saat Özel Ders', meta2:'Hafta içi', priceMain:'750'},
+  {title:'Aktiviteler', anchor:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+    'activity/koprulu-kanyon-rafting', 'activity/oludeniz-yamac-parasutu', 'activity/uludag-kayak-dersi'
   ]},
-  {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
-    {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
-    {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
-    {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Göreme Mağara Otel', meta1:'Göreme, Nevşehir · Tarihi Doku', meta2:'Bu hafta', priceMain:'2450', unit:'/gece'},
+  {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
+    'hotel/sealight-resort', 'hotel/termal-vadi-resort', 'hotel/goreme-magara-otel'
   ]},
 ];
 
@@ -683,8 +698,8 @@ function updateCategoryLayout() {
 }
 
 /* ---------------- render ---------------- */
-if (byId('top10Scroll')) byId('top10Scroll').innerHTML = top10.map((it,i)=>`
-  <a class="top10-card" href="#">
+if (byId('top10Scroll')) byId('top10Scroll').innerHTML = enCokSatanlar().map((it,i)=>`
+  <a class="top10-card" href="${it.href || '#'}">
     <div class="top10-media">
       <span class="top10-rank">${i+1}</span>
       <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/236/296')}" alt="${it.t}">
@@ -699,6 +714,13 @@ if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
   </a>`).join('');
 updateCategoryLayout();
 onViewportResize(updateCategoryLayout);
+
+/* Kartta fiyatin yanindaki birim. Yurt disi turlar doviz fiyatli; kart
+   fiyati kaydin kendi para biriminde gosteriyor, TL'ye cevirmiyor (kur
+   rezervasyonda sabitleniyor). Para birimi yazmayan kart TL. */
+function paraBirimiEtiketi(kod){
+  return ({ TRY:'TL', EUR:'EUR', USD:'USD' })[kod || 'TRY'] || kod;
+}
 
 /* Tek bir kartin isaretlemesi. Zaman filtresi olan seritlerde liste filtre
    degistikce bu fonksiyonla yeniden cizildigi icin ayri tutuluyor. */
@@ -726,7 +748,7 @@ function poiCardMarkup(sec, it){
             <p class="poi-meta-row"><span class="icon">${svg('calendar')}</span><strong>${sec.meta2Label}</strong><span class="poi-meta-text">${it.meta2}</span></p>
           </div>
           <div class="poi-price-bar">
-            <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">TL</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
+            <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">${paraBirimiEtiketi(it.currency)}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
             <button class="poi-cart-btn"><span class="icon">${svg('basket')}</span></button>
           </div>
         </article>`;
@@ -758,7 +780,7 @@ function compactCardMarkup(sec, it){
             </div>
             <h3 class="compact-card-title">${baslik}</h3>
             <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>
-            <span class="compact-card-price">${it.priceMain} TL</span>
+            <span class="compact-card-price">${it.priceMain} ${paraBirimiEtiketi(it.currency)}</span>
           </div>
         </article>`;
 }
@@ -1157,8 +1179,11 @@ function getSearchImage(item) {
 function aramaKayitlari() {
   const kayitlar = [];
   const gorulen = new Set();
+  /* Sayfası olmayan örnek ürünün adresi yok; aynı ürün hem şeritten hem
+     katalogdan geldiğinde tipi + başlığıyla tanınıyor (şerit başlığıyla
+     tanınsaydı arama aynı ürünü iki kez gösterirdi). */
   const anahtar = (item, bolum) =>
-    (item.href || (bolum + '|' + item.title)).toLocaleLowerCase('tr-TR');
+    (item.href || ((item.type || bolum) + '|' + item.title)).toLocaleLowerCase('tr-TR');
 
   cardSections.forEach(sec => {
     (sec.items || []).forEach(item => {

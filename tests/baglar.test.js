@@ -17,6 +17,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { catalogAllCards } from '../assets/js/catalog.js';
+import { MolaVeri } from '../assets/js/data-gateway.js';
 import { istenenDosya } from '../scripts/sunucu.js';
 
 const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,10 +50,23 @@ describe('kart baglari', () => {
   it('her kart bagi diskte gercek bir sayfaya gidiyor', () => {
     /* Katalogdan uretilen kartlar: adres kaydin slug'indan kuruluyor,
        yani slug ile klasor adi ayrisirsa kart olu bir adrese gider. */
-    const kartlar = catalogAllCards(BUGUN);
+    const kartlar = catalogAllCards(BUGUN).filter(k => k.href);
     expect(kartlar.length).toBeGreaterThan(0);
     kartlar.forEach(kart =>
       expect(diskteVar(kart.href), kart.title + ' -> ' + kart.href + ' diskte yok').toBe(true));
+  });
+
+  it('bagi olmayan kart yalnizca sayfasi olmayan ornek urun', () => {
+    /* Ornek ozet kaydin (sample: true) detay sayfasi yok; karti bilerek
+       baglantisiz. Sayfasi olan bir urunun karti baglantisiz kalamaz. */
+    const kapi = MolaVeri;
+    const bagsiz = catalogAllCards(BUGUN).filter(k => !k.href);
+    expect(bagsiz.length).toBeGreaterThan(0);
+    for (const kart of bagsiz) {
+      const eslesen = kapi.urunler().filter(k => (k.card && k.card.title || k.title) === kart.title);
+      expect(eslesen.length, kart.title).toBeGreaterThan(0);
+      expect(eslesen.every(k => k.sample), kart.title + ' sayfasi olan bir urun').toBe(true);
+    }
   });
 
   it('anasayfaya elle yazilmis kart baglari da diskte var', () => {

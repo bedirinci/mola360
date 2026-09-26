@@ -2,6 +2,7 @@
    yakalar. app.js bir modul olmadigi icin dosya metin olarak okunur. */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { MolaVeri } from '../assets/js/data-gateway.js';
 
 const app = readFileSync(new URL('../assets/js/app.js', import.meta.url), 'utf8');
 const bloklar = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
@@ -73,8 +74,16 @@ describe('içerik bütünlüğü', () => {
   });
 
   it('turlar ve etkinlikler Türkiye geneline yayılır', () => {
-    const sehirler = ['İstanbul', 'İzmir', 'Ankara', 'Antalya'];
+    /* Şeritler artık ürün kayıtlarını seçiyor (picks); şehir kartın
+       metninde değil kaydın sınıflandırmasında. */
     const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
-    sehirler.forEach(s => expect(blok, s + ' geçmiyor').toContain(s));
+    const secimler = [...blok.matchAll(/'(tour|hotel|activity|event|venue)\/([a-z0-9-]+)'/g)];
+    expect(secimler.length).toBeGreaterThan(10);
+    const sehirler = new Set(secimler.map(([, tip, slug]) => {
+      const kayit = MolaVeri.urun(tip, slug);
+      expect(kayit, tip + '/' + slug + ' kaydı yok').toBeTruthy();
+      return kayit.taxonomy.city;
+    }));
+    ['istanbul', 'izmir', 'ankara', 'antalya'].forEach(s => expect(sehirler.has(s), s + ' geçmiyor').toBe(true));
   });
 });

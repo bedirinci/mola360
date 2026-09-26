@@ -41,6 +41,7 @@ const {
   taxonomyCityRegion,
 } = require('../assets/js/taxonomy-data.js');
 const { SAMPLE_BOOKINGS, envanterBirimleri } = require('../assets/js/inventory-data.js');
+const { SAMPLE_PRODUCTS } = require('../assets/js/sample-catalog-data.js');
 const { TOURS, nextDepartureDates } = require('../assets/js/tour-data.js');
 const { HOTELS } = require('../assets/js/hotel-data.js');
 const { ACTIVITIES } = require('../assets/js/activity-data.js');
@@ -55,12 +56,17 @@ const BUGUN = '2026-09-21';
 const KUMELER = { tour: TOURS, hotel: HOTELS, activity: ACTIVITIES, event: EVENTS, venue: PLACES };
 const URUNLER = Object.entries(KUMELER)
   .flatMap(([tip, kume]) => Object.values(kume).map(k => ({ tip, k })));
-const slugs = (liste) => liste.map(k => k.slug).sort();
+/* Beklenen listeler SAYFASI OLAN ürünler üzerinden yazılıyor: örnek özet
+   kayıtlar (sample-catalog-data.js) aynı süzgeçten geçiyor ama sayıları
+   anasayfanın örnek içeriği değiştikçe değişir. Örneklerin süzgeçte
+   sayıldığı ayrıca ölçülüyor (aşağıda "örnek kayıtlar"). */
+const slugs = (liste) => liste.filter(k => !k.sample).map(k => k.slug).sort();
 
 describe('ürün okuma', () => {
   it('her kayıt kapıdan geliyor', () => {
     for (const { tip, k } of URUNLER) expect(MolaVeri.urun(tip, k.slug), tip + '/' + k.slug).toBe(k);
-    expect(MolaVeri.urunler()).toHaveLength(URUNLER.length);
+    const ornekSayisi = Object.values(SAMPLE_PRODUCTS).reduce((t, g) => t + Object.keys(g).length, 0);
+    expect(MolaVeri.urunler()).toHaveLength(URUNLER.length + ornekSayisi);
     expect(slugs(MolaVeri.urunler('tour'))).toEqual(Object.keys(TOURS).sort());
   });
 
@@ -280,6 +286,45 @@ describe('liste sayfaları, temalar ve koleksiyonlar', () => {
     for (const l of TAXONOMY_LISTINGS) {
       expect(() => MolaVeri.listele(l.filter, BUGUN), l.slug).not.toThrow();
     }
+  });
+});
+
+describe('örnek kayıtlar', () => {
+  const ORNEKLER = Object.entries(SAMPLE_PRODUCTS)
+    .flatMap(([tip, g]) => Object.values(g).map(k => ({ tip, k })));
+
+  it('kapıdan geliyor ve örnek olarak işaretli', () => {
+    for (const { tip, k } of ORNEKLER) {
+      expect(MolaVeri.urun(tip, k.slug), k.slug).toBe(k);
+      expect(k.sample, k.slug).toBe(true);
+      expect(MolaVeri.icerikTipi(k), k.slug).toBe(tip);
+    }
+  });
+
+  it('sayfası olan kayıtla aynı slug\'ı taşımıyor', () => {
+    for (const { tip, k } of ORNEKLER) {
+      expect(KUMELER[tip][k.slug], k.slug + ' iki kez tanımlı').toBeUndefined();
+    }
+  });
+
+  it('süzgeçlerde sayfası olan ürünlerle birlikte sayılıyor', () => {
+    const hepsi = MolaVeri.listele({ theme: 'kis-sporlari' }, BUGUN).map(k => k.slug).sort();
+    expect(hepsi).toEqual(['erciyes-kayak-haftasi', 'uludag-kayak-dersi', 'uludag-kayak-paketi']);
+    expect(MolaVeri.koleksiyonUrunleri('butce-dostu', BUGUN).map(k => k.slug).sort())
+      /* Aspendos'un en ucuz bileti 420 TL: sayfası olan ürün de kurala
+         göre koleksiyona kendiliğinden giriyor. */
+      .toEqual(['alacati-pazar-turu', 'aspendos-opera-bale-festivali', 'iznik-golu-antik-kent',
+        'istanbul-gece-yarisi-kosusu', 'istanbul-kahve-festivali', 'kordon-caz-aksamlari',
+        'stand-up-gecesi'].sort());
+  });
+
+  it('yurt dışı örnek tur döviz fiyatlı ve TL eşiğine takılmıyor', () => {
+    const ege = SAMPLE_PRODUCTS.tour['ege-adalari-balayi'];
+    expect(ege.currency).toBe('EUR');
+    expect(MolaVeri.bolge(ege).abroad).toBe(true);
+    /* 149 EUR, 500 TL sınırlı "Bütçe Dostu"na para birimi farklı olduğu
+       için girmiyor (kur çevrimi 4. adımda). */
+    expect(MolaVeri.koleksiyonUrunleri('butce-dostu', BUGUN)).not.toContain(ege);
   });
 });
 

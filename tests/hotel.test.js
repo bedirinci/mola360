@@ -534,7 +534,7 @@ describe('anasayfa baglantisi', () => {
      kayitlarindan uretip "Oteller" seridine karistiriyor
      (docs/icerik-katalogu.md). Testler bu yuzden app.js metnine degil
      uretilen kartlara bakiyor. */
-  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('otel/'));
+  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href && k.href.startsWith('otel/'));
 
   it('her otel anasayfaya kendiliginden giriyor', () => {
     const baglar = otelKartlari.map(k => k.href);
