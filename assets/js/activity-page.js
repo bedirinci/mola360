@@ -476,7 +476,7 @@
       <div class="tour-block-head"><h2>Aynı bölgede</h2><p>Kapadokya’da aynı sabaha ekleyebileceğiniz planlar.</p></div>
       <div class="tour-similar-grid">
         ${activity.similar.map(s => `
-          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'index.html#aktiviteler'}">
+          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'aktiviteler/'}">
             <span class="tour-similar-media">
               <img src="${activityImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
               <span class="tour-similar-rating">${ic('star')}${s.rating}</span>

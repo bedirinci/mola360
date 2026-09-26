@@ -92,10 +92,14 @@ const VENUES = [
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
 const PROMO_BANDS = [
-  { img:'karadeniz2', badge:'Son 3 gün',         title:'Yayla ve doğa turlarında %40\'a varan indirim', text:'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.', cta:'Fırsatları gör' },
-  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',           text:'30 gün öncesinden alan herkese, tüm kalkışlarda.',        cta:'Turları gör' },
-  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',              text:'Seçili termal ve şehir otellerinde geçerli.',             cta:'Otelleri gör' },
-  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',                 text:'Üye ol, indirim kodu e-postana gelsin.',                  cta:'Üye ol' }
+  /* path: bandın gittiği liste sayfası. Kampanya kuralları (indirim
+     tutarı, geçerlilik) 4. adımda fiyat kurallarıyla gelecek; bugün
+     band ilgili ürünlerin listesine gidiyor. Üyelik bandının sayfası
+     yok (giriş penceresi). */
+  { img:'karadeniz2', badge:'Son 3 gün',         title:'Yayla ve doğa turlarında %40\'a varan indirim', text:'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.', cta:'Fırsatları gör', path:'temalar/doga-yayla' },
+  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',           text:'30 gün öncesinden alan herkese, tüm kalkışlarda.',        cta:'Turları gör', path:'turlar/kapadokya-turlari' },
+  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',              text:'Seçili termal ve şehir otellerinde geçerli.',             cta:'Otelleri gör', path:'oteller' },
+  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',                 text:'Üye ol, indirim kodu e-postana gelsin.',                  cta:'Üye ol', path:null }
 ];
 
 /* ---- Bulten karti: kisa fayda listesi ---- */
@@ -197,11 +201,11 @@ function homeBlockImage(key) {
 /* ---------------- isaretleme ---------------- */
 /* Aciklama satiri yalnizca verildiginde eklenir; diger bolumlerin
    basligi oldugu gibi kalir. */
-function homeSectionHead(title, link, subtitle) {
+function homeSectionHead(title, link, subtitle, hedef) {
   const baslik = subtitle
     ? `<div class="section-head-text"><h2>${title}</h2><p class="section-subtitle">${subtitle}</p></div>`
     : `<h2>${title}</h2>`;
-  return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
+  return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="${hedef || '#'}">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
 }
 
 /* =======================================================================
@@ -538,7 +542,7 @@ const HOME_BLOCK_MARKUP = {
      baglar sayfanin tepesine dusuyordu. */
   venues: () => `
     <section class="section home-venues" id="mekanlar">
-      ${homeSectionHead('Mekanlar', 'Tümünü Gör')}
+      ${homeSectionHead('Mekanlar', 'Tümünü Gör', '', 'mekanlar/')}
       <div class="venue-list">
         ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : [])
           .concat(VENUES).map(v => `
@@ -567,7 +571,7 @@ const HOME_BLOCK_MARKUP = {
       <div class="hscroll-wrap">
       <div class="promo-scroll">
         ${PROMO_BANDS.map(p => `
-          <a class="home-promo" href="#">
+          <a class="home-promo" href="${p.path ? p.path + '/' : '#'}">
             <img src="${homeBlockImage(p.img)}" alt="" loading="lazy">
             <span class="home-promo-shade"></span>
             <span class="home-promo-content">
@@ -585,11 +589,11 @@ const HOME_BLOCK_MARKUP = {
 
   themes: () => `
     <section class="section home-themes">
-      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç')}
+      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç', 'temalar/')}
       <div class="hscroll-wrap">
       <div class="theme-scroll">
         ${homeThemeCards().map(c => `
-          <a class="theme-card" href="#">
+          <a class="theme-card" href="temalar/${c.slug}/">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="theme-card-shade"></span>
             <span class="theme-card-text"><strong>${c.title}</strong><span>${c.count}</span></span>
@@ -602,10 +606,10 @@ const HOME_BLOCK_MARKUP = {
 
   collectionGrid: () => `
     <section class="section home-collections">
-      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre')}
+      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre', 'koleksiyonlar/')}
       <div class="collection-grid">
         ${homeCollectionCards().map(c => `
-          <a class="collection-tile" href="#">
+          <a class="collection-tile" href="koleksiyonlar/${c.slug}/">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="collection-tile-shade"></span>
             <span class="collection-tile-text"><strong>${c.title}</strong><span>${c.text}</span></span>

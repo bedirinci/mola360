@@ -12,6 +12,7 @@
    calisma saatleri, minimum harcamanin odenecek tutara GIRMEMESI ve
    hizmet tanimi geregi sabit kisi sayisi. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PLACES,
@@ -453,7 +454,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(ld.itemListElement.map(i => i.name)).toEqual(['Anasayfa', mekan.categoryPlural, mekan.title]);
-      expect(ld.itemListElement[1].item).toContain('#' + mekan.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(mekan) + '/');
       expect(ld.itemListElement[2].item).toContain('/mekan/' + slug + '/');
     });
   });

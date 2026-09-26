@@ -108,7 +108,7 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="header-logo-group">
-        <a href="#" class="logo">
+        <a href="./" class="logo" aria-label="mola360 anasayfa">
           <img src="assets/img/logo.png" alt="mola360">
         </a>
       </div>
@@ -133,6 +133,10 @@
         <button class="header-mobile-btn" id="mobileMenuBtn" aria-label="Menü"><span class="icon" id="ic-menu"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button>
       </div>
     </div>
+    <!-- Ana menü (681px ve üstü). Satırlar taksonomideki menü ağacından
+         (TAXONOMY_MENU) sayfa yüklenince basılıyor; burada yalnızca yeri
+         var. Mobilde aynı ağaç anasayfa çekmecesinde. -->
+    <nav class="site-nav" id="siteNav" aria-label="Ana menü"></nav>
   </header>
   <!-- Bildirimler: mobilde tam ekran bildirim sayfasi, masaustunde header'a
        bitisik acilir panel. Liste app.js'teki "notifications" verisinden
@@ -225,6 +229,8 @@
   </div>
 `;
 
+  /* Node'da (testler menü fonksiyonlarını yüklüyor) belge yok. */
+  if (typeof document === "undefined") return;
   const script = document.currentScript;
   if (!script) return;
 
@@ -232,8 +238,119 @@
      "../../". Yalnizca kok-goreli assets/ yollari onekleniyor. */
   const kok = (document.body && document.body.getAttribute("data-root")) || "";
   const markup = kok
-    ? SITE_CHROME_MARKUP.replace(/(src|href)="assets\//g, "$1=\"" + kok + "assets/")
+    ? SITE_CHROME_MARKUP.replace(/(src|href)="assets\//g, "$1=\"" + kok + "assets/").replace('href="./" class="logo"', 'href="' + kok + '" class="logo"')
     : SITE_CHROME_MARKUP;
 
   script.insertAdjacentHTML("afterend", markup);
+
+  /* Menü ağacı taksonomi dosyası yüklendikten sonra basılıyor (o dosya
+     sayfanın sonunda). */
+  const doldur = () => siteMenuDoldur(kok);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", doldur);
+  else doldur();
 })();
+
+/* ---------------- ana menü ----------------
+   Menü ağacı TEK kaynaktan: taxonomy-data.js/TAXONOMY_MENU. Masaüstünde
+   başlığın altındaki satır (üzerine gelince açılan paneller), mobilde
+   anasayfa çekmecesindeki açılır liste. İkisi aynı ağacı okuyor; menüye
+   satır eklemek taksonomiye bir satır.
+
+   Bağlar sayfa köküne göre (data-root): anasayfada "turlar/", içerik
+   sayfasında "../../turlar/". */
+function siteMenuHref(kok, yol) {
+  return (kok || "") + (yol ? String(yol).replace(/\/+$/, "") + "/" : "");
+}
+
+function siteMenuKacis(metin) {
+  return String(metin || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* Bulunulan sayfanın kök göreli yolu: "turlar/ege-turlari". */
+function siteMenuSimdikiYol(kok) {
+  try {
+    const kokYol = new URL(kok || "./", document.baseURI).pathname;
+    const p = window.location.pathname;
+    return (p.indexOf(kokYol) === 0 ? p.slice(kokYol.length) : p)
+      .replace(/index\.html?$/i, "").replace(/^\/+|\/+$/g, "").toLowerCase();
+  } catch (_) {
+    return "";
+  }
+}
+
+/* Üst satırın hangi bölümü "bulunduğun yer": /turlar/… ve /tur/<slug>/
+   ikisi de Turlar. */
+function siteMenuBolumu(simdiki, dugum, tipler) {
+  if (!simdiki) return false;
+  const bas = String(dugum.path || "").split("/")[0];
+  const ilk = simdiki.split("/")[0];
+  if (ilk === bas) return true;
+  const tip = Object.keys(tipler || {}).find(t => tipler[t].base === bas);
+  return !!tip && tipler[tip].path === ilk;
+}
+
+function siteMenuMasaustu(menu, kok, simdiki, tipler) {
+  const bag = (d, sinif) => '<a' + (sinif ? ' class="' + sinif + '"' : "") + ' href="' + siteMenuHref(kok, d.path) + '"'
+    + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + siteMenuKacis(d.label) + "</a>";
+  return '<ul class="site-nav-list">' + menu.map(d => {
+    const cocuk = d.children || [];
+    const aktif = siteMenuBolumu(simdiki, d, tipler) ? " is-current" : "";
+    if (!cocuk.length) return '<li class="site-nav-item' + aktif + '">' + bag(d, "site-nav-link") + "</li>";
+    const gruplu = cocuk.filter(c => c.children && c.children.length);
+    let panel;
+    if (gruplu.length) {
+      /* Geniş panel: alt ağacı olan her çocuk bir sütun, yapraklar son
+         sütunda. */
+      const yapraklar = cocuk.filter(c => !(c.children && c.children.length));
+      panel = '<div class="site-nav-panel is-mega">'
+        + gruplu.map(g => '<div class="site-nav-col">' + bag(g, "site-nav-col-title")
+          + g.children.filter(c => c.path !== g.path).map(c => bag(c)).join("")
+          + '<a class="site-nav-all" href="' + siteMenuHref(kok, g.path) + '">Tümünü gör</a></div>').join("")
+        + (yapraklar.length ? '<div class="site-nav-col is-plain">' + yapraklar.map(c => bag(c)).join("") + "</div>" : "")
+        + "</div>";
+    } else {
+      panel = '<div class="site-nav-panel">' + cocuk.map(c => bag(c)).join("") + "</div>";
+    }
+    return '<li class="site-nav-item has-panel' + aktif + '">'
+      + '<a class="site-nav-link" href="' + siteMenuHref(kok, d.path) + '" aria-haspopup="true">' + siteMenuKacis(d.label)
+      + '<svg class="site-nav-chev" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>'
+      + panel + "</li>";
+  }).join("") + "</ul>";
+}
+
+/* Mobil çekmece: iç içe açılır liste (details/summary; JS gerekmez). */
+function siteMenuAgac(menu, kok, simdiki) {
+  const dal = (d, derin) => {
+    const cocuk = d.children || [];
+    if (!cocuk.length) {
+      return '<a class="smt-link" href="' + siteMenuHref(kok, d.path) + '"'
+        + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + siteMenuKacis(d.label) + "</a>";
+    }
+    /* Düğümün kendi sayfası çocuklarda yoksa en üste "Tümü" bağı. */
+    const kendisi = cocuk.some(c => c.path === d.path) ? ""
+      : '<a class="smt-link smt-all" href="' + siteMenuHref(kok, d.path) + '">Tüm ' + siteMenuKacis(d.label) + "</a>";
+    return '<details class="smt-group smt-level-' + derin + '"><summary>' + siteMenuKacis(d.label) + "</summary>"
+      + '<div class="smt-body">' + kendisi + cocuk.map(c => dal(c, derin + 1)).join("") + "</div></details>";
+  };
+  return menu.map(d => dal(d, 0)).join("");
+}
+
+function siteMenuDoldur(kok) {
+  const menu = (typeof TAXONOMY_MENU !== "undefined") ? TAXONOMY_MENU : null;
+  const tipler = (typeof TAXONOMY_TYPES !== "undefined") ? TAXONOMY_TYPES : {};
+  const nav = document.getElementById("siteNav");
+  if (!menu) {
+    if (nav) nav.hidden = true;
+    return;
+  }
+  const simdiki = siteMenuSimdikiYol(kok);
+  if (nav) nav.innerHTML = siteMenuMasaustu(menu, kok, simdiki, tipler);
+  document.querySelectorAll("[data-site-menu]").forEach(el => {
+    el.innerHTML = siteMenuAgac(menu, kok, simdiki);
+  });
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { siteMenuHref, siteMenuMasaustu, siteMenuAgac, siteMenuBolumu };
+}

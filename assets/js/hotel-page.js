@@ -469,7 +469,7 @@
       <div class="tour-block-head"><h2>Benzer oteller</h2><p>Aynı fiyat aralığında, farklı şehirlerde.</p></div>
       <div class="tour-similar-grid">
         ${hotel.similar.map(s => `
-          <a class="tour-similar-card" href="${s.slug ? KOK + 'otel/' + s.slug + '/' : KOK + 'index.html#oteller'}">
+          <a class="tour-similar-card" href="${s.slug ? KOK + 'otel/' + s.slug + '/' : KOK + 'oteller/'}">
             <span class="tour-similar-media">
               <img src="${hotelImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
               <span class="tour-similar-rating">${s.score}</span>

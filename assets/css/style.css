@@ -14,7 +14,14 @@
   --radius-sm: 10px;
   --shadow: 0 3px 12px rgba(21,32,72,.05);
   --shadow-lg: 0 8px 22px rgba(21,32,72,.09);
-  --desktop-header-height: 66px;
+  /* Masaüstü başlığı iki satır: arama/logo çubuğu + ana menü satırı.
+     --desktop-header-height ikisinin toplamı; başlığa yapışan her şey
+     (gövde boşluğu, kenar çubuğu, yapışkan kartlar) onu kullanıyor.
+     Başlık çubuğuna bitişik açılan paneller (arama, bildirim, profil)
+     --header-bar-height kullanıyor. Menü satırı 680px altında yok. */
+  --header-bar-height: 66px;
+  --site-nav-height: 0px;
+  --desktop-header-height: calc(var(--header-bar-height) + var(--site-nav-height));
   /* Mobil arama kutusunun alt köşe yarıçapı. Filtre çubuğu yapıştığında
      oluşan köşe oyuğunu doldurmak için de aynı değer kullanılır. */
   --m360-search-radius: 25px;
@@ -3268,7 +3275,7 @@ ul {
     z-index: 3000;
     box-shadow: 0 1px 0 rgba(21,32,72,.08);
   }
-  .header-inner { height: var(--desktop-header-height); }
+  .header-inner { height: var(--header-bar-height); }
 }
 
 @media (min-width: 681px) and (max-width: 1024px) {
@@ -3503,15 +3510,15 @@ ul {
     height: 20px;
   }
   .search-overlay {
-    top: var(--desktop-header-height);
+    top: var(--header-bar-height);
     left: 50%;
     right: auto;
     bottom: auto;
     width: min(760px, calc(100vw - 32px));
-    height: min(640px, calc(100vh - var(--desktop-header-height)));
-    height: min(640px, calc(100dvh - var(--desktop-header-height)));
-    max-height: calc(100vh - var(--desktop-header-height));
-    max-height: calc(100dvh - var(--desktop-header-height));
+    height: min(640px, calc(100vh - var(--header-bar-height)));
+    height: min(640px, calc(100dvh - var(--header-bar-height)));
+    max-height: calc(100vh - var(--header-bar-height));
+    max-height: calc(100dvh - var(--header-bar-height));
     transform: translate(-50%, -10px);
     background: var(--card);
     border: 1px solid var(--border);
@@ -5808,3 +5815,161 @@ ul {
   .desktop-sidebar .mobile-profile-loyalty-head { gap: 6px; }
   .desktop-sidebar .mobile-profile-loyalty-head strong { white-space: nowrap; }
 }
+
+
+/* =============== ANA MENÜ ===============
+   Başlığın altındaki satır (681px ve üstü). İşaretleme site-chrome.js'te
+   taksonomideki menü ağacından (TAXONOMY_MENU) üretiliyor. 1025px
+   üstünde üzerine gelince/odaklanınca alt menü paneli açılıyor; tablet
+   genişliğinde yalnızca üst bağlar (yatay kaydırılabilir), alt sayfalar
+   liste sayfasının çiplerinde. */
+.site-nav { display: none; }
+@media (min-width: 681px) {
+  :root { --site-nav-height: 44px; }
+  .site-nav {
+    display: block;
+    height: var(--site-nav-height);
+    padding: 0 16px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .site-nav[hidden] { display: none; }
+  .site-nav-list {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: 100%;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site-nav-list::-webkit-scrollbar { display: none; }
+  .site-nav-item { position: relative; display: flex; }
+  .site-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 11px;
+    border-bottom: 2px solid transparent;
+    color: rgba(255,255,255,.84);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .site-nav-link:hover,
+  .site-nav-item:hover > .site-nav-link,
+  .site-nav-item:focus-within > .site-nav-link { color: #fff; }
+  .site-nav-item.is-current > .site-nav-link {
+    color: #fff;
+    border-bottom-color: var(--green);
+  }
+  .site-nav-link:focus-visible { outline: 2px solid var(--green); outline-offset: -4px; border-radius: 6px; }
+  .site-nav-chev { width: 14px; height: 14px; opacity: .65; }
+  .site-nav-panel { display: none; }
+}
+@media (min-width: 681px) and (max-width: 1024px) {
+  .site-nav-chev { display: none; }
+}
+/* Dar masaüstünde on bölüm tek satıra sığsın. */
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .site-nav-link { padding: 0 7px; font-size: 13px; }
+}
+@media (min-width: 1025px) {
+  .site-nav { padding: 0 24px; }
+  .site-nav-list { overflow: visible; }
+  .site-nav-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 3100;
+    min-width: 230px;
+    padding: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    box-shadow: var(--shadow-lg);
+  }
+  /* Sağ uçtaki bölümlerin paneli ekran dışına taşmasın. */
+  .site-nav-item:nth-last-child(-n+3) > .site-nav-panel { left: auto; right: 0; }
+  .site-nav-item.has-panel:hover > .site-nav-panel,
+  .site-nav-item.has-panel:focus-within > .site-nav-panel { display: grid; }
+  .site-nav-panel a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .site-nav-panel a:hover,
+  .site-nav-panel a:focus-visible { background: var(--bg); color: var(--navy); outline: none; }
+  .site-nav-panel a[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
+  .site-nav-panel.is-mega {
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    gap: 0 12px;
+    padding: 14px;
+  }
+  .site-nav-col { display: flex; flex-direction: column; }
+  .site-nav-col + .site-nav-col { border-left: 1px solid var(--border); padding-left: 12px; }
+  .site-nav-panel .site-nav-col-title {
+    margin-bottom: 4px;
+    color: var(--navy);
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .site-nav-col.is-plain { padding-top: 38px; }
+  .site-nav-panel .site-nav-all {
+    margin-top: 4px;
+    color: var(--green-dark);
+    font-weight: 700;
+    font-size: 13px;
+  }
+}
+
+/* ---- mobil çekmecedeki menü ağacı ----
+   Aynı ağaç, iç içe açılır liste. Masaüstü kenar çubuğu çekmecenin
+   kopyası; orada menü başlıkta durduğu için bu bölüm gizli. */
+.site-menu-tree { display: flex; flex-direction: column; }
+.smt-group > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 4px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.smt-group > summary::-webkit-details-marker { display: none; }
+.smt-group > summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  transform: rotate(45deg);
+  transition: transform .15s ease;
+}
+.smt-group[open] > summary::after { transform: rotate(-135deg); }
+.smt-body { display: flex; flex-direction: column; padding: 2px 0 8px 12px; }
+.smt-level-1 > summary { font-size: 13.5px; font-weight: 600; border-bottom: 0; padding: 9px 4px; }
+.smt-link {
+  padding: 9px 4px;
+  color: var(--text);
+  font-size: 13.5px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.smt-body .smt-link { border-bottom: 0; }
+.site-menu-tree > .smt-link { font-weight: 700; font-size: 14px; }
+.smt-link[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
+.smt-all { color: var(--green-dark); font-weight: 700; }
+.desktop-sidebar .sidebar-section-menu { display: none; }

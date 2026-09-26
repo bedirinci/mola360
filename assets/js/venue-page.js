@@ -491,7 +491,7 @@
       <div class="tour-block-head"><h2>Yakındaki mekânlar</h2><p>Aynı bölgede, benzer bütçede.</p></div>
       <div class="tour-similar-grid">
         ${place.similar.map(s => `
-          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'index.html#mekanlar'}">
+          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'mekanlar/'}">
             <span class="tour-similar-media">
               <img src="${venueImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
               <span class="tour-similar-rating">${ic('star')}${s.rating}</span>

@@ -499,7 +499,7 @@
       <div class="tour-block-head"><h2>Benzer sahne programları</h2><p>Aynı sezonda, farklı şehirlerde.</p></div>
       <div class="tour-similar-grid">
         ${event.similar.map(s => `
-          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'index.html#etkinlikler'}">
+          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'etkinlikler/'}">
             <span class="tour-similar-media">
               <img src="${eventImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
               <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
@@ -632,7 +632,7 @@
         <strong>Bu sezonun programı tamamlandı</strong>
         <p>${event.title} için yeni takvim açıklandığında biletler burada satışa açılacak.
           Favorilere eklerseniz yeni tarihler ilan edildiğinde haber veriyoruz.</p>
-        <a class="tour-cta ghost" href="${KOK}index.html#etkinlikler">
+        <a class="tour-cta ghost" href="${KOK}etkinlikler/">
           ${ic('chevLeft')}Diğer etkinliklere bak</a>
       </div>
       <div class="tour-booking-contact">
@@ -822,7 +822,7 @@
         <div class="tour-sticky-info">
           <span class="tour-sticky-date">Bu sezonun programı tamamlandı</span>
         </div>
-        <a class="tour-cta small" href="${KOK}index.html#etkinlikler">Etkinlikler</a>`;
+        <a class="tour-cta small" href="${KOK}etkinlikler/">Etkinlikler</a>`;
       return;
     }
     const toplam = hesap || calcEventTotal(event, state);

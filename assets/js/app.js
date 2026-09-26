@@ -469,15 +469,17 @@ const CAT_ICONS = {
 
 
 const categories = [
-  {name:'Fırsatlar', icon:'percent', img:'firsatlar'},
-  {name:'Turlar', icon:'compass', img:'turlar'},
-  {name:'Etkinlikler', icon:'ticket', img:'etkinlikler'},
-  {name:'Oteller', icon:'home', img:'oteller'},
-  {name:'Aktiviteler', icon:'activity', img:'aktiviteler'},
-  {name:'Mekanlar', icon:'mapPin', img:'mekanlar'},
-  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim'},
-  {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler'},
-  {name:'Bu Hafta', icon:'calendar', img:'buhafta'},
+  /* path: kategorinin sayfası (kök göreli). Kuponlarım hesabın içinde
+     (5. adım), henüz sayfası yok. */
+  {name:'Fırsatlar', icon:'percent', img:'firsatlar', path:'firsatlar'},
+  {name:'Turlar', icon:'compass', img:'turlar', path:'turlar'},
+  {name:'Etkinlikler', icon:'ticket', img:'etkinlikler', path:'etkinlikler'},
+  {name:'Oteller', icon:'home', img:'oteller', path:'oteller'},
+  {name:'Aktiviteler', icon:'activity', img:'aktiviteler', path:'aktiviteler'},
+  {name:'Mekanlar', icon:'mapPin', img:'mekanlar', path:'mekanlar'},
+  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim', path:null},
+  {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler', path:'yeni-eklenenler'},
+  {name:'Bu Hafta', icon:'calendar', img:'buhafta', path:'bu-hafta'},
 ];
 
 // Arama ekranında gösterilecek kategori listesi yalnızca bu dört kategoriden oluşur.
@@ -522,14 +524,14 @@ const suggestedSearchTerms = [
    (kendiliğinden + elle), 3. adımda yönetimden düzenlenebilir olacak. */
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', anchor:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Popüler Etkinlikler', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'event/harbiye-acikhava-konserleri', 'event/cesme-yaz-festivali', 'event/stand-up-gecesi'
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun;
      ikisi de kaydin takviminden turetiliyor. Serit hem etkinlikleri hem
      turlari tasidigi icin baslik "Planlar". */
-  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
+  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
     'event/istanbul-gece-yarisi-kosusu', 'event/stand-up-gecesi', 'event/harbiye-acikhava-konserleri',
     'event/kordon-caz-aksamlari', 'tour/sapanca-masukiye', 'tour/alacati-pazar-turu',
     'event/istanbul-kahve-festivali', 'tour/iznik-golu-antik-kent', 'tour/abant-golcuk',
@@ -538,17 +540,17 @@ const cardSections = [
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/karadeniz-yaylalari', 'tour/ege-adalari-balayi', 'tour/dogu-ekspresi'
   ]},
-  {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Günübirlik Turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/sile-agva', 'tour/cunda-ayvalik', 'tour/abant-golcuk', 'tour/iznik-golu-antik-kent'
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', anchor:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Aktiviteler', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'activity/koprulu-kanyon-rafting', 'activity/oludeniz-yamac-parasutu', 'activity/uludag-kayak-dersi'
   ]},
-  {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
+  {title:'Oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
     'hotel/sealight-resort', 'hotel/termal-vadi-resort', 'hotel/goreme-magara-otel'
   ]},
 ];
@@ -708,7 +710,7 @@ if (byId('top10Scroll')) byId('top10Scroll').innerHTML = enCokSatanlar().map((it
   </a>`).join('');
 
 if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
-  <a class="cat-item" href="#">
+  <a class="cat-item" href="${c.path ? c.path + '/' : '#'}">
     <span class="cat-icon-wrap"><img class="cat-icon-img" src="${CAT_ICONS[c.img]}" alt="${c.name}"></span>
     <span>${c.name}</span>
   </a>`).join('');
@@ -805,7 +807,7 @@ function sectionFilterMarkup(sec){
 
 if (byId('cardSections')) byId('cardSections').innerHTML = cardSections.map(sec=>`
   <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
-    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
+    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
     <div class="hscroll-wrap">
     <div class="h-scroll"${sec.filterKey ? ` data-section-list="${sec.filterKey}"` : ''}>${sectionCardsMarkup(sec, UPCOMING_FILTERS[0].key)}</div>

@@ -125,3 +125,92 @@ describe('app.js sayfadan bağımsız', () => {
     expect(app).toContain('if (overlay) overlay.addEventListener');
   });
 });
+
+/* ---------------- ana menü ----------------
+   Menü ağacı taksonomide tek kaynak (TAXONOMY_MENU); masaüstü satırı ve
+   mobil çekmece aynı ağaçtan basılıyor. Her satırın hedefi gerçek bir
+   sayfa (dosya ya da yönlendiricinin tanıdığı adres). */
+import { createRequire } from 'node:module';
+const gerekli = createRequire(import.meta.url);
+const menuCerceve = gerekli('../assets/js/site-chrome.js');
+const { TAXONOMY_MENU, TAXONOMY_TYPES } = gerekli('../assets/js/taxonomy-data.js');
+const { MolaVeri: menuKapi } = gerekli('../assets/js/data-gateway.js');
+
+function menuDugumleri(liste = TAXONOMY_MENU, out = []) {
+  liste.forEach(d => { out.push(d); if (d.children) menuDugumleri(d.children, out); });
+  return out;
+}
+
+describe('ana menü', () => {
+  it('masaüstü satırı menüdeki her adrese bağ veriyor', () => {
+    const html = menuCerceve.siteMenuMasaustu(TAXONOMY_MENU, '', '', TAXONOMY_TYPES);
+    menuDugumleri().forEach(d => expect(html, d.label).toContain('href="' + d.path + '/"'));
+    /* Üst satırda her bölüm bir kez. */
+    expect((html.match(/class="site-nav-item/g) || []).length).toBe(TAXONOMY_MENU.length);
+  });
+
+  it('içerik sayfasında bağlar kökten (../../)', () => {
+    const html = menuCerceve.siteMenuMasaustu(TAXONOMY_MENU, '../../', '', TAXONOMY_TYPES);
+    expect(html).toContain('href="../../turlar/ege-turlari/"');
+    expect(html).not.toMatch(/href="turlar\//);
+  });
+
+  it('mobil ağaç aynı adresleri taşıyor; "Tüm …" yalnızca eksikse', () => {
+    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', '');
+    menuDugumleri().forEach(d => expect(html, d.label).toContain('href="' + d.path + '/"'));
+    /* Turlar'ın çocuklarında kendi sayfası yok: "Tüm Turlar" ekleniyor.
+       Oteller'in çocuklarında "Tüm Oteller" zaten var: ikinci kez yok. */
+    expect(html).toContain('>Tüm Turlar<');
+    expect((html.match(/href="oteller\/"/g) || []).length).toBe(1);
+  });
+
+  it('bulunulan bölüm: liste sayfası da ürün sayfası da kendi bölümünde', () => {
+    const turlar = TAXONOMY_MENU.find(d => d.path === 'turlar');
+    expect(menuCerceve.siteMenuBolumu('turlar/ege-turlari', turlar, TAXONOMY_TYPES)).toBe(true);
+    expect(menuCerceve.siteMenuBolumu('tur/efes-sirince', turlar, TAXONOMY_TYPES)).toBe(true);
+    expect(menuCerceve.siteMenuBolumu('otel/kordon-butik-otel', turlar, TAXONOMY_TYPES)).toBe(false);
+    expect(menuCerceve.siteMenuBolumu('', turlar, TAXONOMY_TYPES)).toBe(false);
+  });
+
+  it('her menü satırı yönlendiricide bir sayfaya çözülüyor', () => {
+    menuDugumleri().forEach(d => expect(menuKapi.adres(d.path), d.path).toBeTruthy());
+  });
+
+  it('başlıkta menünün yeri var; çekmecede mobil ağaç', () => {
+    expect(cerceve).toContain('id="siteNav"');
+    expect(anasayfa).toContain('data-site-menu');
+  });
+
+  it('logo anasayfaya gidiyor', () => {
+    expect(cerceve).toContain('href="./" class="logo"');
+  });
+});
+
+describe('anasayfa bağları', () => {
+  it('"Tümünü Gör" her şeritte gerçek bir sayfaya', () => {
+    const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
+    const hepsi = [...blok.matchAll(/hepsi:'([^']+)'/g)].map(m => m[1]);
+    const seritSayisi = (blok.match(/\{title:'/g) || []).length;
+    expect(hepsi.length).toBe(seritSayisi);
+    hepsi.forEach(yol => expect(menuKapi.adres(yol), yol).toBeTruthy());
+  });
+
+  it('kategori ikonlarının sayfası var (Kuponlarım hesabın içinde)', () => {
+    const blok = app.match(/const categories = \[([\s\S]*?)\n\];/)[1];
+    [...blok.matchAll(/path:'([^']+)'/g)].map(m => m[1])
+      .forEach(yol => expect(menuKapi.adres(yol), yol).toBeTruthy());
+  });
+});
+
+describe('anasayfa blok bağları', () => {
+  const blok = gerekli('../assets/js/home-blocks.js');
+  it('kampanya bantları gerçek sayfalara gidiyor (üyelik bandı hariç)', () => {
+    blok.PROMO_BANDS.filter(p => p.path).forEach(p =>
+      expect(menuKapi.adres(p.path), p.title).toBeTruthy());
+    expect(blok.PROMO_BANDS.filter(p => !p.path).map(p => p.cta)).toEqual(['Üye ol']);
+  });
+  it('tema ve koleksiyon kartları kendi sayfasına', () => {
+    blok.homeThemeCards().forEach(t => expect(menuKapi.adres('temalar/' + t.slug), t.slug).toBeTruthy());
+    blok.homeCollectionCards().forEach(c => expect(menuKapi.adres('koleksiyonlar/' + c.slug), c.slug).toBeTruthy());
+  });
+});

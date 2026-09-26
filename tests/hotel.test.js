@@ -13,6 +13,7 @@
    bazi testler ayni seyi iki sayfa icin ayri ayri dogruluyor; gerekce
    docs/otel-sayfasi.md icinde. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   HOTELS,
@@ -418,7 +419,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(adlar, slug + ' kirilma noktasi farkli').toEqual(['Anasayfa', o.categoryPlural, o.title]);
       /* Orta adim anasayfadaki seridin gercek capasina gider. */
-      expect(ld.itemListElement[1].item).toContain('#' + o.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(o) + '/');
       expect(ld.itemListElement[2].item).toContain('/otel/' + slug + '/');
     });
   });

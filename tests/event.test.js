@@ -11,6 +11,7 @@
    3) OGRENCI BILETI her blokta satilmaz (locada yok).
    4) HIZMET BEDELI bilet basina ve ayri satir. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   EVENTS,
@@ -371,7 +372,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(ld.itemListElement.map(i => i.name)).toEqual(['Anasayfa', e.categoryPlural, e.title]);
-      expect(ld.itemListElement[1].item).toContain('#' + e.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(e) + '/');
       expect(ld.itemListElement[2].item).toContain('/etkinlik/' + slug + '/');
     });
   });

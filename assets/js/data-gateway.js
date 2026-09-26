@@ -500,6 +500,17 @@ function kapiYuzeyTanimlari(bugun) {
   ];
 }
 
+/* Ürünün ait olduğu liste sayfası: detay sayfasının kırıntısındaki
+   orta halka ve "benzerlerin tümü" bağı. Turda tur tipinin liste
+   sayfası (Günübirlik/Konaklamalı Turlar), diğerlerinde tipin kökü. */
+function kapiListeYolu(kayit) {
+  const T = kapiTaksonomi();
+  const tip = kapiIcerikTipi(kayit);
+  if (!tip) return null;
+  const tur = tip === 'tour' ? T.tourKinds[kayit.type] : null;
+  return T.types[tip].base + (tur && tur.listing ? '/' + tur.listing : '');
+}
+
 /* ---------------- adres çözümü ----------------
    Tek yönlendirici sayfanın (404.html) karar noktası: adres neye
    karşılık geliyor? Dönüş kind:
@@ -875,6 +886,7 @@ const MolaVeri = {
   seo: kapiSeo,
   /* liste sayfaları (sayfa yükü) */
   adres: kapiAdres,
+  listeYolu: kapiListeYolu,
   sayfaModeli: kapiSayfaModeli,
   listeSeo: kapiListeSeo,
   yuzeyTanimlari: kapiYuzeyTanimlari,

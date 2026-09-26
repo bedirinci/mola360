@@ -8,6 +8,7 @@
       sekme, sayfada karsiligi olmayan kap, anasayfada tur sayfasindan
       farkli bir fiyat gibi sessiz kaymalar burada yakalanir. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   TOURS,
@@ -606,8 +607,10 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect(yol).toContain('Anasayfa');
     expect(yol).toContain(t.categoryPlural);
     expect(yol).toContain(t.title);
-    /* Orta adım anasayfadaki şeridin gerçek çapasına gider. */
-    expect(yol).toContain('#' + t.categoryAnchor);
+    /* Orta adım turun liste sayfasına gider (Günübirlik/Konaklamalı
+       Turlar); o adres yönlendirici sayfada açılıyor. */
+    expect(yol).toContain('href="../../' + MolaVeri.listeYolu(t) + '/"');
+    expect(ldBlok).toContain('"item": "' + KAPI_SITE_ADRESI + MolaVeri.listeYolu(t) + '/"');
   });
 
   it('uydurma envanter yapısal veriyle işaretlenmez', () => {

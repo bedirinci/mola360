@@ -10,6 +10,7 @@
    ediliyor: seans farkinin NEGATIF olabilmesi (ikinci kalkis indirimli)
    ve hava iptalinin misafir iptalinden AYRI, kosulsuz tam iade olmasi. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   ACTIVITIES,
@@ -370,7 +371,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(ld.itemListElement.map(i => i.name)).toEqual(['Anasayfa', a.categoryPlural, a.title]);
-      expect(ld.itemListElement[1].item).toContain('#' + a.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(a) + '/');
       expect(ld.itemListElement[2].item).toContain('/aktivite/' + slug + '/');
     });
   });
