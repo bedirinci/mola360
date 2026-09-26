@@ -16,7 +16,9 @@
    saatler, konum, kurallar, yorumlar, SSS) tek kod yolundan geçiyor. */
 (function () {
 
-  const place = resolveVenue(venueSlugFromPath(window.location.pathname));
+  /* Kayıt veri kapısından (docs/veri-sozlesmesi.md); yayında olmayan veya
+     bilinmeyen mekân null. */
+  const place = MolaVeri.urun('venue', venueSlugFromPath(window.location.pathname));
   if (!place) return;
 
   const randevu = place.booking === 'randevu';
@@ -49,8 +51,17 @@
   const birimNot = venuePriceUnit(place);
   const tarihler = nextDepartureDates(new Date(), [], DATE_CHIPS_ALL, p.leadDays);
 
+  /* Mekânın kapalı olduğu gün (ör. spa pazar kapalı). */
+  const kapaliGun = (iso) => {
+    const gun = asDate(iso);
+    const kayit = gun ? venueHoursFor(place, gun.getDay()) : null;
+    return !!(kayit && kayit.closed);
+  };
+
   const state = {
-    date: tarihler[0] || '',
+    /* Varsayılan gün ilk AÇIK gün. Önceki sürüm ilk günü seçiyordu; bugün
+       kapalı günse çip pasif görünürken rezervasyon o güne kuruluyordu. */
+    date: tarihler.find(iso => !kapaliGun(iso)) || tarihler[0] || '',
     slot: '',
     option: venueOptions(place)[0].id,
     guests: 2,
@@ -62,6 +73,15 @@
     photo: 0
   };
   state.slot = venueSlot(place, state.date, '');
+
+  /* Kontenjan canlı sorgu (sözleşme bölüm 6): cevap gelene kadar null,
+     kalan yer satırları gizli, satış açık. Birim alan/hizmet × seans. */
+  let musaitlik = null;
+  let satisEngeli = null;
+  const secenekKalan = (secenekId) => {
+    const r = musaitlikKaydi(musaitlik, secenekId, state.date, state.slot);
+    return r ? r.remaining : null;
+  };
 
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
   const ic = (name) => '<span class="icon">' + tourSvg(name) + '</span>';
@@ -266,10 +286,13 @@
 
       const kalanEl = document.querySelector('[data-option-left="' + secenek.id + '"]');
       if (kalanEl) {
-        const kalan = venueSeatsLeft(state.date, state.slot, secenek.id, secenek.count);
-        kalanEl.className = 'mkn-secenek-kalan' + (kalan <= 3 ? ' is-low' : '');
-        kalanEl.innerHTML = ic('bolt') + 'Seçili saatte <strong>' + kalan + ' '
-          + (randevu ? 'randevu' : secenek.name.toLocaleLowerCase('tr-TR')) + '</strong> kaldı';
+        const kalan = secenekKalan(secenek.id);
+        const birim = randevu ? 'randevu' : secenek.name.toLocaleLowerCase('tr-TR');
+        kalanEl.hidden = kalan === null;
+        kalanEl.className = 'mkn-secenek-kalan' + (kalan !== null && kalan <= 3 ? ' is-low' : '');
+        kalanEl.innerHTML = kalan === null ? ''
+          : kalan === 0 ? ic('bolt') + 'Seçili saatte <strong>' + birim + ' kalmadı</strong>'
+          : ic('bolt') + 'Seçili saatte <strong>' + kalan + ' ' + birim + '</strong> kaldı';
       }
     });
   }
@@ -507,26 +530,29 @@
     return liste.map(iso => {
       const parca = trDateParts(iso);
       const on = iso === state.date;
-      const gun = asDate(iso);
-      const kayit = gun ? venueHoursFor(place, gun.getDay()) : null;
-      const kapali = !!(kayit && kayit.closed);
+      const kapali = kapaliGun(iso);
       /* Kapalı gün seçilemiyor: kapalı bir güne rezervasyon almak,
-         misafiri kapıdan çevirmek demek. */
+         misafiri kapıdan çevirmek demek. Bütün seansları dolu gün de. */
+      const dolu = !kapali && tarihDoluMu(musaitlik, iso);
       return `
-        <button class="tour-date-chip mkn-date-chip${on ? ' active' : ''}${kapali ? ' is-kapali' : ''}"
-                type="button" data-date="${iso}" aria-pressed="${on}"${kapali ? ' disabled' : ''}
-                aria-label="${formatTrDate(iso)}${kapali ? ' — kapalı' : ''}">
+        <button class="tour-date-chip mkn-date-chip${on ? ' active' : ''}${kapali ? ' is-kapali' : ''}${dolu ? ' is-dolu' : ''}"
+                type="button" data-date="${iso}" aria-pressed="${on}"${kapali || dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(iso)}${kapali ? ' — kapalı' : ''}${dolu ? ' — dolu' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${kapali ? 'kapalı' : parca.ay}</span>
+          <span class="tour-date-month">${kapali ? 'kapalı' : (dolu ? 'dolu' : parca.ay)}</span>
         </button>`;
     }).join('');
   }
 
   function slotChipsMarkup() {
-    return venueSlots(place, state.date).map(saat => `
-      <button class="mkn-saat-chip${saat === state.slot ? ' active' : ''}" type="button"
-              data-slot="${saat}" aria-pressed="${saat === state.slot ? 'true' : 'false'}">${saat}</button>`).join('');
+    /* Bütün alanları/hizmetleri dolu seans seçilemiyor. */
+    return venueSlots(place, state.date).map(saat => {
+      const dolu = tarihDoluMu(musaitlik, state.date, saat);
+      return `
+      <button class="mkn-saat-chip${saat === state.slot ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+              data-slot="${saat}" aria-pressed="${saat === state.slot ? 'true' : 'false'}"${dolu ? ' disabled' : ''}>${saat}</button>`;
+    }).join('');
   }
 
   function optionChipsMarkup() {
@@ -657,18 +683,32 @@
       </div>`;
   }
 
+  /* Kalan yer: kontenjan cevabından, seçili gün, seans ve alan/hizmet
+     için. İstenen: masa modelinde bir alan (şezlong/sedir/loca tek
+     birim), randevuda kişi sayısı kadar terapist seansı. */
   function syncSeats(hesap) {
+    const secenek = hesap.option || venueOptions(place)[0];
+    const istenen = randevu ? hesap.guests : 1;
+    const durum = kontenjanDurumu(secenekKalan(secenek.id), istenen, 3);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const secenek = hesap.option || venueOptions(place)[0];
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
     const kapasite = Math.max(1, Number(secenek.count) || 1);
-    const kalan = venueSeatsLeft(state.date, state.slot, secenek.id, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 3);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    const birim = randevu ? 'randevu' : 'yer';
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: state.slot + ' için <strong>' + birim + ' kalmadı</strong> · başka bir saat seçin',
+      yetersiz: state.slot + ' için en fazla <strong>' + durum.kalan + ' ' + birim + '</strong> var'
+    }[durum.durum] || state.slot + ' için <strong>' + durum.kalan + ' ' + birim + '</strong> kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic(randevu ? 'calendar' : 'users')}${state.slot} için
-        <strong>${kalan} ${randevu ? 'randevu' : 'yer'}</strong> kaldı</span>`;
+      <span class="tour-seats-text">${ic(randevu ? 'calendar' : 'users')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -750,7 +790,7 @@
         </span>
         <span class="tour-sticky-date">${formatTrDateRangeShort(state.date, '')} · ${state.slot}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">${
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>${
         randevu ? 'Randevu al' : 'Masa ayırt'}</button>`;
   }
 
@@ -1347,5 +1387,26 @@
   initGalleryCounter();
   initStickyBar();
   initOpenStatus();
+
+  /* Kontenjan: takvimde görünebilecek bütün günler için tek sorgu. Seçili
+     seans tamamen doluysa aynı günün ilk müsait seansına geçiliyor. */
+  MolaVeri.musaitlik('venue', place.slug, { from: tarihler[0], to: tarihler[tarihler.length - 1] })
+    .then(cevap => {
+      musaitlik = cevap;
+      if (tarihDoluMu(musaitlik, state.date)) {
+        const ilk = tarihler.find(iso => !kapaliGun(iso) && !tarihDoluMu(musaitlik, iso));
+        if (ilk) { state.date = ilk; state.slot = venueSlot(place, ilk, state.slot); }
+      }
+      if (tarihDoluMu(musaitlik, state.date, state.slot)) {
+        const saat = venueSlots(place, state.date).find(x => !tarihDoluMu(musaitlik, state.date, x));
+        if (saat) state.slot = saat;
+      }
+      const tarihKap = document.getElementById('tourDateChips');
+      if (tarihKap) tarihKap.innerHTML = dateChipsMarkup();
+      const saatKap = document.getElementById('mknSlotChips');
+      if (saatKap) saatKap.innerHTML = slotChipsMarkup();
+      syncBooking();
+    })
+    .catch(() => { /* Kontenjan bilinmiyor: satırlar gizli, satış açık. */ });
 
 })();

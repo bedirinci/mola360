@@ -229,14 +229,24 @@ MolaVeri.musaitlik(type, slug, { from: '2026-10-01', to: '2026-12-31' })
 | Etkinlik | bilet kategorisi `id` | temsil günü | temsil saati | kategori `seats` | `event_ticket` |
 | Mekân | alan veya hizmet `id` | gün | seans saati | alan/hizmet `count` | `venue_area` / `venue_service` |
 
-Saf yardımcılar (`inventory-data.js`, ekranlar bunları kullanır):
+Cevabı okuyan saf yardımcılar `data-gateway.js` içinde; ekranlar
+kontenjanı yalnızca bunlarla okur. Backend geldiğinde de kalırlar
+(`inventory-data.js` ise silinir):
 
 - `musaitlikKaydi(musaitlik, item, date, time)` → tek satır veya `null`
 - `konaklamaKalan(musaitlik, item, giris, cikis)` → otelde **her gecenin
   en küçüğü**. Önceki sürüm yalnızca giriş gecesine bakıyordu; üçüncü
   gecesi dolu bir oda satılabiliyordu.
-- `kontenjanDurumu(kalan, istenen)` →
+- `tarihDoluMu(musaitlik, date, time?)` → o günün (veya seansın) bütün
+  birimleri dolu mu; tarih ve seans çiplerini pasifleştirmek için
+- `kontenjanDurumu(kalan, istenen, azEsigi)` →
   `{ durum: 'bilinmiyor' | 'doldu' | 'yetersiz' | 'az' | 'var', kalan }`
+- `saatAnahtari("≈ 05:45")` → `"05:45"` (seans saatini satır anahtarına
+  çevirir)
+
+İstenen miktar tipe göre: turda ve aktivitede yetişkin + çocuk (bebek
+kucakta), otelde oda sayısı, etkinlikte bilet adedi, mekânın masa
+modelinde 1 alan, randevu modelinde kişi sayısı.
 
 Ekranlardaki kural:
 
@@ -245,6 +255,9 @@ Ekranlardaki kural:
   var", düğme pasif.
 - `bilinmiyor` (cevap henüz gelmedi veya kayıt yok) → kontenjan satırı
   gizli, satış **engellenmez**; son kontrol ödeme adımında.
+- Tarihin (veya seansın) bütün birimleri doluysa çip takvimde kalır ama
+  seçilemez ("dolu", etkinlikte "tükendi").
+- Sayfa açılırken varsayılan tarih doluysa ilk müsait tarihe geçilir.
 
 **Bugün:** `inventory-data.js` içindeki `SAMPLE_BOOKINGS` (örnek
 rezervasyonlar) kapasiteden düşülerek kalan hesaplanıyor; tıpkı backend'in

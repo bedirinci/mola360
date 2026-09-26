@@ -207,6 +207,8 @@
   color: var(--text-muted);
 }
 .otel-oda-kalan strong { color: var(--text); font-weight: 700; }
+/* Kontenjan cevabı gelmeden satır görünmüyor (display:flex [hidden]'ı ezmesin). */
+.otel-oda-kalan[hidden] { display: none; }
 .otel-oda-kalan .icon { width: 15px; height: 15px; color: var(--text-faint); }
 .otel-oda-kalan.is-low { color: #C2410C; }
 .otel-oda-kalan.is-low strong { color: #C2410C; }

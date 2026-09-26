@@ -18,7 +18,6 @@ const AKTIVITE_TUR_VERI = (typeof require === 'function' && typeof module !== 'u
   : null;
 
 const aAsDate     = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.asDate : asDate;
-const aSeatsLeft  = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.seatsLeft : seatsLeft;
 const aCommonsUrl = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ----------------
@@ -220,13 +219,8 @@ function activityListPriceFrom(aktivite) {
   return Number(ucuz.perPersonList) || Number(ucuz.perPerson) || 0;
 }
 
-/* Kalan yer tarihten, seanstan VE paketten türetilir: aynı sabahın iki
-   kalkışı farklı sayı gösterir, ama aynı seçim her yenilemede aynı sayıyı
-   verir. Rastgele sayı kullanılsaydı "son 3 kişilik yer" uyarısı her
-   yenilemede zıplardı. */
-function activitySeatsLeft(iso, sessionId, packId, total) {
-  return aSeatsLeft(String(iso || '') + '|' + String(sessionId || '') + '|' + String(packId || ''), total);
-}
+/* Kalan yer burada hesaplanmıyor: veri kapısının kontenjan cevabından
+   (MolaVeri.musaitlik; birim paket × seans). */
 
 /* Aktivite her gün yapılıyor ama hava koşuluna bağlı. Uçuşun yapılıp
    yapılmayacağı ancak o sabah belli oluyor; bu yüzden "iptal" iki ayrı
@@ -272,6 +266,23 @@ const ACTIVITIES = {
     area: 'Göreme, Nevşehir',
     region: 'İç Anadolu',
     code: 'MLA-AKT-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. */
+    taxonomy: {
+      categories: ['doga-macera'],
+      themes: ['macera-adrenalin'],
+      collections: ['romantik', 'yeni-baslayanlar'],
+      city: 'nevsehir',
+      facets: {}
+    },
+    currency: 'TRY',
+    seo: {
+      title: 'Kapadokya Sıcak Hava Balonu Turu — Göreme | mola360',
+      description: 'Göreme\'de gün doğumunda bir saat balon uçuşu: otelden alım, kahvaltı, köpüklü ikram ve uçuş sertifikası dahil. Üç paket, {fiyat}\'den başlayan fiyatlar, hava koşulunda tam iade.',
+      ogTitle: 'Kapadokya Sıcak Hava Balonu Turu — Göreme',
+      ogDescription: 'Gün doğumunda bir saat uçuş, otelden alım dahil. Hava koşulunda koşulsuz tam iade.'
+    },
     durationLabel: '1 saat uçuş · 3 saat toplam',
     /* Başlık satırında geçen kısa süre cümlesi. */
     activityLabel: 'Gün doğumunda 1 saat uçuş',
@@ -604,7 +615,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcActivityTotal,
     activityPriceFrom,
     activityListPriceFrom,
-    activitySeatsLeft,
     weatherRefundAmount,
     activitySlugFromPath,
     resolveActivity

@@ -29,7 +29,6 @@ const MEKAN_TUR_VERI = (typeof require === 'function' && typeof module !== 'unde
   : null;
 
 const mAsDate     = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.asDate : asDate;
-const mSeatsLeft  = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.seatsLeft : seatsLeft;
 const mCommonsUrl = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ---------------- */
@@ -294,12 +293,8 @@ function venuePriceUnit(place) {
   return p.unitNote || (place && place.booking === 'randevu' ? 'hizmet başı' : 'masada en az');
 }
 
-/* Kalan yer tarihten, saatten ve alandan/hizmetten türetilir: aynı
-   günün iki seansı farklı sayı gösterir, aynı seçim her yenilemede aynı
-   sayıyı verir. */
-function venueSeatsLeft(iso, slot, optionId, total) {
-  return mSeatsLeft(String(iso || '') + '@' + String(slot || '') + '/' + String(optionId || ''), total);
-}
+/* Kalan yer burada hesaplanmıyor: veri kapısının kontenjan cevabından
+   (MolaVeri.musaitlik; birim alan/hizmet × seans). */
 
 /* /mola360/mekan/kum-beach-club/ -> "kum-beach-club" */
 function venueSlugFromPath(pathname) {
@@ -338,6 +333,25 @@ const PLACES = {
     area: 'Alaçatı, Çeşme',
     region: 'Ege',
     code: 'MLA-MKN-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. Paylaşım görseli galerinin ilki
+       değil, Alaçatı değirmenleri (ogImage). */
+    taxonomy: {
+      categories: ['beach-club'],
+      themes: ['deniz-tekne'],
+      collections: ['arkadas-grubu'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    seo: {
+      title: 'Kum Beach Club | mola360',
+      description: 'Alaçatı koyunda denize sıfır beach club: şezlong, sedir ve loca alanları, {fiyat}\'den başlayan minimum harcama, kapora masadaki hesaptan düşer. Gün boyu DJ, mutfak 23:00\'e kadar açık.',
+      ogTitle: 'Kum Beach Club — Alaçatı, Çeşme',
+      ogDescription: 'Denize sıfır koyda şezlong, sedir ve loca. Kapora masadaki harcamadan düşer.',
+      ogImage: 'alacati'
+    },
     priceLevel: '₺₺₺',
     /* Künyede ve kartta geçen kısa tanım. */
     kindLabel: 'Beach Club',
@@ -602,6 +616,23 @@ const PLACES = {
     area: 'Alsancak, İzmir',
     region: 'Ege',
     code: 'MLA-MKN-02',
+
+    /* Sınıflandırma: menüde spa kategorisi yok; "Spa & Masaj" bu kayıt
+       için açıldı (onaya sunulu, docs/veri-sozlesmesi.md bölüm 5). */
+    taxonomy: {
+      categories: ['spa-masaj'],
+      themes: [],
+      collections: ['romantik'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    seo: {
+      title: 'Kordon Spa & Masaj | mola360',
+      description: 'Alsancak\'ta randevulu masaj salonu: klasik, sıcak taş, aromaterapi ve çift masajı. {fiyat}\'den başlayan fiyatlar, ön ödeme yok, 6 saate kadar ücretsiz iptal.',
+      ogTitle: 'Kordon Spa & Masaj — Alsancak, İzmir',
+      ogDescription: 'Randevulu masaj ve bakım; sertifikalı terapistler, ön ödeme yok.'
+    },
     priceLevel: '₺₺',
     kindLabel: 'Masaj ve Bakım',
 
@@ -853,7 +884,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcVenueBooking,
     venuePriceFrom,
     venuePriceUnit,
-    venueSeatsLeft,
     venueSlugFromPath,
     resolveVenue
   };

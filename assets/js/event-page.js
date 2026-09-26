@@ -16,7 +16,9 @@
    paneli alıyor. */
 (function () {
 
-  const event = resolveEvent(eventSlugFromPath(window.location.pathname));
+  /* Kayıt veri kapısından (docs/veri-sozlesmesi.md); yayında olmayan veya
+     bilinmeyen etkinlik null. */
+  const event = MolaVeri.urun('event', eventSlugFromPath(window.location.pathname));
   if (!event) return;
 
   const KOK = (document.body && document.body.getAttribute('data-root')) || '';
@@ -59,6 +61,17 @@
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
     photo: 0
+  };
+
+  /* Kontenjan canlı sorgu (sözleşme bölüm 6): cevap gelene kadar null,
+     kalan koltuk satırları gizli, satış açık. Birim temsil × bilet
+     kategorisi: satırın anahtarı kategori id'si, temsil günü ve saati. */
+  let musaitlik = null;
+  let satisEngeli = null;
+  const temsilSaati = (tarih) => saatAnahtari((yaklasan.find(t => t.date === tarih) || {}).time);
+  const kategoriKalan = (katId) => {
+    const r = musaitlikKaydi(musaitlik, katId, state.date, temsilSaati(state.date));
+    return r ? r.remaining : null;
   };
 
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
@@ -312,9 +325,12 @@
       const kalanEl = document.querySelector('[data-cat-left="' + kat.id + '"]');
       if (kalanEl) {
         if (sezonBitti) { kalanEl.textContent = ''; return; }
-        const kalan = eventSeatsLeft(state.date, kat.id, Math.min(kat.seats, 40));
-        kalanEl.className = 'etk-kategori-kalan' + (kalan <= 3 ? ' is-low' : '');
-        kalanEl.innerHTML = ic('bolt') + 'Seçili temsilde <strong>' + kalan + ' koltuk</strong> kaldı';
+        const kalan = kategoriKalan(kat.id);
+        kalanEl.hidden = kalan === null;
+        kalanEl.className = 'etk-kategori-kalan' + (kalan !== null && kalan <= 3 ? ' is-low' : '');
+        kalanEl.innerHTML = kalan === null ? ''
+          : kalan === 0 ? ic('bolt') + 'Seçili temsilde <strong>bu blok tükendi</strong>'
+          : ic('bolt') + 'Seçili temsilde <strong>' + kalan + ' koltuk</strong> kaldı';
       }
     });
   }
@@ -524,13 +540,15 @@
     return liste.map(t => {
       const parca = trDateParts(t.date);
       const on = t.date === state.date;
+      /* Bütün blokları satılmış temsil: çip duruyor, seçilemiyor. */
+      const dolu = tarihDoluMu(musaitlik, t.date);
       return `
-        <button class="tour-date-chip etk-date-chip${on ? ' active' : ''}" type="button"
-                data-date="${t.date}" aria-pressed="${on}"
-                aria-label="${formatTrDate(t.date)} · ${t.title}">
+        <button class="tour-date-chip etk-date-chip${on ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+                data-date="${t.date}" aria-pressed="${on}"${dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(t.date)} · ${t.title}${dolu ? ' — tükendi' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${parca.ay}</span>
+          <span class="tour-date-month">${dolu ? 'tükendi' : parca.ay}</span>
           <span class="etk-date-eser">${t.title}</span>
         </button>`;
     }).join('');
@@ -686,18 +704,31 @@
       </div>`;
   }
 
+  /* Kalan koltuk: kontenjan cevabından, seçili temsil ve blok için.
+     İstenen: bilet adedi (tam + öğrenci). Önceki sürüm kapasiteyi 40'ta
+     kesiyordu, çünkü karma değerden üretilen sayı zaten 9'u geçmiyordu;
+     artık bloğun gerçek koltuk sayısı. */
   function syncSeats(hesap) {
+    const kat = hesap.category || event.categories[0];
+    const durum = kontenjanDurumu(kategoriKalan(kat.id), hesap.tickets, 10);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const kat = hesap.category || event.categories[0];
-    const kapasite = Math.min(Number(kat.seats) || 40, 40);
-    const kalan = eventSeatsLeft(state.date, kat.id, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 3);
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
+    const kapasite = Math.max(1, Number(kat.seats) || 1);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: 'Bu temsilde <strong>' + kat.name + ' tükendi</strong> · başka bir blok veya temsil seçin',
+      yetersiz: 'Bu temsilde bu blokta en fazla <strong>' + durum.kalan + ' koltuk</strong> var'
+    }[durum.durum] || 'Bu temsilde <strong>' + durum.kalan + ' koltuk</strong> kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic('users')}Bu temsilde
-        <strong>${kalan} koltuk</strong> kaldı</span>`;
+      <span class="tour-seats-text">${ic('users')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -756,6 +787,11 @@
       const on = btn.getAttribute('data-category') === state.category;
       btn.classList.toggle('active', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      /* Seçili temsilde tükenen blok seçilemiyor; temsil değişince
+         yeniden bakılıyor. */
+      const tukendi = kategoriKalan(btn.getAttribute('data-category')) === 0;
+      btn.classList.toggle('is-dolu', tukendi);
+      btn.disabled = tukendi;
     });
 
     event.addons.forEach(a => {
@@ -799,7 +835,7 @@
         </span>
         <span class="tour-sticky-date">${temsil ? formatTrDateRangeShort(temsil.date, '') : ''}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">Bileti al</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Bileti al</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -1391,5 +1427,27 @@
   initSectionNav();
   initGalleryCounter();
   initStickyBar();
+
+  /* Kontenjan: yaklaşan bütün temsiller için tek sorgu. Varsayılan
+     temsil tamamen tükenmişse ilk müsait temsile, seçili blok o temsilde
+     tükenmişse müsait ilk bloğa geçiliyor. */
+  if (!sezonBitti) {
+    MolaVeri.musaitlik('event', event.slug, { from: yaklasan[0].date, to: yaklasan[yaklasan.length - 1].date })
+      .then(cevap => {
+        musaitlik = cevap;
+        if (tarihDoluMu(musaitlik, state.date)) {
+          const ilk = yaklasan.find(t => !tarihDoluMu(musaitlik, t.date));
+          if (ilk) state.date = ilk.date;
+        }
+        if (kategoriKalan(state.category) === 0) {
+          const blok = event.categories.find(k => kategoriKalan(k.id) !== 0);
+          if (blok) state.category = blok.id;
+        }
+        const kap = document.getElementById('tourDateChips');
+        if (kap) kap.innerHTML = dateChipsMarkup();
+        syncBooking();
+      })
+      .catch(() => { /* Kontenjan bilinmiyor: satırlar gizli, satış açık. */ });
+  }
 
 })();

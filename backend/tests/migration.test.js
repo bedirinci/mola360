@@ -27,6 +27,7 @@ const OTEL = require(yol('hotel-data.js'));
 const AKTIVITE = require(yol('activity-data.js'));
 const ETKINLIK = require(yol('event-data.js'));
 const MEKAN = require(yol('venue-data.js'));
+const TAKSONOMI = require(yol('taxonomy-data.js'));
 
 const KAYNAK = {
   tour: TUR.TOURS, hotel: OTEL.HOTELS, activity: AKTIVITE.ACTIVITIES,
@@ -231,6 +232,93 @@ describe('alt kayıtlar eksiksiz', () => {
   });
 });
 
+/* 019: ürünün taxonomy alanı ve sınıflandırma ana verisi. Göç raporunun
+   "aktarılmayan alan 0" demesi yetmiyor; her bağ kaynaktan sayılıyor. */
+describe('sınıflandırma', () => {
+  async function icerik(tip, slug) {
+    const { rows } = await sorgu(
+      `SELECT c.id, c.currency, k.slug AS ana_kategori, s.slug AS sehir, r.slug AS bolge
+         FROM content c
+         LEFT JOIN categories k ON k.id = c.category_id
+         LEFT JOIN cities s ON s.id = c.city_id
+         LEFT JOIN regions r ON r.id = c.region_id
+        WHERE c.type = $1 AND c.slug = $2`, [tip, slug]);
+    return rows[0];
+  }
+
+  it('ana veri taxonomy-data.js ile aynı sayıda', async () => {
+    expect(await say('SELECT count(*)::int AS n FROM themes')).toBe(TAKSONOMI.TAXONOMY_THEMES.length);
+    expect(await say('SELECT count(*)::int AS n FROM collections')).toBe(TAKSONOMI.TAXONOMY_COLLECTIONS.length);
+    expect(await say('SELECT count(*)::int AS n FROM listing_pages')).toBe(TAKSONOMI.TAXONOMY_LISTINGS.length);
+    for (const k of TAKSONOMI.TAXONOMY_CATEGORIES) {
+      const { rows } = await sorgu(
+        `SELECT k.name, k.name_short, k.in_menu, u.slug AS ust FROM categories k
+           LEFT JOIN categories u ON u.id = k.parent_id
+          WHERE k.content_type = $1 AND k.slug = $2`, [k.type, k.slug]);
+      expect(rows, k.type + '/' + k.slug).toHaveLength(1);
+      expect(rows[0].name).toBe(k.name);
+      expect(rows[0].name_short).toBe(k.nameShort);
+      expect(rows[0].ust).toBe(k.parent);
+      expect(rows[0].in_menu).toBe(k.menu !== false);
+    }
+  });
+
+  it('her ürünün kategori, tema, koleksiyon ve özellikleri bağlanmış', async () => {
+    for (const { tip, anahtar, k } of TUM_KAYITLAR) {
+      const c = await icerik(tip, k.slug || anahtar);
+      const t = k.taxonomy;
+      expect(c.ana_kategori, k.slug).toBe(t.categories[0]);
+      const { rows: kat } = await sorgu(
+        `SELECT k.slug FROM content_categories cc JOIN categories k ON k.id = cc.category_id
+          WHERE cc.content_id = $1 ORDER BY cc.position`, [c.id]);
+      expect(kat.map(r => r.slug), k.slug).toEqual(t.categories);
+      const { rows: tema } = await sorgu(
+        `SELECT t.slug FROM content_themes ct JOIN themes t ON t.id = ct.theme_id
+          WHERE ct.content_id = $1 ORDER BY ct.position`, [c.id]);
+      expect(tema.map(r => r.slug), k.slug).toEqual(t.themes);
+      const { rows: kol } = await sorgu(
+        `SELECT k.slug FROM content_collections cc JOIN collections k ON k.id = cc.collection_id
+          WHERE cc.content_id = $1 ORDER BY cc.position`, [c.id]);
+      expect(kol.map(r => r.slug), k.slug).toEqual(t.collections);
+      const beklenenOzellik = ['transport', 'departFrom']
+        .flatMap(a => (t.facets[a] || []).length).reduce((x, y) => x + y, 0);
+      expect(await say('SELECT count(*)::int AS n FROM content_facets WHERE content_id = $1', [c.id]),
+        k.slug).toBe(beklenenOzellik);
+    }
+  });
+
+  it('şehir ve bölge taxonomy.city alanından, para birimi kayıttan', async () => {
+    for (const { tip, anahtar, k } of TUM_KAYITLAR) {
+      const c = await icerik(tip, k.slug || anahtar);
+      expect(c.sehir, k.slug).toBe(k.taxonomy.city);
+      expect(c.bolge, k.slug).toBe(TAKSONOMI.taxonomyCityRegion(k.taxonomy.city).slug);
+      expect(c.currency, k.slug).toBe(k.currency);
+    }
+  });
+
+  it('SEO başlıkları kayıttan', async () => {
+    for (const { tip, anahtar, k } of TUM_KAYITLAR) {
+      const c = await icerik(tip, k.slug || anahtar);
+      const { rows } = await sorgu(
+        'SELECT seo_title, meta_description, og_title, og_description FROM content_seo WHERE content_id = $1',
+        [c.id]);
+      expect(rows[0].seo_title, k.slug).toBe(k.seo.title);
+      expect(rows[0].meta_description, k.slug).toBe(k.seo.description);
+      expect(rows[0].og_title, k.slug).toBe(k.seo.ogTitle);
+      expect(rows[0].og_description, k.slug).toBe(k.seo.ogDescription);
+    }
+  });
+
+  it('kalkış şehirleri ana veriye bağlanmış', async () => {
+    const id = (await icerik('tour', 'kapadokya-3-gece')).id;
+    const { rows } = await sorgu(
+      `SELECT s.slug FROM tour_departure_cities d LEFT JOIN cities s ON s.id = d.city_id
+        WHERE d.content_id = $1 ORDER BY d.position`, [id]);
+    expect(rows.map(r => r.slug)).toEqual(
+      TUR.TOURS['kapadokya-3-gece'].departureCities.map(d => d.city));
+  });
+});
+
 describe('ilişkiler ve medya', () => {
   it('benzer içerikler ID ile bağlanmış, çözülemeyenler kaybolmamış', async () => {
     const toplamBenzer = TUM_KAYITLAR.reduce((t, x) => t + (x.k.similar || []).length, 0);
@@ -286,11 +374,15 @@ describe('tekrar çalıştırılabilirlik', () => {
       oda: await say('SELECT count(*)::int AS n FROM hotel_rooms'),
       yorum: await say('SELECT count(*)::int AS n FROM reviews'),
       blok: await say('SELECT count(*)::int AS n FROM content_blocks'),
+      kategori: await say('SELECT count(*)::int AS n FROM content_categories'),
+      tema: await say('SELECT count(*)::int AS n FROM content_themes'),
+      ozellik: await say('SELECT count(*)::int AS n FROM content_facets'),
     };
     await gocCalistir();
     for (const [ad, beklenen] of Object.entries(once)) {
       const tablo = { content: 'content', faq: 'content_faqs', oda: 'hotel_rooms',
-                      yorum: 'reviews', blok: 'content_blocks' }[ad];
+                      yorum: 'reviews', blok: 'content_blocks', kategori: 'content_categories',
+                      tema: 'content_themes', ozellik: 'content_facets' }[ad];
       expect(await say(`SELECT count(*)::int AS n FROM ${tablo}`), ad).toBe(beklenen);
     }
   }, 60_000);

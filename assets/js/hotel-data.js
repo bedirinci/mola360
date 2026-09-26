@@ -22,7 +22,6 @@ const TUR_VERI = (typeof require === 'function' && typeof module !== 'undefined'
 
 const oAsDate      = TUR_VERI ? TUR_VERI.asDate      : asDate;
 const oToISODate   = TUR_VERI ? TUR_VERI.toISODate   : toISODate;
-const oSeatsLeft   = TUR_VERI ? TUR_VERI.seatsLeft   : seatsLeft;
 const oCommonsUrl  = TUR_VERI ? TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ----------------
@@ -301,13 +300,10 @@ function hotelScoreText(breakdown) {
   return String(hotelScore(breakdown)).replace('.', ',');
 }
 
-/* Kalan oda sayısı tarihten VE oda tipinden türetilir: aynı tarihte her
-   oda tipi farklı, ama aynı oda aynı tarihte her yenilemede aynı sayıyı
-   verir. Rastgele sayı kullanılsaydı "son 2 oda" uyarısı her yenilemede
-   zıplar ve inandırıcılığını kaybederdi. */
-function roomsLeft(iso, roomId, total) {
-  return oSeatsLeft(String(iso || '') + '|' + String(roomId || ''), total);
-}
+/* Kalan oda burada hesaplanmıyor: veri kapısının kontenjan cevabından,
+   konaklamanın her gecesinin en küçüğü olarak (konaklamaKalan,
+   data-gateway.js). Önceki roomsLeft() karma değerden sayı üretiyordu ve
+   yalnızca giriş gecesine bakıyordu. */
 
 /* /mola360/otel/kordon-butik-otel/ -> "kordon-butik-otel" */
 function hotelSlugFromPath(pathname) {
@@ -347,6 +343,27 @@ const HOTELS = {
     area: 'Alsancak, İzmir',
     region: 'Ege',
     code: 'MLA-OTL-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. categoryShort ana kategorinin
+       kısa adı, region şehrin bölgesi; tests/veri-kapisi.test.js
+       ayrışmadıklarını ölçüyor. Pansiyon özelliği boards[]'tan
+       türetiliyor, burada ayrıca yazılmıyor. Açıklamadaki {fiyat} sayfa
+       üretilirken güncel başlangıç fiyatıyla doluyor. */
+    taxonomy: {
+      categories: ['sehir-otelleri', 'butik-oteller'],
+      themes: [],
+      collections: ['romantik'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    seo: {
+      title: 'Kordon Butik Otel — Alsancak, İzmir | mola360',
+      description: 'Alsancak\'ta Kordon\'a 120 metre, 28 odalı butik şehir oteli. Teras katta körfez manzaralı açık büfe kahvaltı dahil, 72 saate kadar ücretsiz iptal, gecelik {fiyat}\'den başlayan fiyatlar.',
+      ogTitle: 'Kordon Butik Otel — Alsancak, İzmir',
+      ogDescription: 'Kordon\'a 120 metre, 28 odalı butik şehir oteli. Teras katta kahvaltı dahil, ücretsiz iptal.'
+    },
     /* Başlık satırında ve künyede geçen kısa konum cümlesi. */
     distanceLabel: 'Kordon’a 120 m',
 
@@ -691,7 +708,6 @@ if (typeof module !== 'undefined' && module.exports) {
     hotelNightlyListFrom,
     hotelScore,
     hotelScoreText,
-    roomsLeft,
     hotelSlugFromPath,
     resolveHotel
   };

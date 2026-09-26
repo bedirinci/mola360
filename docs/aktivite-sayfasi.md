@@ -114,10 +114,11 @@ dokunuşta ("Rezervasyona git") götürüyor.
 
 ## Kalan yer
 
-Tarih + **seans** + **paket** üçlüsünden türetiliyor: aynı sabahın iki
-kalkışı farklı sayı gösteriyor, ama aynı seçim her yenilemede aynı
-sayıyı veriyor. Rastgele sayı kullanılsaydı "son 3 kişilik yer" uyarısı
-her yenilemede zıplar ve inandırıcılığını kaybederdi.
+Veri kapısının kontenjan cevabından geliyor (`MolaVeri.musaitlik`,
+docs/veri-sozlesmesi.md bölüm 6); birim **paket × seans**. Önceki sürüm sayıyı tarihin karma
+değerinden üretiyordu (`activitySeatsLeft`). Seçili seansta paket doluysa
+ya da sepete yer yetmiyorsa rezervasyon düğmesi pasifleşiyor; bütün
+paketleri dolu seans ve bütün seansları dolu gün seçilemiyor.
 
 ## Anasayfa bağlantısı
 
@@ -176,8 +177,9 @@ hâle getirildi; ayrıntı ve testi `docs/icerik-katalogu.md` içinde.
 
 ## Bilerek yapılmayanlar
 
-- **Saat bazlı gerçek müsaitlik yok.** Kalan yer tarihten türetilen
-  tutarlı bir kurgu; envanter bağlanana kadar öyle kalmalı.
+- **Müsaitlik örnek veriden.** Kalan yer örnek rezervasyonlardan
+  hesaplanıyor (`assets/js/inventory-data.js`); backend gelince gerçek
+  rezervasyonlardan gelecek, sayfa değişmeyecek.
 - **Hava durumu servisi bağlı değil.** Sayfa "hava koşuluna bağlı"
   diyor ve iade kuralını yazıyor; o sabahın tahminini göstermiyor.
   Gerçek tahmin göstermek, tutmadığında güveni bitirir.

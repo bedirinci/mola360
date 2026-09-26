@@ -170,6 +170,8 @@
   color: var(--text-muted);
 }
 .mkn-secenek-kalan strong { color: var(--text); font-weight: 700; }
+/* Kontenjan cevabı gelmeden satır görünmüyor (display:flex [hidden]'ı ezmesin). */
+.mkn-secenek-kalan[hidden] { display: none; }
 .mkn-secenek-kalan .icon { width: 15px; height: 15px; color: var(--text-faint); }
 .mkn-secenek-kalan.is-low { color: #C2410C; }
 .mkn-secenek-kalan.is-low strong { color: #C2410C; }
@@ -307,6 +309,9 @@
 }
 .mkn-saat-chip:hover { border-color: var(--navy); }
 .mkn-saat-chip.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+/* Bütün alanları/hizmetleri dolu seans: duruyor, seçilemiyor. */
+.mkn-saat-chip.is-dolu { opacity: .45; cursor: not-allowed; text-decoration: line-through; }
+.mkn-saat-chip.is-dolu:hover { border-color: var(--border); }
 
 /* Kapalı gün seçilemiyor: kapalı bir güne rezervasyon almak misafiri
    kapıdan çevirmek demek. Çip duruyor ama pasif — gizlenseydi "neden

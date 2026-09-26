@@ -17,7 +17,9 @@
    (paketler, program, katılım şartları). */
 (function () {
 
-  const activity = resolveActivity(activitySlugFromPath(window.location.pathname));
+  /* Kayıt veri kapısından (docs/veri-sozlesmesi.md); yayında olmayan veya
+     bilinmeyen aktivite null. */
+  const activity = MolaVeri.urun('activity', activitySlugFromPath(window.location.pathname));
   if (!activity) return;
 
   /* Sayfa kökü: /aktivite/<slug>/index.html iki dizin içeride olduğu
@@ -62,6 +64,17 @@
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
     photo: 0
+  };
+
+  /* Kontenjan canlı sorgu (sözleşme bölüm 6): cevap gelene kadar null,
+     kalan yer satırları gizli, satış açık. Birim paket × seans:
+     kontenjan satırının anahtarı paket id'si, tarih ve seansın saati. */
+  let musaitlik = null;
+  let satisEngeli = null;
+  const seansSaati = (seansId) => saatAnahtari((activitySession(activity, seansId) || {}).time);
+  const paketKalan = (paketId) => {
+    const r = musaitlikKaydi(musaitlik, paketId, state.date, seansSaati(state.session));
+    return r ? r.remaining : null;
   };
 
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
@@ -250,9 +263,12 @@
 
       const kalanEl = document.querySelector('[data-pack-left="' + paket.id + '"]');
       if (kalanEl) {
-        const kalan = activitySeatsLeft(state.date, state.session, paket.id, paket.capacity);
-        kalanEl.className = 'akt-paket-kalan' + (kalan <= 3 ? ' is-low' : '');
-        kalanEl.innerHTML = ic('bolt') + 'Seçili sabah <strong>' + kalan + ' kişilik</strong> yer kaldı';
+        const kalan = paketKalan(paket.id);
+        kalanEl.hidden = kalan === null;
+        kalanEl.className = 'akt-paket-kalan' + (kalan !== null && kalan <= 3 ? ' is-low' : '');
+        kalanEl.innerHTML = kalan === null ? ''
+          : kalan === 0 ? ic('bolt') + 'Seçili seansta <strong>bu paket dolu</strong>'
+          : ic('bolt') + 'Seçili sabah <strong>' + kalan + ' kişilik</strong> yer kaldı';
       }
     });
   }
@@ -499,21 +515,26 @@
     return liste.map(iso => {
       const parca = trDateParts(iso);
       const on = iso === state.date;
+      /* O sabah bütün paketler ve seanslar doluysa gün seçilemiyor. */
+      const dolu = tarihDoluMu(musaitlik, iso);
       return `
-        <button class="tour-date-chip${on ? ' active' : ''}" type="button"
-                data-date="${iso}" aria-pressed="${on}"
-                aria-label="${formatTrDate(iso)} sabahı">
+        <button class="tour-date-chip${on ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+                data-date="${iso}" aria-pressed="${on}"${dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(iso)} sabahı${dolu ? ' — dolu' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${parca.ay}</span>
+          <span class="tour-date-month">${dolu ? 'dolu' : parca.ay}</span>
         </button>`;
     }).join('');
   }
 
   function sessionChipsMarkup() {
-    return activity.sessions.map(s => `
-      <button class="tour-city-chip akt-seans-chip${s.id === state.session ? ' active' : ''}" type="button"
-              data-session="${s.id}" aria-pressed="${s.id === state.session ? 'true' : 'false'}">
+    return activity.sessions.map(s => {
+      /* Seçili sabah bu seansın bütün paketleri doluysa seans seçilemiyor. */
+      const dolu = tarihDoluMu(musaitlik, state.date, saatAnahtari(s.time));
+      return `
+      <button class="tour-city-chip akt-seans-chip${s.id === state.session ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+              data-session="${s.id}" aria-pressed="${s.id === state.session ? 'true' : 'false'}"${dolu ? ' disabled' : ''}>
         <strong>${s.label} · ${s.time}</strong>
         <span>${s.note}</span>
         <span class="tour-city-fee">${Number(s.fee) === 0
@@ -521,7 +542,8 @@
           : (Number(s.fee) < 0
             ? formatTRY(Math.abs(Number(s.fee))) + ' indirim / kişi'
             : '+' + formatTRY(Number(s.fee)) + ' / kişi')}</span>
-      </button>`).join('');
+      </button>`;
+    }).join('');
   }
 
   function packChipsMarkup() {
@@ -656,18 +678,29 @@
       </div>`;
   }
 
+  /* Kalan yer: kontenjan cevabından, seçili paket ve seans için. İstenen:
+     sepetteki kişi sayısı (yetişkin + çocuk). */
   function syncSeats(hesap) {
+    const paket = hesap.pack || activity.packages[0];
+    const durum = kontenjanDurumu(paketKalan(paket.id), hesap.adults + hesap.children, 3);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const paket = hesap.pack || activity.packages[0];
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
     const kapasite = Math.max(1, Number(paket.capacity) || 1);
-    const kalan = activitySeatsLeft(state.date, state.session, paket.id, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 3);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: 'Bu seansta <strong>yer kalmadı</strong> · başka bir seans, paket veya gün seçin',
+      yetersiz: 'Bu seansta en fazla <strong>' + durum.kalan + ' kişilik</strong> yer var'
+    }[durum.durum] || 'Bu sabah <strong>' + durum.kalan + ' kişilik</strong> yer kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic('users')}Bu sabah
-        <strong>${kalan} kişilik</strong> yer kaldı</span>`;
+      <span class="tour-seats-text">${ic('users')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -715,6 +748,10 @@
       const on = btn.getAttribute('data-session') === state.session;
       btn.classList.toggle('active', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      /* Seansın doluluğu seçili güne bağlı: gün değişince yeniden bakılıyor. */
+      const dolu = tarihDoluMu(musaitlik, state.date, seansSaati(btn.getAttribute('data-session')));
+      btn.classList.toggle('is-dolu', dolu);
+      btn.disabled = dolu;
     });
     bookingEl.querySelectorAll('[data-pack]').forEach(btn => {
       const on = btn.getAttribute('data-pack') === state.pack;
@@ -753,7 +790,7 @@
         </span>
         <span class="tour-sticky-date">${formatTrDateRangeShort(state.date, '')}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Rezervasyon yap</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -1334,5 +1371,20 @@
   initSectionNav();
   initGalleryCounter();
   initStickyBar();
+
+  /* Kontenjan: takvimde görünebilecek bütün sabahlar için tek sorgu.
+     Varsayılan gün tamamen doluysa ilk müsait güne geçiliyor. */
+  MolaVeri.musaitlik('activity', activity.slug, { from: tarihler[0], to: tarihler[tarihler.length - 1] })
+    .then(cevap => {
+      musaitlik = cevap;
+      if (tarihDoluMu(musaitlik, state.date)) {
+        const ilk = tarihler.find(iso => !tarihDoluMu(musaitlik, iso));
+        if (ilk) state.date = ilk;
+      }
+      const kap = document.getElementById('tourDateChips');
+      if (kap) kap.innerHTML = dateChipsMarkup();
+      syncBooking();
+    })
+    .catch(() => { /* Kontenjan bilinmiyor: satırlar gizli, satış açık. */ });
 
 })();

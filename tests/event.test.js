@@ -27,7 +27,6 @@ import {
   calcEventTotal,
   eventPriceFrom,
   eventListPriceFrom,
-  eventSeatsLeft,
   eventSlugFromPath,
   resolveEvent,
 } from '../assets/js/event-data.js';
@@ -221,23 +220,56 @@ describe('yagmur ve iade', () => {
   });
 });
 
-/* ---------------- kalan koltuk ---------------- */
-describe('kalan koltuk', () => {
-  it('ayni secim her zaman ayni sayiyi veriyor', () => {
-    expect(eventSeatsLeft('2026-10-03', 'orta', 40)).toBe(eventSeatsLeft('2026-10-03', 'orta', 40));
+/* ---------------- kontenjan ----------------
+   Kalan yer artık uydurulmuyor. Önceki eventSeatsLeft() tarih metninin karma
+   değerinden bir "son N yer" sayısı üretiyordu; hiçbir satışla ilgisi
+   yoktu ve dolu durumu hiç oluşmuyordu. Kalan yer veri kapısının
+   kontenjan cevabından geliyor (MolaVeri.musaitlik). Cevabın kendisi ve
+   hesap tests/veri-kapisi.test.js'te; burada sayfanın onu kullandığı
+   ölçülüyor. */
+describe('kontenjan', () => {
+  const kontenjanFn = () => sayfaJs.match(/function syncSeats\(hesap\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('karma değerden kalan yer üreten fonksiyon yok', () => {
+    expect(veriJs).not.toMatch(/function \w*(seatsLeft|SeatsLeft|roomsLeft)\(/);
+    expect(sayfaJs).not.toMatch(/(seatsLeft|SeatsLeft|roomsLeft)\(/);
   });
 
-  it('ayni gecenin iki blogu ayrisiyor', () => {
-    expect(eventSeatsLeft('2026-10-03', 'orta', 40))
-      .not.toBe(eventSeatsLeft('2026-10-03', 'ust', 40));
+  it('kayıt ve kalan yer veri kapısından', () => {
+    expect(sayfaJs).toMatch(/MolaVeri\.urun\('event',\s/);
+    expect(sayfaJs).not.toMatch(/resolveEvent\(/);
+    expect(sayfaJs).toContain("MolaVeri.musaitlik('event', ");
+    expect(kontenjanFn()).toContain('kontenjanDurumu(');
   });
 
-  it('sonuc kapasiteyi asmiyor', () => {
-    etkinlik.categories.forEach(k => {
-      const kalan = eventSeatsLeft('2026-10-10', k.id, 40);
-      expect(kalan).toBeGreaterThan(0);
-      expect(kalan).toBeLessThanOrEqual(40);
-    });
+  it('dolu tarih takvimde kalıyor ama seçilemiyor', () => {
+    const fn = sayfaJs.match(/function dateChipsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('tarihDoluMu(musaitlik, ');
+    expect(fn).toContain('is-dolu');
+    expect(fn).toContain('disabled');
+  });
+
+  it('dolu veya yetmeyen kontenjanda rezervasyon düğmeleri pasif', () => {
+    const fn = kontenjanFn();
+    expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
+    expect(fn).toContain('dugme.disabled = !!satisEngeli');
+    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+  });
+
+  it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
+    expect(kontenjanFn()).toContain("el.hidden = durum.durum === 'bilinmiyor'");
+    expect(readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8'))
+      .toContain('.tour-seats[hidden] { display: none; }');
+  });
+
+  it('her sayfa veri kapısını kendi betiğinden önce yüklüyor', () => {
+    for (const s of sayfalar) {
+      const yer = (ad) => s.html.indexOf('assets/js/' + ad + '"');
+      expect(yer('taxonomy-data.js'), s.slug).toBeGreaterThan(-1);
+      expect(yer('inventory-data.js'), s.slug).toBeGreaterThan(yer('taxonomy-data.js'));
+      expect(yer('data-gateway.js'), s.slug).toBeGreaterThan(yer('inventory-data.js'));
+      expect(yer('event-page.js'), s.slug).toBeGreaterThan(yer('data-gateway.js'));
+    }
   });
 });
 

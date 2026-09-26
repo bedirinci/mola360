@@ -253,6 +253,8 @@
   color: var(--text-muted);
 }
 .etk-kategori-kalan strong { color: var(--text); font-weight: 700; }
+/* Kontenjan cevabı gelmeden satır görünmüyor (display:flex [hidden]'ı ezmesin). */
+.etk-kategori-kalan[hidden] { display: none; }
 .etk-kategori-kalan .icon { width: 15px; height: 15px; color: var(--text-faint); }
 .etk-kategori-kalan.is-low { color: #C2410C; }
 .etk-kategori-kalan.is-low strong { color: #C2410C; }

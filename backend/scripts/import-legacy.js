@@ -31,6 +31,10 @@ const OTEL_VERI     = require(veriYolu('hotel-data.js'));
 const AKTIVITE_VERI = require(veriYolu('activity-data.js'));
 const ETKINLIK_VERI = require(veriYolu('event-data.js'));
 const MEKAN_VERI    = require(veriYolu('venue-data.js'));
+/* Sınıflandırmanın ana verisi: bölge, şehir, kategori, tema, koleksiyon,
+   liste sayfası. Ürün kayıtları buna slug ile bağlanıyor
+   (docs/veri-sozlesmesi.md bölüm 5). */
+const TAKSONOMI     = require(veriYolu('taxonomy-data.js'));
 
 /* ---------------- rapor ----------------
    Her aktarılan alan ve aktarılamayan her alan buraya yazılıyor. */
@@ -56,7 +60,11 @@ const TR_HARF = { 'ç':'c','Ç':'c','ğ':'g','Ğ':'g','ı':'i','İ':'i','ö':'o'
 function slugla(v) {
   return metin(v).replace(/[çÇğĞıİöÖşŞüÜâîû]/g, (h) => TR_HARF[h] || h)
     .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80)
+    /* Kesilen yer bir tirenin üstüne denk gelirse sonda tire kalıyordu ve
+       kayıt is_slug() kısıtına takılıyordu. Ön yüzdeki slugOlustur ile
+       aynı kural (tests/slug.test.js ikisini karşılaştırıyor). */
+    .replace(/-+$/g, '');
 }
 
 /* ---------------- medya ----------------
@@ -124,8 +132,111 @@ async function medyaAktar(c) {
   return idler;
 }
 
+/* ---------------- sınıflandırma ana verisi ----------------
+   taxonomy-data.js tek kaynak. Göç her çalıştığında ana veriyi ondan
+   YENİLİYOR (upsert): adı değişen bir kategori veritabanında eski adıyla
+   kalmasın. Silinen kayıt silinmiyor — bir ürün hâlâ ona bağlı olabilir;
+   yönetim panelinin işi. */
+async function taksonomiAktar(c, medya) {
+  const T = TAKSONOMI;
+
+  for (const [i, b] of T.TAXONOMY_REGIONS.entries()) {
+    await c.query(
+      `INSERT INTO regions (slug, name, position, abroad) VALUES ($1,$2,$3,$4)
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, position = EXCLUDED.position,
+                                         abroad = EXCLUDED.abroad`,
+      [b.slug, b.name, i, !!b.abroad]);
+    say('regions');
+  }
+  for (const s of T.TAXONOMY_CITIES) {
+    await c.query(
+      `INSERT INTO cities (slug, name, region_id)
+       VALUES ($1,$2,(SELECT id FROM regions WHERE slug = $3))
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, region_id = EXCLUDED.region_id`,
+      [s.slug, s.name, s.region]);
+    say('cities');
+  }
+  esle('taxonomy-data.js · bölge/şehir', 'regions (+abroad) / cities');
+
+  /* Kategoriler iki geçişte: önce hepsi, sonra üst kategori bağı. Tek
+     geçişte alt kategori üstünden önce gelirse parent_id çözülemezdi. */
+  const kategoriler = new Map();
+  for (const [i, k] of T.TAXONOMY_CATEGORIES.entries()) {
+    const { rows } = await c.query(
+      `INSERT INTO categories (content_type, slug, name, name_short, name_plural, position, in_menu)
+       VALUES ($1,$2,$3,$4,$3,$5,$6)
+       ON CONFLICT (content_type, slug) DO UPDATE
+         SET name = EXCLUDED.name, name_short = EXCLUDED.name_short,
+             name_plural = EXCLUDED.name_plural, position = EXCLUDED.position,
+             in_menu = EXCLUDED.in_menu
+       RETURNING id`,
+      [k.type, k.slug, k.name, k.nameShort, i, k.menu !== false]);
+    kategoriler.set(k.type + '|' + k.slug, rows[0].id);
+    say('categories');
+  }
+  for (const k of T.TAXONOMY_CATEGORIES) {
+    await c.query('UPDATE categories SET parent_id = $1 WHERE id = $2',
+      [k.parent ? kategoriler.get(k.type + '|' + k.parent) : null, kategoriler.get(k.type + '|' + k.slug)]);
+  }
+  esle('taxonomy-data.js · kategoriler', 'categories (+parent_id, in_menu)');
+
+  const temalar = new Map();
+  for (const [i, t] of T.TAXONOMY_THEMES.entries()) {
+    const { rows } = await c.query(
+      `INSERT INTO themes (slug, name, media_id, position) VALUES ($1,$2,$3,$4)
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, media_id = EXCLUDED.media_id,
+                                         position = EXCLUDED.position
+       RETURNING id`,
+      [t.slug, t.name, medya.get(t.img) || null, i]);
+    temalar.set(t.slug, rows[0].id);
+    say('themes');
+    if (!medya.get(t.img)) rapor.uyarilar.push(`Tema görseli sözlükte yok: ${t.slug} (${t.img})`);
+  }
+  esle('taxonomy-data.js · temalar', 'themes');
+
+  const koleksiyonlar = new Map();
+  for (const [i, k] of T.TAXONOMY_COLLECTIONS.entries()) {
+    const { rows } = await c.query(
+      `INSERT INTO collections (slug, name, subtitle, media_id, mode, rule, position)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7)
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, subtitle = EXCLUDED.subtitle,
+         media_id = EXCLUDED.media_id, mode = EXCLUDED.mode, rule = EXCLUDED.rule,
+         position = EXCLUDED.position
+       RETURNING id`,
+      [k.slug, k.name, metin(k.text), medya.get(k.img) || null, k.mode,
+       JSON.stringify(k.mode === 'rule' ? (k.rule || {}) : {}), i]);
+    koleksiyonlar.set(k.slug, { id: rows[0].id, mode: k.mode });
+    say('collections');
+  }
+  esle('taxonomy-data.js · koleksiyonlar', 'collections (mode, rule)');
+
+  for (const [i, l] of T.TAXONOMY_LISTINGS.entries()) {
+    await c.query(
+      `INSERT INTO listing_pages (base, slug, name, filter, in_menu, position)
+       VALUES ($1,$2,$3,$4::jsonb,$5,$6)
+       ON CONFLICT (base, slug) DO UPDATE SET name = EXCLUDED.name, filter = EXCLUDED.filter,
+         in_menu = EXCLUDED.in_menu, position = EXCLUDED.position`,
+      [l.base, l.slug, l.name, JSON.stringify(l.filter || {}), l.menu !== false, i]);
+    say('listing_pages');
+  }
+  esle('taxonomy-data.js · liste sayfaları', 'listing_pages');
+
+  return { kategoriler, temalar, koleksiyonlar };
+}
+
 /* ---------------- ana veri ---------------- */
 async function bolgeSehirCoz(c, kayit) {
+  /* Şehir kaydın taxonomy.city alanından; bölge şehirden türetiliyor.
+     Kayıttaki "region: 'Ege'" yalnızca görüntü metni (ön yüz testi
+     taksonomiyle aynı olduğunu ölçüyor). */
+  const sehirSlug = kayit.taxonomy && kayit.taxonomy.city;
+  if (sehirSlug) {
+    const { rows } = await c.query(
+      'SELECT id, region_id FROM cities WHERE slug = $1', [sehirSlug]);
+    if (rows[0]) return { bolgeId: rows[0].region_id, sehirId: rows[0].id };
+    rapor.aktarilmayan.push({ tur: kayit.type, slug: kayit.slug, alan: 'taxonomy.city',
+      sebep: `Şehir ana veride yok: ${sehirSlug}` });
+  }
   const bolgeAdi = metin(kayit.region);
   let bolgeId = null;
   if (bolgeAdi) {
@@ -143,20 +254,61 @@ async function bolgeSehirCoz(c, kayit) {
   return { bolgeId, sehirId };
 }
 
-async function kategoriCoz(c, tip, kayit) {
-  const ad = metin(kayit.category);
-  if (!ad) return null;
-  const { rows } = await c.query(
-    `INSERT INTO categories (content_type, slug, name, name_short, name_plural, home_anchor)
-     VALUES ($1,$2,$3,$4,$5,$6)
-     ON CONFLICT (content_type, slug) DO UPDATE
-       SET name = EXCLUDED.name, name_short = EXCLUDED.name_short,
-           name_plural = EXCLUDED.name_plural, home_anchor = EXCLUDED.home_anchor
-     RETURNING id`,
-    [tip, slugla(ad), ad, metin(kayit.categoryShort), metin(kayit.categoryPlural),
-     metin(kayit.categoryAnchor)]);
-  say('categories');
-  return rows[0].id;
+/* Ana kategori: taxonomy.categories'in ilki. Eskiden kayıttaki
+   "category: 'Günübirlik Tur'" görüntü metninden bir kategori
+   üretiliyordu; o metin bir kategori değil tur tipiydi (tours.kind). */
+function anaKategoriId(tip, kayit, taks) {
+  const liste = (kayit.taxonomy && kayit.taxonomy.categories) || [];
+  return liste.length ? (taks.kategoriler.get(tip + '|' + liste[0]) || null) : null;
+}
+
+/* taxonomy alanının bağ tabloları. Ana veride karşılığı olmayan slug
+   SESSİZCE ATLANMIYOR: rapora düşüyor ve "aktarılmayan alan" sayılıyor. */
+async function siniflandirmaYaz(c, id, tip, k, taks) {
+  const t = k.taxonomy || {};
+  const eksik = (alan, deger) => rapor.aktarilmayan.push({ tur: tip, slug: k.slug,
+    alan: 'taxonomy.' + alan, sebep: `Ana veride yok: ${deger}` });
+
+  for (const [i, s] of (t.categories || []).entries()) {
+    const kid = taks.kategoriler.get(tip + '|' + s);
+    if (!kid) { eksik('categories', s); continue; }
+    await c.query(
+      'INSERT INTO content_categories (content_id, category_id, position) VALUES ($1,$2,$3)',
+      [id, kid, i]);
+    say('content_categories');
+  }
+  for (const [i, s] of (t.themes || []).entries()) {
+    const tid = taks.temalar.get(s);
+    if (!tid) { eksik('themes', s); continue; }
+    await c.query(
+      'INSERT INTO content_themes (content_id, theme_id, position) VALUES ($1,$2,$3)',
+      [id, tid, i]);
+    say('content_themes');
+  }
+  for (const [i, s] of (t.collections || []).entries()) {
+    const kol = taks.koleksiyonlar.get(s);
+    if (!kol) { eksik('collections', s); continue; }
+    /* Kurala göre koleksiyona elle üye yazılamaz; veritabanı da reddeder
+       (019, content_collections_manual_guard). */
+    if (kol.mode !== 'manual') {
+      rapor.aktarilmayan.push({ tur: tip, slug: k.slug, alan: 'taxonomy.collections',
+        sebep: `${s} kurala göre çalışıyor, elle üye yazılamaz` });
+      continue;
+    }
+    await c.query(
+      'INSERT INTO content_collections (content_id, collection_id, position) VALUES ($1,$2,$3)',
+      [id, kol.id, i]);
+    say('content_collections');
+  }
+  const ozellik = t.facets || {};
+  for (const [anahtar, facet] of [['transport', 'transport'], ['departFrom', 'depart_from']]) {
+    for (const deger of (ozellik[anahtar] || [])) {
+      await c.query(
+        'INSERT INTO content_facets (content_id, facet, value) VALUES ($1,$2,$3)',
+        [id, facet, deger]);
+      say('content_facets');
+    }
+  }
 }
 
 async function konumYaz(c, contentId, nesne, rol, sehirId) {
@@ -309,7 +461,7 @@ async function turDetay(c, id, k, medya, kullanilan) {
      kalıyor: fiyat bilgisini bir ad eşleşmesine feda etmek yanlış olur. */
   for (const [i, sehir] of (k.departureCities || []).entries()) {
     const { rows: cr } = await c.query('SELECT id FROM cities WHERE slug = $1',
-      [slugla(sehir.label)]);
+      [metin(sehir.city) || slugla(sehir.label)]);
     await c.query(
       `INSERT INTO tour_departure_cities (content_id, code, city_id, label, fee, note, position)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
@@ -515,16 +667,21 @@ const DETAY = { tour: turDetay, hotel: otelDetay, activity: aktiviteDetay,
                 event: etkinlikDetay, venue: mekanDetay };
 
 /* ---------------- tek kayıt ---------------- */
-async function kayitAktar(c, tip, anahtar, k, medya, yoneticiId) {
+async function kayitAktar(c, tip, anahtar, k, medya, taks, yoneticiId) {
   /* Kaydın BÜTÜN üst seviye anahtarları. İşlenen her biri `kullanilan`a
      giriyor; sonunda eksik kalanlar rapora düşüyor. Göçün "hiçbir alanı
      sessizce kaybetme" sözü bu kümeyle ölçülüyor. */
   const tumAlanlar = new Set(Object.keys(k));
   const kullanilan = new Set(['slug', 'type', 'category', 'categoryShort',
     'categoryPlural', 'categoryAnchor']);
+  /* category* ve region artık TÜRETİLMİŞ görüntü metni: kaynakları
+     taxonomy ve tours.kind. Ön yüz testi (tests/veri-kapisi.test.js)
+     ikisinin ayrışmadığını ölçüyor; burada ayrıca saklanmıyor. */
+  esle('*.category/categoryShort/categoryPlural/categoryAnchor/region',
+    'türetilmiş görüntü (taxonomy + tours.kind)');
 
   const { bolgeId, sehirId } = await bolgeSehirCoz(c, k);
-  const kategoriId = await kategoriCoz(c, tip, k);
+  const kategoriId = anaKategoriId(tip, k, taks);
   const kart = k.card || {};
 
   /* Mevcut kayıt varsa güncelleniyor; alt kayıtlar silinip yeniden
@@ -532,32 +689,44 @@ async function kayitAktar(c, tip, anahtar, k, medya, yoneticiId) {
   const { rows } = await c.query(
     `INSERT INTO content (type, slug, status, title, tagline, category_id, area,
        region_id, city_id, product_code, card_media_id, card_title, card_meta,
-       card_badges, published_at, created_by, updated_by)
-     VALUES ($1,$2,'published',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,now(),$14,$14)
+       card_badges, currency, published_at, created_by, updated_by)
+     VALUES ($1,$2,'published',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$15,now(),$14,$14)
      ON CONFLICT (type, slug) WHERE deleted_at IS NULL DO UPDATE
        SET title = EXCLUDED.title, tagline = EXCLUDED.tagline,
            category_id = EXCLUDED.category_id, area = EXCLUDED.area,
            region_id = EXCLUDED.region_id, city_id = EXCLUDED.city_id,
            product_code = EXCLUDED.product_code, card_media_id = EXCLUDED.card_media_id,
            card_title = EXCLUDED.card_title, card_meta = EXCLUDED.card_meta,
-           card_badges = EXCLUDED.card_badges, updated_by = EXCLUDED.updated_by
+           card_badges = EXCLUDED.card_badges, currency = EXCLUDED.currency,
+           updated_by = EXCLUDED.updated_by
      RETURNING id`,
     [tip, k.slug || anahtar, metin(k.title), metin(k.tagline), kategoriId,
      metin(k.area), bolgeId, sehirId, metin(k.code) || null,
      medya.get(kart.img) || null, metin(kart.title), metin(kart.meta1),
-     JSON.stringify(kart.badges || []), yoneticiId]);
+     JSON.stringify(kart.badges || []), yoneticiId, metin(k.currency) || 'TRY']);
   const id = rows[0].id;
-  ['title', 'tagline', 'area', 'region', 'code', 'card'].forEach(a => kullanilan.add(a));
+  ['title', 'tagline', 'area', 'region', 'code', 'card', 'currency'].forEach(a => kullanilan.add(a));
+  esle('*.currency', 'content.currency');
   esle('*.title/tagline/area/region/code', 'content.*');
   esle('*.card.{img,title,meta1,badges}', 'content.card_*');
 
   for (const t of ['content_blocks', 'content_media', 'content_tags', 'content_faqs',
-                   'content_locations', 'content_addons', 'reviews', 'content_relations']) {
+                   'content_locations', 'content_addons', 'reviews', 'content_relations',
+                   'content_categories', 'content_themes', 'content_collections',
+                   'content_facets']) {
     const sutun = t === 'content_relations' ? 'from_content_id' : 'content_id';
     await c.query(`DELETE FROM ${t} WHERE ${sutun} = $1`, [id]);
   }
 
   await bloklariYaz(c, id, k, kullanilan, tip);
+
+  // --- sınıflandırma ---
+  await siniflandirmaYaz(c, id, tip, k, taks);
+  kullanilan.add('taxonomy');
+  esle('*.taxonomy.categories[]', 'content_categories (+ content.category_id = ilki)');
+  esle('*.taxonomy.themes[] / collections[]', 'content_themes / content_collections');
+  esle('*.taxonomy.facets', 'content_facets');
+  esle('*.taxonomy.city', 'content.city_id (+ region_id şehirden)');
 
   // --- galeri ---
   for (const [i, g] of (k.gallery || []).entries()) {
@@ -651,15 +820,30 @@ async function kayitAktar(c, tip, anahtar, k, medya, yoneticiId) {
   }
   esle('*.meeting/location/venue', 'locations + content_locations');
 
-  // --- SEO iskeleti ---
+  // --- SEO ---
+  /* Kaydın seo alanı sayfa kabuğundaki başlıkla birebir aynı (ön yüz
+     testi ölçüyor). Açıklamadaki {fiyat} yer tutucusu SAYFA ÜRETİLİRKEN
+     güncel başlangıç fiyatıyla dolduruluyor; fiyat metne gömülseydi fiyat
+     değişince açıklama eskirdi. Paylaşım görseli seo.ogImage anahtarından,
+     yoksa galerinin ilk görselinden. */
+  const seo = k.seo || {};
+  const paylasimGorseli = medya.get(seo.ogImage || (k.gallery && k.gallery[0] && k.gallery[0].key))
+    || medya.get(kart.img) || null;
   await c.query(
     `INSERT INTO content_seo (content_id, seo_title, meta_description, canonical_url, og_title,
        og_description, og_media_id, schema_type)
-     VALUES ($1,$2,$3,$4,$2,$3,$5,'')
-     ON CONFLICT (content_id) DO UPDATE SET seo_title = EXCLUDED.seo_title`,
-    [id, metin(k.title), metin(k.tagline),
+     VALUES ($1,$2,$3,$4,$5,$6,$7,'')
+     ON CONFLICT (content_id) DO UPDATE SET seo_title = EXCLUDED.seo_title,
+       meta_description = EXCLUDED.meta_description, canonical_url = EXCLUDED.canonical_url,
+       og_title = EXCLUDED.og_title, og_description = EXCLUDED.og_description,
+       og_media_id = EXCLUDED.og_media_id`,
+    [id, metin(seo.title) || metin(k.title), metin(seo.description) || metin(k.tagline),
      `https://bedirinci.github.io/mola360/${TIP_DIZIN[tip]}/${k.slug}/`,
-     medya.get(kart.img) || null]);
+     metin(seo.ogTitle) || metin(seo.title) || metin(k.title),
+     metin(seo.ogDescription) || metin(seo.description) || metin(k.tagline),
+     paylasimGorseli]);
+  kullanilan.add('seo');
+  esle('*.seo.{title,description,ogTitle,ogDescription,ogImage}', 'content_seo');
 
   // --- türe özgü ---
   await c.query(`DELETE FROM ${TIP_TABLO[tip]} WHERE content_id = $1`, [id]);
@@ -752,10 +936,11 @@ async function calistir() {
 
   await transaction(async (c) => {
     const medya = await medyaAktar(c);
+    const taks = await taksonomiAktar(c, medya);
     const aktarilan = [];
     for (const [tip, kume] of kumeler) {
       for (const [anahtar, k] of Object.entries(kume || {})) {
-        const id = await kayitAktar(c, tip, anahtar, k, medya, yoneticiId);
+        const id = await kayitAktar(c, tip, anahtar, k, medya, taks, yoneticiId);
         aktarilan.push({ tip, id, k });
         say('content');
       }

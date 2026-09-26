@@ -598,9 +598,14 @@ tarih listesi açılıp kapanırken oluyor.
 besleniyor; test satır toplamının `total` ile aynı olduğunu doğruluyor,
 yani ikisi ayrışamıyor.
 
-**Kalan kontenjan tarihten türetiliyor** (`seatsLeft`). Rastgele sayı
-kullanılsa rakam her sayfa yenilemesinde zıplar ve "acele et" mesajı
-inandırıcılığını kaybeder. Aynı tarih her zaman aynı sayıyı verir.
+**Kalan kontenjan veri kapısından geliyor** (`MolaVeri.musaitlik`,
+docs/veri-sozlesmesi.md bölüm 6). Önceki sürüm sayıyı tarih metninin karma değerinden üretiyordu
+(`seatsLeft`): hiçbir satışla ilgisi olmayan bir "son N yer" yazısıydı
+ve kalkış hiç dolmuyordu. Artık kalan yer kapasiteden satılanı düşerek
+hesaplanıyor (bugün örnek rezervasyonlardan, backend gelince gerçek
+rezervasyonlardan). Dolu kalkış takvimde kalıyor ama seçilemiyor; seçili
+kalkışta istenen kişiye yer yetmiyorsa rezervasyon düğmesi pasifleşiyor
+ve sebebi kontenjan satırında yazıyor.
 
 **Galeri hücreleri tek düz liste.** Masaüstünde ızgara (ilk kare iki satır
 kaplar, beşinciden sonrası gizlenir), mobilde tam genişlikte yatay

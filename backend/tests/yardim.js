@@ -37,7 +37,8 @@ export async function rolleriKur() {
 export async function temizle() {
   await sorgu(`TRUNCATE admin_users, admin_sessions, login_attempts, content,
                         customers, media, audit_logs, categories, regions, cities,
-                        tags, locations, bookings, inventory CASCADE`);
+                        tags, locations, bookings, inventory, themes, collections,
+                        listing_pages CASCADE`);
 }
 
 export async function yoneticiOlustur({ email, sifre = 'CokGucluSifre123', rol = 'ADMIN' } = {}) {
