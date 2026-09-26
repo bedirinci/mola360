@@ -26,6 +26,13 @@
 
 const LSP_NODE = (typeof require === 'function' && typeof module !== 'undefined' && module.exports);
 const LSP_MOTOR = LSP_NODE ? require('./listing-engine.js') : null;
+const LSP_REZ = LSP_NODE ? require('./booking-engine.js') : null;
+/* Rezervasyon motoru (kampanyalar sayfası): Node'da modülden. */
+function lspRez(ad) {
+  if (LSP_REZ && typeof LSP_REZ[ad] === 'function') return LSP_REZ[ad];
+  const kapsam = (typeof globalThis !== 'undefined') ? globalThis : null;
+  return kapsam && typeof kapsam[ad] === 'function' ? kapsam[ad] : null;
+}
 
 /* Motor fonksiyonları: Node'da modülden, tarayıcıda üst kapsamdan. */
 function lspMotor(ad) {
@@ -570,6 +577,52 @@ function lspYakinda(kok, model) {
     });
 }
 
+/* ---------------- kampanyalar ----------------
+   /kampanyalar/ — yürürlükteki kampanyalar, kurallarıyla birlikte
+   (booking-engine.js, REZ_KAMPANYALAR). Sayfadaki koşul metni ile ödeme
+   adımında uygulanan kural aynı kayıttan: ikisi ayrışamaz. */
+function lspKampanyaKosullari(k, bugun) {
+  const para = lspRez('rezPara') || (n => n + ' TL');
+  const tarih = lspRez('rezTarihMetni') || (x => x);
+  const liste = [];
+  if (k.uyeOzel) liste.push('Üyelere özel; kod e-postayla gelir');
+  else if (k.tur === 'kupon') liste.push('Kupon kodu: ' + (k.kuponKodu || '—') + ' (ödeme adımındaki alana yazılır)');
+  else liste.push('Ödeme adımında kendiliğinden uygulanır');
+  const kosul = k.kosul || {};
+  if (kosul.enAzGunOnce) liste.push('Kalkışa en az ' + kosul.enAzGunOnce + ' gün kala');
+  if (kosul.enAzTutar) liste.push('En az ' + para(kosul.enAzTutar) + ' tutarında');
+  if (kosul.cumaCumartesi) liste.push('Cuma ve cumartesi gecesini kapsayan konaklamada');
+  const ind = k.indirim || {};
+  if (ind.enFazla) liste.push('En fazla ' + para(ind.enFazla));
+  liste.push(k.bitis ? 'Son gün: ' + tarih(k.bitis) : 'Süre sınırı yok');
+  return liste;
+}
+
+function lspKampanyalarMarkup(kampanyalar, bugun) {
+  return '<main class="lst-page" id="lstPage">'
+    + lspKirintiMarkup([{ name: 'Anasayfa', path: '' }, { name: 'Kampanyalar', path: 'kampanyalar' }])
+    + '<header class="lst-head"><h1>Kampanyalar</h1>'
+    + '<p class="lst-summary">Yürürlükteki indirimler ve koşulları. Otomatik indirimler ödeme adımında kendiliğinden düşer; en avantajlı olanı uygulanır, kupon ayrıca eklenir.</p></header>'
+    + (kampanyalar.length
+      ? '<div class="kmp-grid">' + kampanyalar.map(k => '<article class="kmp-card">'
+        + '<span class="kmp-badge">' + lspKacis(k.etiket || 'Kampanya') + (k.kalanGun ? ' · Son ' + k.kalanGun + ' gün' : '') + '</span>'
+        + '<h2>' + lspKacis(k.ad) + '</h2>'
+        + '<p>' + lspKacis(k.aciklama || '') + '</p>'
+        + '<ul class="kmp-rules">' + lspKampanyaKosullari(k, bugun).map(x => '<li>' + lspKacis(x) + '</li>').join('') + '</ul>'
+        + (k.sayfa ? '<a class="kmp-link" href="' + lspHref(k.sayfa) + '">Kapsamdaki ürünler</a>' : '')
+        + '</article>').join('') + '</div>'
+      : '<p class="lst-summary">Şu an yürürlükte kampanya yok.</p>')
+    + '</main>';
+}
+
+function lspKampanyalarKur(kok, bugun) {
+  const liste = (typeof MolaVeri !== 'undefined' && MolaVeri.kampanyalar) ? MolaVeri.kampanyalar(bugun) : [];
+  lspMetaYaz({ title: 'Kampanyalar — mola360', description: 'Tur, otel ve etkinliklerde yürürlükteki indirimler ve koşulları.',
+    noindex: false, canonical: lspSiteAdresi() + 'kampanyalar/' });
+  kok.innerHTML = lspMobilBaslikMarkup('Kampanyalar', liste.length + ' kampanya', '') + lspKampanyalarMarkup(liste, bugun);
+  return null;
+}
+
 /* ---------------- arama sayfası ----------------
    /arama/?q=kapadokya — liste şablonu, temel süzgeç metin araması
    (veri kapısı: kapiAramaPuani). Sorgu yoksa ya da sonuç çıkmazsa
@@ -722,6 +775,10 @@ function lspBaslat() {
   }
 
   if (adres.kind === 'search') return lspAramaKur(kok, bugun);
+  /* Ödeme ve onay: checkout-page.js. Yüklenmemişse bulunamadı. */
+  if (adres.kind === 'checkout') return typeof odmKur === 'function' ? odmKur(kok, bugun) : lspBulunamadi(kok, goreli, bugun);
+  if (adres.kind === 'confirmation') return typeof odmOnayKur === 'function' ? odmOnayKur(kok) : lspBulunamadi(kok, goreli, bugun);
+  if (adres.kind === 'campaigns') return lspKampanyalarKur(kok, bugun);
   if (adres.kind === 'week') return lspHaftaKur(kok, adres, bugun);
 
   const model = MolaVeri.sayfaModeli(adres, bugun);
@@ -765,6 +822,8 @@ if (typeof module !== 'undefined' && module.exports) {
     lspSiralamaMarkup,
     lspKartlarMarkup,
     lspYapisalVeri,
-    lspGeriYolu
+    lspGeriYolu,
+    lspKampanyaKosullari,
+    lspKampanyalarMarkup
   };
 }

@@ -31,6 +31,7 @@ const KAPI_TAKSONOMI = kapiModul('./taxonomy-data.js');
 const KAPI_ENVANTER = kapiModul('./inventory-data.js');
 const KAPI_ORNEK = kapiModul('./sample-catalog-data.js');
 const KAPI_MOTOR = kapiModul('./listing-engine.js');
+const KAPI_REZ = kapiModul('./booking-engine.js');
 
 /* Kanonik adreslerin kökü. Alan adı (mola360.com) hazır olduğunda tek
    değişecek satır. */
@@ -432,9 +433,12 @@ function kapiFiltreyeUyar(kayit, filtre, bugun) {
     if (kayit.type === 'stay' && (Number(kayit.nights) || 0) > 2) return false;
   }
   if (f.discounted && !kapiOzet(kayit, bugun).discounted) return false;
-  /* Erken rezervasyon indirimi fiyat kurallarıyla gelecek (4. adım);
-     bugün hiçbir ürünün böyle bir kuralı yok. */
-  if (f.earlyBooking) return false;
+  /* Erken rezervasyon: yürürlükte bir erken rezervasyon kampanyasının
+     kapsamında olan ürün (booking-engine.js, REZ_KAMPANYALAR). */
+  if (f.earlyBooking) {
+    const erken = kapiRezFn('rezErkenRezervasyonVar');
+    if (!erken || !erken(tip, kayit, bugun)) return false;
+  }
   if (f.q && !kapiAramaPuani(kayit, f.q)) return false;
   return true;
 }
@@ -718,6 +722,11 @@ function kapiAdres(yol) {
     return kayit ? { kind: 'product', type: detayTipi, slug: kayit.slug, path: temiz } : null;
   }
   if (temiz === 'arama') return { kind: 'search', path: temiz };
+  /* Ödeme ve onay ekranları: ürün ve seçim adres satırında
+     (?urun=tur/efes-sirince&tarih=…, ?kod=M360-…). Dizine girmezler. */
+  if (temiz === 'rezervasyon') return { kind: 'checkout', path: temiz };
+  if (temiz === 'rezervasyon/onay') return { kind: 'confirmation', path: temiz };
+  if (temiz === 'kampanyalar') return { kind: 'campaigns', path: temiz };
   /* Menüdeki iki ürün sayfası: taksonomide "içerik dışı" duruyorlar ama
      ürün listeliyorlar. */
   if (temiz === 'yeni-eklenenler') return { kind: 'new', path: temiz };
@@ -854,7 +863,10 @@ function kapiSayfaModeli(adres, bugun) {
       temel: null,
       kirinti: [ana, { name: kapiMenuEtiketi(adres.path) || 'Bu Hafta', path: adres.path }]
     };
-  } else if (adres.kind === 'static') {
+  } else if (adres.kind === 'checkout' || adres.kind === 'confirmation') {
+    const baslik = adres.kind === 'checkout' ? 'Ödeme' : 'Rezervasyon onayı';
+    m = { baslik, tip: null, temel: null, kirinti: [ana, { name: baslik, path: adres.path }] };
+  } else if (adres.kind === 'static' || adres.kind === 'campaigns') {
     const b = kapiMenuDugumu(adres.path, true);
     const etiket = b ? b.dugum.label : adres.path;
     m = {
@@ -1125,6 +1137,179 @@ function kontenjanDurumu(kalan, istenen, azEsigi) {
   return { durum: 'var', kalan: k };
 }
 
+/* ---------------- rezervasyon ----------------
+   Hesap booking-engine.js'te (saf). Kapı, ürünü ve günün kurunu verip
+   teklifi alıyor, kontenjanı soruyor ve rezervasyonu yazıyor.
+
+   Backend geldiğinde:
+     fiyatTeklifi        POST /api/teklif        (aynı girdi, aynı cevap)
+     rezervasyonOlustur  POST /api/rezervasyon   → ödeme sağlayıcısının
+                         3D Secure sayfası → dönüşte onay
+     rezervasyon(kod)    GET  /api/rezervasyon/:kod
+   Bugün rezervasyon BU TARAYICIDA tutuluyor (localStorage) ve kart
+   çekimi yok: onay ekranı bunu açıkça söylüyor. Kimlik numarası ve kart
+   bilgisi hiçbir yere yazılmıyor. */
+function kapiRezFn(ad) {
+  return kapiFn(ad, KAPI_REZ, typeof globalThis !== 'undefined' ? globalThis[ad] : undefined);
+}
+function kapiRezDeger(ad) {
+  if (KAPI_REZ && KAPI_REZ[ad] !== undefined) return KAPI_REZ[ad];
+  try {
+    /* const tablolar globalThis'te değil; betik kapsamında. */
+    return ({ REZ_KAMPANYALAR: typeof REZ_KAMPANYALAR !== 'undefined' ? REZ_KAMPANYALAR : null,
+      REZ_TAKSIT: typeof REZ_TAKSIT !== 'undefined' ? REZ_TAKSIT : null,
+      REZ_KAPORA: typeof REZ_KAPORA !== 'undefined' ? REZ_KAPORA : null })[ad] || null;
+  } catch (_) { return null; }
+}
+
+/* Kalan yer: teklifin kontenjan isteği ({ item, date, time, cikis,
+   istenen }) kontenjan cevabında aranıyor. Satır yoksa "bilinmiyor" —
+   satış engellenmez (sözleşme bölüm 6). */
+function kapiKontenjanKontrol(tip, slug, istek, bugun) {
+  if (!istek || !istek.item || !istek.date) return Promise.resolve({ durum: 'bilinmiyor', kalan: null });
+  const son = istek.cikis ? kapiGunEkle(istek.cikis, -1) : istek.date;
+  return kapiMusaitlik(tip, slug, { from: istek.date, to: son, today: bugun }).then(m => {
+    let kalan = null;
+    if (istek.cikis) kalan = konaklamaKalan(m, istek.item, istek.date, istek.cikis);
+    else {
+      const r = musaitlikKaydi(m, istek.item, istek.date, istek.time ? istek.time : undefined);
+      kalan = r ? r.remaining : null;
+    }
+    return kontenjanDurumu(kalan, istek.istenen, 3);
+  });
+}
+
+function kapiFiyatTeklifi(tip, slug, secim, secenek, bugun) {
+  return Promise.resolve().then(() => {
+    const teklifFn = kapiRezFn('rezTeklif');
+    const kayit = kapiUrun(tip, slug);
+    if (!teklifFn) return { tip, slug, satilabilir: false, hatalar: ['Ödeme adımı bu sayfada yüklenmedi.'] };
+    const gun = kapiISO(bugun || new Date());
+    const teklif = teklifFn(tip, kayit, secim, secenek, gun, { kur: kayit ? kapiKur(kayit.currency) : null,
+      simdi: bugun instanceof Date ? bugun : null });
+    if (!teklif.satilabilir || !teklif.kontenjan) return teklif;
+    return kapiKontenjanKontrol(tip, slug, teklif.kontenjan, gun).then(d => {
+      teklif.kontenjanDurumu = d;
+      if (d.durum === 'doldu') {
+        teklif.satilabilir = false;
+        teklif.hatalar.push('Seçilen tarih doldu. Ürün sayfasından başka bir tarih seçin.');
+      } else if (d.durum === 'yetersiz') {
+        teklif.satilabilir = false;
+        teklif.hatalar.push('Bu seçim için yalnızca ' + d.kalan + ' ' + (teklif.kontenjan.birim || 'yer') + ' kaldı.');
+      }
+      return teklif;
+    });
+  });
+}
+
+const KAPI_REZ_ANAHTAR = 'mola360.rezervasyonlar';
+const KAPI_REZ_BELLEK = [];
+function kapiRezOku() {
+  try {
+    if (typeof localStorage === 'undefined') return KAPI_REZ_BELLEK.slice();
+    const v = JSON.parse(localStorage.getItem(KAPI_REZ_ANAHTAR) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch (_) { return KAPI_REZ_BELLEK.slice(); }
+}
+function kapiRezYaz(liste) {
+  const kirp = liste.slice(0, 30);
+  KAPI_REZ_BELLEK.length = 0;
+  kirp.forEach(x => KAPI_REZ_BELLEK.push(x));
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(KAPI_REZ_ANAHTAR, JSON.stringify(kirp));
+  } catch (_) { /* kota ya da kapalı depo: bellekte kalır */ }
+}
+
+/* istek: { tip, slug, secim, secenek, form, beklenenTahsilat, bugun }
+   Cevap (Promise): { tamam: true, kod, rezervasyon } ya da
+   { tamam: false, hatalar: [{ alan, mesaj }], teklif }. Teklif yeniden
+   hesaplanıyor: ekranın gösterdiği tutar değiştiyse (kur, kampanya,
+   kontenjan) rezervasyon YAZILMIYOR, müşteri yeni tutarı görüyor. */
+function kapiRezervasyonOlustur(istek) {
+  const i = istek || {};
+  return kapiFiyatTeklifi(i.tip, i.slug, i.secim, i.secenek, i.bugun).then(teklif => {
+    const formHatalari = kapiRezFn('rezFormHatalari');
+    const hatalar = (teklif.hatalar || []).map(m => ({ alan: null, mesaj: m }))
+      .concat(teklif.satilabilir && formHatalari ? formHatalari(teklif, i.form) : []);
+    if (!hatalar.length && i.beklenenTahsilat !== undefined && Number(i.beklenenTahsilat) !== teklif.tahsilat) {
+      hatalar.push({ alan: null, mesaj: 'Tutar güncellendi. Yeni tutarı kontrol edip tekrar onaylayın.' });
+    }
+    if (hatalar.length) return { tamam: false, hatalar, teklif };
+
+    const liste = kapiRezOku();
+    const uret = kapiRezFn('rezKodUret');
+    let kod = uret();
+    while (liste.some(r => r.kod === kod)) kod = uret();
+    const f = i.form || {};
+    const il = f.iletisim || {};
+    const kayit = {
+      kod,
+      olusturma: new Date().toISOString(),
+      durum: 'odeme-bekliyor',
+      deneme: true,
+      tip: teklif.tip,
+      slug: teklif.slug,
+      baslik: teklif.baslik,
+      secim: teklif.secim,
+      ozet: teklif.ozet,
+      baslangic: teklif.baslangic,
+      paraBirimi: teklif.paraBirimi,
+      kur: teklif.kur,
+      satirlar: teklif.satirlar,
+      araToplam: teklif.araToplam,
+      araToplamTL: teklif.araToplamTL,
+      indirimler: teklif.indirimler,
+      toplam: teklif.toplam,
+      odeme: teklif.odeme,
+      taksit: { aile: teklif.taksit.aile, secilen: teklif.taksit.secilen },
+      tahsilat: teklif.tahsilat,
+      iptal: teklif.iptal,
+      iletisim: { ad: String(il.ad || '').trim(), soyad: String(il.soyad || '').trim(),
+        eposta: String(il.eposta || '').trim(), telefon: String(il.telefon || '').trim() },
+      /* Yalnızca ad ve yaş; kimlik numarası saklanmıyor. */
+      katilimcilar: (teklif.katilimcilar || []).map((s, n) => {
+        const k = (f.katilimcilar || [])[n] || {};
+        return { rol: s.rol, ad: s.adsiz ? '' : String(k.ad || '').trim(), soyad: s.adsiz ? '' : String(k.soyad || '').trim(),
+          yas: s.yas ? Number(k.yas) : null };
+      }),
+      fatura: f.fatura && f.fatura.tur === 'kurumsal'
+        ? { tur: 'kurumsal', unvan: String(f.fatura.unvan || '').trim() }
+        : { tur: 'bireysel' },
+      not: String(f.not || '').trim().slice(0, 500)
+    };
+    kapiRezYaz([kayit].concat(liste));
+    return { tamam: true, kod, rezervasyon: kayit };
+  });
+}
+
+function kapiRezervasyon(kod) {
+  const k = String(kod || '').trim().toUpperCase();
+  return Promise.resolve().then(() => kapiRezOku().find(r => r.kod === k) || null);
+}
+
+/* Yürürlükteki kampanyalar (sayfa yükü): kampanyalar sayfası, ana sayfa
+   bantları. kalanGun: bitişe bir haftadan az kaldıysa gün sayısı. */
+function kapiKampanyalar(bugun) {
+  const aktif = kapiRezFn('rezAktifKampanyalar');
+  const kalan = kapiRezFn('rezKalanGun');
+  if (!aktif) return [];
+  const gun = kapiISO(bugun || new Date());
+  return aktif(gun).map(k => Object.assign({}, k, { kalanGun: kalan ? kalan(k, gun) : null }));
+}
+
+/* Ödeme adresinden ürün ve seçim: ?urun=tur/efes-sirince&tarih=… */
+function kapiOdemeAdresiOku(sorgu) {
+  const oku = kapiRezFn('rezSecimOku');
+  const coz = kapiRezFn('rezUrunCoz');
+  if (!oku || !coz) return null;
+  const m = String(sorgu || '').match(/[?&]urun=([^&#]*)/);
+  let deger = m ? m[1] : '';
+  try { deger = decodeURIComponent(deger); } catch (_) { /* olduğu gibi */ }
+  const u = coz(deger);
+  if (!u || !kapiUrun(u.tip, u.slug)) return null;
+  return { tip: u.tip, slug: u.slug, secim: oku(u.tip, sorgu) };
+}
+
 /* ---------------- dışa açılan yüz ---------------- */
 const MolaVeri = {
   /* sayfa yükü (senkron) */
@@ -1158,9 +1343,19 @@ const MolaVeri = {
   listeSeo: kapiListeSeo,
   yuzeyTanimlari: kapiYuzeyTanimlari,
   listeSatiri: kapiListeSatiri,
+  /* rezervasyon (sayfa yükü) */
+  kampanyalar: kapiKampanyalar,
+  kartAileleri: () => ((kapiRezDeger('REZ_TAKSIT') || {}).aileler || []).slice(),
+  taksitTablosu: (tutar) => { const f = kapiRezFn('rezTaksitTablosu'); return f ? f(tutar) : null; },
+  odemeYolu: (tip, slug, secim) => { const f = kapiRezFn('rezOdemeYolu'); return f ? f(tip, slug, secim) : ''; },
+  odemeAdresiOku: kapiOdemeAdresiOku,
   /* canlı sorgu (Promise) */
   liste: kapiListeSorgusu,
-  musaitlik: kapiMusaitlik
+  musaitlik: kapiMusaitlik,
+  fiyatTeklifi: kapiFiyatTeklifi,
+  rezervasyonOlustur: kapiRezervasyonOlustur,
+  rezervasyon: kapiRezervasyon,
+  rezervasyonlar: () => Promise.resolve().then(() => kapiRezOku())
 };
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -93,14 +93,15 @@ const GEZI_NOKTALARI = [
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
 const PROMO_BANDS = [
-  /* path: bandın gittiği liste sayfası. Kampanya kuralları (indirim
-     tutarı, geçerlilik) 4. adımda fiyat kurallarıyla gelecek; bugün
-     band ilgili ürünlerin listesine gidiyor. Üyelik bandının sayfası
-     yok (giriş penceresi). */
-  { img:'karadeniz2', badge:'Son 3 gün',         title:'Yayla ve doğa turlarında %40\'a varan indirim', text:'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.', cta:'Fırsatları gör', path:'temalar/doga-yayla' },
-  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',           text:'30 gün öncesinden alan herkese, tüm kalkışlarda.',        cta:'Turları gör', path:'turlar/kapadokya-turlari' },
-  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',              text:'Seçili termal ve şehir otellerinde geçerli.',             cta:'Otelleri gör', path:'oteller' },
-  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',                 text:'Üye ol, indirim kodu e-postana gelsin.',                  cta:'Üye ol', path:null }
+  /* path: bandın gittiği sayfa. kampanya: bandın vaadini taşıyan kural
+     (booking-engine.js, REZ_KAMPANYALAR); indirim ödeme adımında o
+     kuraldan uygulanıyor ve tests/rezervasyon.test.js bant metniyle
+     kuralın aynı şeyi söylediğini ölçüyor. Kuralı olmayan bant indirim
+     vaat etmiyor. Üyelik bandının sayfası yok (giriş penceresi). */
+  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',     text:'Kalkışa 30 gün ve daha fazla varken, tüm kalkışlarda.',                 cta:'Turları gör',    path:'turlar/kapadokya-turlari', kampanya:'kapadokya-erken' },
+  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',        text:'Cuma ve cumartesi gecesini kapsayan konaklamada; seçili termal ve şehir otellerinde.', cta:'Otelleri gör', path:'oteller', kampanya:'otel-hafta-sonu' },
+  { img:'karadeniz2', badge:'Fırsatlar',         title:'Liste fiyatının altındaki turlar ve oteller', text:'İndirimli bütün ürünler tek sayfada.',                                cta:'Fırsatları gör', path:'firsatlar' },
+  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',           text:'Üye ol, indirim kodu e-postana gelsin.',                              cta:'Üye ol',         path:null, kampanya:'yeni-uye' }
 ];
 
 /* ---- Bulten karti: kisa fayda listesi ---- */

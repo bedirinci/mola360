@@ -50,7 +50,10 @@ kapısına sorup ekranı kurar (`assets/js/listing-page.js`,
 `assets/js/detail-shell.js`). Tanınmayan adres "bulunamadı" ekranını
 açar. GitHub Pages bu sayfayı 404 koduyla sunduğu için bu adresler
 arama motorunda dizine girmez; sunucu geldiğinde aynı ekranlar 200 ile
-gelecek. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
+gelecek. Ödeme ekranı da aynı yoldan açılıyor (`/rezervasyon/?urun=…`,
+`assets/js/checkout-page.js`); hesabı `assets/js/booking-engine.js`'te.
+Ödeme sağlayıcısı henüz bağlı değil: rezervasyon bu tarayıcıda deneme
+kaydı olarak yazılıyor, kart çekimi yok. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
 `docs/yonetim-sistemi.md`, backend'in kendi belgesi `backend/README.md`.
 
 **`index.html`'i çift tıklayıp açmayın.** `file://` ile açılan sayfada

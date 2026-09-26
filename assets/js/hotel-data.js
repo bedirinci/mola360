@@ -180,11 +180,25 @@ function hotelAddonLines(hotel, secim, plan) {
     });
 }
 
+/* ---------------- çocuk yaşı ----------------
+   pricing.freeChildMaxAge yaşına kadar çocuk pansiyon farkı ödemez.
+   Yaşlar ürün sayfasında sorulmuyor, ödeme adımında soruluyor: yaş
+   verilmediyse (ya da eksikse) BÜTÜN çocuklar ücretli sayılır. Ürün
+   sayfasının gösterdiği tutar böylece üst sınır; ödeme adımında yaş
+   girilince ancak düşer, hiçbir zaman sürpriz artmaz. */
+function hotelPayingChildren(hotel, children, ages) {
+  const adet = Math.max(0, Math.floor(Number(children) || 0));
+  const sinir = Number(((hotel && hotel.pricing) || {}).freeChildMaxAge);
+  if (!Array.isArray(ages) || ages.length < adet || !Number.isFinite(sinir)) return adet;
+  return ages.slice(0, adet).filter(y => !(Number.isFinite(Number(y)) && y !== '' && Number(y) <= sinir)).length;
+}
+
 /* ---------------- tutar ----------------
    Kurallar ve her birinin ayrı testi var:
 
    oda        gecelik oda fiyatı × oda sayısı × gece
-   pansiyon   kişi başı gecelik fark × kişi × gece (çocuk tarifesi ayrı)
+   pansiyon   kişi başı gecelik fark × kişi × gece (çocuk tarifesi ayrı;
+              freeChildMaxAge yaşına kadar çocuk ücretsiz)
    ek hizmet  yukarıdaki üç çarpandan biri
    vergi      konaklama vergisi; matrah oda + pansiyon, ek hizmetler HARİÇ
 
@@ -204,7 +218,8 @@ function calcHotelTotal(hotel, secim) {
   const odaListeToplam = gecelikListe * plan.rooms * plan.nights;
 
   const yetiskinPansiyon = (Number(pansiyon.adultNight) || 0) * plan.adults * plan.nights;
-  const cocukPansiyon = (Number(pansiyon.childNight) || 0) * plan.children * plan.nights;
+  const ucretliCocuk = hotelPayingChildren(hotel, plan.children, secim && secim.childAges);
+  const cocukPansiyon = (Number(pansiyon.childNight) || 0) * ucretliCocuk * plan.nights;
   const pansiyonToplam = yetiskinPansiyon + cocukPansiyon;
 
   const araToplam = odaToplam + pansiyonToplam;
@@ -221,7 +236,7 @@ function calcHotelTotal(hotel, secim) {
   });
   if (pansiyonToplam > 0) {
     satirlar.push({
-      label: pansiyon.label + ' × ' + plan.guests + ' kişi × ' + plan.nights + ' gece',
+      label: pansiyon.label + ' × ' + (plan.adults + ucretliCocuk) + ' kişi × ' + plan.nights + ' gece',
       amount: pansiyonToplam,
       kind: 'base'
     });
@@ -576,6 +591,10 @@ const HOTELS = {
       maxNights: 14,
       maxRooms: 3,
       maxGuests: 8,
+      /* Kurallar metnindeki çocuk politikası: 0 – 6 yaş ücretsiz, 7 – 12
+         yaş pansiyon farkı çocuk tarifesinden. 13 yaş ve üzeri yetişkin. */
+      childAges: '0 – 12 yaş',
+      freeChildMaxAge: 6,
       /* Aynı gün giriş satılmıyor; en erken yarın. */
       leadDays: 1,
       checkInTime: '14:00',
@@ -700,6 +719,7 @@ if (typeof module !== 'undefined' && module.exports) {
     hotelBoard,
     clampStay,
     hotelAddonLines,
+    hotelPayingChildren,
     calcHotelTotal,
     hotelNightlyFrom,
     hotelNightlyListFrom,

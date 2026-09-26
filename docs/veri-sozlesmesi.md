@@ -166,9 +166,15 @@ görünüyor. 2. adımda liste sayfaları açılınca kaldırılacak.
 Biçim şimdiden sabit, veri ilgili adımda doldurulacak:
 
 ```js
-deposit:  { mode: 'percent' | 'amount', value: 20, balanceDueDays: 14 }, // kapora (4. adım)
-loyalty:  { points: 150 },                                              // Molapuan (5. adım), yalnızca turlar
+loyalty:  { points: 150 },   // Molapuan (5. adım), yalnızca turlar
 ```
+
+Kapora ürün kaydında **tutulmuyor**: kural tip bazında ve tek yerde
+(`booking-engine.js` `REZ_KAPORA`, bölüm 13). Ürüne özel kapora
+gerekirse o zaman kayda `deposit` alanı eklenecek.
+
+Otelde çocuk politikası `pricing.childAges` ('0 – 12 yaş') ve
+`pricing.freeChildMaxAge` (bu yaşa kadar pansiyon farkı yok).
 
 ## 5. Sınıflandırma kavramları
 
@@ -308,9 +314,9 @@ yazılıyor ki tarihler geçtikçe bayatlamasın.
 - SEO açıklamasındaki "fiyatlar X TL'den başlıyor" yalnızca TL fiyatlı
   ürünlerden (kesin tutar); döviz karşılığı tahmin olduğu için oraya
   girmez.
-- Kapora (`deposit`) ve taksit bilgisi veri olarak tutulur, koda sabit
-  yazılmaz (4. adım). Taksit seçenekleri ürüne değil **bankaya/kart
-  ailesine** bağlıdır; ayrı bir tablo olacak.
+- Kapora ve taksit kural tablolarında (bölüm 13). Taksit seçenekleri
+  ürüne değil **kart ailesine** bağlı. Döviz fiyatlı üründe kapora da
+  kalan da rezervasyon kuruyla TL.
 
 ## 8. İptal kuralı
 
@@ -319,6 +325,13 @@ yazılıyor ki tarihler geçtikçe bayatlamasın.
 (`cancellation.weatherRefund`). Rezervasyon anındaki kurallar
 rezervasyona kopyalanır; ürünün kuralı sonradan değişse bile eski
 rezervasyon kendi kuralıyla iade alır.
+
+Ödeme ekranı kademeleri **tarihe çevirerek** gösteriyor ("29 Eylül
+08:15'e kadar: 694 TL iade"; `rezIptalTakvimi`). Kaporalı
+rezervasyonda kesinti toplam üzerinden: `kesinti = toplam × (1 − oran)`,
+`iade = ödenen − kesinti` (eksiye düşmez, müşteriden ek tahsilat
+istenmez). Süresi geçmiş kademe gösterilmez (kalkışa 30 saat kala
+alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 
 ## 9. Veri kapısı: `MolaVeri`
 
@@ -334,7 +347,7 @@ rezervasyon kendi kuralıyla iade alır.
 | `koleksiyonlar()`, `koleksiyon(slug)` | senkron | Koleksiyon(lar) | 〃 |
 | `listeSayfasi(type, slug)` | senkron | Adresi çözer: `{ kind: 'category' \| 'listing', … }` veya `null` | 〃 |
 | `temaUrunleri(slug)`, `koleksiyonUrunleri(slug)` | senkron | Ürün dizisi | Liste uç noktası |
-| `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
+| `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'city' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'search' \| 'new' \| 'week' \| 'checkout' \| 'confirmation' \| 'campaigns' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
 | `sayfaModeli(adres, bugun)` | senkron | Liste sayfasının başlığı, temel süzgeci, kırıntısı ve alt sayfa çipleri | Sayfaya gömülü |
 | `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex` | Sunucu `<head>`'e yazar |
 | `yuzeyTanimlari(bugun)` | senkron | Süzgeç alanları ve seçenekleri (bölüm 12) | Önbellekli uç nokta |
@@ -347,11 +360,15 @@ rezervasyon kendi kuralıyla iade alır.
 | `kur(paraBirimi)`, `tlKarsiligi(tutar, paraBirimi)` | senkron | Günün kuru `{ oran, tarih, kaynak }`; TL karşılığı (yukarı yuvarlı) | Sunucu sayfaya gömer (banka kuru) |
 | `benzerler(kayit, bugun, adet)` | senkron | Kurala dayalı benzer ürünler (ortak kategori, tema, bölge) | Satış/görüntülenme verisiyle sunucuda |
 | `musaitlik(type, slug, { from, to })` | **Promise** | Bölüm 6 | `GET /api/…/musaitlik` |
+| `kampanyalar(bugun)` | senkron | Yürürlükteki kampanyalar (+ `kalanGun`) | Kampanya tablosu |
+| `kartAileleri()`, `taksitTablosu(tutar)` | senkron | Kart aileleri; bütün ailelerin taksit tablosu | Ödeme sağlayıcısının BIN/taksit sorgusu |
+| `odemeYolu(type, slug, secim)`, `odemeAdresiOku(sorgu)` | senkron | Ödeme ekranının adresi (`rezervasyon/?urun=tur/efes-sirince&tarih=…`) ve tersi | — |
+| `fiyatTeklifi(type, slug, secim, secenek, bugun)` | **Promise** | Teklif (bölüm 13) + `kontenjanDurumu` | `POST /api/teklif` |
+| `rezervasyonOlustur(istek)` | **Promise** | `{ tamam, kod, rezervasyon }` veya `{ tamam: false, hatalar, teklif }` | `POST /api/rezervasyon` → 3D Secure |
+| `rezervasyon(kod)`, `rezervasyonlar()` | **Promise** | Rezervasyon kaydı (bugün bu tarayıcıda) | `GET /api/rezervasyon/:kod`, hesap |
 
 Arama sayfası aynı eşleşmeyi `liste({ temel: { q } })` ile alır (tek
-kural: `kapiAramaPuani`, bölüm 12). Sonraki adımda eklenecekler:
-`fiyatTeklifi(secim)` ve `rezervasyonOlustur` **Promise** ve sunucuda
-hesaplanır (4. adım).
+kural: `kapiAramaPuani`, bölüm 12).
 
 **Örnek ürünler** (`sample-catalog-data.js`, `sample: true`): anasayfadaki
 eski elle yazılmış kartların kayıt hâli. Gerçek ürünle aynı alanları ve
@@ -364,6 +381,32 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 4. adım: rezervasyon ve ödeme ekranları, kampanyalar
+
+- Beş ürün sayfasının rezervasyon özeti **"Ödemeye geç"** ile ödeme
+  ekranına gidiyor; seçim adres satırında taşınıyor
+  (`/rezervasyon/?urun=tur/efes-sirince&tarih=…`).
+- Ödeme ekranı (`checkout-page.js`, tek sayfa): iletişim, katılımcılar
+  (turda yetişkin kimlik no ya da pasaport, çocuk/bebek yaşı), ödeme
+  planı (tamamı / %20 kapora + kalan tercihi), kart ailesi ve taksit,
+  kupon, fatura (bireysel/kurumsal), sözleşme onayı; yanda fiyat
+  ayrıntısı, indirimler, karttan çekilecek tutar ve tarihli iptal
+  koşulları. Onay ekranı `/rezervasyon/onay/?kod=`.
+- Hesap tek yerde ve saf: `booking-engine.js` (bölüm 13). Kapı teklifi
+  hesaplatıp kontenjanı soruyor; dolu ya da yetmeyen tarihte ödeme
+  açılmıyor (bölüm 6'daki "son kontrol ödeme adımında" sözü).
+- Otelde çocuk yaşı fiyatı etkiliyor (0 – 6 yaş pansiyon farkı yok);
+  ürün sayfasındaki tutar üst sınır, ödeme adımında ancak düşer.
+- Kampanyalar kural kaydı: `/kampanyalar/` sayfası, ana sayfa bantları
+  ve ödeme adımındaki indirim aynı kayıttan. "Erken Rezervasyon" listesi
+  artık dolu (erken rezervasyon kampanyasının kapsamı).
+- Ana sayfadaki "Yayla ve doğa turlarında %40'a varan indirim" bandı
+  kaldırıldı: verideki en yüksek indirim %18'di. Yerine fırsatlar
+  sayfasına giden, indirim vaat etmeyen bir bant geldi.
+- **Ödeme sağlayıcısı bağlı değil.** "Ödemeye geç" rezervasyon talebini
+  bu tarayıcıda deneme kaydı olarak yazıyor, kart çekimi yok; iki ekran
+  da bunu açıkça söylüyor.
 
 ### 3. adım: arama, şehir sayfaları, keşif sayfaları, ziyaretçi geçmişi
 
@@ -446,7 +489,7 @@ yerlerini gerçek ürünler alacak.
 
 | Ne | Nerede | Adım |
 |---|---|---|
-| Kampanya bantları ("Son 3 gün" …): metin ve indirim | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı; bant bugün ilgili listeye gidiyor) |
+| ~~Kampanya bantları~~ | 4. adımda kural kaydına bağlandı (`kampanya` alanı) | — |
 | "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
 | Anasayfa kenar çubuğundaki profil kartı (puan, bilet sayıları) ve bildirimler | `index.html`, `app.js` | 5 (Hesabım) |
 | Arama kutusundaki "Popüler Aramalar" | `app.js` `suggestedSearchTerms` | Editör listesi olarak kalabilir; canlıda arama kayıtlarından |
@@ -463,9 +506,13 @@ Mevcut şemada karşılığı olmayanlar. Göç numaraları kesin değil:
 | Liste sayfası | `listing_pages (content_type, slug, name, filter jsonb, seo_title, seo_description)` |
 | Özellikler | `content_facets (content_id, facet, value)` veya `taxonomy_terms` genişletmesi (`transport` zaten var) |
 | Para birimi | `content.currency char(3)` |
-| Kapora | `deposit_policies` veya ürün tipine özgü sütunlar |
+| Kapora | `deposit_policies (content_type, rate, min_days, balance_options)`; bugünkü karşılığı `REZ_KAPORA` |
 | Molapuan | Ürün başı `loyalty_points` + müşteri için hareket defteri `loyalty_ledger` |
-| Taksit | `installment_plans (bank, card_family, count, rate)` |
+| Taksit | `installment_plans (card_family, count, rate, valid_from)`; aile tespiti ödeme sağlayıcısının BIN sorgusuyla |
+| Kampanya ve kupon | `campaigns (code, kind, scope jsonb, conditions jsonb, discount jsonb, starts_at, ends_at, member_only)`; kupon kodu sunucuda doğrulanır, kullanım sayısı tutulur |
+| Rezervasyon | `bookings` (kod, seçim, teklif anının satırları, indirimler, kur, ödeme planı, iptal kademeleri — hepsi o anki hâliyle) + `booking_guests` (ad, yaş, kimlik **şifreli**) + `payments` (kapora/kalan/iade hareketleri) |
+| Kalan ödeme araması | Kaporalı rezervasyonlar için kalkıştan 1 gün önceki arama listesi (çağrı merkezi ekranı, yönetim paneli) |
+| Ödeme sağlayıcısı | 3D Secure ile tahsilat; kart bilgisi sağlayıcının alanında girilir, sitede hiç tutulmaz |
 | Liste sorgusu | `GET /api/liste?<temel süzgeç>&<seçimler>` → bölüm 12'deki cevap. Süzme ve sayım arama dizininde (`listeSatiri` biçimi), aynı kurallarla |
 | Arama | Aynı dizinde metin araması (Türkçe normalleştirme ve ek kuralıyla); arama kayıtları "Popüler Aramalar"ı besler |
 | Kur | Günlük banka satış kuru tablosu (`fx_rates (currency, rate, date, source)`); rezervasyona o anki kur yazılır |
@@ -529,3 +576,94 @@ sayfası olan ürünlerle `ItemList`.
 **Bilinen sınır:** GitHub Pages yönlendirici sayfayı 404 koduyla
 sunuyor. Ziyaretçi için fark yok; arama motoru bu adresleri dizine
 almaz. Sunucu geldiğinde aynı ekranlar 200 ile gelecek.
+
+## 13. Rezervasyon ve ödeme
+
+Hesabın tamamı `assets/js/booking-engine.js`'te ve saf: aynı seçim ve
+aynı gün her yerde aynı teklifi verir. Backend geldiğinde bağlayıcı
+hesap sunucuda yapılacak (`POST /api/teklif`); ekran bu dosyayla ön
+izleme göstermeye devam edecek, iki sonuç ayrışırsa sunucununki geçerli.
+`rezervasyonOlustur` teklifi zaten yeniden hesaplıyor ve ekranın
+gösterdiği tutar değiştiyse rezervasyon yazmıyor.
+
+### Teklif
+
+`rezTeklif(tip, kayit, secim, secenek, bugun, { kur, simdi })`:
+
+| Alan | Anlamı |
+|---|---|
+| `satilabilir`, `hatalar` | Tarih/saat geçersiz, kalkış günü değil, mekân kapalı, saat geçti, kur yok, örnek ürün … |
+| `ozet` | Seçimin okunur satırları (tarih, kalkış, oda, kişi) |
+| `satirlar`, `araToplam` | Kaydın kendi hesap fonksiyonundan (ürünün para biriminde) |
+| `araToplamTL`, `kur` | TL karşılığı; döviz üründe kur teklife yazılır |
+| `indirimler`, `kupon`, `toplam` | Kampanya/kupon indirimi ve net TL toplam |
+| `odeme` | `sekil: 'tam' \| 'kapora' \| 'mekanda'`, `simdi`, `kalan`, `kalanTercih`, `kalanTarihi`, `aramaTarihi`, `kaporaUygun`, `kaporaNeden` |
+| `taksit`, `tahsilat` | Seçilen kart ailesi ve taksit; karttan çekilecek tutar (vade farkıyla) |
+| `iptal` | Tarihli iptal kademeleri ve her birinde iade tutarı (bölüm 8) |
+| `katilimcilar` | Formun şablonu: rol, kimlik gerekli mi, yaş aralığı |
+| `kontenjan` | Kapının kontenjan sorgusu için istek (birim, tarih, saat, adet) |
+
+`secenek`: `{ odeme, kalan, aile, taksit, kupon, cocukYaslari, uye }`.
+
+### Kapora ve kalan ödeme (kullanıcı kararı)
+
+- Turlarda **%20 kapora** (yukarı yuvarlı tam TL). Diğer tiplerde tamamı
+  ödenir; mekânda ön ödemesiz randevu "mekânda ödeme"dir, kart çekimi
+  yoktur.
+- Kalan tutar müşterinin tercihine göre **turdan 1 gün önce** (kart ya da
+  havale) veya **tur günü araçta**. Kalkıştan 1 gün önce müşteri aranır
+  ve kalan ödeme netleştirilir (`aramaTarihi`).
+- Kalkışa 2 günden az kaldıysa kapora seçeneği yok (arayacak zaman yok).
+- Kapora, indirimler düşüldükten sonraki toplamdan hesaplanır.
+- Kural tablosu: `REZ_KAPORA` (`oran`, `tipler`, `enAzGun`,
+  `kalanSecenekleri`).
+
+### Taksit
+
+`REZ_TAKSIT` kart aileleri ve vade farkı oranları: Bonus, World,
+Maximum, Axess, CardFinans, Paraf, Bankkart. **Tablo örnek**; oranlar
+ve taksit sayıları banka anlaşmaları ve BDDK sınırlarıyla
+güncellenecek. Ailesi bilinmeyen kart (banka kartı, ticari, yurt dışı)
+ve 500 TL altı çekim tek çekimdir. Taksit bugün çekilen tutara (kapora
+ya da tamamı) uygulanır. Aylık taksit kuruşa aşağı yuvarlanır, artan
+kuruş ilk taksitte.
+
+Kart numarası sitede **hiç sorulmuyor**: sağlayıcının 3D Secure
+sayfasında girilecek. Canlıda aile tespiti de sağlayıcının BIN
+sorgusundan gelecek.
+
+### Kampanya ve kupon
+
+`REZ_KAMPANYALAR` (örnek kayıtlar):
+
+| Kod | Tür | Kural |
+|---|---|---|
+| `kapadokya-erken` | otomatik | Kapadokya turlarında kalkışa ≥ 30 gün kala 500 TL |
+| `otel-hafta-sonu` | otomatik | Termal ve şehir otellerinde cuma + cumartesi gecesini kapsayan konaklamada bir gecenin oda bedeli (vergisiyle) |
+| `yeni-uye` | kupon, üyeye özel | İlk rezervasyonda %15, en fazla 1.500 TL (üyelik 5. adımda) |
+| `mola100` | kupon | `MOLA100`: 1.000 TL ve üzeri rezervasyonda 100 TL (**örnek kod**, mekân hariç) |
+
+Otomatik kampanyalardan en avantajlısı uygulanır; kupon onun üstüne
+eklenir. İndirim toplamı aşmaz. `/kampanyalar/` sayfası, ana sayfa
+bantları (`PROMO_BANDS.kampanya`) ve "Erken Rezervasyon" listesi aynı
+kayıttan okuyor; bant metninin kuralla aynı şeyi söylediği
+`tests/rezervasyon.test.js`'te ölçülüyor.
+
+### Form
+
+Zorunlu: iletişim (ad, soyad, e-posta, cep telefonu), turda yetişkinlerin
+T.C. kimlik numarası (sağlama kontrolüyle) ya da pasaport, çocuk ve
+bebek yaşı (kaydın yaş aralığında), otelde oda başına bir misafir ve
+çocuk yaşları, kurumsal faturada unvan/vergi dairesi/numara, sözleşme
+onayı. Kurallar `rezFormHatalari`'nda; ekran ve kapı aynı fonksiyonu
+kullanıyor.
+
+### Rezervasyon kaydı
+
+Bugün `localStorage` (`mola360.rezervasyonlar`, en fazla 30) ve
+`deneme: true`, `durum: 'odeme-bekliyor'`. Kaydedilen: kod
+(`M360-XXXXXX`, karışan harfler yok), seçim, teklif anının satırları,
+indirimler, kur, ödeme planı, taksit, iptal kademeleri, iletişim,
+katılımcıların **yalnızca adı ve yaşı**. Kimlik/pasaport numarası ve
+kart bilgisi yazılmıyor.
+

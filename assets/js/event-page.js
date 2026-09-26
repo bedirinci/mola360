@@ -943,6 +943,12 @@
     const temsil = secimTemsil();
     const satir = (label, value) => `<li><span>${label}</span><strong>${value}</strong></li>`;
 
+    /* Ödeme ekranı: seçim adres satırıyla taşınıyor (booking-engine.js,
+       rezSecimYaz). Kapı ya da motor yoksa eski davranış: destek hattı. */
+    const odemeYolu = (typeof MolaVeri !== 'undefined' && MolaVeri.odemeYolu) ? MolaVeri.odemeYolu('event', event.slug, state) : '';
+    const odemeAdresi = odemeYolu ? KOK + odemeYolu.replace(/&/g, '&amp;') : '';
+    const ODEME_NOTU = 'Sonraki adımda bilet sahibinin bilgilerini girip ödemeyi tamamlarsınız. Taksit seçenekleri ödeme adımında.';
+
     sheet.innerHTML = `
       <div class="tour-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="tourSheetTitle">
         <div class="tour-sheet-head">
@@ -961,13 +967,14 @@
           ${satir('Hizmet bedeli', formatTRY(hesap.serviceTotal))}
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
-        <p class="tour-sheet-note">${ic('info')}<span>Ödeme adımı henüz bağlı değil.
-          Yukarıdaki özet, ödeme ekranına taşınacak bilgilerin tamamıdır.</span></p>
+        <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
         <div class="tour-sheet-actions">
           <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
           <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
              target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
-          <button class="tour-cta" type="button" data-sheet="close">Anladım</button>
+          ${odemeAdresi
+            ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
+            : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
         </div>
       </div>`;
 
