@@ -64,9 +64,18 @@ değere güvenmez.
 
 Tip adları backend'deki `content.type` ile birebir aynı.
 
-Diğer adresler (2. ve 3. adımda açılacak): `/temalar/<slug>/`,
-`/koleksiyonlar/<slug>/`, `/firsatlar/<slug>/`, `/yeni-eklenenler/`,
-`/bu-hafta/`, `/arama/`, `/hesabim/…`.
+Diğer adresler: `/temalar/`, `/temalar/<slug>/`, `/koleksiyonlar/`,
+`/koleksiyonlar/<slug>/`, `/firsatlar/`, `/firsatlar/<slug>/` (2. adımda
+açıldı); `/yeni-eklenenler/`, `/bu-hafta/`, `/arama/` (3. adım),
+`/hesabim/…` (5. adım), `/kurumsal/…` (6. adım). Henüz içeriği olmayan
+menü adresleri "yakında" ekranını açar.
+
+**Tek yönlendirici.** Dosyası olmayan her adres `404.html`'e düşer
+(GitHub Pages ve `npm run dev` aynı davranır) ve
+`MolaVeri.adres(yol)` sayfanın ne olduğuna karar verir (bölüm 12).
+Ürün adresinin dosyası varsa (bugünkü 7 ürün) o dosya açılır; yoksa
+aynı detay şablonu yönlendiriciden kurulur. Ürün, kategori veya liste
+sayfası için HTML dosyası yazılmıyor.
 
 `<liste>` hem bir **kategori** hem bir **liste sayfası** olabilir (bölüm 5).
 İkisi aynı adres alanını paylaştığı için aynı tip içinde slug'ları
@@ -319,20 +328,56 @@ rezervasyon kendi kuralıyla iade alır.
 | `koleksiyonlar()`, `koleksiyon(slug)` | senkron | Koleksiyon(lar) | 〃 |
 | `listeSayfasi(type, slug)` | senkron | Adresi çözer: `{ kind: 'category' \| 'listing', … }` veya `null` | 〃 |
 | `temaUrunleri(slug)`, `koleksiyonUrunleri(slug)` | senkron | Ürün dizisi | Liste uç noktası |
+| `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
+| `sayfaModeli(adres, bugun)` | senkron | Liste sayfasının başlığı, temel süzgeci, kırıntısı ve alt sayfa çipleri | Sayfaya gömülü |
+| `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex` | Sunucu `<head>`'e yazar |
+| `yuzeyTanimlari(bugun)` | senkron | Süzgeç alanları ve seçenekleri (bölüm 12) | Önbellekli uç nokta |
+| `listeSatiri(kayit, bugun)` | senkron | Ürünün süzülen/sıralanan nitelikleri (arama dizininin satırı) | Arama dizini |
+| `liste({ temel, durum, bugun })` | **Promise** | `{ toplam, satirlar, dahaVar, yuzeyler, etiketler }` | `GET /api/liste?…` |
+| `listeYolu(kayit)` | senkron | Ürünün liste sayfası (`turlar/gunubirlik-turlar`): kırıntının orta halkası | — |
+| `benzerler(kayit, bugun, adet)` | senkron | Kurala dayalı benzer ürünler (ortak kategori, tema, bölge) | Satış/görüntülenme verisiyle sunucuda |
 | `musaitlik(type, slug, { from, to })` | **Promise** | Bölüm 6 | `GET /api/…/musaitlik` |
 
-2. adımdan itibaren eklenecekler (aynı kurala göre): `liste(filtre)` ve
-`ara(sorgu)` **Promise**; `fiyatTeklifi(secim)` ve `rezervasyonOlustur`
-**Promise** ve sunucuda hesaplanır.
+Sonraki adımlarda eklenecekler (aynı kurala göre): `ara(sorgu)`
+**Promise** (3. adım); `fiyatTeklifi(secim)` ve `rezervasyonOlustur`
+**Promise** ve sunucuda hesaplanır (4. adım).
 
 **Örnek ürünler** (`sample-catalog-data.js`, `sample: true`): anasayfadaki
 eski elle yazılmış kartların kayıt hâli. Gerçek ürünle aynı alanları ve
 aynı sınıflandırmayı taşıyorlar; listelerde, temalarda, koleksiyonlarda
-ve aramada sayılıyorlar. Detay sayfaları olmadığı için kartları
-tıklanamıyor. Yönetim paneli ve backend geldiğinde yerlerini gerçek
-ürünler alacak.
+ve aramada sayılıyorlar. Kartları tıklanabilir ve bir **özet sayfası**
+açar (`detail-shell.js`): görsel, fiyat, kaydın kendi seçenekleri
+(oda, paket, bilet), yaklaşan tarihler, sınıflandırma çipleri ve benzer
+ürünler. Ayrıntılı içerik olmadığı için bu sayfada rezervasyon açık
+değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
+yerlerini gerçek ürünler alacak.
 
-## 10. 1. adımda ne değişti, ne değişmedi
+## 10. Adım adım ne değişti
+
+### 2. adım: adresler, liste sayfaları, menü
+
+- `404.html` tek yönlendirici: liste, tema/koleksiyon dizini, ürün
+  detayı, "yakında" ve "bulunamadı" ekranlarını adrese göre kuruyor.
+- Liste şablonu: kırıntı, alt sayfa çipleri (menü ağacından), süzgeçler
+  (sayılarıyla), sıralama, "daha fazla göster", boş durum. Mobilde
+  süzgeçler alttan açılan sayfa.
+- Süzme motoru (`listing-engine.js`) saf ve ayrı dosyada; kuralları
+  bölüm 12'de.
+- Ana menü taksonomideki ağaçtan: masaüstünde başlığın altında, mobilde
+  anasayfa çekmecesinde. Anasayfanın "Tümünü Gör", kategori ikonları,
+  kampanya bantları, tema/koleksiyon kartları ve alt bilgi gerçek
+  sayfalara gidiyor. Detay sayfalarının kırıntısı ürünün liste
+  sayfasına gidiyor.
+- Dosyası olmayan ürün adresi aynı detay şablonuyla açılıyor; iskelet
+  tek kaynakta (`detail-shell.js`) ve bugünkü 7 statik sayfayla aynı
+  olduğu test ediliyor.
+- Bilinmeyen slug'ı varsayılan ürüne düşüren `resolveTour` vb.
+  kaldırıldı.
+- Sezonu biten etkinlik listelerde, tema sayılarında ve koleksiyonlarda
+  sayılmıyor (sayfası açılmaya devam ediyor).
+- Yorumu olmayan üründe kartta "0" puan yazmıyor.
+
+### 1. adım: veri sözleşmesi ve veri kapısı
 
 **Değişti**
 
@@ -368,12 +413,12 @@ tıklanamıyor. Yönetim paneli ve backend geldiğinde yerlerini gerçek
 
 | Ne | Nerede | Adım |
 |---|---|---|
-| Detay sayfalarındaki "Benzer" şeritleri: başlık, puan ve fiyat kopya | `*-data.js` içindeki `similar` | 3 (kurala dayalı benzer ürünler) |
+| Detay sayfalarındaki "Benzer" şeritleri: başlık, puan ve fiyat kopya | `*-data.js` içindeki `similar` | 3 (kural `MolaVeri.benzerler` olarak hazır; özet sayfası kullanıyor, detay şablonları 3. adımda geçecek) |
+| Anasayfa alt SEO bloğundaki şehir bağları ("İzmir turları" …) | `home-blocks.js` `SEO_LINK_GROUPS` | 3 (şehir sayfaları; bugün `#/…` yer tutucu) |
 | Kenar çubuğundaki "Son Görüntülenenler" | `index.html` | 3 (ziyaretçinin kendi geçmişinden) |
 | Anasayfadaki "Mekanlar" bloğunun gezi noktaları (Efes, Kemeraltı …) | `home-blocks.js` `VENUES` | 3 (rezervasyonlu mekân değiller; yeri ayrıca kararlaştırılacak) |
-| Kampanya bantları ("Son 3 gün" …) | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı) |
+| Kampanya bantları ("Son 3 gün" …): metin ve indirim | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı; bant bugün ilgili listeye gidiyor) |
 | "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
-| Bilinmeyen slug'ı varsayılan ürüne düşüren `resolveTour` vb. | `*-data.js` | Sayfalar artık kullanmıyor; 2. adımda "bulunamadı" sayfasıyla kaldırılacak |
 
 ## 11. Backend'e eklenecekler
 
@@ -390,3 +435,53 @@ Mevcut şemada karşılığı olmayanlar. Göç numaraları kesin değil:
 | Kapora | `deposit_policies` veya ürün tipine özgü sütunlar |
 | Molapuan | Ürün başı `loyalty_points` + müşteri için hareket defteri `loyalty_ledger` |
 | Taksit | `installment_plans (bank, card_family, count, rate)` |
+| Liste sorgusu | `GET /api/liste?<temel süzgeç>&<seçimler>` → bölüm 12'deki cevap. Süzme ve sayım arama dizininde (`listeSatiri` biçimi), aynı kurallarla |
+| Yönlendirici | Sunucu `/turlar/…`, `/temalar/…` ve dosyasız ürün adreslerini 200 ile ve `<head>` alanları doldurulmuş olarak sunar (bugün 404.html) |
+
+## 12. Liste sayfaları ve adres parametreleri
+
+**Adres çözümü** (`MolaVeri.adres`): `/<tip kökü>/` tipin bütün
+ürünleri; `/<tip kökü>/<slug>/` kategori ya da liste sayfası (bölüm 5);
+`/temalar/<slug>/`, `/koleksiyonlar/<slug>/`; `/temalar/` ve
+`/koleksiyonlar/` dizin; `/firsatlar/` indirimli ürünler; `/<tip
+yolu>/<slug>/` ürün. Büyük harf, sondaki eğik çizginin eksikliği ve
+`index.html` tek kanonik yazıma çevrilir.
+
+**Süzgeçler** adresin sorgu dizisinde durur; kanonik adres parametresiz
+olduğu için süzülmüş kombinasyonlar ayrı sayfa olarak dizine girmez.
+
+| Parametre | Anlamı | Örnek |
+|---|---|---|
+| `tip` | İçerik tipi (karışık listelerde) | `tip=tur,etkinlik` |
+| `ay` | Satış tarihi o ayda (bu ay + 5 ay). Her gün satılan ürün her aya uyar | `ay=2026-10` |
+| `sure` | Tur süresi: `gunubirlik`, `1-2-gece`, `3-5-gece`, `6-gece-ustu` | `sure=gunubirlik` |
+| `bolge` | Bölge (şehirden türetilir) | `bolge=ege,akdeniz` |
+| `kalkis` | Kalkış şehri | `kalkis=izmir` |
+| `ulasim` | Ulaşım | `ulasim=otobus` |
+| `pansiyon` | Pansiyon (otelin pansiyon kodlarından) | `pansiyon=her-sey-dahil` |
+| `tema` | Tema | `tema=doga-yayla` |
+| `kimle` | Elle koleksiyon (Ailece, Romantik …) | `kimle=ailece` |
+| `fiyat` | TL fiyat aralığı `[alt, üst)`; döviz fiyatlı ürün TL aralığında aranmaz | `fiyat=1000-2500`, `fiyat=10000-` |
+| `puan` | En az puan (5 üzerinden; otelin 10'luk puanı yarıya) | `puan=4.5` |
+| `indirimli` | Liste fiyatının altında satılanlar | `indirimli=1` |
+| `sirala` | `onerilen` (varsayılan), `fiyat-artan`, `fiyat-azalan`, `tarih`, `puan` | `sirala=fiyat-artan` |
+| `sayfa` | Açılan sayfa sayısı (24'er) | `sayfa=2` |
+
+**Kurallar:** alan içindeki seçenekler VEYA, alanlar arası VE. Seçeneğin
+yanındaki sayı, o alan hariç diğer seçimler geçerliyken o seçeneğin
+sonuç sayısı. Sonucu daraltmayan alan gösterilmez. Tanınmayan değer
+sessizce atılır; motora ait olmayan parametreler (`utm_*`) korunur.
+
+**Önerilen sıralama:** puan, yorum sayısıyla sitenin ortalamasına doğru
+çekilerek (Bayes ortalaması; az yorumlu yüksek puan önde değil).
+Fiyat sıralamasında TL fiyatlılar önce. Backend geldiğinde satış verisi
+de girecek.
+
+**SEO:** Başlık "<ad> — mola360"; açıklama ürün sayısından ve en düşük
+TL fiyattan türetilir. Ürünü olmayan liste, örnek özet sayfası ve
+"bulunamadı" `noindex`. Yapısal veri: `BreadcrumbList` ve yalnızca
+sayfası olan ürünlerle `ItemList`.
+
+**Bilinen sınır:** GitHub Pages yönlendirici sayfayı 404 koduyla
+sunuyor. Ziyaretçi için fark yok; arama motoru bu adresleri dizine
+almaz. Sunucu geldiğinde aynı ekranlar 200 ile gelecek.

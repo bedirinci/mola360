@@ -300,8 +300,10 @@ yoldan kart giriyor:
 ref'leri); başlık ve görsel ürünün kaydından, sayfası olan ürün kendi
 adresine gidiyor.
 
-Örnek kaydın detay sayfası olmadığı için kartı tıklanamıyor (`href:
-null`); arama ve listeler onu yine buluyor. Taşımada hiçbir alanın
+Örnek kaydın kartı da tıklanabilir: adresinin dosyası olmadığı için
+yönlendiriciye (`404.html`) düşer ve bir özet sayfası açılır
+(`detail-shell.js`; ayrıntı `docs/veri-sozlesmesi.md` bölüm 9). Kart
+`ornek: true` taşır; testler onu sayfası olan üründen böyle ayırıyor. Taşımada hiçbir alanın
 kaybolmadığını `tests/ornek-katalog.test.js` eski kartların birebir
 kopyasıyla karşılaştırarak ölçüyor; bilerek değişen alanlar (aynı ürünün
 iki farklı yazımı, döviz fiyatlı yurt dışı tur, gerçek ürünün eski

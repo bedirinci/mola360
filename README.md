@@ -40,7 +40,17 @@ kayıt olacak, `/tur/<slug>/` gibi adresleri tek bir şablon karşılayacak;
 ürün başına HTML dosyası üretilmeyecek. Ön yüz bugün GitHub Pages'te
 statik çalışıyor ve veriyi tek bir veri kapısından alıyor
 (`assets/js/data-gateway.js`); backend geldiğinde yalnızca o kapının içi
-değişecek. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
+değişecek.
+
+Bugün de ürün, kategori veya liste sayfası için HTML dosyası
+yazılmıyor: dosyası olmayan her adres (`/turlar/`,
+`/turlar/karadeniz-turlari/?bolge=karadeniz`, `/temalar/doga-yayla/`,
+`/tur/<yeni-slug>/` …) `404.html`'e düşer ve o sayfa adresi veri
+kapısına sorup ekranı kurar (`assets/js/listing-page.js`,
+`assets/js/detail-shell.js`). Tanınmayan adres "bulunamadı" ekranını
+açar. GitHub Pages bu sayfayı 404 koduyla sunduğu için bu adresler
+arama motorunda dizine girmez; sunucu geldiğinde aynı ekranlar 200 ile
+gelecek. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
 `docs/yonetim-sistemi.md`, backend'in kendi belgesi `backend/README.md`.
 
 **`index.html`'i çift tıklayıp açmayın.** `file://` ile açılan sayfada
