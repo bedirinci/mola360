@@ -65,10 +65,11 @@ değere güvenmez.
 Tip adları backend'deki `content.type` ile birebir aynı.
 
 Diğer adresler: `/temalar/`, `/temalar/<slug>/`, `/koleksiyonlar/`,
-`/koleksiyonlar/<slug>/`, `/firsatlar/`, `/firsatlar/<slug>/` (2. adımda
-açıldı); `/yeni-eklenenler/`, `/bu-hafta/`, `/arama/` (3. adım),
-`/hesabim/…` (5. adım), `/kurumsal/…` (6. adım). Henüz içeriği olmayan
-menü adresleri "yakında" ekranını açar.
+`/koleksiyonlar/<slug>/`, `/firsatlar/`, `/firsatlar/<slug>/` (2. adım);
+şehir sayfaları `/<tip kökü>/<şehir>/` (`/turlar/izmir/`,
+`/oteller/antalya/`), `/arama/?q=`, `/yeni-eklenenler/`, `/bu-hafta/`
+(3. adım); `/hesabim/…` (5. adım), `/kurumsal/…` (6. adım). Henüz
+içeriği olmayan menü adresleri "yakında" ekranını açar.
 
 **Tek yönlendirici.** Dosyası olmayan her adres `404.html`'e düşer
 (GitHub Pages ve `npm run dev` aynı davranır) ve
@@ -115,7 +116,9 @@ Her ürün kaydı bu alanları taşır. Tipe özgü alanlar ilgili sayfa belgesi
 | `area` | İnsanın yazdığı konum cümlesi ("Selçuk, İzmir") | `content.area` |
 | `card` | Kartın türetilemeyen alanları: `img`, kısa `title`, `badges`, `meta1`, `sponsored` | `content.card_*` |
 | `seo` | `title`, `description`, `ogTitle`, `ogDescription`, `ogImage` | `content_seo` |
-| `currency` | Fiyatların para birimi: `TRY`, `EUR`, `USD` | **eklenecek** |
+| `currency` | Fiyatların para birimi: `TRY`, `EUR`, `USD` (tahsilat her zaman TL, bölüm 7) | `content.currency` |
+| `publishedAt` | Yayına giriş günü (`YYYY-AA-GG`); "Yeni Eklenenler" ve "En yeni" sıralaması | `content.published_at` |
+| `similar` | Elle seçilmiş benzerler: yalnızca kimlik (`{ slug }` aynı tipten, `{ href }` başka tipten); kalanı kural doldurur | `content_relations` |
 
 ### 4.2 Sınıflandırma: `taxonomy`
 
@@ -338,12 +341,17 @@ rezervasyon kendi kuralıyla iade alır.
 | `listeSatiri(kayit, bugun)` | senkron | Ürünün süzülen/sıralanan nitelikleri (arama dizininin satırı) | Arama dizini |
 | `liste({ temel, durum, bugun })` | **Promise** | `{ toplam, satirlar, dahaVar, yuzeyler, etiketler }` | `GET /api/liste?…` |
 | `listeYolu(kayit)` | senkron | Ürünün liste sayfası (`turlar/gunubirlik-turlar`): kırıntının orta halkası | — |
+| `hizliAra(q, bugun, adet)` | senkron | Başlıktaki kutunun anlık sonuçları (ürün kayıtları, alakaya göre) | `GET /api/ara?q=` |
+| `aramaModeli(q)`, `aramaSayfalari(q)` | senkron | Arama sayfasının başlığı/temel süzgeci; adı eşleşen liste sayfaları | — |
+| `haftaAjandasi(bugun, gun)` | senkron | Bu Hafta: gün gün tur kalkışları ve etkinlik temsilleri | Ajanda uç noktası |
+| `kur(paraBirimi)`, `tlKarsiligi(tutar, paraBirimi)` | senkron | Günün kuru `{ oran, tarih, kaynak }`; TL karşılığı (yukarı yuvarlı) | Sunucu sayfaya gömer (banka kuru) |
 | `benzerler(kayit, bugun, adet)` | senkron | Kurala dayalı benzer ürünler (ortak kategori, tema, bölge) | Satış/görüntülenme verisiyle sunucuda |
 | `musaitlik(type, slug, { from, to })` | **Promise** | Bölüm 6 | `GET /api/…/musaitlik` |
 
-Sonraki adımlarda eklenecekler (aynı kurala göre): `ara(sorgu)`
-**Promise** (3. adım); `fiyatTeklifi(secim)` ve `rezervasyonOlustur`
-**Promise** ve sunucuda hesaplanır (4. adım).
+Arama sayfası aynı eşleşmeyi `liste({ temel: { q } })` ile alır (tek
+kural: `kapiAramaPuani`, bölüm 12). Sonraki adımda eklenecekler:
+`fiyatTeklifi(secim)` ve `rezervasyonOlustur` **Promise** ve sunucuda
+hesaplanır (4. adım).
 
 **Örnek ürünler** (`sample-catalog-data.js`, `sample: true`): anasayfadaki
 eski elle yazılmış kartların kayıt hâli. Gerçek ürünle aynı alanları ve
@@ -356,6 +364,28 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 3. adım: arama, şehir sayfaları, keşif sayfaları, ziyaretçi geçmişi
+
+- **Arama:** başlıktaki kutu ve `/arama/?q=` sayfası tek kuralla eşleşiyor
+  (başlık, sınıflandırma, yer; Türkçe harf ve ek farkı yok sayılıyor).
+  Enter tam sonuç sayfasına gidiyor; arama sayfasında süzgeçler ve "en
+  alakalı" sıralaması var. Masaüstünde arama kutusuna yazılamıyordu
+  (salt okunur kutu); düzeldi.
+- **Şehir sayfaları:** `/turlar/izmir/` gibi; ürünün destinasyon şehri.
+  Her listede `?sehir=` süzgeci.
+- **Yeni Eklenenler** (`publishedAt`, en yeni başta) ve **Bu Hafta**
+  (önümüzdeki 7 günün kalkış ve temsilleri, gün gün ajanda).
+- **Son Aramalar ve Son Görüntülenenler** ziyaretçinin kendi geçmişi
+  (`visitor-history.js`, bu tarayıcıda); elle yazılmış örnek listeler
+  kaldırıldı.
+- **Benzer şeridi** detay sayfalarında kuraldan (`MolaVeri.benzerler`) +
+  kaydın elle seçtiği öneriler (yalnızca kimlik). Başlık/puan/fiyat
+  kopyaları kalktı.
+- Anasayfa: alt SEO bölümündeki 74 bağ gerçek sayfalara gidiyor;
+  "Mekanlar" bloğu yalnızca rezervasyonlu mekânlar, gezi noktaları
+  (`GEZI_NOKTALARI`) ayrı blokta ve uydurma puansız.
+- Onaylanan kategoriler menüde; tahsilat TL kararı (bölüm 7).
 
 ### 2. adım: adresler, liste sayfaları, menü
 
@@ -416,11 +446,10 @@ yerlerini gerçek ürünler alacak.
 
 | Ne | Nerede | Adım |
 |---|---|---|
-| Detay sayfalarındaki "Benzer" şeritleri: başlık, puan ve fiyat kopya | `*-data.js` içindeki `similar` | 3 (kural `MolaVeri.benzerler` olarak hazır; özet sayfası kullanıyor, detay şablonları 3. adımda geçecek) |
-| Anasayfa alt SEO bloğundaki şehir bağları ("İzmir turları" …) | `home-blocks.js` `SEO_LINK_GROUPS` | 3 (şehir sayfaları; bugün `#/…` yer tutucu) |
-| Kenar çubuğundaki "Son Görüntülenenler" | `index.html` | 3 (ziyaretçinin kendi geçmişinden) |
 | Kampanya bantları ("Son 3 gün" …): metin ve indirim | `home-blocks.js` `PROMO_BANDS` | 4 (kampanya kaydı; bant bugün ilgili listeye gidiyor) |
 | "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
+| Anasayfa kenar çubuğundaki profil kartı (puan, bilet sayıları) ve bildirimler | `index.html`, `app.js` | 5 (Hesabım) |
+| Arama kutusundaki "Popüler Aramalar" | `app.js` `suggestedSearchTerms` | Editör listesi olarak kalabilir; canlıda arama kayıtlarından |
 
 ## 11. Backend'e eklenecekler
 
@@ -438,12 +467,16 @@ Mevcut şemada karşılığı olmayanlar. Göç numaraları kesin değil:
 | Molapuan | Ürün başı `loyalty_points` + müşteri için hareket defteri `loyalty_ledger` |
 | Taksit | `installment_plans (bank, card_family, count, rate)` |
 | Liste sorgusu | `GET /api/liste?<temel süzgeç>&<seçimler>` → bölüm 12'deki cevap. Süzme ve sayım arama dizininde (`listeSatiri` biçimi), aynı kurallarla |
+| Arama | Aynı dizinde metin araması (Türkçe normalleştirme ve ek kuralıyla); arama kayıtları "Popüler Aramalar"ı besler |
+| Kur | Günlük banka satış kuru tablosu (`fx_rates (currency, rate, date, source)`); rezervasyona o anki kur yazılır |
+| Ziyaretçi geçmişi | Üye girişinde son görüntülenenler ve son aramalar hesaba da yazılır (5. adım) |
 | Yönlendirici | Sunucu `/turlar/…`, `/temalar/…` ve dosyasız ürün adreslerini 200 ile ve `<head>` alanları doldurulmuş olarak sunar (bugün 404.html) |
 
 ## 12. Liste sayfaları ve adres parametreleri
 
 **Adres çözümü** (`MolaVeri.adres`): `/<tip kökü>/` tipin bütün
-ürünleri; `/<tip kökü>/<slug>/` kategori ya da liste sayfası (bölüm 5);
+ürünleri; `/<tip kökü>/<slug>/` sırasıyla liste sayfası, kategori ya da
+şehir (bölüm 5; slug'lar çakışamaz);
 `/temalar/<slug>/`, `/koleksiyonlar/<slug>/`; `/temalar/` ve
 `/koleksiyonlar/` dizin; `/firsatlar/` indirimli ürünler; `/<tip
 yolu>/<slug>/` ürün. Büyük harf, sondaki eğik çizginin eksikliği ve
@@ -458,6 +491,7 @@ olduğu için süzülmüş kombinasyonlar ayrı sayfa olarak dizine girmez.
 | `ay` | Satış tarihi o ayda (bu ay + 5 ay). Her gün satılan ürün her aya uyar | `ay=2026-10` |
 | `sure` | Tur süresi: `gunubirlik`, `1-2-gece`, `3-5-gece`, `6-gece-ustu` | `sure=gunubirlik` |
 | `bolge` | Bölge (şehirden türetilir) | `bolge=ege,akdeniz` |
+| `sehir` | Destinasyon şehri | `sehir=antalya` |
 | `kalkis` | Kalkış şehri | `kalkis=izmir` |
 | `ulasim` | Ulaşım | `ulasim=otobus` |
 | `pansiyon` | Pansiyon (otelin pansiyon kodlarından) | `pansiyon=her-sey-dahil` |
@@ -466,13 +500,21 @@ olduğu için süzülmüş kombinasyonlar ayrı sayfa olarak dizine girmez.
 | `fiyat` | TL fiyat aralığı `[alt, üst)`; döviz fiyatlı ürün TL aralığında aranmaz | `fiyat=1000-2500`, `fiyat=10000-` |
 | `puan` | En az puan (5 üzerinden; otelin 10'luk puanı yarıya) | `puan=4.5` |
 | `indirimli` | Liste fiyatının altında satılanlar | `indirimli=1` |
-| `sirala` | `onerilen` (varsayılan), `fiyat-artan`, `fiyat-azalan`, `tarih`, `puan` | `sirala=fiyat-artan` |
+| `sirala` | `onerilen` (varsayılan), `fiyat-artan`, `fiyat-azalan`, `tarih`, `yeni`, `puan`; arama sayfasında `alaka` (orada varsayılan) | `sirala=fiyat-artan` |
+| `q` | Metin araması (yalnızca `/arama/`) | `q=kapadokya+balon` |
 | `sayfa` | Açılan sayfa sayısı (24'er) | `sayfa=2` |
 
 **Kurallar:** alan içindeki seçenekler VEYA, alanlar arası VE. Seçeneğin
 yanındaki sayı, o alan hariç diğer seçimler geçerliyken o seçeneğin
 sonuç sayısı. Sonucu daraltmayan alan gösterilmez. Tanınmayan değer
 sessizce atılır; motora ait olmayan parametreler (`utm_*`) korunur.
+
+**Arama** (`kapiAramaPuani`): sorgudaki her kelime bir yerde geçmeli
+(VE). Ağırlıklar: başlıkta kelime başı 5, başlığın içinde 3,
+sınıflandırma (kategori, tema, koleksiyon, şehir, bölge, tip adı) 2, yer
+ve kart satırı 1. Büyük/küçük harf, şapka ve Türkçe harf farkı yok
+sayılır; sorgu kelimesi en az 4 harflik bir kelimeyle başlıyorsa da
+eşleşir ("kapadokyada" → "kapadokya"). Arama sayfası dizine girmez.
 
 **Önerilen sıralama:** puan, yorum sayısıyla sitenin ortalamasına doğru
 çekilerek (Bayes ortalaması; az yorumlu yüksek puan önde değil).
