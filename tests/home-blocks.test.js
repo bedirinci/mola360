@@ -210,9 +210,16 @@ describe('blok verileri', () => {
     expect(SEO_LINK_GROUPS.length).toBeGreaterThanOrEqual(4);
     const tumu = SEO_LINK_GROUPS.flatMap(g => g.links).concat(SEO_RELATED_SEARCHES);
     expect(tumu.length).toBeGreaterThanOrEqual(60);
+    /* Her bağ gerçek bir sayfaya: yönlendiricinin tanıdığı bir adres
+       (ya da dosyası olan ürün) ve yalnızca bilinen parametreler. */
+    const bilinen = new Set(MolaVeri.yuzeyTanimlari('2026-09-21').map(a => a.key).concat(['q', 'sirala', 'sayfa']));
     tumu.forEach(bag => {
       expect(bag.label.trim()).not.toBe('');
-      expect(bag.href.startsWith('#/')).toBe(true);
+      expect(bag.href.startsWith('#'), bag.href + ' yer tutucu').toBe(false);
+      const [yol, sorgu] = bag.href.split('#')[0].split('?');
+      expect(MolaVeri.adres(yol), bag.label + ' → ' + bag.href).toBeTruthy();
+      (sorgu || '').split('&').filter(Boolean).forEach(p =>
+        expect(bilinen.has(p.split('=')[0]), bag.href).toBe(true));
     });
   });
 

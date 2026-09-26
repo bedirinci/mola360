@@ -50,6 +50,7 @@ const TAXONOMY_CITIES = [
   { slug: 'kayseri',     name: 'Kayseri',     region: 'ic-anadolu' },
   { slug: 'bolu',        name: 'Bolu',        region: 'karadeniz' },
   { slug: 'rize',        name: 'Rize',        region: 'karadeniz' },
+  { slug: 'trabzon',     name: 'Trabzon',     region: 'karadeniz' },
   { slug: 'kars',        name: 'Kars',        region: 'dogu-anadolu' },
   { slug: 'girne',       name: 'Girne',       region: 'kibris' },
   { slug: 'sakiz-adasi', name: 'Sakız Adası', region: 'yunanistan' }
@@ -59,12 +60,15 @@ const TAXONOMY_CITIES = [
    Liste adresinin kökü ve sayfalarda görünen tip adları. Turda iki alt
    tip var (günübirlik/konaklamalı); kayıttaki category, categoryShort,
    categoryPlural ve categoryAnchor alanları turda BUNUN görüntüsü. */
+/* cityTitle: şehir sayfasının başlığındaki ek ("İzmir Turları",
+   "Antalya Otelleri"); Türkçe iyelik eki tipten tipe değiştiği için
+   veride yazılı. */
 const TAXONOMY_TYPES = {
-  tour:     { path: 'tur',      base: 'turlar',      name: 'Tur',      plural: 'Turlar',      anchor: 'turlar' },
-  hotel:    { path: 'otel',     base: 'oteller',     name: 'Otel',     plural: 'Oteller',     anchor: 'oteller' },
-  activity: { path: 'aktivite', base: 'aktiviteler', name: 'Aktivite', plural: 'Aktiviteler', anchor: 'aktiviteler' },
-  event:    { path: 'etkinlik', base: 'etkinlikler', name: 'Etkinlik', plural: 'Etkinlikler', anchor: 'etkinlikler' },
-  venue:    { path: 'mekan',    base: 'mekanlar',    name: 'Mekan',    plural: 'Mekanlar',    anchor: 'mekanlar' }
+  tour:     { path: 'tur',      base: 'turlar',      name: 'Tur',      plural: 'Turlar',      anchor: 'turlar',      cityTitle: 'Turları' },
+  hotel:    { path: 'otel',     base: 'oteller',     name: 'Otel',     plural: 'Oteller',     anchor: 'oteller',     cityTitle: 'Otelleri' },
+  activity: { path: 'aktivite', base: 'aktiviteler', name: 'Aktivite', plural: 'Aktiviteler', anchor: 'aktiviteler', cityTitle: 'Aktiviteleri' },
+  event:    { path: 'etkinlik', base: 'etkinlikler', name: 'Etkinlik', plural: 'Etkinlikler', anchor: 'etkinlikler', cityTitle: 'Etkinlikleri' },
+  venue:    { path: 'mekan',    base: 'mekanlar',    name: 'Mekan',    plural: 'Mekanlar',    anchor: 'mekanlar',    cityTitle: 'Mekanları' }
 };
 
 const TAXONOMY_TOUR_KINDS = {
@@ -438,8 +442,10 @@ function taxonomyBoardByCode(code) {
    Liste adresinin (/<base>/<slug>/) tek karar noktası; 2. adımdaki
    yönlendirici de bunu kullanacak.
 
-   Dönüş: { kind: 'type-list' | 'category' | 'listing' | 'theme' |
-            'collection' | 'static', … } veya null (bulunamadı → 404). */
+   Dönüş: { kind: 'type-list' | 'category' | 'listing' | 'city' |
+            'theme' | 'collection' | 'static', … } veya null (bulunamadı
+            → 404). Aynı kök altında sıra: liste sayfası, kategori, şehir;
+            slug'ları çakışamaz (tests/taksonomi.test.js). */
 function taxonomyResolvePath(yol) {
   const temiz = String(yol || '').replace(/^\/+|\/+$/g, '');
   if (!temiz) return null;
@@ -469,6 +475,10 @@ function taxonomyResolvePath(yol) {
   if (tip) {
     const k = taxonomyCategory(tip, slug);
     if (k) return { kind: 'category', type: tip, category: k };
+    /* Şehir sayfası: /turlar/izmir/, /oteller/antalya/. Ürünün
+       destinasyon şehri (taxonomy.city); kalkış şehri değil. */
+    const sehir = taxonomyCity(slug);
+    if (sehir) return { kind: 'city', type: tip, city: sehir };
   }
   return null;
 }

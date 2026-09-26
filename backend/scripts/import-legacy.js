@@ -690,7 +690,7 @@ async function kayitAktar(c, tip, anahtar, k, medya, taks, yoneticiId) {
     `INSERT INTO content (type, slug, status, title, tagline, category_id, area,
        region_id, city_id, product_code, card_media_id, card_title, card_meta,
        card_badges, currency, published_at, created_by, updated_by)
-     VALUES ($1,$2,'published',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$15,now(),$14,$14)
+     VALUES ($1,$2,'published',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$15,COALESCE($16::timestamptz, now()),$14,$14)
      ON CONFLICT (type, slug) WHERE deleted_at IS NULL DO UPDATE
        SET title = EXCLUDED.title, tagline = EXCLUDED.tagline,
            category_id = EXCLUDED.category_id, area = EXCLUDED.area,
@@ -698,15 +698,18 @@ async function kayitAktar(c, tip, anahtar, k, medya, taks, yoneticiId) {
            product_code = EXCLUDED.product_code, card_media_id = EXCLUDED.card_media_id,
            card_title = EXCLUDED.card_title, card_meta = EXCLUDED.card_meta,
            card_badges = EXCLUDED.card_badges, currency = EXCLUDED.currency,
+           published_at = EXCLUDED.published_at,
            updated_by = EXCLUDED.updated_by
      RETURNING id`,
     [tip, k.slug || anahtar, metin(k.title), metin(k.tagline), kategoriId,
      metin(k.area), bolgeId, sehirId, metin(k.code) || null,
      medya.get(kart.img) || null, metin(kart.title), metin(kart.meta1),
-     JSON.stringify(kart.badges || []), yoneticiId, metin(k.currency) || 'TRY']);
+     JSON.stringify(kart.badges || []), yoneticiId, metin(k.currency) || 'TRY',
+     metin(k.publishedAt) || null]);
   const id = rows[0].id;
-  ['title', 'tagline', 'area', 'region', 'code', 'card', 'currency'].forEach(a => kullanilan.add(a));
+  ['title', 'tagline', 'area', 'region', 'code', 'card', 'currency', 'publishedAt'].forEach(a => kullanilan.add(a));
   esle('*.currency', 'content.currency');
+  esle('*.publishedAt', 'content.published_at');
   esle('*.title/tagline/area/region/code', 'content.*');
   esle('*.card.{img,title,meta1,badges}', 'content.card_*');
 

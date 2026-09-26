@@ -216,6 +216,19 @@ describe('menü', () => {
   });
 });
 
+describe('şehir adresleri', () => {
+  it('şehir slug\'ı aynı kökteki kategori ve liste sayfası slug\'larıyla çakışmıyor', () => {
+    const sehirler = new Set(TAXONOMY_CITIES.map(c => c.slug));
+    TAXONOMY_CATEGORIES.forEach(k => expect(sehirler.has(k.slug), k.slug).toBe(false));
+    TAXONOMY_LISTINGS.forEach(l => expect(sehirler.has(l.slug), l.slug).toBe(false));
+  });
+
+  it('her tipin şehir başlığı eki var', () => {
+    Object.values(TAXONOMY_TYPES).forEach(t => expect(t.cityTitle, t.base).toBeTruthy());
+    expect(taxonomyResolvePath('oteller/antalya').kind).toBe('city');
+  });
+});
+
 describe('adres çözümü', () => {
   it('ürün tipi listesi, kategori, liste sayfası, tema, koleksiyon', () => {
     expect(taxonomyResolvePath('turlar')).toEqual({ kind: 'type-list', type: 'tour' });

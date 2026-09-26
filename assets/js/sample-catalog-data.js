@@ -365,6 +365,15 @@ const SAMPLE_PRODUCTS = {
   }
 };
 
+/* Yayına giriş tarihi: örnek kayıtların hepsi aynı gün depoya girdi
+   (1. adım, anasayfa kartlarının kayda dönüştüğü gün). Kayıtta
+   yazılıysa o geçerli. */
+const ORNEK_YAYIN_TARIHI = '2026-09-26';
+Object.keys(SAMPLE_PRODUCTS).forEach(tip => Object.keys(SAMPLE_PRODUCTS[tip]).forEach(slug => {
+  const k = SAMPLE_PRODUCTS[tip][slug];
+  if (!k.publishedAt) k.publishedAt = ORNEK_YAYIN_TARIHI;
+}));
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { SAMPLE_PRODUCTS, ornekTemsiller, ORNEK_SEZON };
 }

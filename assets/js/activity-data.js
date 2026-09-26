@@ -277,6 +277,9 @@ const ACTIVITIES = {
       facets: {}
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
     seo: {
       title: 'Kapadokya Sıcak Hava Balonu Turu — Göreme | mola360',
       description: 'Göreme\'de gün doğumunda bir saat balon uçuşu: otelden alım, kahvaltı, köpüklü ikram ve uçuş sertifikası dahil. Üç paket, {fiyat}\'den başlayan fiyatlar, hava koşulunda tam iade.',

@@ -603,6 +603,9 @@ const TOURS = {
       facets: { transport: ['minibus'], departFrom: ['izmir'] }
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-19',
     seo: {
       title: 'Efes Antik Kenti, Meryem Ana Evi ve Şirince Turu — mola360',
       description: 'İzmir çıkışlı tam gün Efes turu: Celsus Kütüphanesi, Büyük Tiyatro, Meryem Ana Evi, Artemis Tapınağı ve Şirince. Lisanslı rehber, öğle yemeği ve girişler dahil, en fazla 16 kişi.',
@@ -902,6 +905,9 @@ const TOURS = {
       facets: { transport: ['ucak'] }
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-19',
     seo: {
       title: 'Kapadokya Turu — 3 Gece 4 Gün — mola360',
       description: 'Uçaklı Kapadokya turu, 3 gece 4 gün: Göreme Açık Hava Müzesi, Zelve, Ihlara Vadisi, Derinkuyu ve Uçhisar. Göreme\'de mağara otel, uçak bileti ve transferler dahil, üç tam gün rehberli.',

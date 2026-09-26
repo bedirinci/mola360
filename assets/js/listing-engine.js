@@ -43,6 +43,7 @@ const SUZ_SIRALAMALAR = [
   { slug: 'fiyat-artan',  name: 'Fiyat: Artan' },
   { slug: 'fiyat-azalan', name: 'Fiyat: Azalan' },
   { slug: 'tarih',        name: 'En yakın tarih' },
+  { slug: 'yeni',         name: 'En yeni' },
   { slug: 'puan',         name: 'Puan: Yüksek' }
 ];
 
@@ -259,6 +260,11 @@ function suzSirala(satirlar, anahtar) {
     'alaka': (a, b) => ((Number(b.alaka) || 0) - (Number(a.alaka) || 0)) || oneri(a, b),
     'fiyat-artan': fiyat(1),
     'fiyat-azalan': fiyat(-1),
+    /* Yayına giriş tarihi (publishedAt), en yeni başta. */
+    'yeni': (a, b) => {
+      if (a.publishedAt !== b.publishedAt) return String(b.publishedAt || '').localeCompare(String(a.publishedAt || ''));
+      return oneri(a, b);
+    },
     'tarih': (a, b) => {
       if (a.nextDate && b.nextDate && a.nextDate !== b.nextDate) return a.nextDate < b.nextDate ? -1 : 1;
       if (!!a.nextDate !== !!b.nextDate) return a.nextDate ? -1 : 1;

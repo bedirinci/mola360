@@ -358,6 +358,9 @@ const HOTELS = {
       facets: {}
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
     seo: {
       title: 'Kordon Butik Otel — Alsancak, İzmir | mola360',
       description: 'Alsancak\'ta Kordon\'a 120 metre, 28 odalı butik şehir oteli. Teras katta körfez manzaralı açık büfe kahvaltı dahil, 72 saate kadar ücretsiz iptal, gecelik {fiyat}\'den başlayan fiyatlar.',

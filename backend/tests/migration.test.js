@@ -319,6 +319,18 @@ describe('sınıflandırma', () => {
   });
 });
 
+describe('yayın tarihi', () => {
+  it('kaydın yayına giriş tarihi content.published_at\'ta', async () => {
+    for (const x of TUM_KAYITLAR) {
+      if (!x.k.publishedAt) continue;
+      const { rows } = await sorgu(
+        `SELECT to_char(published_at, 'YYYY-MM-DD') AS gun FROM content
+          WHERE type = $1 AND slug = $2 AND deleted_at IS NULL`, [x.tip, x.k.slug]);
+      expect(rows[0].gun, x.k.slug).toBe(x.k.publishedAt);
+    }
+  });
+});
+
 describe('ilişkiler ve medya', () => {
   it('benzer içerikler ID ile bağlanmış, çözülemeyenler kaybolmamış', async () => {
     const toplamBenzer = TUM_KAYITLAR.reduce((t, x) => t + (x.k.similar || []).length, 0);

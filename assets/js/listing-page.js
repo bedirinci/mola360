@@ -363,7 +363,7 @@ function lspListeKur(kok, model, seo, bugun) {
   /* Arama sayfasında varsayılan sıralama "en alakalı"; diğer
      sayfalarda bu seçenek yok. */
   const arama = model.kind === 'search';
-  const varsayilan = arama ? 'alaka' : 'onerilen';
+  const varsayilan = arama ? 'alaka' : (model.varsayilanSiralama || 'onerilen');
   const alanlar = MolaVeri.yuzeyTanimlari(bugun);
   const oku = lspMotor('suzOku');
   const yaz = lspMotor('suzYaz');
@@ -614,6 +614,59 @@ function lspAramaKur(kok, bugun) {
   });
 }
 
+/* ---------------- bu hafta: ajanda ----------------
+   Önümüzdeki 7 günün sabit saatli planları, gün gün (veri kapısı:
+   haftaAjandasi). Gün başlıklarının kimliği gün adı (#cuma): anasayfanın
+   "Bu Cuma" bağı doğrudan o güne iner. */
+function lspHaftaKartlari(ogeler, bugun) {
+  const kartUret = (typeof KATALOG_KART !== 'undefined') ? KATALOG_KART : null;
+  const isaretle = (typeof compactCardMarkup === 'function') ? compactCardMarkup : null;
+  if (!kartUret || !isaretle) return '';
+  return ogeler.map(o => {
+    const tip = MolaVeri.icerikTipi(o.kayit);
+    const kart = kartUret[tip] ? kartUret[tip](o.kayit, bugun) : null;
+    /* Kartın tarih rozeti o günün saati: ajandada gün zaten başlıkta. */
+    return kart ? isaretle({}, Object.assign({}, kart, { meta2: o.saat || kart.meta2 })) : '';
+  }).join('');
+}
+
+function lspHaftaKur(kok, adres, bugun) {
+  const model = MolaVeri.sayfaModeli(adres, bugun);
+  const gunler = MolaVeri.haftaAjandasi(bugun, 7);
+  const toplam = gunler.reduce((t, g) => t + g.ogeler.length, 0);
+  lspMetaYaz({ title: model.baslik + ' — mola360',
+    description: 'Önümüzdeki 7 günün turları ve etkinlikleri, gün gün: ' + toplam + ' plan.',
+    canonical: lspSiteAdresi() + adres.path + '/', noindex: toplam === 0 });
+  const dolu = gunler.filter(g => g.ogeler.length);
+  kok.innerHTML = lspMobilBaslikMarkup(model.baslik, toplam + ' plan · 7 gün', '')
+    + '<main class="lst-page lst-week" id="lstPage">'
+    + lspKirintiMarkup(model.kirinti)
+    + '<header class="lst-head"><h1>' + lspKacis(model.baslik) + '</h1>'
+    + '<p class="lst-summary">Bugünden itibaren 7 gün · ' + toplam + ' tur ve etkinlik</p></header>'
+    + '<nav class="lst-chips" aria-label="Günler">'
+    + gunler.map(g => '<a class="lst-chip' + (g.ogeler.length ? '' : ' is-empty') + '" href="#' + g.slug + '">'
+      + lspKacis(g.etiket) + '<span class="lst-chip-count">' + g.ogeler.length + '</span></a>').join('')
+    + '</nav>'
+    + (dolu.length ? '' : '<div class="lst-empty"><strong>Bu hafta için planlanmış tur veya etkinlik yok.</strong></div>')
+    + gunler.map(g => '<section class="lst-day" id="' + g.slug + '" aria-labelledby="gun-' + g.slug + '">'
+      + '<h2 id="gun-' + g.slug + '"><span>' + lspKacis(g.etiket) + '</span>'
+      + '<small>' + lspKacis(g.tarihMetni) + '</small></h2>'
+      + (g.ogeler.length
+        ? '<div class="lst-grid lst-grid-compact">' + lspHaftaKartlari(g.ogeler, bugun) + '</div>'
+        : '<p class="lst-day-empty">Bu gün için plan yok.</p>')
+      + '</section>').join('')
+    + '<p class="lst-week-note">Oteller, aktiviteler ve mekânlar her gün satışta; onlar için '
+    + '<a href="aktiviteler/">aktivitelere</a>, <a href="oteller/">otellere</a> ve <a href="mekanlar/">mekânlara</a> göz at.</p>'
+    + '</main>';
+  lspBaslikYuksekligi();
+  /* Adresteki güne in (#cuma). */
+  if (location.hash) {
+    const hedef = document.getElementById(location.hash.slice(1));
+    if (hedef) setTimeout(() => hedef.scrollIntoView({ block: 'start' }), 0);
+  }
+  return null;
+}
+
 /* ---------------- açılış ----------------
    Yalnızca yönlendirici sayfada (<body data-sayfa="yonlendirici">)
    çalışır; başka sayfa bu dosyayı yüklese bile bir şey yapmaz. */
@@ -669,6 +722,7 @@ function lspBaslat() {
   }
 
   if (adres.kind === 'search') return lspAramaKur(kok, bugun);
+  if (adres.kind === 'week') return lspHaftaKur(kok, adres, bugun);
 
   const model = MolaVeri.sayfaModeli(adres, bugun);
   if (!model) return lspBulunamadi(kok, goreli, bugun);

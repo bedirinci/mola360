@@ -345,6 +345,9 @@ const PLACES = {
       facets: {}
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
     seo: {
       title: 'Kum Beach Club | mola360',
       description: 'Alaçatı koyunda denize sıfır beach club: şezlong, sedir ve loca alanları, {fiyat}\'den başlayan minimum harcama, kapora masadaki hesaptan düşer. Gün boyu DJ, mutfak 23:00\'e kadar açık.',
@@ -627,6 +630,9 @@ const PLACES = {
       facets: {}
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
     seo: {
       title: 'Kordon Spa & Masaj | mola360',
       description: 'Alsancak\'ta randevulu masaj salonu: klasik, sıcak taş, aromaterapi ve çift masajı. {fiyat}\'den başlayan fiyatlar, ön ödeme yok, 6 saate kadar ücretsiz iptal.',

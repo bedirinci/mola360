@@ -281,6 +281,9 @@ const EVENTS = {
       facets: {}
     },
     currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
     seo: {
       title: 'Aspendos Opera ve Bale Festivali — Antik Tiyatro | mola360',
       description: 'Aspendos Antik Tiyatro\'da açık hava opera ve bale gecesi: numaralı koltuk, dört bilet bloğu, {fiyat}\'den başlayan fiyatlar. Yağmurda yeni tarihe ücretsiz aktarım.',

@@ -221,75 +221,79 @@ function homeSectionHead(title, link, subtitle, hedef) {
 
 /* Ic baglanti agi. Her grup bir sutun olur; tek tek satir silinerek
    veya eklenerek buyutulup kucultulebilir. */
+/* Her bağ gerçek bir sayfaya gidiyor: liste, şehir, tema, koleksiyon,
+   ürün veya arama sayfası (/arama/?q=). Hedefi olmayan bağ yazılamıyor
+   (tests/home-blocks.test.js yönlendiriciye soruyor). Ürünü olmayan
+   liste sayfası "yakında ürün yok" diyor ve dizine girmiyor. */
 const SEO_LINK_GROUPS = [
   {
     title: 'Şehre göre',
     links: [
-      { label: 'İstanbul etkinlikleri',      href: '#/istanbul-etkinlikleri' },
-      { label: 'Bursa etkinlikleri',         href: '#/bursa-etkinlikleri' },
-      { label: 'İzmir turları',              href: '#/izmir-turlari' },
-      { label: 'Ankara konserleri',          href: '#/ankara-konserleri' },
-      { label: 'Antalya otelleri',           href: '#/antalya-otelleri' },
-      { label: 'Muğla tekne turları',        href: '#/mugla-tekne-turlari' },
-      { label: 'Trabzon yayla turları',      href: '#/trabzon-yayla-turlari' },
-      { label: 'Rize yayla turları',         href: '#/rize-yayla-turlari' },
-      { label: 'Nevşehir balon turları',     href: '#/nevsehir-balon-turlari' },
-      { label: 'Çanakkale günübirlik turlar',href: '#/canakkale-gunubirlik-turlar' },
-      { label: 'Denizli termal otelleri',    href: '#/denizli-termal-otelleri' },
-      { label: 'Balıkesir bungalov evleri',  href: '#/balikesir-bungalov' }
+      { label: 'İstanbul etkinlikleri',      href: 'etkinlikler/istanbul/' },
+      { label: 'Bursa etkinlikleri',         href: 'etkinlikler/bursa/' },
+      { label: 'İzmir turları',              href: 'turlar/izmir/' },
+      { label: 'Ankara konserleri',          href: 'etkinlikler/konserler/?sehir=ankara' },
+      { label: 'Antalya otelleri',           href: 'oteller/antalya/' },
+      { label: 'Muğla tekne turları',        href: 'aktiviteler/tekne-turlari/?sehir=mugla' },
+      { label: 'Trabzon yayla turları',      href: 'turlar/trabzon/' },
+      { label: 'Rize yayla turları',         href: 'turlar/rize/' },
+      { label: 'Nevşehir balon turları',     href: 'aktiviteler/nevsehir/' },
+      { label: 'Çanakkale günübirlik turlar',href: 'turlar/canakkale/' },
+      { label: 'Denizli termal otelleri',    href: 'oteller/termal-oteller/?sehir=denizli' },
+      { label: 'Balıkesir bungalov evleri',  href: 'oteller/bungalovlar/?sehir=balikesir' }
     ]
   },
   {
     title: 'Kategoriye göre',
     links: [
-      { label: 'Konser biletleri',           href: '#/konser-biletleri' },
-      { label: 'Festival biletleri',         href: '#/festival-biletleri' },
-      { label: 'Tiyatro biletleri',          href: '#/tiyatro-biletleri' },
-      { label: 'Stand up biletleri',         href: '#/stand-up-biletleri' },
-      { label: 'Günübirlik turlar',          href: '#/gunubirlik-turlar' },
-      { label: 'Yurt içi turlar',            href: '#/yurt-ici-turlar' },
-      { label: 'Kültür turları',             href: '#/kultur-turlari' },
-      { label: 'Butik oteller',              href: '#/butik-oteller' },
-      { label: 'Termal oteller',             href: '#/termal-oteller' },
-      { label: 'Bungalov & doğa evleri',     href: '#/bungalov-doga-evleri' },
-      { label: 'Aktiviteler & atölyeler',    href: '#/aktiviteler' },
-      { label: 'Müze ve ören yerleri',       href: '#/muze-oren-yerleri' },
-      { label: 'İzmir gezilecek yerler',     href: '#/izmir-gezilecek-yerler' },
-      { label: 'Efes Antik Kent',            href: '#/efes-antik-kent' }
+      { label: 'Konser biletleri',           href: 'etkinlikler/konserler/' },
+      { label: 'Festival biletleri',         href: 'etkinlikler/festivaller/' },
+      { label: 'Tiyatro biletleri',          href: 'etkinlikler/tiyatro/' },
+      { label: 'Stand up biletleri',         href: 'etkinlikler/stand-up/' },
+      { label: 'Günübirlik turlar',          href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Yurt içi turlar',            href: 'turlar/yurt-ici-turlar/' },
+      { label: 'Kültür turları',             href: 'turlar/kultur-turlari/' },
+      { label: 'Butik oteller',              href: 'oteller/butik-oteller/' },
+      { label: 'Termal oteller',             href: 'oteller/termal-oteller/' },
+      { label: 'Bungalov & doğa evleri',     href: 'oteller/bungalovlar/' },
+      { label: 'Aktiviteler & atölyeler',    href: 'aktiviteler/' },
+      { label: 'Müze ve ören yerleri',       href: 'arama/?q=antik' },
+      { label: 'İzmir gezilecek yerler',     href: 'arama/?q=izmir' },
+      { label: 'Efes Antik Kent',            href: 'tur/efes-sirince/' }
     ]
   },
   {
     title: 'Temaya göre',
     links: [
-      { label: 'Doğa & yayla turları',       href: '#/doga-yayla-turlari' },
-      { label: 'Kültür & tarih turları',     href: '#/kultur-tarih-turlari' },
-      { label: 'Deniz & tekne turları',      href: '#/deniz-tekne-turlari' },
-      { label: 'Kış sporları & kayak',       href: '#/kis-sporlari-kayak' },
-      { label: 'Gastronomi turları',         href: '#/gastronomi-turlari' },
-      { label: 'Macera & adrenalin',         href: '#/macera-adrenalin' },
-      { label: 'Yamaç paraşütü',             href: '#/yamac-parasutu' },
-      { label: 'Sıcak hava balonu',          href: '#/sicak-hava-balonu' },
-      { label: 'Rafting turları',            href: '#/rafting-turlari' },
-      { label: 'Dalış turları',              href: '#/dalis-turlari' },
-      { label: 'Fotoğraf turları',           href: '#/fotograf-turlari' },
-      { label: 'Kamp & karavan',             href: '#/kamp-karavan' }
+      { label: 'Doğa & yayla turları',       href: 'temalar/doga-yayla/' },
+      { label: 'Kültür & tarih turları',     href: 'temalar/kultur-tarih/' },
+      { label: 'Deniz & tekne turları',      href: 'temalar/deniz-tekne/' },
+      { label: 'Kış sporları & kayak',       href: 'temalar/kis-sporlari/' },
+      { label: 'Gastronomi turları',         href: 'temalar/gastronomi/' },
+      { label: 'Macera & adrenalin',         href: 'temalar/macera-adrenalin/' },
+      { label: 'Yamaç paraşütü',             href: 'arama/?q=yamac+parasutu' },
+      { label: 'Sıcak hava balonu',          href: 'aktivite/kapadokya-balon-turu/' },
+      { label: 'Rafting turları',            href: 'arama/?q=rafting' },
+      { label: 'Dalış turları',              href: 'aktiviteler/su-sporlari/' },
+      { label: 'Fotoğraf turları',           href: 'arama/?q=fotograf' },
+      { label: 'Kamp & karavan',             href: 'arama/?q=kamp' }
     ]
   },
   {
     title: 'Plana göre',
     links: [
-      { label: 'Bu hafta sonu ne var?',      href: '#/bu-hafta-sonu' },
-      { label: 'Bu Cuma',                    href: '#/bu-cuma' },
-      { label: 'Bu Cumartesi',               href: '#/bu-cumartesi' },
-      { label: 'Bu Pazar',                   href: '#/bu-pazar' },
-      { label: 'Son dakika fırsatları',      href: '#/son-dakika-firsatlari' },
-      { label: 'Uzun hafta sonu planları',   href: '#/uzun-hafta-sonu' },
-      { label: 'Ailece gezilecek yerler',    href: '#/ailece' },
-      { label: 'Romantik kaçamaklar',        href: '#/romantik-kacamaklar' },
-      { label: 'Bütçe dostu planlar',        href: '#/butce-dostu' },
-      { label: 'Tek başına seyahat',         href: '#/tek-basina-seyahat' },
-      { label: 'Arkadaş grubuyla',           href: '#/arkadas-grubu' },
-      { label: 'Yeni başlayanlar için',      href: '#/yeni-baslayanlar' }
+      { label: 'Bu hafta sonu ne var?',      href: 'turlar/hafta-sonu-turlari/' },
+      { label: 'Bu Cuma',                    href: 'bu-hafta/#cuma' },
+      { label: 'Bu Cumartesi',               href: 'bu-hafta/#cumartesi' },
+      { label: 'Bu Pazar',                   href: 'bu-hafta/#pazar' },
+      { label: 'Son dakika fırsatları',      href: 'koleksiyonlar/son-dakika/' },
+      { label: 'Uzun hafta sonu planları',   href: 'koleksiyonlar/uzun-hafta-sonu/' },
+      { label: 'Ailece gezilecek yerler',    href: 'koleksiyonlar/ailece/' },
+      { label: 'Romantik kaçamaklar',        href: 'koleksiyonlar/romantik/' },
+      { label: 'Bütçe dostu planlar',        href: 'koleksiyonlar/butce-dostu/' },
+      { label: 'Tek başına seyahat',         href: 'koleksiyonlar/tek-basina/' },
+      { label: 'Arkadaş grubuyla',           href: 'koleksiyonlar/arkadas-grubu/' },
+      { label: 'Yeni başlayanlar için',      href: 'koleksiyonlar/yeni-baslayanlar/' }
     ]
   }
 ];
@@ -297,30 +301,30 @@ const SEO_LINK_GROUPS = [
 /* Uzun kuyruk arama ifadeleri. Kullanicinin gercekte aradigi cumleler;
    her biri bir hub sayfasina baglanir. */
 const SEO_RELATED_SEARCHES = [
-  { label: 'kapadokya balon turu fiyatları',      href: '#/kapadokya-balon-turu-fiyatlari' },
-  { label: 'bursa hafta sonu kaçamağı',           href: '#/bursa-hafta-sonu-kacamagi' },
-  { label: 'istanbul yakınında günübirlik turlar',href: '#/istanbul-gunubirlik-turlar' },
-  { label: 'uludağ kayak paketi',                 href: '#/uludag-kayak-paketi' },
-  { label: 'ayder yaylası turu',                  href: '#/ayder-yaylasi-turu' },
-  { label: 'pamukkale termal tatili',             href: '#/pamukkale-termal-tatili' },
-  { label: 'bodrum tekne turu günübirlik',        href: '#/bodrum-tekne-turu' },
-  { label: 'efes antik kent turu',                href: '#/efes-antik-kent-turu' },
-  { label: 'fethiye yamaç paraşütü',              href: '#/fethiye-yamac-parasutu' },
-  { label: 'çeşme konser takvimi',                href: '#/cesme-konser-takvimi' },
-  { label: 'ucuz konser bileti',                  href: '#/ucuz-konser-bileti' },
-  { label: 'çocuklu aileler için gezi',           href: '#/cocuklu-aileler-icin-gezi' },
-  { label: 'sevgililer günü kaçamağı',            href: '#/sevgililer-gunu' },
-  { label: 'bayram tatili turları',               href: '#/bayram-tatili-turlari' },
-  { label: 'doğada bungalov tatili',              href: '#/bungalov-tatili' },
-  { label: 'İzmir çevresi gezilecek yerler',      href: '#/izmir-cevresi-gezilecek-yerler' },
-  { label: 'karadeniz yayla turu 3 gün',          href: '#/karadeniz-yayla-turu' },
-  { label: 'son dakika otel fırsatı',             href: '#/son-dakika-otel' },
-  { label: 'açık hava sineması etkinlikleri',     href: '#/acik-hava-sinemasi' },
-  { label: 'kahve ve gastronomi festivali',       href: '#/gastronomi-festivali' },
-  { label: 'izmir kemeraltı çarşısı',             href: '#/izmir-kemeralti' },
-  { label: 'alaçatı taş sokaklar',                href: '#/alacati-tas-sokaklar' },
-  { label: 'aspendos opera ve bale festivali',    href: '#/aspendos-festivali' },
-  { label: 'erciyes kayak paketi',                href: '#/erciyes-kayak-paketi' }
+  { label: 'kapadokya balon turu fiyatları',      href: 'arama/?q=kapadokya+balon' },
+  { label: 'bursa hafta sonu kaçamağı',           href: 'arama/?q=bursa' },
+  { label: 'istanbul yakınında günübirlik turlar',href: 'turlar/gunubirlik-turlar/?kalkis=istanbul' },
+  { label: 'uludağ kayak paketi',                 href: 'aktivite/uludag-kayak-paketi/' },
+  { label: 'ayder yaylası turu',                  href: 'tur/karadeniz-yaylalari/' },
+  { label: 'pamukkale termal tatili',             href: 'tur/pamukkale-hierapolis/' },
+  { label: 'bodrum tekne turu günübirlik',        href: 'aktivite/bodrum-tekne-turu/' },
+  { label: 'efes antik kent turu',                href: 'arama/?q=efes' },
+  { label: 'fethiye yamaç paraşütü',              href: 'aktivite/oludeniz-yamac-parasutu/' },
+  { label: 'çeşme konser takvimi',                href: 'etkinlikler/izmir/' },
+  { label: 'ucuz konser bileti',                  href: 'etkinlikler/konserler/?sirala=fiyat-artan' },
+  { label: 'çocuklu aileler için gezi',           href: 'etkinlikler/cocuk-etkinlikleri/' },
+  { label: 'sevgililer günü kaçamağı',            href: 'oteller/balayi-otelleri/' },
+  { label: 'bayram tatili turları',               href: 'turlar/konaklamali-turlar/' },
+  { label: 'doğada bungalov tatili',              href: 'arama/?q=bungalov' },
+  { label: 'İzmir çevresi gezilecek yerler',      href: 'turlar/?kalkis=izmir' },
+  { label: 'karadeniz yayla turu 3 gün',          href: 'turlar/karadeniz-turlari/' },
+  { label: 'son dakika otel fırsatı',             href: 'firsatlar/indirimli-oteller/' },
+  { label: 'açık hava sineması etkinlikleri',     href: 'arama/?q=acikhava' },
+  { label: 'kahve ve gastronomi festivali',       href: 'etkinlik/istanbul-kahve-festivali/' },
+  { label: 'izmir kemeraltı çarşısı',             href: 'mekanlar/izmir/' },
+  { label: 'alaçatı taş sokaklar',                href: 'arama/?q=alacati' },
+  { label: 'aspendos opera ve bale festivali',    href: 'etkinlik/aspendos-opera-bale-festivali/' },
+  { label: 'erciyes kayak paketi',                href: 'tur/erciyes-kayak-haftasi/' }
 ];
 
 /* Uzun tanitim metni.

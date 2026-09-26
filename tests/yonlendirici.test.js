@@ -140,6 +140,82 @@ describe('adres çözümü', () => {
   });
 });
 
+describe('şehir sayfaları', () => {
+  it('/<tip kökü>/<şehir>/ şehrin ürünleri; başlık Türkçe ekle', () => {
+    const m = MolaVeri.sayfaModeli(MolaVeri.adres('oteller/antalya'), BUGUN);
+    expect(m.baslik).toBe('Antalya Otelleri');
+    expect(m.temel).toEqual({ type: 'hotel', city: 'antalya' });
+    expect(MolaVeri.sayfaModeli(MolaVeri.adres('turlar/izmir'), BUGUN).baslik).toBe('İzmir Turları');
+    expect(MolaVeri.sayfaModeli(MolaVeri.adres('etkinlikler/istanbul'), BUGUN).baslik).toBe('İstanbul Etkinlikleri');
+    expect(MolaVeri.sayfaModeli(MolaVeri.adres('aktiviteler/mugla'), BUGUN).baslik).toBe('Muğla Aktiviteleri');
+    expect(MolaVeri.sayfaModeli(MolaVeri.adres('mekanlar/izmir'), BUGUN).baslik).toBe('İzmir Mekanları');
+  });
+
+  it('şehir destinasyon: kalkış şehri değil', () => {
+    const izmir = MolaVeri.listele({ type: 'tour', city: 'izmir' }, BUGUN).map(k => k.slug);
+    expect(izmir).toContain('efes-sirince');
+    /* Kapadokya turu İzmir'den de kalkıyor ama destinasyonu Nevşehir. */
+    expect(izmir).not.toContain('kapadokya-3-gece');
+  });
+
+  it('çipler aynı tipin ürünü olan şehirleri gösteriyor', () => {
+    const m = MolaVeri.sayfaModeli(MolaVeri.adres('oteller/antalya'), BUGUN);
+    m.altlar.forEach(c => expect(c.adet > 0 || c.aktif, c.path).toBe(true));
+    expect(m.altlar.find(c => c.aktif).path).toBe('oteller/antalya');
+  });
+
+  it('şehir süzgeci her listede: ?sehir=ankara', async () => {
+    const alanlar = MolaVeri.yuzeyTanimlari(BUGUN);
+    const sonuc = await MolaVeri.liste({ temel: { type: 'event', category: 'konserler' }, alanlar,
+      durum: { secim: { sehir: ['istanbul'] } }, bugun: BUGUN });
+    sonuc.satirlar.forEach(s => expect(s.kayit.taxonomy.city).toBe('istanbul'));
+  });
+});
+
+describe('yeni eklenenler ve bu hafta', () => {
+  it('her ürünün yayına giriş tarihi var (YYYY-AA-GG)', () => {
+    MolaVeri.urunler().forEach(k => expect(k.publishedAt, k.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/));
+  });
+
+  it('Yeni Eklenenler: bütün ürünler, en yeni başta', async () => {
+    const m = MolaVeri.sayfaModeli(MolaVeri.adres('yeni-eklenenler'), BUGUN);
+    expect(m.varsayilanSiralama).toBe('yeni');
+    const sonuc = await MolaVeri.liste({ temel: m.temel, durum: { secim: {}, siralama: 'yeni', sayfa: 5 }, bugun: BUGUN });
+    const tarihler = sonuc.satirlar.map(s => s.publishedAt);
+    expect(tarihler).toEqual(tarihler.slice().sort().reverse());
+    expect(sonuc.toplam).toBe(MolaVeri.listele({}, BUGUN).length);
+  });
+
+  it('Bu Hafta: 7 gün, gün gün sabit saatli planlar', () => {
+    const gunler = MolaVeri.haftaAjandasi(BUGUN, 7);
+    expect(gunler.length).toBe(7);
+    expect(gunler[0].etiket).toBe('Bugün');
+    expect(gunler[1].etiket).toBe('Yarın');
+    expect(new Set(gunler.map(g => g.slug)).size).toBe(7);
+    const son = gunler[6].tarih;
+    gunler.forEach(g => {
+      g.ogeler.forEach(o => {
+        expect(['tour', 'event']).toContain(MolaVeri.icerikTipi(o.kayit));
+        expect(g.tarih >= BUGUN && g.tarih <= son).toBe(true);
+      });
+      const saatler = g.ogeler.map(o => o.saat);
+      expect(saatler, g.tarih).toEqual(saatler.slice().sort());
+    });
+    /* Haftada birden çok kalkan tur her kalkış gününde ayrı. */
+    const efes = gunler.filter(g => g.ogeler.some(o => o.kayit.slug === 'efes-sirince')).length;
+    expect(efes).toBeGreaterThan(1);
+  });
+
+  it('ajanda tur takvimiyle aynı günleri veriyor', () => {
+    const { nextDepartureDates } = require('../assets/js/tour-data.js');
+    const efes = MolaVeri.urun('tour', 'efes-sirince');
+    const ajanda = MolaVeri.haftaAjandasi(BUGUN, 7).filter(g => g.ogeler.some(o => o.kayit.slug === 'efes-sirince')).map(g => g.tarih);
+    const takvim = nextDepartureDates(BUGUN, efes.pricing.departureDays, 10, efes.pricing.leadDays)
+      .filter(d => d <= MolaVeri.haftaAjandasi(BUGUN, 7)[6].tarih);
+    expect(ajanda).toEqual(takvim);
+  });
+});
+
 describe('sayfa modeli', () => {
   const model = (yol) => MolaVeri.sayfaModeli(MolaVeri.adres(yol), BUGUN);
 
@@ -217,7 +293,7 @@ describe('liste sorgusu', () => {
       expect(s.kayit.slug).toBe(s.slug);
       expect(s.path).toBe('tur/' + s.slug);
       expect(Object.keys(s.facets).sort())
-        .toEqual(['ay', 'bolge', 'kalkis', 'kimle', 'pansiyon', 'sure', 'tema', 'tip', 'ulasim']);
+        .toEqual(['ay', 'bolge', 'kalkis', 'kimle', 'pansiyon', 'sehir', 'sure', 'tema', 'tip', 'ulasim']);
     });
   });
 
