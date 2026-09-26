@@ -30,6 +30,7 @@ const KAPI_MEKAN = kapiModul('./venue-data.js');
 const KAPI_TAKSONOMI = kapiModul('./taxonomy-data.js');
 const KAPI_ENVANTER = kapiModul('./inventory-data.js');
 const KAPI_ORNEK = kapiModul('./sample-catalog-data.js');
+const KAPI_MOTOR = kapiModul('./listing-engine.js');
 
 /* Kanonik adreslerin kökü. Alan adı (mola360.com) hazır olduğunda tek
    değişecek satır. */
@@ -59,7 +60,10 @@ function kapiTaksonomi() {
     regions:     kapiDeger('TAXONOMY_REGIONS', T, typeof TAXONOMY_REGIONS !== 'undefined' ? TAXONOMY_REGIONS : undefined) || [],
     cities:      kapiDeger('TAXONOMY_CITIES', T, typeof TAXONOMY_CITIES !== 'undefined' ? TAXONOMY_CITIES : undefined) || [],
     listings:    kapiDeger('TAXONOMY_LISTINGS', T, typeof TAXONOMY_LISTINGS !== 'undefined' ? TAXONOMY_LISTINGS : undefined) || [],
-    facets:      kapiDeger('TAXONOMY_FACETS', T, typeof TAXONOMY_FACETS !== 'undefined' ? TAXONOMY_FACETS : undefined) || {}
+    facets:      kapiDeger('TAXONOMY_FACETS', T, typeof TAXONOMY_FACETS !== 'undefined' ? TAXONOMY_FACETS : undefined) || {},
+    menu:        kapiDeger('TAXONOMY_MENU', T, typeof TAXONOMY_MENU !== 'undefined' ? TAXONOMY_MENU : undefined) || [],
+    resolve:     kapiFn('taxonomyResolvePath', T, typeof taxonomyResolvePath !== 'undefined' ? taxonomyResolvePath : null),
+    categoryPath: kapiFn('taxonomyCategoryPath', T, typeof taxonomyCategoryPath !== 'undefined' ? taxonomyCategoryPath : null)
   };
 }
 
@@ -338,8 +342,17 @@ function kapiFiltreyeUyar(kayit, filtre, bugun) {
   return true;
 }
 
+/* Listelerde yalnızca SATILABİLİR ürün: sezonu biten etkinliğin sayfası
+   açılır ("program tamamlandı") ama liste, tema sayısı ve koleksiyon
+   onu saymaz; satın alınamayan ürünü listelemek ölü kart olurdu. */
+function kapiSatista(kayit, bugun) {
+  if (kapiIcerikTipi(kayit) !== 'event') return true;
+  return !!KAPI_TIPLER.event.ilkTarih(kayit, kapiISO(bugun || new Date()));
+}
+
 function kapiListele(filtre, bugun) {
-  return kapiUrunler((filtre && filtre.type) || null).filter(k => kapiFiltreyeUyar(k, filtre, bugun));
+  return kapiUrunler((filtre && filtre.type) || null)
+    .filter(k => kapiSatista(k, bugun) && kapiFiltreyeUyar(k, filtre, bugun));
 }
 
 /* /<base>/<slug>/ adresinin karşılığı: kategori veya liste sayfası.
@@ -352,6 +365,387 @@ function kapiListeSayfasi(base, slug) {
   const kat = tip ? kapiKategori(tip, slug) : null;
   if (kat) return { kind: 'category', category: kat, filter: { type: tip, category: kat.slug } };
   return null;
+}
+
+/* ---------------- liste satırı ----------------
+   Liste motorunun (listing-engine.js) okuduğu biçim: ürünün süzülen ve
+   sıralanan her niteliği tek düz nesnede. Backend geldiğinde bu satırı
+   arama dizini üretecek; motor ve ekran aynı kalacak.
+
+   facets[x] === null → "her değer" (her gün açık otel her aya uyar);
+   [] → "hiçbiri" (otelin süre dilimi yok). */
+
+/* Tarih süzgecinin ufku: bu ay + 5 ay. */
+const KAPI_AY_UFKU = 6;
+
+function kapiAyEkle(iso, ay) {
+  const d = kapiAsDate(iso);
+  return d ? kapiISO(new Date(d.getFullYear(), d.getMonth() + ay, 1)) : null;
+}
+
+/* Sabit tarihli ürünün (tur, etkinlik) ufuk içindeki satış tarihleri.
+   Her gün satılan ürün (otel, aktivite, mekân) için null. */
+function kapiSabitTarihler(kayit, tip, bugun) {
+  const gun = kapiISO(bugun || new Date());
+  const sinir = kapiAyEkle(gun, KAPI_AY_UFKU);
+  if (tip === 'tour') {
+    const p = kayit.pricing || {};
+    const f = kapiFn('nextDepartureDates', KAPI_TUR, typeof nextDepartureDates !== 'undefined' ? nextDepartureDates : null);
+    return f ? f(gun, p.departureDays, 400, p.leadDays).filter(d => d < sinir) : [];
+  }
+  if (tip === 'event') {
+    const f = kapiFn('upcomingPerformances', KAPI_ETKINLIK,
+      typeof upcomingPerformances !== 'undefined' ? upcomingPerformances : null);
+    return f ? f(kayit, gun).map(t => t.date).filter(d => d < sinir) : [];
+  }
+  return null;
+}
+
+/* Puan 5 üzerinden. Sayfası olan kayıtta yorum dağılımından, örnek
+   özette özetin kendisinden. Otel 10 üzerinden gösteriliyor; süzgeç ve
+   sıralama için 5'liğe çevriliyor. Puanı olmayan ürün null. */
+function kapiPuan5(kayit, tip) {
+  const onluk = tip === 'hotel';
+  if (kayit.rating && !kayit.ratingBreakdown) {
+    const ort = Number(kayit.rating.average);
+    return {
+      ortalama: Number.isFinite(ort) && ort > 0 ? Math.round((onluk ? ort / 2 : ort) * 100) / 100 : null,
+      adet: Number(kayit.rating.count) || 0
+    };
+  }
+  const ozet = kapiFn('ratingSummary', KAPI_TUR, typeof ratingSummary !== 'undefined' ? ratingSummary : null);
+  const r = ozet ? ozet(kayit.ratingBreakdown) : { total: 0, average: 0 };
+  return { ortalama: r.total ? r.average : null, adet: r.total };
+}
+
+function kapiListeSatiri(kayit, bugun) {
+  const ozet = kapiOzet(kayit, bugun);
+  if (!ozet) return null;
+  const tip = ozet.type;
+  const T = kapiTaksonomi();
+  const t = kayit.taxonomy || {};
+  const bolge = kapiUrunBolgesi(kayit);
+  const puan = kapiPuan5(kayit, tip);
+  const tarihler = kapiSabitTarihler(kayit, tip, bugun);
+  const sureFn = kapiFn('suzSureDilimi', KAPI_MOTOR, typeof suzSureDilimi !== 'undefined' ? suzSureDilimi : null);
+  const dilim = tip === 'tour' && sureFn ? sureFn(ozet.nights) : null;
+  const elle = T.collections.filter(c => c.mode === 'manual').map(c => c.slug);
+  return {
+    kayit,
+    type: tip,
+    slug: kayit.slug,
+    /* Ürünün adresi (kök göreli). */
+    path: T.types[tip].path + '/' + kayit.slug,
+    title: kayit.title,
+    price: ozet.price,
+    listPrice: ozet.listPrice,
+    currency: ozet.currency,
+    discounted: ozet.discounted,
+    nights: ozet.nights,
+    nextDate: tarihler ? (tarihler[0] || null) : ozet.nextDate,
+    rating: puan.ortalama,
+    ratingCount: puan.adet,
+    facets: {
+      tip: [T.types[tip].path],
+      ay: tarihler ? tarihler.map(d => d.slice(0, 7)).filter((m, i, d) => d.indexOf(m) === i) : null,
+      sure: dilim ? [dilim] : [],
+      bolge: bolge ? [bolge.slug] : [],
+      kalkis: kapiKalkisSehirleri(kayit),
+      ulasim: ((t.facets && t.facets.transport) || []).slice(),
+      pansiyon: kapiPansiyonlar(kayit),
+      tema: (t.themes || []).slice(),
+      kimle: (t.collections || []).filter(c => elle.indexOf(c) !== -1)
+    }
+  };
+}
+
+/* Süzgeç alanlarının tanımı: adres parametresi (key), başlık ve
+   seçenekler. Sıra ekrandaki sıra. Seçenekler taksonomiden; sayısı 0
+   olan seçenek ekranda görünmüyor (motor eliyor). */
+function kapiYuzeyTanimlari(bugun) {
+  const T = kapiTaksonomi();
+  const M = KAPI_MOTOR;
+  const deger = (ad, yerel) => kapiDeger(ad, M, yerel) || [];
+  const aylar = kapiDeger('AYLAR_TR', KAPI_TUR, typeof AYLAR_TR !== 'undefined' ? AYLAR_TR : undefined) || [];
+  const gun = kapiISO(bugun || new Date());
+  const ayListesi = [];
+  for (let i = 0; i < KAPI_AY_UFKU; i++) {
+    const ilk = kapiAyEkle(gun, i);
+    if (!ilk) break;
+    const d = kapiAsDate(ilk);
+    ayListesi.push({ slug: ilk.slice(0, 7), name: (aylar[d.getMonth()] || ilk.slice(5, 7)) + ' ' + d.getFullYear() });
+  }
+  const adli = (liste) => liste.map(x => ({ slug: x.slug, name: x.name }));
+  return [
+    { key: 'tip', name: 'Tür', kind: 'coklu',
+      options: Object.keys(T.types).map(t => ({ slug: T.types[t].path, name: T.types[t].plural })) },
+    { key: 'ay', name: 'Tarih', kind: 'coklu', options: ayListesi,
+      note: 'Her gün satılan oteller, aktiviteler ve mekânlar her ayda listelenir.' },
+    { key: 'sure', name: 'Süre', kind: 'coklu',
+      options: adli(deger('SUZ_SURE_DILIMLERI', typeof SUZ_SURE_DILIMLERI !== 'undefined' ? SUZ_SURE_DILIMLERI : undefined)) },
+    { key: 'bolge', name: 'Bölge', kind: 'coklu', options: adli(T.regions) },
+    { key: 'kalkis', name: 'Kalkış şehri', kind: 'coklu', options: adli(T.cities) },
+    { key: 'ulasim', name: 'Ulaşım', kind: 'coklu', options: adli((T.facets && T.facets.transport) || []) },
+    { key: 'pansiyon', name: 'Pansiyon', kind: 'coklu', options: adli((T.facets && T.facets.board) || []) },
+    { key: 'tema', name: 'Tema', kind: 'coklu', options: adli(T.themes) },
+    { key: 'kimle', name: 'Kimin için', kind: 'coklu',
+      options: adli(T.collections.filter(c => c.mode === 'manual')) },
+    { key: 'fiyat', name: 'Fiyat', kind: 'aralik', field: 'price', currency: 'TRY',
+      options: deger('SUZ_FIYAT_DILIMLERI', typeof SUZ_FIYAT_DILIMLERI !== 'undefined' ? SUZ_FIYAT_DILIMLERI : undefined).slice(),
+      note: 'Döviz fiyatlı ürünler TL fiyat süzgecinde listelenmez.' },
+    { key: 'puan', name: 'Puan', kind: 'esik', field: 'rating',
+      options: deger('SUZ_PUAN_ESIKLERI', typeof SUZ_PUAN_ESIKLERI !== 'undefined' ? SUZ_PUAN_ESIKLERI : undefined).slice() },
+    { key: 'indirimli', name: 'Fırsat', kind: 'bayrak', field: 'discounted',
+      options: [{ slug: '1', name: 'Yalnızca indirimliler', etiket: 'İndirimli' }] }
+  ];
+}
+
+/* ---------------- adres çözümü ----------------
+   Tek yönlendirici sayfanın (404.html) karar noktası: adres neye
+   karşılık geliyor? Dönüş kind:
+     home, product, type-list, category, listing, theme, collection,
+     theme-index, collection-index, static
+   veya null (bulunamadı). Ürün yayında değilse de null. */
+function kapiYolTemizle(yol) {
+  let y = String(yol || '');
+  try { y = decodeURIComponent(y); } catch (_) { /* ham kalır */ }
+  y = y.split('?')[0].split('#')[0];
+  return y.replace(/\/index\.html?$/i, '/').replace(/\/{2,}/g, '/')
+    .replace(/^\/+|\/+$/g, '').toLowerCase();
+}
+
+function kapiAdres(yol) {
+  const temiz = kapiYolTemizle(yol);
+  if (!temiz) return { kind: 'home', path: '' };
+  const T = kapiTaksonomi();
+  const parca = temiz.split('/');
+  const detayTipi = Object.keys(T.types).find(t => T.types[t].path === parca[0]);
+  if (detayTipi) {
+    if (parca.length !== 2) return null;
+    const kayit = kapiUrun(detayTipi, parca[1]);
+    return kayit ? { kind: 'product', type: detayTipi, slug: kayit.slug, path: temiz } : null;
+  }
+  if (temiz === 'temalar') return { kind: 'theme-index', path: temiz };
+  if (temiz === 'koleksiyonlar') return { kind: 'collection-index', path: temiz };
+  const r = T.resolve ? T.resolve(temiz) : null;
+  return r ? Object.assign({ path: temiz }, r) : null;
+}
+
+/* ---------------- sayfa modeli ----------------
+   Liste sayfasının başlığı, temel süzgeci, sayfa yolu (kırıntı) ve
+   alt sayfa çipleri. Hepsi taksonomiden; sayfaya metin yazılmıyor. */
+
+/* Menüde bu yolu taşıyan düğüm ve üst düğümü. Aynı yol iki düğümde
+   olabilir: "Oteller" ile altındaki "Tüm Oteller" aynı adrese gidiyor.
+   Varsayılan ilk bulunan (üst düğüm, çipleri o taşıyor); yaprak: true
+   başlık için çocuksuz olanı tercih eder ("Kurumsal" değil
+   "Hakkımızda"). */
+function kapiMenuDugumu(yol, yaprak) {
+  const bulunanlar = [];
+  const gez = (liste, ust) => (liste || []).forEach(d => {
+    if (d.path === yol) bulunanlar.push({ dugum: d, ust });
+    gez(d.children, d);
+  });
+  gez(kapiTaksonomi().menu, null);
+  if (yaprak) return bulunanlar.find(b => !b.dugum.children) || bulunanlar[0] || null;
+  return bulunanlar[0] || null;
+}
+
+function kapiMenuEtiketi(yol, yaprak) {
+  const b = kapiMenuDugumu(yol, yaprak);
+  return b ? b.dugum.label : null;
+}
+
+/* "12 tur", "4 etkinlik"; tipler karışıksa "9 seçenek". */
+function kapiAdetMetni(urunler) {
+  const tipler = (urunler || []).map(kapiIcerikTipi).filter((t, i, d) => d.indexOf(t) === i);
+  return (urunler || []).length + ' ' + kapiBirim(tipler.length === 1 ? tipler[0] : null);
+}
+
+/* İçerik tipinin kısa birimi: "tur", "otel" … (sayım metni). */
+function kapiBirim(tip) {
+  const T = kapiTaksonomi();
+  return tip && T.types[tip] ? T.types[tip].name.toLocaleLowerCase('tr-TR') : 'seçenek';
+}
+
+function kapiSayfaModeli(adres, bugun) {
+  if (!adres) return null;
+  const T = kapiTaksonomi();
+  const ana = { name: 'Anasayfa', path: '' };
+  const tabanEtiketi = (base) => {
+    const tip = Object.keys(T.types).find(t => T.types[t].base === base);
+    return { name: kapiMenuEtiketi(base) || (tip ? T.types[tip].plural : base), path: base };
+  };
+  let m = null;
+  if (adres.kind === 'type-list') {
+    const base = adres.type ? T.types[adres.type].base : adres.base;
+    m = {
+      baslik: tabanEtiketi(base).name,
+      tip: adres.type || null,
+      /* /firsatlar/ bütün indirimli ürünler; fırsat alt sayfaları
+         (erken rezervasyon, son dakika) çip olarak. */
+      temel: adres.type ? { type: adres.type } : { discounted: true },
+      kirinti: [ana, tabanEtiketi(base)]
+    };
+  } else if (adres.kind === 'category') {
+    const base = T.types[adres.type].base;
+    const zincir = T.categoryPath ? T.categoryPath(adres.type, adres.category.slug) : [adres.category];
+    m = {
+      baslik: adres.category.name,
+      tip: adres.type,
+      temel: { type: adres.type, category: adres.category.slug },
+      kirinti: [ana, tabanEtiketi(base)].concat(zincir.map(k => ({ name: k.name, path: base + '/' + k.slug })))
+    };
+  } else if (adres.kind === 'listing') {
+    const l = adres.listing;
+    m = {
+      baslik: l.name,
+      tip: (l.filter && l.filter.type) || null,
+      temel: Object.assign({}, l.filter || {}),
+      kirinti: [ana, tabanEtiketi(l.base), { name: l.name, path: l.base + '/' + l.slug }]
+    };
+  } else if (adres.kind === 'theme') {
+    m = {
+      baslik: adres.theme.name,
+      tip: null,
+      temel: { theme: adres.theme.slug },
+      kirinti: [ana, { name: 'Temalar', path: 'temalar' }, { name: adres.theme.name, path: adres.path }]
+    };
+  } else if (adres.kind === 'collection') {
+    m = {
+      baslik: adres.collection.name,
+      tip: null,
+      temel: { collection: adres.collection.slug },
+      kirinti: [ana, { name: 'Koleksiyonlar', path: 'koleksiyonlar' }, { name: adres.collection.name, path: adres.path }]
+    };
+  } else if (adres.kind === 'theme-index' || adres.kind === 'collection-index') {
+    const tema = adres.kind === 'theme-index';
+    const liste = tema ? T.themes : T.collections;
+    m = {
+      baslik: tema ? 'Temalar' : 'Koleksiyonlar',
+      tip: null,
+      temel: null,
+      kirinti: [ana, { name: tema ? 'Temalar' : 'Koleksiyonlar', path: adres.path }],
+      kartlar: liste.map(x => {
+        const urunler = kapiListele(tema ? { theme: x.slug } : { collection: x.slug }, bugun);
+        return { name: x.name, text: x.text || '', img: x.img, path: adres.path + '/' + x.slug,
+                 adet: urunler.length, adetMetni: kapiAdetMetni(urunler) };
+      }).filter(k => k.adet > 0)
+    };
+  } else if (adres.kind === 'static') {
+    const b = kapiMenuDugumu(adres.path, true);
+    const etiket = b ? b.dugum.label : adres.path;
+    m = {
+      baslik: etiket,
+      tip: null,
+      temel: null,
+      kirinti: [ana]
+        .concat(b && b.ust ? [{ name: b.ust.label, path: b.ust.path }] : [])
+        .concat([{ name: etiket, path: adres.path }])
+    };
+  }
+  if (!m) return null;
+  m.kind = adres.kind;
+  m.path = adres.path;
+  m.birim = kapiBirim(m.tip);
+  m.altlar = kapiAltSayfalar(adres, bugun);
+  return m;
+}
+
+/* Sayfanın çipleri: menüde alt düğümü varsa onlar, yaprak sayfaysa
+   kardeşleri (bulunduğu sayfa işaretli). Menüde olmayan sayfa (tema,
+   koleksiyon, menu:false kategori) kendi ailesini gösterir. Ürünü
+   olmayan çip gizli; bulunduğun sayfa hiç gizlenmez. */
+function kapiAltSayfalar(adres, bugun) {
+  const T = kapiTaksonomi();
+  let adaylar = [];
+  if (adres.kind === 'theme') {
+    adaylar = T.themes.map(x => ({ name: x.name, path: 'temalar/' + x.slug }));
+  } else if (adres.kind === 'collection') {
+    adaylar = T.collections.map(x => ({ name: x.name, path: 'koleksiyonlar/' + x.slug }));
+  } else if (['type-list', 'category', 'listing'].indexOf(adres.kind) !== -1) {
+    const b = kapiMenuDugumu(adres.path);
+    let kaynak = null;
+    if (b && b.dugum.children) kaynak = b.dugum;
+    else if (b && b.ust) kaynak = b.ust;
+    else {
+      /* Menüde yok: tipin kök düğümü. */
+      const kok = adres.path.split('/')[0];
+      const k = kapiMenuDugumu(kok);
+      kaynak = k ? k.dugum : null;
+    }
+    adaylar = ((kaynak && kaynak.children) || [])
+      .filter(c => !(kaynak.path === adres.path && c.path === adres.path))
+      .map(c => ({ name: c.label, path: c.path }));
+  }
+  return adaylar.map(c => {
+    const hedef = kapiAdres(c.path);
+    const model = hedef && hedef.kind !== 'static' ? kapiSayfaTemeli(hedef) : null;
+    const adet = model ? kapiListele(model, bugun).length : null;
+    return { name: c.name, path: c.path, adet, aktif: c.path === adres.path };
+  }).filter(c => c.aktif || c.adet === null || c.adet > 0);
+}
+
+/* Yalnızca temel süzgeç (çip sayımı için; kırıntı ve çip üretmeden). */
+function kapiSayfaTemeli(adres) {
+  if (adres.kind === 'type-list') return adres.type ? { type: adres.type } : { discounted: true };
+  if (adres.kind === 'category') return { type: adres.type, category: adres.category.slug };
+  if (adres.kind === 'listing') return Object.assign({}, adres.listing.filter || {});
+  if (adres.kind === 'theme') return { theme: adres.theme.slug };
+  if (adres.kind === 'collection') return { collection: adres.collection.slug };
+  return null;
+}
+
+/* ---------------- liste sorgusu ----------------
+   Canlı sorgu (Promise): süzgeç ve sıralama değiştikçe ekran bunu
+   çağırıyor. Backend geldiğinde:
+     fetch('/api/liste?' + temel + '&' + secimler) → aynı biçim
+   Bugün cevap buradaki satırlardan, liste motoruyla. */
+function kapiListeSorgusu(sorgu) {
+  return Promise.resolve().then(() => {
+    const s = sorgu || {};
+    const motor = kapiFn('suzListe', KAPI_MOTOR, typeof suzListe !== 'undefined' ? suzListe : null);
+    if (!motor) return null;
+    const satirlar = kapiListele(s.temel || {}, s.bugun)
+      .map(k => kapiListeSatiri(k, s.bugun)).filter(Boolean);
+    return motor(satirlar, s.alanlar || kapiYuzeyTanimlari(s.bugun), s.durum || {});
+  });
+}
+
+/* Sayfa yükü: liste sayfasının SEO alanları ve sayım özeti. Açıklama
+   sayıdan ve en düşük TL fiyattan türetiliyor; ürün eklenince kendisi
+   güncelleniyor. */
+function kapiListeSeo(model, bugun) {
+  if (!model) return null;
+  const urunler = model.temel ? kapiListele(model.temel, bugun) : [];
+  const tlFiyatlar = urunler.map(k => kapiOzet(k, bugun))
+    .filter(o => o && o.currency === 'TRY' && o.price > 0).map(o => o.price);
+  const enDusuk = tlFiyatlar.length ? Math.min.apply(null, tlFiyatlar) : null;
+  const fiyatMetni = enDusuk ? kapiFiyatMetni(enDusuk, 'TRY') : null;
+  const adet = urunler.length;
+  const yol = model.path ? model.path + '/' : '';
+  let aciklama;
+  if (model.kartlar) {
+    aciklama = model.baslik + ': ' + model.kartlar.map(k => k.name).join(', ') + '. Aradığın deneyimi temaya göre seç.';
+  } else if (!model.temel) {
+    aciklama = model.baslik + ' — mola360.';
+  } else if (adet) {
+    aciklama = model.baslik + ': ' + adet + ' ' + model.birim
+      + (fiyatMetni ? ', fiyatlar ' + fiyatMetni + '\'den başlıyor' : '')
+      + '. Tarihe, bölgeye ve bütçeye göre süz; güvenli ödemeyle online rezervasyon yap.';
+  } else {
+    aciklama = model.baslik + ': yeni seçenekler eklendiğinde burada listelenecek.';
+  }
+  return {
+    title: model.baslik + ' — mola360',
+    description: aciklama,
+    canonical: KAPI_SITE_ADRESI + yol,
+    path: yol,
+    /* Ürünü olmayan liste ince içeriktir; dizine girmesin. */
+    noindex: !!model.temel && adet === 0,
+    adet,
+    enDusuk: fiyatMetni
+  };
 }
 
 /* ---------------- SEO ----------------
@@ -479,7 +873,14 @@ const MolaVeri = {
   temaUrunleri: (slug, bugun) => kapiListele({ theme: slug }, bugun),
   koleksiyonUrunleri: (slug, bugun) => kapiListele({ collection: slug }, bugun),
   seo: kapiSeo,
+  /* liste sayfaları (sayfa yükü) */
+  adres: kapiAdres,
+  sayfaModeli: kapiSayfaModeli,
+  listeSeo: kapiListeSeo,
+  yuzeyTanimlari: kapiYuzeyTanimlari,
+  listeSatiri: kapiListeSatiri,
   /* canlı sorgu (Promise) */
+  liste: kapiListeSorgusu,
   musaitlik: kapiMusaitlik
 };
 
@@ -492,6 +893,9 @@ if (typeof module !== 'undefined' && module.exports) {
     kapiKuralaUyar,
     kapiPansiyonlar,
     kapiKalkisSehirleri,
+    kapiYolTemizle,
+    kapiPuan5,
+    kapiSabitTarihler,
     musaitlikKaydi,
     saatAnahtari,
     konaklamaKalan,

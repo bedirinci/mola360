@@ -72,10 +72,18 @@ function sun(req, res) {
       return;
     }
 
+    /* Dosyası olmayan adres: GitHub Pages gibi 404.html'i 404 durum
+       koduyla sun. Liste sayfaları (/turlar/, /temalar/doga-yayla/ …)
+       ve "bulunamadı" ekranı o sayfadan kuruluyor; yerelde de aynı
+       davranış görülsün. */
     if (hata) {
-      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<meta charset="utf-8"><h1>404</h1><p>Bulunamadı: '
-        + req.url + '</p><p><a href="/">Anasayfa</a></p>');
+      const yonlendirici = path.join(KOK, '404.html');
+      fs.readFile(yonlendirici, (hata2, icerik) => {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+        res.end(hata2
+          ? '<meta charset="utf-8"><h1>404</h1><p>Bulunamadı.</p><p><a href="/">Anasayfa</a></p>'
+          : icerik);
+      });
       return;
     }
 
@@ -97,4 +105,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { istenenDosya, KOK, TIPLER };
+module.exports = { istenenDosya, sun, KOK, TIPLER };

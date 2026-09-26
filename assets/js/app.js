@@ -741,7 +741,9 @@ function poiCardMarkup(sec, it){
           </div>
           ${it.sponsored
             ? `<div class="poi-status-badge sponsored">Sponsorlu</div>`
-            : `<div class="poi-status-badge"><span class="icon">${svg('star')}</span>${it.rating}<span class="count">(${it.reviews})</span></div>`}
+            : (it.rating
+              ? `<div class="poi-status-badge"><span class="icon">${svg('star')}</span>${it.rating}${it.reviews ? `<span class="count">(${it.reviews})</span>` : ''}</div>`
+              : '')}
           <div class="poi-body">
             <h3 class="poi-title">${baslik}</h3>
             <p class="poi-meta-row"><span class="icon">${svg(sec.meta1Icon)}</span><span class="poi-meta-text">${it.meta1}</span></p>
@@ -776,7 +778,7 @@ function compactCardMarkup(sec, it){
               <span class="compact-card-tag">${(it.badges && it.badges[0]) || ''}</span>
               ${it.sponsored
                 ? `<span class="compact-card-sponsored">Sponsorlu</span>`
-                : `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>`}
+                : (it.rating ? `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>` : '')}
             </div>
             <h3 class="compact-card-title">${baslik}</h3>
             <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>

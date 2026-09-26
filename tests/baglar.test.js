@@ -33,6 +33,17 @@ function diskteVar(gorece) {
   return statSync(tam).isDirectory() ? existsSync(path.join(tam, 'index.html')) : true;
 }
 
+/* Dosyasi olmayan adres GitHub Pages'te 404.html'e duser; o sayfa adresi
+   veri kapisina sorup ekrani kuruyor (liste, tema, "yakinda"). Kapinin
+   tanidigi adres gecerli bir bagdir; tanimadigi adres "bulunamadi"
+   ekranina duser ve KIRIK sayilir. */
+function bagCalisir(gorece) {
+  if (diskteVar(gorece)) return true;
+  const temiz = gorece.split('#')[0].split('?')[0];
+  const adres = MolaVeri.adres(temiz);
+  return !!adres && adres.kind !== 'home';
+}
+
 /* Depodaki butun HTML sayfalari (_backup yedekleri haric). */
 function htmlSayfalari(dizin = KOK, toplam = []) {
   readdirSync(dizin, { withFileTypes: true }).forEach(giris => {
@@ -87,7 +98,7 @@ describe('sayfa ici baglar', () => {
     !adres
     || /^(https?:|tel:|mailto:|data:|javascript:|#|\/\/)/i.test(adres);
 
-  it('her sayfadaki gorece bag diskte var', () => {
+  it('her sayfadaki gorece bag diskte ya da yonlendiricide var', () => {
     expect(sayfalar.length).toBeGreaterThan(2);
     const kirik = [];
     sayfalar.forEach(sayfa => {
@@ -96,7 +107,7 @@ describe('sayfa ici baglar', () => {
       [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map(m => m[1]).forEach(adres => {
         if (atla(adres)) return;
         const hedef = path.relative(KOK, path.resolve(klasor, adres.split('#')[0].split('?')[0]));
-        if (!diskteVar(hedef)) kirik.push(sayfa + ' -> ' + adres);
+        if (!bagCalisir(hedef)) kirik.push(sayfa + ' -> ' + adres);
       });
     });
     expect(kirik, 'kirik bag: ' + kirik.join(' | ')).toEqual([]);

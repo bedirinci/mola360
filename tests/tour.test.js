@@ -1170,12 +1170,13 @@ describe('her turun ortak alanları', () => {
 
 /* ---------------- ortak mobil ekran başlığı ---------------- */
 describe('mobil başlık stili', () => {
-  it('üç ekran tek tanımı paylaşır, kopya yok', () => {
-    /* Bildirimler, giriş/üye ol ve tur sayfası aynı başlığı kullanıyor.
+  it('dört ekran tek tanımı paylaşır, kopya yok', () => {
+    /* Bildirimler, giriş/üye ol, tur sayfası ve liste sayfaları aynı
+       başlığı kullanıyor.
        Eskiden ölçüler her biri için ayrı yazılıydı ve yanında "biri
        değişirse diğeri de güncellenmeli" notu vardı; artık tek tanım. */
     const kapsayici = ortakStil.match(
-      /\.notif-panel-header,\s*\n\.auth-modal-hero,\s*\n\.tour-mobile-header \{([\s\S]*?)\}/);
+      /\.notif-panel-header,\s*\n\.auth-modal-hero,\s*\n\.tour-mobile-header,\s*\n\.lst-mobile-header \{([\s\S]*?)\}/);
     expect(kapsayici, 'ortak başlık tanımı bulunamadı').toBeTruthy();
     /* Görünümü belirleyen değerler ortak blokta olmalı. */
     ['background: var(--navy)', 'border-bottom-left-radius', 'box-shadow', 'gap: 10px']
@@ -1184,10 +1185,10 @@ describe('mobil başlık stili', () => {
 
   it('geri oku, başlık yığını ve alt başlık da ortak', () => {
     [
-      /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back \{/,
-      /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading \{/,
-      /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title \{/,
-      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle \{/
+      /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back,\s*\n\.lst-mobile-back \{/,
+      /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading,\s*\n\.lst-mobile-heading \{/,
+      /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title,\s*\n\.lst-mobile-title \{/,
+      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle,\s*\n\.lst-mobile-subtitle \{/
     ].forEach(kalip => expect(ortakStil, 'ortak değil: ' + kalip).toMatch(kalip));
     /* Sağdaki eylem artık yalnızca bildirimlerde; tur başlığındaki
        paylaş banner'a taşındı ve sınıfı hiçbir yerde kalmadı. */
@@ -2124,9 +2125,9 @@ describe('yapışkan tur başlığı', () => {
     expect(ortakStil, 'ortak yuvarlaklık belirteci yok')
       .toMatch(/--m360-header-radius:\s*22px/);
     expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
-      /\.tour-mobile-header \{[^}]*border-bottom-left-radius:\s*var\(--m360-header-radius\)/);
+      /\.tour-mobile-header,\s*\n\.lst-mobile-header \{[^}]*border-bottom-left-radius:\s*var\(--m360-header-radius\)/);
     expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
-      /\.tour-mobile-header \{[^}]*border-bottom-right-radius:\s*var\(--m360-header-radius\)/);
+      /\.tour-mobile-header,\s*\n\.lst-mobile-header \{[^}]*border-bottom-right-radius:\s*var\(--m360-header-radius\)/);
   });
 
   it('yapışık menü başlığın köşe oyuğunu KENDİ zeminiyle dolduruyor', () => {

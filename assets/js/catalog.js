@@ -150,6 +150,9 @@ function katalogPuan(kayit, oteldeOnluk) {
   /* Otel puanı onluk; otel veri dosyası yüklü değilse beşlik ortalamayı
      onluk diye göstermek yanlış olurdu, puan boş kalıyor. */
   if (oteldeOnluk && !skor) return { rating: '', reviews: formatReviewCount(ozet.total) };
+  /* Hiç yorumu olmayan üründe puan YOK; "0" yazmak ürünü en kötü puanlı
+     gösterirdi. Kart rozeti boş puanda hiç çizilmiyor (app.js). */
+  if (!ozet.total) return { rating: '', reviews: '' };
   return {
     rating: String(skor ? skor(kayit.ratingBreakdown) : ozet.average),
     reviews: formatReviewCount(ozet.total)

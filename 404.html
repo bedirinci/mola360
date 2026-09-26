@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#152048">
+
+  <!-- TEK YÖNLENDİRİCİ SAYFA
+       GitHub Pages dosyası olmayan her adreste bu sayfayı sunuyor:
+       /turlar/, /turlar/karadeniz-turlari/, /temalar/doga-yayla/ … hepsi
+       buraya düşer ve assets/js/listing-page.js adrese bakıp ekranı
+       kurar. Yeni kategori, liste sayfası veya ürün için HTML dosyası
+       yazılmıyor.
+
+       Başlık, açıklama, kanonik adres ve robots satırı JS ile yazılıyor;
+       aşağıdakiler yalnızca JS çalışmazsa kalan varsayılanlar. Sunucu
+       geldiğinde bu alanları sunucu dolduracak
+       (docs/veri-sozlesmesi.md bölüm 12). -->
+  <title>mola360</title>
+  <meta name="description" content="mola360: tur, otel, aktivite, etkinlik ve mekân rezervasyonu.">
+  <meta name="robots" content="noindex, follow">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="mola360">
+  <meta property="og:locale" content="tr_TR">
+
+  <!-- Sayfa kökü. Bu sayfa HER adreste sunulduğu için göreli bağlar
+       (assets/…, turlar/…) ancak <base> ile doğru çözülür. GitHub Pages
+       proje sitesi /<depo>/ altında yayınlanıyor (bedirinci.github.io/
+       mola360/); kendi alan adında (ve yerel sunucuda) kök "/".
+       Stil ve betik bağlarından ÖNCE çalışmak zorunda.
+       tests/yonlendirici.test.js bu betiği iki ortamda çalıştırıyor. -->
+  <script>
+    (function () {
+      var p = location.pathname;
+      var kok = /\.github\.io$/i.test(location.hostname) ? '/' + (p.split('/')[1] || '') + '/' : '/';
+      var b = document.createElement('base');
+      b.href = kok;
+      document.head.appendChild(b);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Poppins:wght@700;800&amp;display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/listing.css">
+</head>
+<body class="lst-body" data-root="" data-sayfa="yonlendirici">
+
+<!-- Masaüstü başlığı bütün sayfalarla aynı (assets/js/site-chrome.js). -->
+<script src="assets/js/site-chrome.js"></script>
+
+<!-- Ekran buraya kuruluyor: liste, dizin, ürün detayı, "yakında" veya
+     "bulunamadı". -->
+<div id="sayfaKoku">
+  <noscript>
+    <main class="lst-page">
+      <section class="lst-state">
+        <h1>Bu sayfa JavaScript gerektiriyor</h1>
+        <p>Tarayıcında JavaScript kapalı görünüyor. <a href="./">Anasayfaya dön</a>.</p>
+      </section>
+    </main>
+  </noscript>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="logo"><img src="assets/img/logo.png" alt="mola360"></span>
+      <p>Türkiye'nin dört bir yanından tur, otel ve etkinlikleri tek çatı altında topluyoruz. Molanı planla, keşfetmeye başla.</p>
+    </div>
+    <div class="footer-col hide-mobile">
+      <h4>Keşfet</h4>
+      <a href="turlar/">Turlar</a><a href="oteller/">Oteller</a><a href="etkinlikler/">Etkinlikler</a><a href="aktiviteler/">Aktiviteler</a><a href="mekanlar/">Mekanlar</a><a href="firsatlar/">Fırsatlar</a>
+    </div>
+    <div class="footer-col hide-mobile">
+      <h4>Kurumsal</h4>
+      <a href="kurumsal/hakkimizda/">Hakkımızda</a><a href="kurumsal/iletisim/">İletişim</a><a href="kurumsal/iptal-iade/">İptal / İade</a><a href="kurumsal/kullanim-kosullari/">Kullanım Koşulları</a>
+    </div>
+    <div class="footer-col">
+      <h4>Yardım</h4>
+      <a href="tel:+908500000000">0850 000 00 00</a><a href="kurumsal/sss/">Sıkça Sorulan Sorular</a><a href="kurumsal/yardim/">Yardım Merkezi</a>
+    </div>
+  </div>
+  <div class="footer-trust">
+    <div class="trust-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg></span> Güvenli ödeme</div>
+    <div class="trust-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><rect x="3" y="13" width="4.5" height="6" rx="1.5"></rect><rect x="16.5" y="13" width="4.5" height="6" rx="1.5"></rect></svg></span> 7/24 destek</div>
+    <div class="trust-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 8"></path><path d="M20 4v4h-4"></path><path d="M20 12a8 8 0 0 1-14 5.3L4 16"></path><path d="M4 20v-4h4"></path></svg></span> Kolay iptal</div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 mola360. Tüm hakları saklıdır.</span>
+    <span>Gizlilik · Çerezler · Kullanım Koşulları</span>
+  </div>
+</footer>
+
+<!-- Sıra önemli: veri dosyaları → sınıflandırma → örnek kayıtlar → liste
+     motoru → veri kapısı → katalog (kart üretir) → app.js (kart
+     işaretlemesi, başlık, arama) → listing-page.js (ekranı kurar). -->
+<script src="assets/js/search-utils.js"></script>
+<script src="assets/js/notif-utils.js"></script>
+<script src="assets/js/home-blocks.js"></script>
+<script src="assets/js/tour-data.js"></script>
+<script src="assets/js/hotel-data.js"></script>
+<script src="assets/js/activity-data.js"></script>
+<script src="assets/js/event-data.js"></script>
+<script src="assets/js/venue-data.js"></script>
+<script src="assets/js/taxonomy-data.js"></script>
+<script src="assets/js/inventory-data.js"></script>
+<script src="assets/js/sample-catalog-data.js"></script>
+<script src="assets/js/listing-engine.js"></script>
+<script src="assets/js/data-gateway.js"></script>
+<script src="assets/js/catalog.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/listing-page.js"></script>
+<script src="assets/js/ui.js"></script>
+</body>
+</html>

@@ -472,8 +472,8 @@ ul {
   .notif-item { transition: none; }
 }
 /* =============== ORTAK MOBİL EKRAN BAŞLIĞI ===============
-   Üç ekran aynı başlığı kullanır: bildirimler, giriş/üye ol ve tur
-   içerik sayfası. Düzen her üçünde de aynı — solda yuvarlak geri oku,
+   Dört ekran aynı başlığı kullanır: bildirimler, giriş/üye ol, tur
+   içerik sayfası ve liste sayfaları (listing.css). Düzen her üçünde de aynı — solda yuvarlak geri oku,
    ortada iki satırlık başlık. Sağdaki eylem yalnızca bildirimlerde
    var; tur sayfasında paylaş banner'a taşındı, giriş ekranında da
    böyle bir eylem yok.
@@ -485,7 +485,8 @@ ul {
    kuralına sahip (bildirimler her zaman, diğer ikisi yalnızca mobilde). */
 .notif-panel-header,
 .auth-modal-hero,
-.tour-mobile-header {
+.tour-mobile-header,
+.lst-mobile-header {
   align-items: center;
   gap: 10px;
   padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
@@ -501,7 +502,8 @@ ul {
 }
 .notif-panel-back,
 .auth-modal-back,
-.tour-mobile-back {
+.tour-mobile-back,
+.lst-mobile-back {
   flex-shrink: 0;
   width: 34px;
   height: 34px;
@@ -513,7 +515,8 @@ ul {
 }
 .notif-panel-back:hover,
 .auth-modal-back:hover,
-.tour-mobile-back:hover {
+.tour-mobile-back:hover,
+.lst-mobile-back:hover {
   background: rgba(255,255,255,.1);
 }
 .notif-panel-back .icon,
@@ -521,13 +524,16 @@ ul {
 .auth-modal-back .icon,
 .auth-modal-back svg,
 .tour-mobile-back .icon,
-.tour-mobile-back svg {
+.tour-mobile-back svg,
+.lst-mobile-back .icon,
+.lst-mobile-back svg {
   width: 22px;
   height: 22px;
 }
 .notif-panel-heading,
 .auth-modal-hero-text,
-.tour-mobile-heading {
+.tour-mobile-heading,
+.lst-mobile-heading {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -537,7 +543,8 @@ ul {
 /* Başlık tek satırda kalır; sığmayan uzun tur adı sarmak yerine kısalır. */
 .notif-panel-title,
 .auth-modal-hero-text strong,
-.tour-mobile-title {
+.tour-mobile-title,
+.lst-mobile-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -549,7 +556,8 @@ ul {
 /* Alt satır da tek satırda kalır. */
 .notif-panel-subtitle,
 .auth-modal-hero-text span,
-.tour-mobile-subtitle {
+.tour-mobile-subtitle,
+.lst-mobile-subtitle {
   font-size: 12px;
   color: rgba(255,255,255,.72);
   white-space: nowrap;
