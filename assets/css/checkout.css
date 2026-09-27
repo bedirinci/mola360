@@ -394,6 +394,13 @@
   }
   .odm-page { padding-bottom: 24px; }
 }
+/* Mobilde alt menü her sayfada: ödeme çubuğu onun hemen üstünde. */
+@media (max-width: 680px) {
+  .odm-bar:not([hidden]) {
+    bottom: var(--alt-menu-h, 62px);
+    padding-bottom: 10px;
+  }
+}
 .odm-bar-amount { display: flex; flex-direction: column; }
 .odm-bar-amount span { font-size: 12px; color: var(--text-muted); }
 .odm-bar-amount strong { font-size: 17px; color: var(--navy-deep); }

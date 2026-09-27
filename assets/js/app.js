@@ -584,14 +584,14 @@ const suggestedSearchTerms = [
    (kendiliğinden + elle), 3. adımda yönetimden düzenlenebilir olacak. */
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Popüler Etkinlikler', subtitle:'Konser, festival, tiyatro ve stand-up; Türkiye\'nin dört bir yanından', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'event/harbiye-acikhava-konserleri', 'event/cesme-yaz-festivali', 'event/stand-up-gecesi'
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun;
      ikisi de kaydin takviminden turetiliyor. Serit hem etkinlikleri hem
      turlari tasidigi icin baslik "Planlar". */
-  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
+  {title:'Yaklaşan Planlar', subtitle:'Önümüzdeki günlerde yapılacak etkinlikler ve turlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
     'event/istanbul-gece-yarisi-kosusu', 'event/stand-up-gecesi', 'event/harbiye-acikhava-konserleri',
     'event/kordon-caz-aksamlari', 'tour/sapanca-masukiye', 'tour/alacati-pazar-turu',
     'event/istanbul-kahve-festivali', 'tour/iznik-golu-antik-kent', 'tour/abant-golcuk',
@@ -600,17 +600,17 @@ const cardSections = [
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Konaklamalı Turlar', subtitle:'Konaklaması dahil, birkaç günlük tur programları', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/karadeniz-yaylalari', 'tour/ege-adalari-balayi', 'tour/dogu-ekspresi'
   ]},
-  {title:'Günübirlik Turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Günübirlik Turlar', subtitle:'Sabah çıkıp akşam dönülen tek günlük turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/sile-agva', 'tour/cunda-ayvalik', 'tour/abant-golcuk', 'tour/iznik-golu-antik-kent'
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Aktiviteler', subtitle:'Balon, rafting, yamaç paraşütü ve daha fazlası', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'activity/koprulu-kanyon-rafting', 'activity/oludeniz-yamac-parasutu', 'activity/uludag-kayak-dersi'
   ]},
-  {title:'Oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
+  {title:'Oteller', subtitle:'Termal, butik, şehir ve resort oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
     'hotel/sealight-resort', 'hotel/termal-vadi-resort', 'hotel/goreme-magara-otel'
   ]},
 ];
@@ -896,7 +896,7 @@ function sectionFilterMarkup(sec){
 
 if (byId('cardSections')) byId('cardSections').innerHTML = cardSections.map(sec=>`
   <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
-    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
+    <div class="section-head">${sec.subtitle ? `<div class="section-head-text"><h2>${sec.title}</h2><p class="section-subtitle">${sec.subtitle}</p></div>` : `<h2>${sec.title}</h2>`}<a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
     <div class="hscroll-wrap">
     <div class="h-scroll"${sec.filterKey ? ` data-section-list="${sec.filterKey}"` : ''}>${sectionCardsMarkup(sec, UPCOMING_FILTERS[0].key)}</div>
@@ -2133,17 +2133,21 @@ function tercihCekmecesiniKur(){
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tercihCekmecesiniKur);
 else tercihCekmecesiniKur();
 
-/* ---------------- sol menü: bulunulan bölüm ----------------
-   Birincil satırda (Keşfet, Favorilerim, Biletlerim, Hesabım) yalnızca
-   bulunulan sayfanın düğmesi seçili. */
-(function birincilSekmeyiIsaretle(){
+/* ---------------- bulunulan bölüm ----------------
+   Sol menünün birincil satırında ve mobil alt menüde (Keşfet,
+   Favorilerim, Biletlerim, Hesabım) yalnızca bulunulan sayfanın düğmesi
+   seçili; başka sayfalarda (liste, ürün, kurumsal) hiçbiri. */
+function mola360BulunulanSekme(){
   const yol = location.pathname;
   const bolum = new URLSearchParams(location.search).get('bolum');
-  let sekme = document.body.dataset.sayfa === 'ana' ? 'explore' : null;
   if (/\/(hesabim|favorilerim|biletlerim|kuponlarim)\/?$/.test(yol)) {
     const ad = bolum || (yol.match(/\/(favorilerim|biletlerim)\/?$/) || [])[1];
-    sekme = ad === 'favorilerim' ? 'favorites' : ad === 'biletlerim' ? 'tickets' : 'account';
+    return ad === 'favorilerim' ? 'favorites' : ad === 'biletlerim' ? 'tickets' : 'account';
   }
+  return document.body.dataset.sayfa === 'ana' ? 'explore' : null;
+}
+(function birincilSekmeyiIsaretle(){
+  const sekme = mola360BulunulanSekme();
   document.querySelectorAll('.sidebar-primary-nav a[data-sidebar-tab]').forEach(a => {
     a.classList.toggle('active', a.dataset.sidebarTab === sekme);
   });
@@ -3100,11 +3104,14 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       '<circle cx="12" cy="8" r="4" fill="currentColor" stroke="currentColor"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5Z" fill="currentColor" stroke="currentColor"></path>']
   ];
   const hedefler = { explore: './', favorites: 'hesabim/?bolum=favorilerim', tickets: 'hesabim/?bolum=biletlerim', account: 'hesabim/' };
-  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
+  const bulunulan = mola360BulunulanSekme();
+  nav.innerHTML = items.map(([key,label,outline,filled])=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${key===bulunulan?' active':''}" data-bottom-tab="${key}" aria-label="${label}"${key===bulunulan?' aria-current="page"':''}><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
   nav.addEventListener('click', e=>{
     const item=e.target.closest('.tab-item');
     if(!item) return;
-    if (item.dataset.bottomTab === 'explore') e.preventDefault();
+    /* Anasayfadaysak "Keşfet" sayfayı yeniden yüklemez; başka sayfada
+       anasayfaya gider. */
+    if (item.dataset.bottomTab === 'explore' && document.body.dataset.sayfa === 'ana') e.preventDefault();
     nav.querySelectorAll('.tab-item').forEach(x=>x.classList.remove('active'));
     item.classList.add('active');
     Mola360App.state.ui.activeRoute = item.dataset.bottomTab || 'explore';
@@ -3113,4 +3120,13 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       a.classList.toggle('active', a.dataset.sidebarTab === item.dataset.bottomTab);
     });
   });
+  /* Alt menünün yüksekliği (güvenli alan dahil): ürün sayfasının
+     rezervasyon çubuğu ve ödeme çubuğu onun hemen üstüne oturuyor. */
+  const yukseklikYaz = () => {
+    const h = nav.offsetHeight;
+    if (h) document.documentElement.style.setProperty('--alt-menu-h', h + 'px');
+  };
+  yukseklikYaz();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(yukseklikYaz).observe(nav);
+  else window.addEventListener('resize', yukseklikYaz);
 })();

@@ -480,6 +480,11 @@
       <div class="m360-search-home" id="searchHomeContent"></div>
     </div>
   </div>
+
+  <!-- Mobil alt menü: her sayfada (Keşfet, Favorilerim, Biletlerim,
+       Hesabım). Düğmeleri app.js basıyor ve bulunulan sayfanınkini
+       işaretliyor. 681px ve üstünde gizli. -->
+  <nav class="bottom-tab-bar" aria-label="Alt menü"></nav>
 `;
 
   /* Node'da (testler menü fonksiyonlarını yüklüyor) belge yok. */
