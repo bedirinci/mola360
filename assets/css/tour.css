@@ -1946,6 +1946,20 @@
 @media (min-width: 1025px) {
   .tour-sticky-bar { display: none; }
 }
+/* Mobilde alt menü her sayfada: şerit onun hemen üstünde. Gizliyken alt
+   menünün altına kayıyor (z-index alt menüden düşük). Güvenli alan
+   boşluğunu alt menü taşıyor. */
+@media (max-width: 680px) {
+  .tour-sticky-bar {
+    bottom: var(--alt-menu-h, 62px);
+    z-index: 1050;
+    padding-bottom: 11px;
+    /* Alt menü yarı saydam: gizli şerit arkasından görünmesin. */
+    visibility: hidden;
+    transition: transform .26s ease, visibility 0s linear .26s;
+  }
+  .tour-sticky-bar.is-visible { visibility: visible; transition: transform .26s ease, visibility 0s; }
+}
 
 /* ---------------- fotoğraf büyütme ---------------- */
 .tour-lightbox {

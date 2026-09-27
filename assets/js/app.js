@@ -2133,17 +2133,21 @@ function tercihCekmecesiniKur(){
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tercihCekmecesiniKur);
 else tercihCekmecesiniKur();
 
-/* ---------------- sol menü: bulunulan bölüm ----------------
-   Birincil satırda (Keşfet, Favorilerim, Biletlerim, Hesabım) yalnızca
-   bulunulan sayfanın düğmesi seçili. */
-(function birincilSekmeyiIsaretle(){
+/* ---------------- bulunulan bölüm ----------------
+   Sol menünün birincil satırında ve mobil alt menüde (Keşfet,
+   Favorilerim, Biletlerim, Hesabım) yalnızca bulunulan sayfanın düğmesi
+   seçili; başka sayfalarda (liste, ürün, kurumsal) hiçbiri. */
+function mola360BulunulanSekme(){
   const yol = location.pathname;
   const bolum = new URLSearchParams(location.search).get('bolum');
-  let sekme = document.body.dataset.sayfa === 'ana' ? 'explore' : null;
   if (/\/(hesabim|favorilerim|biletlerim|kuponlarim)\/?$/.test(yol)) {
     const ad = bolum || (yol.match(/\/(favorilerim|biletlerim)\/?$/) || [])[1];
-    sekme = ad === 'favorilerim' ? 'favorites' : ad === 'biletlerim' ? 'tickets' : 'account';
+    return ad === 'favorilerim' ? 'favorites' : ad === 'biletlerim' ? 'tickets' : 'account';
   }
+  return document.body.dataset.sayfa === 'ana' ? 'explore' : null;
+}
+(function birincilSekmeyiIsaretle(){
+  const sekme = mola360BulunulanSekme();
   document.querySelectorAll('.sidebar-primary-nav a[data-sidebar-tab]').forEach(a => {
     a.classList.toggle('active', a.dataset.sidebarTab === sekme);
   });
@@ -3100,11 +3104,14 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       '<circle cx="12" cy="8" r="4" fill="currentColor" stroke="currentColor"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5Z" fill="currentColor" stroke="currentColor"></path>']
   ];
   const hedefler = { explore: './', favorites: 'hesabim/?bolum=favorilerim', tickets: 'hesabim/?bolum=biletlerim', account: 'hesabim/' };
-  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
+  const bulunulan = mola360BulunulanSekme();
+  nav.innerHTML = items.map(([key,label,outline,filled])=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${key===bulunulan?' active':''}" data-bottom-tab="${key}" aria-label="${label}"${key===bulunulan?' aria-current="page"':''}><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
   nav.addEventListener('click', e=>{
     const item=e.target.closest('.tab-item');
     if(!item) return;
-    if (item.dataset.bottomTab === 'explore') e.preventDefault();
+    /* Anasayfadaysak "Keşfet" sayfayı yeniden yüklemez; başka sayfada
+       anasayfaya gider. */
+    if (item.dataset.bottomTab === 'explore' && document.body.dataset.sayfa === 'ana') e.preventDefault();
     nav.querySelectorAll('.tab-item').forEach(x=>x.classList.remove('active'));
     item.classList.add('active');
     Mola360App.state.ui.activeRoute = item.dataset.bottomTab || 'explore';
@@ -3113,4 +3120,13 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       a.classList.toggle('active', a.dataset.sidebarTab === item.dataset.bottomTab);
     });
   });
+  /* Alt menünün yüksekliği (güvenli alan dahil): ürün sayfasının
+     rezervasyon çubuğu ve ödeme çubuğu onun hemen üstüne oturuyor. */
+  const yukseklikYaz = () => {
+    const h = nav.offsetHeight;
+    if (h) document.documentElement.style.setProperty('--alt-menu-h', h + 'px');
+  };
+  yukseklikYaz();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(yukseklikYaz).observe(nav);
+  else window.addEventListener('resize', yukseklikYaz);
 })();

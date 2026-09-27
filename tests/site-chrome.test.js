@@ -213,6 +213,21 @@ describe('ana menü', () => {
     expect(app).toContain("'headerMenuBtn'");
   });
 
+  it('mobil alt menü her sayfada: çerçevede, anasayfada ayrı kopyası yok', () => {
+    expect(cerceve).toContain('<nav class="bottom-tab-bar" aria-label="Alt menü"></nav>');
+    expect(anasayfa).not.toContain('class="bottom-tab-bar"');
+    /* Bulunulan sayfanın sekmesi işaretli; "Keşfet" yalnızca anasayfada
+       yerinde kalıyor, başka sayfada anasayfaya gidiyor. */
+    expect(app).toContain('function mola360BulunulanSekme()');
+    expect(app).toContain("item.dataset.bottomTab === 'explore' && document.body.dataset.sayfa === 'ana'");
+  });
+
+  it('ürün ve ödeme çubukları mobilde alt menünün üstünde', () => {
+    expect(oku('assets/css/tour.css')).toMatch(/\.tour-sticky-bar \{\s*bottom: var\(--alt-menu-h/);
+    expect(oku('assets/css/checkout.css')).toMatch(/\.odm-bar:not\(\[hidden\]\) \{\s*bottom: var\(--alt-menu-h/);
+    expect(app).toContain("setProperty('--alt-menu-h'");
+  });
+
   it('sol menüde Kategoriler bölümü yok', () => {
     expect(cerceve).not.toContain('<h4>Kategoriler</h4>');
     expect(cerceve).not.toContain('sidebar-cat-grid');
