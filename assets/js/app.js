@@ -979,15 +979,22 @@ function initHomeBlocks(){
         return;
       }
       callbackForm.classList.remove('has-error');
-      const satir = callbackForm.querySelector('.home-callback-row');
-      const etiket = callbackForm.querySelector('label');
-      if (satir) satir.remove();
-      if (etiket) etiket.remove();
-      if (callbackNote) {
-        callbackNote.textContent = 'Talebin alındı. En kısa sürede seni arayacağız.';
-        callbackNote.classList.remove('is-error');
-        callbackNote.classList.add('is-success');
-      }
+      const bitir = (kod) => {
+        const satir = callbackForm.querySelector('.home-callback-row');
+        const etiket = callbackForm.querySelector('label');
+        if (satir) satir.remove();
+        if (etiket) etiket.remove();
+        if (callbackNote) {
+          /* Deneme sürümü: talep yalnızca bu tarayıcıda kayıtlı, ekibe
+             iletilmiyor; ekran bunu söylüyor. */
+          callbackNote.textContent = 'Talebin kaydedildi' + (kod ? ' (' + kod + ')' : '') + '. Deneme sürümü: talepler henüz ekibe iletilmiyor.';
+          callbackNote.classList.remove('is-error');
+          callbackNote.classList.add('is-success');
+        }
+      };
+      if (typeof MolaVeri !== 'undefined' && MolaVeri.iletisimTalebi) {
+        MolaVeri.iletisimTalebi({ tur: 'geri-arama', telefon: input.value }).then(r => bitir(r.kod));
+      } else bitir(null);
     });
   }
 

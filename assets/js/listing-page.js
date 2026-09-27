@@ -782,6 +782,7 @@ function lspBaslat() {
   if (adres.kind === 'confirmation') return typeof odmOnayKur === 'function' ? odmOnayKur(kok) : lspBulunamadi(kok, goreli, bugun);
   if (adres.kind === 'campaigns') return lspKampanyalarKur(kok, bugun);
   if (adres.kind === 'account') return typeof hsaKur === 'function' ? hsaKur(kok, adres, bugun) : lspBulunamadi(kok, goreli, bugun);
+  if (adres.kind === 'corporate') return typeof krsKur === 'function' ? krsKur(kok, adres) : lspBulunamadi(kok, goreli, bugun);
   if (adres.kind === 'week') return lspHaftaKur(kok, adres, bugun);
 
   const model = MolaVeri.sayfaModeli(adres, bugun);

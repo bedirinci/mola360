@@ -362,6 +362,16 @@ function odmKur(kok, bugun) {
     const eski = ozet.querySelector('.odm-more');
     const acik = eski ? eski.open : !(window.matchMedia && window.matchMedia('(max-width: 1024px)').matches);
     ozet.innerHTML = odmOzetMarkup(teklif, kart, gorsel, acik);
+    /* Ön bilgilendirme ve sözleşme rezervasyonun kendi bilgileriyle
+       (corporate-page.js); tutar ya da plan değişince yeniden yazılıyor.
+       Açık olan bölüm açık kalıyor. */
+    const belgeler = document.getElementById('odmBelgeler');
+    if (belgeler && typeof krsSozlesmeMarkup === 'function') {
+      const acikBelgeler = Array.from(belgeler.querySelectorAll('details[open]')).map(d => d.getAttribute('data-belge'));
+      belgeler.innerHTML = [['on-bilgilendirme', 'Ön bilgilendirme formu'], ['mesafeli-satis-sozlesmesi', 'Mesafeli satış sözleşmesi']]
+        .map(([slug, ad]) => '<details class="odm-doc" data-belge="' + slug + '"' + (acikBelgeler.indexOf(slug) !== -1 ? ' open' : '') + '><summary>' + ad + '</summary>'
+          + krsSozlesmeMarkup(slug, teklif) + '</details>').join('');
+    }
     const tutar = teklif.odeme.sekil === 'mekanda' ? 'Rezervasyonu tamamla' : 'Ödemeye geç · ' + odmTL(teklif.tahsilat);
     const dugme = document.getElementById('odmSubmit');
     if (dugme) dugme.textContent = tutar;
@@ -413,7 +423,8 @@ function odmKur(kok, bugun) {
       + '<label class="odm-field"><span>Özel istek (isteğe bağlı)</span><textarea name="not" rows="2" maxlength="500" placeholder="Ör. vejetaryen menü, bebek koltuğu"></textarea></label>'
       + '</section>'
       + '<section class="odm-card odm-confirm">'
-      + '<label class="odm-check"><input type="checkbox" name="sozlesme"><span><a href="kurumsal/kullanim-kosullari/" target="_blank" rel="noopener">Ön bilgilendirme formunu ve mesafeli satış sözleşmesini</a> okudum, onaylıyorum. <a href="kurumsal/iptal-iade/" target="_blank" rel="noopener">İptal ve iade koşulları</a>'
+      + '<div class="odm-docs" id="odmBelgeler"></div>'
+      + '<label class="odm-check"><input type="checkbox" name="sozlesme"><span>Yukarıdaki ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, onaylıyorum. <a href="kurumsal/iptal-iade/" target="_blank" rel="noopener">İptal ve iade koşulları</a>'
       + ' ve <a href="kurumsal/kvkk/" target="_blank" rel="noopener">kişisel verilerin işlenmesi</a> hakkında bilgilendirildim.</span></label>'
       + '<small class="odm-error" data-hata="sozlesme"></small>'
       + '<p class="odm-demo">Deneme sürümü: ödeme altyapısı henüz bağlı değil. Bu düğme rezervasyon talebini oluşturur; kartınızdan çekim yapılmaz.</p>'

@@ -113,6 +113,9 @@ const NEWSLETTER_PERKS = [
 
 /* ---- Iletisim bilgileri (tek yerden degistirilir) ---- */
 const CONTACT = {
+  /* YER TUTUCU: hat kurulunca gerçek numaralar yazılacak. İletişim
+     sayfası bunu söylüyor (yerTutucu). */
+  yerTutucu: true,
   phoneLabel: '0850 000 00 00',
   phoneHref: 'tel:+908500000000',
   /* Telefon hattinin saatleri. Yalnizca ekranda yaziyor, bir mantigi
@@ -442,50 +445,12 @@ const SEO_ARTICLE = [
   }
 ];
 
-/* SSS. Buradaki sorular index.html icindeki FAQPage yapisal verisiyle
-   birebir ayni olmalidir; testler bunu dogrular. */
-const SEO_FAQ = [
-  {
-    q: 'mola360 üzerinden bilet nasıl satın alınır?',
-    a: 'Aramak istediğiniz etkinliği, turu veya oteli arama kutusundan ya da kategori sayfalarından bulun, tarih ve kişi sayısını seçip sepete ekleyin. Ödeme adımında varsa kupon kodunuzu uygulayın ve 3D Secure ile ödemeyi tamamlayın. Onay ekranının ardından e-biletiniz oluşturulur.'
-  },
-  {
-    q: 'Satın aldığım bileti nereden görüntülerim?',
-    a: 'Tüm biletleriniz ve rezervasyonlarınız hesabınızdaki Biletlerim bölümünde karekodlu olarak durur. Aynı bilet satın alma sırasında verdiğiniz e-posta adresine de gönderilir. Etkinlik girişinde telefonunuzdaki karekodu göstermeniz yeterlidir.'
-  },
-  {
-    q: 'Rezervasyonumu iptal edebilir miyim, ücret iadesi nasıl işler?',
-    a: 'İptal ve iade koşulları her ürünün kendi sayfasında ayrıca belirtilir; tur, etkinlik ve konaklamada koşullar farklılık gösterebilir. Ürün sayfasındaki koşullar kapsamında iptal talebinizi Biletlerim bölümünden oluşturabilir, süreci aynı ekrandan takip edebilirsiniz.'
-  },
-  {
-    q: 'Günübirlik tur fiyatına neler dahil?',
-    a: 'Günübirlik turlarda ulaşım ve rehberlik hizmeti standart olarak fiyata dahildir. Öğle yemeği, müze ve ören yeri giriş ücretleri ile isteğe bağlı aktiviteler programdan programa değişir; her turun sayfasında "Fiyata dahil olanlar" ve "Dahil olmayanlar" başlıkları ayrı ayrı listelenir.'
-  },
-  {
-    q: 'Etkinlik iptal edilir veya ertelenirse ne oluyor?',
-    a: 'Etkinlik organizatör tarafından iptal edilirse ödemeniz ek bir işlem yapmanıza gerek kalmadan iade sürecine alınır ve bilgilendirme bildirimi gönderilir. Etkinlik ertelenirse biletiniz yeni tarih için geçerli olmaya devam eder; yeni tarih size uymuyorsa iade talebinde bulunabilirsiniz.'
-  },
-  {
-    q: 'Otel rezervasyonunda ödemeyi ne zaman yapıyorum?',
-    a: 'Tesise ve seçtiğiniz tarifeye göre iki seçenek sunulur: rezervasyon anında tam ödeme veya tesiste ödeme. Hangisinin geçerli olduğu fiyatın hemen yanında yazar; ödeme adımına geçmeden önce görebilirsiniz.'
-  },
-  {
-    q: 'Kupon kodunu nerede kullanabilirim?',
-    a: 'Kupon kodları ödeme adımındaki "Kupon kodu" alanına yazılır. Kod geçerliyse indirim tutarı toplam fiyatın altında anında güncellenir. Kuponlarınızı ve son kullanma tarihlerini hesabınızdaki Kuponlarım bölümünden görebilirsiniz.'
-  },
-  {
-    q: 'Grup veya kurumsal rezervasyon yapabilir miyim?',
-    a: 'Evet. Belirli bir kişi sayısının üzerindeki gruplar ve şirket organizasyonları için özel fiyatlandırma yapılabilir. Talebinizi WhatsApp canlı destek üzerinden veya Beni Ara formunu doldurarak iletebilirsiniz; ekibimiz size özel bir program hazırlar.'
-  },
-  {
-    q: 'Fiyatlara vergiler dahil mi?',
-    a: 'Listelerde ve ürün sayfalarında gördüğünüz fiyatlar vergiler dahil tutarlardır. Ödeme adımında sürpriz bir ek ücret eklenmez; varsa isteğe bağlı ek hizmetler ayrıca ve açıkça gösterilir.'
-  },
-  {
-    q: 'Müşteri hizmetlerine nasıl ulaşırım?',
-    a: 'Yukarıdaki Yardım bölümünden telefonla arayabilir, WhatsApp canlı destek hattından yazabilir veya Beni Ara formuna numaranızı bırakabilirsiniz. Çalışma saatleri içinde bıraktığınız numaralara kısa süre içinde dönüş yapılır.'
-  }
-];
+/* SSS: tek kaynak corporate-data.js (KRM_SSS); anasayfada yalnızca
+   anasayfa: true olanlar. index.html içindeki FAQPage yapısal verisi
+   bununla birebir aynı olmalı (tests/home-blocks.test.js). */
+const HB_KURUMSAL = HB_NODE ? require('./corporate-data.js') : null;
+const SEO_FAQ = ((HB_KURUMSAL ? HB_KURUMSAL.KRM_SSS : (typeof KRM_SSS !== 'undefined' ? KRM_SSS : [])) || [])
+  .filter(x => x.anasayfa).map(x => ({ q: x.soru, a: x.cevap }));
 
 /* Wikimedia Commons'tan alinan gorsellerin kaynaklari.
    CC lisanslari atif ister; asagidaki satir sayfada gorunur ve her
@@ -699,7 +664,7 @@ const HOME_BLOCK_MARKUP = {
             <input type="tel" id="homeCallbackPhone" inputmode="tel" placeholder="05XX XXX XX XX" autocomplete="tel">
             <button class="btn-primary" type="submit">Gönder</button>
           </div>
-          <p class="home-callback-note" id="homeCallbackNote">Çalışma saatleri içinde 15 dakika içinde arıyoruz.</p>
+          <p class="home-callback-note" id="homeCallbackNote">Çalışma saatlerinde (${CONTACT.hours}) seni arıyoruz.</p>
         </form>
       </div>
     </section>`

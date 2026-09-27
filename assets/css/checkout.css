@@ -466,3 +466,8 @@
   text-underline-offset: 2px;
 }
 .odm-coupon-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--text-muted); }
+
+/* ---------------- ön bilgilendirme ve sözleşme (6. adım) ---------------- */
+.odm-docs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.odm-doc summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--navy); padding: 4px 0; }
+.odm-doc[open] summary { margin-bottom: 6px; }

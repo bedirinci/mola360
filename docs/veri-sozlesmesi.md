@@ -347,7 +347,7 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `koleksiyonlar()`, `koleksiyon(slug)` | senkron | Koleksiyon(lar) | 〃 |
 | `listeSayfasi(type, slug)` | senkron | Adresi çözer: `{ kind: 'category' \| 'listing', … }` veya `null` | 〃 |
 | `temaUrunleri(slug)`, `koleksiyonUrunleri(slug)` | senkron | Ürün dizisi | Liste uç noktası |
-| `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'city' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'search' \| 'new' \| 'week' \| 'checkout' \| 'confirmation' \| 'campaigns' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
+| `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'city' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'search' \| 'new' \| 'week' \| 'checkout' \| 'confirmation' \| 'campaigns' \| 'account' \| 'corporate' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
 | `sayfaModeli(adres, bugun)` | senkron | Liste sayfasının başlığı, temel süzgeci, kırıntısı ve alt sayfa çipleri | Sayfaya gömülü |
 | `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex` | Sunucu `<head>`'e yazar |
 | `yuzeyTanimlari(bugun)` | senkron | Süzgeç alanları ve seçenekleri (bölüm 12) | Önbellekli uç nokta |
@@ -376,6 +376,7 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `bildirimler(simdi)`, `bildirimOkundu(id)`, `bildirimKaldir(id)` | senkron | Türetilmiş bildirimler + okundu/kaldırıldı | `GET /api/hesap/bildirimler` |
 | `hesapPaneli(simdi)` | **Promise** | Panelin bütün verisi (bölüm 14) | `GET /api/hesap` |
 | `yorumYaz({ kod, puan, metin })` | **Promise** | Onay bekleyen yorum | `POST /api/yorum` |
+| `talepKonulari()`, `iletisimTalebi(talep)` | senkron / **Promise** | İletişim formu ve "Beni ara" (bugün bu tarayıcıda, ekibe iletilmiyor) | `POST /api/iletisim` |
 
 Arama sayfası aynı eşleşmeyi `liste({ temel: { q } })` ile alır (tek
 kural: `kapiAramaPuani`, bölüm 12).
@@ -391,6 +392,27 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 6. adım: kurumsal ve yasal sayfalar
+
+- `/kurumsal/*` içerikli: Hakkımızda, İletişim (form), Yardım Merkezi
+  (arama ve konular), Sık Sorulan Sorular (arama, FAQPage yapısal
+  verisi), İptal ve İade (satıştaki ürünlerin kademeleri verilerden),
+  Kullanım Koşulları, KVKK Aydınlatma Metni, Çerez Politikası, Ön
+  Bilgilendirme Formu, Mesafeli Satış Sözleşmesi (bölüm 15).
+- Ödeme ekranında ön bilgilendirme formu ve mesafeli satış sözleşmesi
+  rezervasyonun kendi bilgileriyle (ürün, tarih, tutar, kapora ve kalan,
+  taksit, tarihli iptal koşulları) gösteriliyor ve onaylanıyor.
+- SSS tek kaynakta (`corporate-data.js`); anasayfa SSS'si ve
+  `index.html`'deki FAQPage yapısal verisi oradan. Gerçekle çelişen
+  cevaplar düzeldi: "sepete ekleyin" (sepet yok), otelde "tesiste
+  ödeme" (yok), "Biletlerim'den iptal" (Rezervasyonlarım'dan).
+- Alt bilgide "7/24 destek" çalışma saatleriyle çelişiyordu: "Her gün
+  destek". Gizlilik, Çerezler ve Kullanım Koşulları bağlandı.
+- "Beni ara" formu numarayı hiçbir yere göndermeden "arayacağız"
+  diyordu; talep artık kaydediliyor ve ekran deneme olduğunu söylüyor.
+- Anasayfa alt bilgisindeki logo bir görsel barındırma sitesinden
+  yükleniyordu; yerel dosyaya alındı.
 
 ### 5. adım: Hesabım
 
@@ -775,4 +797,46 @@ kaldırıldı işaretleri kalıcı.
 Kart bilgisi sitede tutulmaz. Kart kaydı ödeme kuruluşunun kasasında
 (tokenizasyon) olacak; panel yalnızca son dört haneyi ve aileyi
 gösterecek.
+
+## 15. Kurumsal ve yasal sayfalar
+
+İçerik `assets/js/corporate-data.js` (`KRM_SAYFALAR`, `KRM_SSS`), ekran
+`assets/js/corporate-page.js`. Backend gelince sayfa kayıtları yönetim
+panelinden düzenlenecek; biçim aynı.
+
+### Kurallar
+
+- **Şirket kimliği uydurulmaz.** `KRM_SIRKET`'teki boş alanlar (ticari
+  unvan, adres, MERSİS, vergi dairesi ve numarası, TÜRSAB belge
+  numarası, KEP, e-posta, ETBİS kaydı) sayfada "yayından önce eklenecek"
+  diye işaretli; yasal sayfalar "taslak" uyarısı taşır. Telefon ve
+  WhatsApp numaraları da yer tutucu (`CONTACT.yerTutucu`) ve İletişim
+  sayfası bunu söylüyor.
+- **Metindeki kural sayıları kural tablosundan:** `{kaporaOrani}`,
+  `{kaporaEnAzGun}`, `{taksitAltSinir}`, `{kartAileleri}`,
+  `{hosgeldinOrani}`, `{hosgeldinGun}` booking-engine.js ve
+  account-engine.js'teki değerlerle doldurulur. Anasayfa SSS'si düz
+  metin olduğu için sayıları test kural tablosuyla karşılaştırıyor.
+- İptal ve İade sayfasındaki tablo satıştaki ürünlerin kendi
+  kademelerinden üretiliyor.
+- Çerez Politikası gerçeği söylüyor: çerez yok, analitik ve reklam aracı
+  yok; tarayıcı deposundaki anahtarlar (`KRM_DEPO`) ve yüklenen dış
+  kaynaklar (Google Fonts, Wikimedia, Unsplash, Picsum; bağlantı olarak
+  Google Haritalar ve WhatsApp) listeli. Kod yeni bir anahtar ya da dış
+  kaynak eklerse test kırılır.
+- **Yasal metinler taslaktır; yayından önce hukukçu incelemesinden
+  geçmelidir.** Cayma hakkı istisnası (Mesafeli Sözleşmeler
+  Yönetmeliği md. 15), paket tur hükümleri, KVKK aydınlatma içeriği ve
+  tüketici hakem heyeti bilgisi genel çerçevedir.
+
+### Yayından önce gerekenler
+
+| Bilgi | Nerede |
+|---|---|
+| Ticari unvan, adres, MERSİS, vergi dairesi ve numarası | `KRM_SIRKET` |
+| TÜRSAB / Kültür ve Turizm Bakanlığı belge numarası | `KRM_SIRKET.tursabBelgeNo` |
+| KEP adresi ve destek e-postası | `KRM_SIRKET.kep`, `.eposta` |
+| ETBİS kaydı | `KRM_SIRKET.etbisNo` |
+| Gerçek telefon ve WhatsApp numarası | `home-blocks.js` `CONTACT` (ve `yerTutucu: false`) |
+| Hukukçu incelemesi | Kullanım Koşulları, KVKK, Ön Bilgilendirme, Mesafeli Satış, İptal ve İade |
 

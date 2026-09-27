@@ -274,10 +274,10 @@ describe('sayfa modeli', () => {
     });
   });
 
-  it('içerik sayfası (kurumsal) menüdeki adıyla', () => {
+  it('kurumsal sayfa kendi içerik kaydının adıyla (menüdeki adla aynı)', () => {
     const m = model('kurumsal/iptal-iade');
-    expect(m.baslik).toBe('İptal / İade');
-    expect(m.kirinti.map(k => k.name)).toEqual(['Anasayfa', 'Kurumsal', 'İptal / İade']);
+    expect(m.baslik).toBe('İptal ve İade');
+    expect(m.kirinti.map(k => k.name)).toEqual(['Anasayfa', 'Kurumsal', 'İptal ve İade']);
     expect(m.temel).toBe(null);
   });
 });

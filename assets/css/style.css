@@ -6045,3 +6045,5 @@ a.mobile-profile-loyalty { display: block; color: inherit; }
   text-decoration: underline;
 }
 body.is-uye #headerRegisterBtn { display: none; }
+.footer-legal a { color: inherit; }
+.footer-legal a:hover { color: #fff; text-decoration: underline; }

@@ -33,6 +33,7 @@ const KAPI_ORNEK = kapiModul('./sample-catalog-data.js');
 const KAPI_MOTOR = kapiModul('./listing-engine.js');
 const KAPI_REZ = kapiModul('./booking-engine.js');
 const KAPI_HESAP = kapiModul('./account-engine.js');
+const KAPI_KURUMSAL = kapiModul('./corporate-data.js');
 
 /* Kanonik adreslerin kökü. Alan adı (mola360.com) hazır olduğunda tek
    değişecek satır. */
@@ -731,6 +732,12 @@ function kapiAdres(yol) {
   /* Hesabım tek panel; bölümler ?bolum= ile. Alt sekmelerin kısa
      adresleri panelin ilgili bölümüne. */
   if (temiz === 'hesabim') return { kind: 'account', path: temiz, bolum: null };
+  /* Kurumsal ve yasal sayfalar: içerik corporate-data.js'te. */
+  if (parca[0] === 'kurumsal' && parca.length === 2) {
+    const krm = kapiFn('krmSayfa', KAPI_KURUMSAL, typeof krmSayfa !== 'undefined' ? krmSayfa : null);
+    const sayfa = krm ? krm(parca[1]) : null;
+    if (sayfa) return { kind: 'corporate', path: temiz, slug: sayfa.slug };
+  }
   const hesapBolumu = { favorilerim: 'favorilerim', biletlerim: 'biletlerim', kuponlarim: 'kuponlarim' }[temiz];
   if (hesapBolumu) return { kind: 'account', path: 'hesabim', bolum: hesapBolumu };
   /* Menüdeki iki ürün sayfası: taksonomide "içerik dışı" duruyorlar ama
@@ -869,6 +876,16 @@ function kapiSayfaModeli(adres, bugun) {
       temel: null,
       kirinti: [ana, { name: kapiMenuEtiketi(adres.path) || 'Bu Hafta', path: adres.path }]
     };
+  } else if (adres.kind === 'corporate') {
+    const krm = kapiFn('krmSayfa', KAPI_KURUMSAL, typeof krmSayfa !== 'undefined' ? krmSayfa : null);
+    const sayfa = krm ? krm(adres.slug) : null;
+    if (sayfa) {
+      m = {
+        baslik: sayfa.baslik, tip: null, temel: null,
+        kirinti: [ana].concat(adres.slug === 'hakkimizda' ? [] : [{ name: 'Kurumsal', path: 'kurumsal/hakkimizda' }])
+          .concat([{ name: sayfa.baslik, path: adres.path }])
+      };
+    }
   } else if (adres.kind === 'account') {
     m = { baslik: 'Hesabım', tip: null, temel: null, kirinti: [ana, { name: 'Hesabım', path: 'hesabim' }] };
   } else if (adres.kind === 'checkout' || adres.kind === 'confirmation') {
@@ -1221,7 +1238,8 @@ const KAPI_DEPO = {
   oturum: 'mola360.oturum',
   favoriler: 'mola360.favoriler',
   bildirim: 'mola360.bildirimDurumu',
-  yorumlar: 'mola360.yorumlar'
+  yorumlar: 'mola360.yorumlar',
+  talepler: 'mola360.talepler'
 };
 const KAPI_BELLEK = {};
 function kapiDepoOku(anahtar, varsayilan) {
@@ -1570,6 +1588,44 @@ function kapiYorumYaz(yorum, simdi) {
   });
 }
 
+/* ---------------- iletişim talepleri ----------------
+   İletişim formu ve "Beni ara". Backend gelince POST /api/iletisim; bugün
+   bu tarayıcıda (mola360.talepler) ve ekibe İLETİLMİYOR — ekranlar bunu
+   söylüyor. tur: 'mesaj' | 'geri-arama'. */
+const KAPI_TALEP_KONULARI = ['Rezervasyon', 'Ödeme ve iade', 'Grup ve kurumsal', 'Öneri ve şikâyet', 'Diğer'];
+function kapiIletisimTalebi(talep) {
+  return Promise.resolve().then(() => {
+    const t = talep || {};
+    const hatalar = [];
+    const ad = kapiRezFn('rezAdGecerli') || (x => String(x || '').trim().length > 1);
+    const eposta = kapiRezFn('rezEpostaGecerli') || (x => /@/.test(String(x || '')));
+    const tel = kapiRezFn('rezTelefonGecerli') || (x => String(x || '').replace(/\D/g, '').length >= 10);
+    if (t.tur === 'geri-arama') {
+      if (!tel(t.telefon)) hatalar.push({ alan: 'telefon', mesaj: 'Geçerli bir cep telefonu yaz.' });
+    } else {
+      if (!ad(t.ad)) hatalar.push({ alan: 'ad', mesaj: 'Adını yaz.' });
+      if (!eposta(t.eposta)) hatalar.push({ alan: 'eposta', mesaj: 'Geçerli bir e-posta adresi yaz.' });
+      if (t.telefon && !tel(t.telefon)) hatalar.push({ alan: 'telefon', mesaj: 'Geçerli bir cep telefonu yaz.' });
+      if (KAPI_TALEP_KONULARI.indexOf(t.konu) === -1) hatalar.push({ alan: 'konu', mesaj: 'Konu seç.' });
+      const m = String(t.mesaj || '').trim();
+      if (m.length < 10) hatalar.push({ alan: 'mesaj', mesaj: 'Mesajını yaz (en az 10 karakter).' });
+      if (m.length > 2000) hatalar.push({ alan: 'mesaj', mesaj: 'En fazla 2000 karakter.' });
+      if (!t.kvkk) hatalar.push({ alan: 'kvkk', mesaj: 'Aydınlatma metnini onayla.' });
+    }
+    if (hatalar.length) return { tamam: false, hatalar };
+    const uret = kapiRezFn('rezKodUret');
+    const kod = uret ? uret().replace('M360-', 'T-') : 'T-' + Date.now().toString(36).toUpperCase();
+    const kayit = t.tur === 'geri-arama'
+      ? { kod, tur: 'geri-arama', telefon: String(t.telefon).trim(), t: new Date().toISOString() }
+      : { kod, tur: 'mesaj', ad: String(t.ad).trim(), eposta: String(t.eposta).trim(), telefon: String(t.telefon || '').trim(),
+        konu: t.konu, rezervasyonKodu: String(t.rezervasyonKodu || '').trim().toUpperCase().slice(0, 12),
+        mesaj: String(t.mesaj).trim(), t: new Date().toISOString() };
+    const liste = kapiDepoOku(KAPI_DEPO.talepler, []);
+    kapiDepoYaz(KAPI_DEPO.talepler, [kayit].concat(Array.isArray(liste) ? liste : []).slice(0, 30));
+    return { tamam: true, kod, deneme: true };
+  });
+}
+
 /* Yürürlükteki kampanyalar (sayfa yükü): kampanyalar sayfası, ana sayfa
    bantları. kalanGun: bitişe bir haftadan az kaldıysa gün sayısı. */
 function kapiKampanyalar(bugun) {
@@ -1656,7 +1712,10 @@ const MolaVeri = {
   bildirimOkundu: (idler) => kapiBildirimIsaretle(idler, 'oku'),
   bildirimKaldir: (idler) => kapiBildirimIsaretle(idler, 'kaldir'),
   hesapPaneli: kapiHesapPaneli,
-  yorumYaz: kapiYorumYaz
+  yorumYaz: kapiYorumYaz,
+  /* iletişim (Promise) */
+  talepKonulari: () => KAPI_TALEP_KONULARI.slice(),
+  iletisimTalebi: kapiIletisimTalebi
 };
 
 if (typeof module !== 'undefined' && module.exports) {

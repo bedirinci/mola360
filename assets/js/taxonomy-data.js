@@ -366,7 +366,7 @@ const TAXONOMY_MENU = [
     { label: 'İletişim',           path: 'kurumsal/iletisim' },
     { label: 'Yardım Merkezi',     path: 'kurumsal/yardim' },
     { label: 'Sık Sorulan Sorular', path: 'kurumsal/sss' },
-    { label: 'İptal / İade',       path: 'kurumsal/iptal-iade' },
+    { label: 'İptal ve İade',      path: 'kurumsal/iptal-iade' },
     { label: 'Kullanım Koşulları', path: 'kurumsal/kullanim-kosullari' },
     { label: 'KVKK',               path: 'kurumsal/kvkk' }
   ] }
