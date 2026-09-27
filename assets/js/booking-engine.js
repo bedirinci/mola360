@@ -86,7 +86,8 @@ const REZ_TAKSIT = {
            cumaCumartesi (konaklama cuma VE cumartesi gecesini kapsıyor)
    indirim tutar (TL) | oran (+ enFazla TL) | geceOda (N gecelik oda bedeli)
    baslangic/bitis  geçerlilik (bugün dahil); boş = süresiz
-   uyeOzel  üyelik gelince (5. adım); üyesiz teklifte uygulanmaz
+   uyeOzel  yalnızca üyeye; kod kişiye özel (hesaptaki kuponlar)
+   ilkRezervasyon  üyenin iptal edilmemiş rezervasyonu yoksa
    BU TABLO ÖRNEK; kampanyalar backend'de yönetilecek, kupon kodu
    sunucuda doğrulanacak. */
 const REZ_KAMPANYALAR = [
@@ -104,7 +105,7 @@ const REZ_KAMPANYALAR = [
     kosul: { cumaCumartesi: true },
     indirim: { geceOda: 1 },
     sayfa: 'oteller' },
-  { kod: 'yeni-uye', tur: 'kupon', etiket: 'Yeni üyelere', uyeOzel: true,
+  { kod: 'yeni-uye', tur: 'kupon', etiket: 'Yeni üyelere', uyeOzel: true, ilkRezervasyon: true,
     ad: 'İlk rezervasyonda %15 indirim',
     aciklama: 'Üyelikle birlikte kişiye özel kod e-postayla gönderilir; en fazla 1.500 TL.',
     kapsam: {}, kosul: {}, indirim: { oran: 0.15, enFazla: 1500 },
@@ -492,7 +493,12 @@ function rezCumaCumartesi(giris, gece) {
 function rezKampanyaIndirimi(kampanya, bilgi) {
   const yok = (neden) => ({ tutar: 0, neden });
   if (!rezGecerli(kampanya, bilgi.bugun)) return yok('Kampanyanın süresi doldu.');
-  if (kampanya.uyeOzel && !bilgi.uye) return yok('Bu indirim üyelere özel; üyelik yakında açılıyor.');
+  if (kampanya.uyeOzel && !bilgi.uye) return yok('Bu indirim üyelere özel; giriş yapınca kullanabilirsin.');
+  if (kampanya.ilkRezervasyon && bilgi.uye && Number(bilgi.uye.rezervasyonSayisi) > 0) return yok('Bu kupon yalnızca ilk rezervasyonda geçerli.');
+  if (kampanya.kisisel) {
+    if (kampanya.kisisel.kullanildi) return yok('Bu kupon kullanıldı.');
+    if (kampanya.kisisel.sonGun && rezISO(bilgi.bugun) > kampanya.kisisel.sonGun) return yok('Kuponun süresi doldu.');
+  }
   if (!rezKapsamaGirer(kampanya, bilgi.tip, bilgi.kayit)) return yok('Bu ürün kampanyanın kapsamında değil.');
   const kosul = kampanya.kosul || {};
   if (kosul.enAzGunOnce) {
@@ -522,10 +528,17 @@ function rezKampanyaIndirimi(kampanya, bilgi) {
   return tutar > 0 ? { tutar, neden: '' } : yok('Bu rezervasyonda indirim oluşmuyor.');
 }
 
-function rezKuponBul(kod) {
+/* Kupon: önce herkese açık kodlar, sonra üyenin kişiye özel kodları
+   (uye.kuponlar: { kod, kampanya, sonGun, kullanildi }). Kişisel kod
+   kampanyanın kuralını taşır, üstüne kendi son günü ve kullanımı. */
+function rezKuponBul(kod, uye) {
   const k = String(kod || '').trim().toUpperCase();
   if (!k) return null;
-  return REZ_KAMPANYALAR.find(x => x.tur === 'kupon' && x.kuponKodu && x.kuponKodu.toUpperCase() === k) || null;
+  const genel = REZ_KAMPANYALAR.find(x => x.tur === 'kupon' && x.kuponKodu && x.kuponKodu.toUpperCase() === k);
+  if (genel) return genel;
+  const kisisel = ((uye && uye.kuponlar) || []).find(x => String(x.kod || '').toUpperCase() === k);
+  const kampanya = kisisel ? REZ_KAMPANYALAR.find(x => x.kod === kisisel.kampanya) : null;
+  return kampanya ? Object.assign({}, kampanya, { kuponKodu: kisisel.kod, kisisel }) : null;
 }
 
 /* ---------------- kur ve TL ---------------- */
@@ -672,7 +685,7 @@ function rezTeklif(tip, kayit, secim, secenek, bugun, baglam) {
   }
   let kupon = null;
   if (opt.kupon) {
-    const k = rezKuponBul(opt.kupon);
+    const k = rezKuponBul(opt.kupon, opt.uye);
     if (!k) kupon = { kod: String(opt.kupon).trim().toUpperCase(), gecerli: false, mesaj: 'Kupon kodu bulunamadı.' };
     else if (mekanda) kupon = { kod: k.kuponKodu, gecerli: false, mesaj: 'Ön ödemesiz rezervasyonda kupon kullanılmaz.' };
     else {

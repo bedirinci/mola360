@@ -603,6 +603,9 @@ const TOURS = {
       facets: { transport: ['minibus'], departFrom: ['izmir'] }
     },
     currency: 'TRY',
+    /* Molapuan: tura katılınca kazanılır, tura göre değişir. ÖRNEK değer;
+       kural belirlenince güncellenecek (account-engine.js). */
+    loyalty: { points: 60 },
     /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
        "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
     publishedAt: '2026-09-19',
@@ -904,6 +907,9 @@ const TOURS = {
       facets: { transport: ['ucak'] }
     },
     currency: 'TRY',
+    /* Molapuan: tura katılınca kazanılır, tura göre değişir. ÖRNEK değer;
+       kural belirlenince güncellenecek (account-engine.js). */
+    loyalty: { points: 250 },
     /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
        "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
     publishedAt: '2026-09-19',

@@ -496,6 +496,11 @@ function odmKur(kok, bugun) {
 }
 
 /* ---------------- onay ekranı ---------------- */
+/* Rezervasyonun iptal kademeleri (ilk sürümün kayıtlarında "iptal"). */
+function odmIptalKosullari(r) {
+  if (Array.isArray(r.iptalKosullari)) return r.iptalKosullari;
+  return Array.isArray(r.iptal) ? r.iptal : [];
+}
 function odmOnayMarkup(r) {
   const o = r.odeme || {};
   const satir = (ad, deger) => '<li><span>' + ad + '</span><strong>' + deger + '</strong></li>';
@@ -542,8 +547,8 @@ function odmOnayMarkup(r) {
     + (o.sekil === 'kapora' ? '<li>Kalkıştan bir gün önce kalan ödeme için sizi arıyoruz.</li>' : '')
     + '</ol></section>'
     + '</div><aside class="odm-summary">'
-    + ((r.iptal || []).length ? '<div class="odm-cancel"><h3>İptal koşulları</h3><ol>'
-      + r.iptal.map((k, i) => '<li><strong>' + (k.sonAnMetni ? odmKacis(k.sonAnMetni) + '’e kadar' : (i === 0 ? 'Her zaman' : 'Sonrasında'))
+    + (odmIptalKosullari(r).length ? '<div class="odm-cancel"><h3>İptal koşulları</h3><ol>'
+      + odmIptalKosullari(r).map((k, i) => '<li><strong>' + (k.sonAnMetni ? odmKacis(k.sonAnMetni) + '’e kadar' : (i === 0 ? 'Her zaman' : 'Sonrasında'))
         + '</strong><span>' + (o.sekil === 'mekanda' ? odmKacis(k.metin) : (k.iade > 0 ? odmKacis(odmPara(k.iade)) + ' iade' : 'İade yok')) + '</span></li>').join('')
       + '</ol></div>' : '')
     + '<div class="odm-done-actions">'

@@ -32,6 +32,7 @@ const KAPI_ENVANTER = kapiModul('./inventory-data.js');
 const KAPI_ORNEK = kapiModul('./sample-catalog-data.js');
 const KAPI_MOTOR = kapiModul('./listing-engine.js');
 const KAPI_REZ = kapiModul('./booking-engine.js');
+const KAPI_HESAP = kapiModul('./account-engine.js');
 
 /* Kanonik adreslerin kökü. Alan adı (mola360.com) hazır olduğunda tek
    değişecek satır. */
@@ -1185,6 +1186,9 @@ function kapiFiyatTeklifi(tip, slug, secim, secenek, bugun) {
     const kayit = kapiUrun(tip, slug);
     if (!teklifFn) return { tip, slug, satilabilir: false, hatalar: ['Ödeme adımı bu sayfada yüklenmedi.'] };
     const gun = kapiISO(bugun || new Date());
+    /* Üyelik bağlamını ekran değil kapı veriyor (sunucuda oturumdan):
+       kişisel kupon ve "ilk rezervasyon" kuralı buna bakıyor. */
+    secenek = Object.assign({}, secenek || {}, { uye: kapiUyeBaglami() });
     const teklif = teklifFn(tip, kayit, secim, secenek, gun, { kur: kayit ? kapiKur(kayit.currency) : null,
       simdi: bugun instanceof Date ? bugun : null });
     if (!teklif.satilabilir || !teklif.kontenjan) return teklif;
@@ -1202,22 +1206,42 @@ function kapiFiyatTeklifi(tip, slug, secim, secenek, bugun) {
   });
 }
 
-const KAPI_REZ_ANAHTAR = 'mola360.rezervasyonlar';
-const KAPI_REZ_BELLEK = [];
-function kapiRezOku() {
+/* Tarayıcı deposu: localStorage; yoksa (Node, kapalı depo) bellek.
+   Backend geldiğinde bu iki fonksiyonun yerini API çağrıları alacak. */
+const KAPI_DEPO = {
+  rezervasyonlar: 'mola360.rezervasyonlar',
+  hesaplar: 'mola360.hesaplar',
+  oturum: 'mola360.oturum',
+  favoriler: 'mola360.favoriler',
+  bildirim: 'mola360.bildirimDurumu',
+  yorumlar: 'mola360.yorumlar'
+};
+const KAPI_BELLEK = {};
+function kapiDepoOku(anahtar, varsayilan) {
   try {
-    if (typeof localStorage === 'undefined') return KAPI_REZ_BELLEK.slice();
-    const v = JSON.parse(localStorage.getItem(KAPI_REZ_ANAHTAR) || '[]');
-    return Array.isArray(v) ? v : [];
-  } catch (_) { return KAPI_REZ_BELLEK.slice(); }
+    if (typeof localStorage !== 'undefined') {
+      const v = localStorage.getItem(anahtar);
+      if (v !== null) return JSON.parse(v);
+      return varsayilan;
+    }
+  } catch (_) { /* kapalı depo: bellekten */ }
+  return Object.prototype.hasOwnProperty.call(KAPI_BELLEK, anahtar) ? JSON.parse(KAPI_BELLEK[anahtar]) : varsayilan;
+}
+function kapiDepoYaz(anahtar, deger) {
+  KAPI_BELLEK[anahtar] = JSON.stringify(deger);
+  try {
+    if (typeof localStorage !== 'undefined') {
+      if (deger === null) localStorage.removeItem(anahtar);
+      else localStorage.setItem(anahtar, JSON.stringify(deger));
+    }
+  } catch (_) { /* kota ya da kapalı depo: bellekte kalır */ }
+}
+function kapiRezOku() {
+  const v = kapiDepoOku(KAPI_DEPO.rezervasyonlar, []);
+  return Array.isArray(v) ? v : [];
 }
 function kapiRezYaz(liste) {
-  const kirp = liste.slice(0, 30);
-  KAPI_REZ_BELLEK.length = 0;
-  kirp.forEach(x => KAPI_REZ_BELLEK.push(x));
-  try {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(KAPI_REZ_ANAHTAR, JSON.stringify(kirp));
-  } catch (_) { /* kota ya da kapalı depo: bellekte kalır */ }
+  kapiDepoYaz(KAPI_DEPO.rezervasyonlar, liste.slice(0, 50));
 }
 
 /* istek: { tip, slug, secim, secenek, form, beklenenTahsilat, bugun }
@@ -1242,8 +1266,10 @@ function kapiRezervasyonOlustur(istek) {
     while (liste.some(r => r.kod === kod)) kod = uret();
     const f = i.form || {};
     const il = f.iletisim || {};
+    const hesap = kapiOturum();
     const kayit = {
       kod,
+      hesapId: hesap ? hesap.id : null,
       olusturma: new Date().toISOString(),
       durum: 'odeme-bekliyor',
       deneme: true,
@@ -1263,7 +1289,7 @@ function kapiRezervasyonOlustur(istek) {
       odeme: teklif.odeme,
       taksit: { aile: teklif.taksit.aile, secilen: teklif.taksit.secilen },
       tahsilat: teklif.tahsilat,
-      iptal: teklif.iptal,
+      iptalKosullari: teklif.iptal,
       iletisim: { ad: String(il.ad || '').trim(), soyad: String(il.soyad || '').trim(),
         eposta: String(il.eposta || '').trim(), telefon: String(il.telefon || '').trim() },
       /* Yalnızca ad ve yaş; kimlik numarası saklanmıyor. */
@@ -1278,6 +1304,8 @@ function kapiRezervasyonOlustur(istek) {
       not: String(f.not || '').trim().slice(0, 500)
     };
     kapiRezYaz([kayit].concat(liste));
+    const kisisel = (teklif.indirimler || []).find(x => x.kupon && hesap && (hesap.kuponlar || []).some(k => k.kod === x.kupon));
+    if (kisisel) kapiHesapKaydet(kapiHspFn('hspKuponKullan')(hesap, kisisel.kupon, kod));
     return { tamam: true, kod, rezervasyon: kayit };
   });
 }
@@ -1285,6 +1313,254 @@ function kapiRezervasyonOlustur(istek) {
 function kapiRezervasyon(kod) {
   const k = String(kod || '').trim().toUpperCase();
   return Promise.resolve().then(() => kapiRezOku().find(r => r.kod === k) || null);
+}
+
+/* ---------------- hesap ----------------
+   Üyelik, favoriler, bildirim durumu ve yorumlar. Kurallar
+   account-engine.js'te (saf); burası depolama. Bugün BU TARAYICIDA
+   (localStorage). Backend geldiğinde:
+     oturum()             sayfaya gömülü oturum (çerez)
+     uyeOl, girisYap      POST /api/uyelik, /api/giris (e-posta doğrulama,
+                          şifre ya da tek kullanımlık kod)
+     favoriDegistir       PUT/DELETE /api/hesap/favoriler/:tip/:slug
+     hesapPaneli          GET /api/hesap (tek çağrı; panelin bütün verisi)
+     rezervasyonIptal     POST /api/rezervasyon/:kod/iptal (iade sağlayıcıda)
+   DENEME SÜRÜMÜNDE ŞİFRE YOK: şifre alınmıyor, saklanmıyor; giriş yalnızca
+   bu tarayıcıdaki hesabı açıyor. Ekran bunu açıkça söylüyor. */
+function kapiHspFn(ad) {
+  return kapiFn(ad, KAPI_HESAP, typeof globalThis !== 'undefined' ? globalThis[ad] : undefined);
+}
+function kapiHesaplar() {
+  const v = kapiDepoOku(KAPI_DEPO.hesaplar, []);
+  return Array.isArray(v) ? v : [];
+}
+function kapiOturum() {
+  const id = kapiDepoOku(KAPI_DEPO.oturum, null);
+  return id ? (kapiHesaplar().find(h => h.id === id) || null) : null;
+}
+function kapiHesapKaydet(hesap) {
+  if (!hesap) return;
+  kapiDepoYaz(KAPI_DEPO.hesaplar, [hesap].concat(kapiHesaplar().filter(h => h.id !== hesap.id)));
+}
+function kapiHesapOlay(ad, ayrinti) {
+  if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+  window.dispatchEvent(new CustomEvent('mola360:' + ad, { detail: ayrinti || null }));
+}
+function kapiHesabinRezervasyonlari(hesap) {
+  const f = kapiHspFn('hspHesabinRezervasyonlari');
+  return f ? f(hesap, kapiRezOku()) : [];
+}
+function kapiUyeBaglami() {
+  const hesap = kapiOturum();
+  const f = kapiHspFn('hspUyeBaglami');
+  return hesap && f ? f(hesap, kapiHesabinRezervasyonlari(hesap)) : null;
+}
+
+function kapiUyeOl(form, simdi) {
+  return Promise.resolve().then(() => {
+    const hatalar = kapiHspFn('hspUyelikHatalari')(form);
+    const eposta = String((form || {}).eposta || '').trim().toLowerCase();
+    if (!hatalar.length && kapiHesaplar().some(h => h.eposta === eposta)) {
+      hatalar.push({ alan: 'eposta', mesaj: 'Bu e-postayla bir hesap var; giriş yap.' });
+    }
+    if (hatalar.length) return { tamam: false, hatalar };
+    const hesap = kapiHspFn('hspYeniHesap')(form, simdi || new Date());
+    kapiHesapKaydet(hesap);
+    kapiDepoYaz(KAPI_DEPO.oturum, hesap.id);
+    kapiHesapOlay('oturum', { hesap });
+    return { tamam: true, hesap };
+  });
+}
+
+function kapiGirisYap(eposta) {
+  return Promise.resolve().then(() => {
+    const e = String(eposta || '').trim().toLowerCase();
+    const hesap = kapiHesaplar().find(h => h.eposta === e);
+    if (!hesap) return { tamam: false, hatalar: [{ alan: 'eposta', mesaj: 'Bu tarayıcıda bu e-postayla bir hesap yok. Üye olabilirsin.' }] };
+    kapiDepoYaz(KAPI_DEPO.oturum, hesap.id);
+    kapiHesapOlay('oturum', { hesap });
+    return { tamam: true, hesap };
+  });
+}
+
+function kapiCikisYap() {
+  return Promise.resolve().then(() => {
+    kapiDepoYaz(KAPI_DEPO.oturum, null);
+    kapiHesapOlay('oturum', { hesap: null });
+    return { tamam: true };
+  });
+}
+
+/* Kişisel bilgiler: ad, soyad, e-posta, telefon; izinler ayrı. */
+function kapiProfilGuncelle(alanlar) {
+  return Promise.resolve().then(() => {
+    const hesap = kapiOturum();
+    if (!hesap) return { tamam: false, hatalar: [{ alan: null, mesaj: 'Oturum kapalı.' }] };
+    const yeni = Object.assign({}, hesap, {
+      ad: String(alanlar.ad || '').trim(), soyad: String(alanlar.soyad || '').trim(),
+      eposta: String(alanlar.eposta || '').trim().toLowerCase(), telefon: String(alanlar.telefon || '').trim()
+    });
+    const hatalar = kapiHspFn('hspUyelikHatalari')(Object.assign({}, yeni, { kvkk: true }));
+    if (!hatalar.length && kapiHesaplar().some(h => h.id !== hesap.id && h.eposta === yeni.eposta)) {
+      hatalar.push({ alan: 'eposta', mesaj: 'Bu e-posta başka bir hesapta kayıtlı.' });
+    }
+    if (hatalar.length) return { tamam: false, hatalar };
+    kapiHesapKaydet(yeni);
+    kapiHesapOlay('oturum', { hesap: yeni });
+    return { tamam: true, hesap: yeni };
+  });
+}
+
+function kapiIzinGuncelle(izinler) {
+  return Promise.resolve().then(() => {
+    const hesap = kapiOturum();
+    if (!hesap) return { tamam: false };
+    const yeni = Object.assign({}, hesap, { izinler: { eposta: !!(izinler || {}).eposta, sms: !!(izinler || {}).sms } });
+    kapiHesapKaydet(yeni);
+    return { tamam: true, hesap: yeni };
+  });
+}
+
+/* Hesabı sil: hesap ve oturum bu tarayıcıdan kalkar. Rezervasyonlar
+   kalır (satış kaydı); hesaba bağları çözülür. */
+function kapiHesabiSil() {
+  return Promise.resolve().then(() => {
+    const hesap = kapiOturum();
+    if (!hesap) return { tamam: false };
+    kapiDepoYaz(KAPI_DEPO.hesaplar, kapiHesaplar().filter(h => h.id !== hesap.id));
+    kapiDepoYaz(KAPI_DEPO.oturum, null);
+    kapiRezYaz(kapiRezOku().map(r => r.hesapId === hesap.id ? Object.assign({}, r, { hesapId: null }) : r));
+    kapiHesapOlay('oturum', { hesap: null });
+    return { tamam: true };
+  });
+}
+
+/* Favoriler: misafir de ekleyebilir (bu tarayıcıda); yayından kalkan
+   ürün listeden düşer. */
+function kapiFavoriler() {
+  const v = kapiDepoOku(KAPI_DEPO.favoriler, []);
+  return (Array.isArray(v) ? v : []).filter(x => x && kapiUrun(x.tip, x.slug));
+}
+function kapiFavoriMi(tip, slug) {
+  return kapiFavoriler().some(x => x.tip === tip && x.slug === slug);
+}
+function kapiFavoriDegistir(tip, slug, simdi) {
+  return Promise.resolve().then(() => {
+    if (!kapiUrun(tip, slug)) return false;
+    const liste = kapiHspFn('hspFavoriDegistir')(kapiFavoriler(), tip, slug, simdi || new Date());
+    kapiDepoYaz(KAPI_DEPO.favoriler, liste);
+    const var_ = liste.some(x => x.tip === tip && x.slug === slug);
+    kapiHesapOlay('favori', { tip, slug, favori: var_ });
+    return var_;
+  });
+}
+
+/* Bildirimler (sayfa yükü): hesabın durumundan türetilmiş liste +
+   okundu/kaldırıldı işaretleri. Misafirde favori bildirimleri. */
+function kapiBildirimDurumu() {
+  const v = kapiDepoOku(KAPI_DEPO.bildirim, {});
+  return { okunan: (v && v.okunan) || [], kaldirilan: (v && v.kaldirilan) || [] };
+}
+function kapiBildirimler(simdi) {
+  const uret = kapiHspFn('hspBildirimler');
+  if (!uret) return [];
+  const hesap = kapiOturum();
+  const an = simdi || new Date();
+  const favoriler = kapiFavoriler().map(f => {
+    const kayit = kapiUrun(f.tip, f.slug);
+    return Object.assign({}, f, { baslik: kayit.title, ozet: kapiOzet(kayit, kapiISO(an)), yol: (KAPI_TIPLER[f.tip] ? kapiTaksonomi().types[f.tip].path + '/' + f.slug + '/' : null) });
+  });
+  const durum = kapiBildirimDurumu();
+  return uret({ hesap, rezervasyonlar: hesap ? kapiHesabinRezervasyonlari(hesap) : [], favoriler, urunBul: kapiUrun, simdi: an })
+    .filter(n => durum.kaldirilan.indexOf(n.id) === -1)
+    .map(n => Object.assign(n, { unread: durum.okunan.indexOf(n.id) === -1 }));
+}
+function kapiBildirimIsaretle(idler, tur) {
+  const durum = kapiBildirimDurumu();
+  const liste = tur === 'kaldir' ? durum.kaldirilan : durum.okunan;
+  (Array.isArray(idler) ? idler : [idler]).forEach(id => { if (id && liste.indexOf(id) === -1) liste.push(id); });
+  /* Sınırsız büyümesin: son 300 işaret. */
+  kapiDepoYaz(KAPI_DEPO.bildirim, { okunan: durum.okunan.slice(-300), kaldirilan: durum.kaldirilan.slice(-300) });
+}
+
+function kapiYorumlar() {
+  const v = kapiDepoOku(KAPI_DEPO.yorumlar, []);
+  return Array.isArray(v) ? v : [];
+}
+
+/* Panelin bütün verisi (tek çağrı). simdi: Date. */
+function kapiHesapPaneli(simdi) {
+  return Promise.resolve().then(() => {
+    const an = simdi || new Date();
+    const H = (ad) => kapiHspFn(ad);
+    const hesap = kapiOturum();
+    const favoriler = kapiFavoriler().map(f => Object.assign({}, f, { kayit: kapiUrun(f.tip, f.slug) }));
+    if (!hesap) return { hesap: null, favoriler, bildirimler: kapiBildirimler(an) };
+    const yorumlar = kapiYorumlar().filter(y => y.hesapId === hesap.id);
+    const rezervasyonlar = kapiHesabinRezervasyonlari(hesap)
+      .sort((a, b) => String(((a.baslangic || {}).tarih) || '').localeCompare(String(((b.baslangic || {}).tarih) || '')))
+      .map(r => Object.assign({}, r, {
+        durumu: H('hspRezervasyonDurumu')(r, an),
+        iptalOnizleme: H('hspIptalOnizleme')(r, an),
+        yorumYazilabilir: H('hspYorumYazilabilir')(r, yorumlar, an)
+      }));
+    const hareketler = H('hspPuanHareketleri')(rezervasyonlar, kapiUrun, an);
+    const puan = H('hspPuanOzeti')(hareketler);
+    return {
+      hesap,
+      rezervasyonlar,
+      biletler: rezervasyonlar.filter(r => r.durumu === 'yaklasan').reduce((t, r) => t.concat(H('hspBiletler')(r)), []),
+      puan: Object.assign({ hareketler, seviye: H('hspSeviye')(puan.bakiye) }, puan),
+      kuponlar: H('hspKuponlar')(hesap, an),
+      favoriler,
+      yorumlar,
+      bildirimler: kapiBildirimler(an)
+    };
+  });
+}
+
+function kapiRezervasyonIptal(kod, simdi) {
+  return Promise.resolve().then(() => {
+    const hesap = kapiOturum();
+    const liste = kapiRezOku();
+    const r = liste.find(x => x.kod === String(kod || '').toUpperCase());
+    const benim = r && hesap && kapiHspFn('hspHesabinRezervasyonlari')(hesap, [r]).length > 0;
+    if (!benim) return { tamam: false, mesaj: 'Rezervasyon bu hesapta değil.' };
+    const yeni = kapiHspFn('hspIptalEt')(r, simdi || new Date());
+    if (!yeni) return { tamam: false, mesaj: kapiHspFn('hspIptalOnizleme')(r, simdi || new Date()).neden };
+    kapiRezYaz(liste.map(x => x.kod === r.kod ? yeni : x));
+    kapiHesapOlay('rezervasyon', { kod: r.kod });
+    return { tamam: true, rezervasyon: yeni };
+  });
+}
+
+/* Misafirin rezervasyonunu bulması: kod + e-posta ikisi birden. */
+function kapiRezervasyonSorgula(kod, eposta) {
+  return Promise.resolve().then(() => {
+    const k = String(kod || '').trim().toUpperCase();
+    const e = String(eposta || '').trim().toLowerCase();
+    if (!k || !e) return null;
+    return kapiRezOku().find(r => r.kod === k && String((r.iletisim || {}).eposta || '').toLowerCase() === e) || null;
+  });
+}
+
+function kapiYorumYaz(yorum, simdi) {
+  return Promise.resolve().then(() => {
+    const hesap = kapiOturum();
+    if (!hesap) return { tamam: false, hatalar: [{ alan: null, mesaj: 'Yorum için giriş yap.' }] };
+    const y = yorum || {};
+    const r = kapiHesabinRezervasyonlari(hesap).find(x => x.kod === y.kod);
+    const yorumlar = kapiYorumlar();
+    if (!r || !kapiHspFn('hspYorumYazilabilir')(r, yorumlar.filter(x => x.hesapId === hesap.id), simdi || new Date())) {
+      return { tamam: false, hatalar: [{ alan: null, mesaj: 'Bu rezervasyona yorum yazılamaz.' }] };
+    }
+    const hatalar = kapiHspFn('hspYorumHatalari')(y);
+    if (hatalar.length) return { tamam: false, hatalar };
+    const kayit = { kod: r.kod, hesapId: hesap.id, tip: r.tip, slug: r.slug, baslik: r.baslik,
+      puan: Number(y.puan), metin: String(y.metin).trim(), t: (simdi || new Date()).toISOString(), durum: 'onay-bekliyor' };
+    kapiDepoYaz(KAPI_DEPO.yorumlar, [kayit].concat(yorumlar));
+    return { tamam: true, yorum: kayit };
+  });
 }
 
 /* Yürürlükteki kampanyalar (sayfa yükü): kampanyalar sayfası, ana sayfa
@@ -1355,7 +1631,25 @@ const MolaVeri = {
   fiyatTeklifi: kapiFiyatTeklifi,
   rezervasyonOlustur: kapiRezervasyonOlustur,
   rezervasyon: kapiRezervasyon,
-  rezervasyonlar: () => Promise.resolve().then(() => kapiRezOku())
+  rezervasyonlar: () => Promise.resolve().then(() => kapiRezOku()),
+  rezervasyonSorgula: kapiRezervasyonSorgula,
+  rezervasyonIptal: kapiRezervasyonIptal,
+  /* hesap: sayfa yükü (oturum, favori, bildirim) + işlemler (Promise) */
+  oturum: kapiOturum,
+  uyeOl: kapiUyeOl,
+  girisYap: kapiGirisYap,
+  cikisYap: kapiCikisYap,
+  profilGuncelle: kapiProfilGuncelle,
+  izinGuncelle: kapiIzinGuncelle,
+  hesabiSil: kapiHesabiSil,
+  favoriler: kapiFavoriler,
+  favoriMi: kapiFavoriMi,
+  favoriDegistir: kapiFavoriDegistir,
+  bildirimler: kapiBildirimler,
+  bildirimOkundu: (idler) => kapiBildirimIsaretle(idler, 'oku'),
+  bildirimKaldir: (idler) => kapiBildirimIsaretle(idler, 'kaldir'),
+  hesapPaneli: kapiHesapPaneli,
+  yorumYaz: kapiYorumYaz
 };
 
 if (typeof module !== 'undefined' && module.exports) {
