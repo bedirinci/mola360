@@ -212,8 +212,8 @@ function homeBlockImage(key) {
 }
 
 /* ---------------- isaretleme ---------------- */
-/* Aciklama satiri yalnizca verildiginde eklenir; diger bolumlerin
-   basligi oldugu gibi kalir. */
+/* Aciklama satiri verildiginde basligin altina eklenir. Anasayfanin
+   butun bolum basliklarinda bir aciklama satiri var. */
 function homeSectionHead(title, link, subtitle, hedef) {
   const baslik = subtitle
     ? `<div class="section-head-text"><h2>${title}</h2><p class="section-subtitle">${subtitle}</p></div>`
@@ -520,7 +520,7 @@ const HOME_BLOCK_MARKUP = {
      baglar sayfanin tepesine dusuyordu. */
   venues: () => `
     <section class="section home-venues" id="mekanlar">
-      ${homeSectionHead('Mekanlar', 'Tümünü Gör', '', 'mekanlar/')}
+      ${homeSectionHead('Mekanlar', 'Tümünü Gör', 'Beach club, spa ve masaj salonları', 'mekanlar/')}
       <div class="venue-list">
         ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : []).map(v => `
           <a class="venue-card" href="${v.href || '#'}">
@@ -687,6 +687,7 @@ const HOME_BLOCK_MARKUP = {
 
         <div class="seo-links">
           <h2 class="seo-links-heading">Popüler kategoriler ve aramalar</h2>
+          <p class="seo-links-lead">Şehre, kategoriye, temaya ve plana göre hızlı bağlantılar</p>
           <div class="seo-link-groups">
             ${SEO_LINK_GROUPS.map(seoLinkGroupMarkup).join('')}
           </div>

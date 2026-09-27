@@ -2124,8 +2124,9 @@ ul {
   font-weight: 700;
   color: var(--navy);
 }
-/* Başlığın altında açıklama satırı olan bölümler (Temalar, Koleksiyonlar).
-   Diğer bölümlerin başlığı değişmeden kalır. */
+/* Anasayfa bölüm başlıklarının altındaki açıklama satırı. "Tümünü Gör"
+   açıklama uzasa da tek satır ve sağda kalır. */
+.section-head .see-all { flex-shrink: 0; white-space: nowrap; }
 .section-head-text {
   display: flex;
   flex-direction: column;
@@ -5580,6 +5581,14 @@ ul {
   font-weight: 800;
   color: var(--navy);
   margin: 0 0 12px;
+}
+
+.seo-links-heading:has(+ .seo-links-lead) { margin-bottom: 3px; }
+.seo-links-lead {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .seo-link-groups {

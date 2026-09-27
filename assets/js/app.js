@@ -584,14 +584,14 @@ const suggestedSearchTerms = [
    (kendiliğinden + elle), 3. adımda yönetimden düzenlenebilir olacak. */
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Popüler Etkinlikler', subtitle:'Konser, festival, tiyatro ve stand-up; Türkiye\'nin dört bir yanından', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'event/harbiye-acikhava-konserleri', 'event/cesme-yaz-festivali', 'event/stand-up-gecesi'
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
      inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun;
      ikisi de kaydin takviminden turetiliyor. Serit hem etkinlikleri hem
      turlari tasidigi icin baslik "Planlar". */
-  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
+  {title:'Yaklaşan Planlar', subtitle:'Önümüzdeki günlerde yapılacak etkinlikler ve turlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
     'event/istanbul-gece-yarisi-kosusu', 'event/stand-up-gecesi', 'event/harbiye-acikhava-konserleri',
     'event/kordon-caz-aksamlari', 'tour/sapanca-masukiye', 'tour/alacati-pazar-turu',
     'event/istanbul-kahve-festivali', 'tour/iznik-golu-antik-kent', 'tour/abant-golcuk',
@@ -600,17 +600,17 @@ const cardSections = [
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Konaklamalı Turlar', subtitle:'Konaklaması dahil, birkaç günlük tur programları', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/karadeniz-yaylalari', 'tour/ege-adalari-balayi', 'tour/dogu-ekspresi'
   ]},
-  {title:'Günübirlik Turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Günübirlik Turlar', subtitle:'Sabah çıkıp akşam dönülen tek günlük turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
     'tour/sile-agva', 'tour/cunda-ayvalik', 'tour/abant-golcuk', 'tour/iznik-golu-antik-kent'
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+  {title:'Aktiviteler', subtitle:'Balon, rafting, yamaç paraşütü ve daha fazlası', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
     'activity/koprulu-kanyon-rafting', 'activity/oludeniz-yamac-parasutu', 'activity/uludag-kayak-dersi'
   ]},
-  {title:'Oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
+  {title:'Oteller', subtitle:'Termal, butik, şehir ve resort oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
     'hotel/sealight-resort', 'hotel/termal-vadi-resort', 'hotel/goreme-magara-otel'
   ]},
 ];
@@ -896,7 +896,7 @@ function sectionFilterMarkup(sec){
 
 if (byId('cardSections')) byId('cardSections').innerHTML = cardSections.map(sec=>`
   <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
-    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
+    <div class="section-head">${sec.subtitle ? `<div class="section-head-text"><h2>${sec.title}</h2><p class="section-subtitle">${sec.subtitle}</p></div>` : `<h2>${sec.title}</h2>`}<a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
     <div class="hscroll-wrap">
     <div class="h-scroll"${sec.filterKey ? ` data-section-list="${sec.filterKey}"` : ''}>${sectionCardsMarkup(sec, UPCOMING_FILTERS[0].key)}</div>

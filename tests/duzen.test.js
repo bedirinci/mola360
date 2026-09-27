@@ -165,3 +165,20 @@ describe('paket tur sözleşmesi', () => {
     expect(MolaVeri.adres('kurumsal/paket-tur-sozlesmesi/')).toMatchObject({ kind: 'corporate', slug: 'paket-tur-sozlesmesi' });
   });
 });
+
+describe('anasayfa bölüm başlıklarının açıklaması', () => {
+  it('her şeridin başlığının altında açıklama var', () => {
+    const blok = app.match(/const cardSections = \[([\s\S]*?)\n\];/)[1];
+    const basliklar = (blok.match(/\{title:'/g) || []).length;
+    expect(basliklar).toBeGreaterThan(0);
+    expect((blok.match(/subtitle:'[^']+/g) || []).length).toBe(basliklar);
+  });
+
+  it('ek bloklarda ve sabit bölümlerde de açıklama var', () => {
+    const bloklar = oku('assets/js/home-blocks.js');
+    [...bloklar.matchAll(/homeSectionHead\(("[^"]*"|'[^']*'), '[^']*', '([^']*)'/g)]
+      .forEach(m => expect(m[2], m[1]).not.toBe(''));
+    expect(bloklar).toContain('class="seo-links-lead"');
+    expect(anasayfa).toMatch(/<h2>Günün En Çok Satanları<\/h2><p class="section-subtitle">[^<]+<\/p>/);
+  });
+});
