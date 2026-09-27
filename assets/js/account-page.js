@@ -359,8 +359,30 @@ function hsaKur(kok, adres, bugun) {
     bolum = hsaBolum(yeni).id;
     if (itme) history.pushState({ bolum }, '', 'hesabim/?bolum=' + bolum);
     ciz();
-    const sayfa = document.getElementById('hsaMain');
-    if (sayfa && itme && window.matchMedia('(max-width: 1024px)').matches) sayfa.scrollIntoView({ block: 'start' });
+    if (itme) menuyuGoster();
+  }
+
+  /* Bölüm değişince sayfa AŞAĞI kaymaz. Yalnızca bölüm menüsü yapışkan
+     başlığın altında kaldıysa (içeriğin aşağısındaki bir bağla gelindiyse)
+     menü görünecek kadar yukarı çıkılır. Mobildeki yatay şeritte seçilen
+     düğme ortaya alınır; bu da dikey kaydırma yapmaz. */
+  function menuyuGoster() {
+    const duzen = kok.querySelector('.hsa-layout');
+    if (!duzen) return;
+    const baslikAlti = ['.lst-mobile-header', '.site-header'].reduce((enAlt, sec) => {
+      const el = document.querySelector(sec);
+      if (!el || !el.offsetHeight || !/fixed|sticky/.test(getComputedStyle(el).position)) return enAlt;
+      return Math.max(enAlt, el.getBoundingClientRect().bottom);
+    }, 0);
+    const ust = duzen.getBoundingClientRect().top - baslikAlti - 12;
+    if (ust < 0) window.scrollBy(0, ust);
+    const serit = kok.querySelector('.hsa-nav ul');
+    const aktif = serit && serit.querySelector('a.is-active');
+    if (aktif && serit.scrollWidth > serit.clientWidth) {
+      const s = serit.getBoundingClientRect();
+      const a = aktif.getBoundingClientRect();
+      serit.scrollLeft += (a.left - s.left) - (serit.clientWidth - a.width) / 2;
+    }
   }
 
   kok.addEventListener('click', (e) => {

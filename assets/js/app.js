@@ -158,9 +158,45 @@
     sidebar.appendChild(footer);
   }
 
-  // main'in dışına ekle: header tam genişlikte kalır, içerik sidebar kadar içeri kayar.
+  // Anasayfa: main'in dışına ekle; header tam genişlikte kalır, içerik
+  // sidebar kadar içeri kayar (sabit sol menü). Diğer sayfalarda sol menü
+  // başlıktaki menü düğmesiyle açılan panel (is-overlay): içerik kaymaz.
   const frame = document.getElementById('deviceFrame');
-  if (frame && frame.parentNode) frame.parentNode.insertBefore(sidebar, frame);
+  if (frame && frame.parentNode) {
+    frame.parentNode.insertBefore(sidebar, frame);
+  } else {
+    sidebar.classList.add('is-overlay');
+    sidebar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(sidebar);
+  }
+})();
+
+/* ---------------- masaüstü: açılır sol menü ----------------
+   Sabit sol menüsü olmayan sayfalarda (anasayfa dışı) başlıktaki menü
+   düğmesi sol menüyü açıp kapatır. Mobil çekmecenin katmanı masaüstünde
+   kapalı; bu menünün kendi karartma katmanı var. */
+(function initMasaustuMenu(){
+  const btn = document.getElementById('headerMenuBtn');
+  const panel = document.querySelector('.desktop-sidebar.is-overlay');
+  if (!btn || !panel) return;
+  const katman = document.createElement('div');
+  katman.className = 'desktop-menu-overlay';
+  katman.setAttribute('aria-hidden', 'true');
+  panel.parentNode.insertBefore(katman, panel);
+  const acik = () => panel.classList.contains('open');
+  const ayarla = (ac) => {
+    panel.classList.toggle('open', ac);
+    panel.setAttribute('aria-hidden', String(!ac));
+    katman.classList.toggle('open', ac);
+    btn.setAttribute('aria-expanded', String(ac));
+    btn.setAttribute('aria-label', ac ? 'Menüyü kapat' : 'Menüyü aç');
+  };
+  btn.addEventListener('click', () => ayarla(!acik()));
+  window.closeMola360Menu = () => { if (acik()) ayarla(false); };
+  katman.addEventListener('click', () => { if (acik()) ayarla(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && acik()) { ayarla(false); btn.focus(); } });
+  panel.addEventListener('click', (e) => { if (e.target.closest('a[href]')) ayarla(false); });
+  window.addEventListener('resize', () => { if (acik() && window.matchMedia('(max-width: 680px)').matches) ayarla(false); });
 })();
 
 /* ---------------- sayfa scroll kilidi (giriş yap popup / yan menü) ----------------
@@ -341,6 +377,7 @@ const ICONS = {
   close:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   chevDown:'<polyline points="6 9 12 15 18 9"/>',
   chevRight:'<polyline points="9 6 15 12 9 18"/>',
+  arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>',
   chevLeft:'<polyline points="15 6 9 12 15 18"/>',
   sort:'<line x1="5" y1="7" x2="19" y2="7"/><line x1="8" y1="12" x2="19" y2="12"/><line x1="11" y1="17" x2="19" y2="17"/>',
   wallet:'<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 8h13.5A2.5 2.5 0 0 1 20 10.5v3H16a2 2 0 0 1 0-4h4"/><circle cx="16" cy="11.5" r=".7" fill="currentColor" stroke="none"/>',
@@ -365,7 +402,6 @@ const ICONS = {
   ig:'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/>',
   yt:'<rect x="3" y="6" width="18" height="12" rx="3"/><polygon points="10.5 9.5 15.5 12 10.5 14.5"/>',
   x:'<line x1="5" y1="5" x2="19" y2="19"/><line x1="5" y1="19" x2="19" y2="5"/>',
-  basket:'<path d="M4.5 8h15l-1.4 10.8a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8z"/><path d="M8.5 8V6.2a3.5 3.5 0 0 1 7 0V8"/>',
   heart:'<path d="M12 20.5s-7.5-4.6-10-9.3C0.4 8 2 4.5 5.6 4c2.1-0.3 4 0.7 6.4 3 2.4-2.3 4.3-3.3 6.4-3C21.9 4.5 23.6 8 22 11.2c-2.5 4.7-10 9.3-10 9.3z"/>',
   moon:'<path d="M20 14.2A8 8 0 1 1 9.8 4a6.4 6.4 0 0 0 10.2 10.2z"/>',
   /* activity: "Aktiviteler" kavramina ait. Turlar compass kullandigi icin
@@ -741,11 +777,35 @@ if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
 updateCategoryLayout();
 onViewportResize(updateCategoryLayout);
 
-/* Kartta fiyatin yanindaki birim. Yurt disi turlar doviz fiyatli; kart
-   fiyati kaydin kendi para biriminde gosteriyor, TL'ye cevirmiyor (kur
-   rezervasyonda sabitleniyor). Para birimi yazmayan kart TL. */
+/* Kartta fiyatin yanindaki birim. Para birimi yazmayan kart TL. */
 function paraBirimiEtiketi(kod){
   return ({ TRY:'TL', EUR:'EUR', USD:'USD' })[kod || 'TRY'] || kod;
+}
+
+/* Kart fiyati: ziyaretcinin sectigi para biriminde (MolaVeri.fiyatGosterimi;
+   farkli para birimindeyse yaklasik karsilik, "≈"), Turkce binlik
+   ayiriciyla ve kurussuz: "1.290 TL". Odeme her zaman TL; kur
+   rezervasyonda sabitleniyor. */
+function kartFiyati(tutar, paraBirimi){
+  const g = (typeof MolaVeri !== 'undefined' && MolaVeri.fiyatGosterimi) ? MolaVeri.fiyatGosterimi(tutar, paraBirimi) : null;
+  const n = g ? g.tutar : Number(tutar);
+  return {
+    sayi: Number.isFinite(n) ? Math.round(n).toLocaleString('tr-TR') : String(tutar == null ? '' : tutar),
+    birim: g ? g.kisa : paraBirimiEtiketi(paraBirimi),
+    yaklasik: !!(g && g.yaklasik)
+  };
+}
+
+/* Indirimli kartta eski (ustu cizili) ve yeni fiyat; indirim etiketi
+   gorselin ustunde. Liste fiyati urunun kendi kaydindan (catalog.js,
+   katalogIndirimEkle). */
+function kartIndirimEtiketi(it){
+  return it.discountPct ? `<span class="poi-badge poi-badge-indirim">%${it.discountPct} indirim</span>` : '';
+}
+function kartEskiFiyat(it, sinif){
+  if (!it.listPrice) return '';
+  const e = kartFiyati(it.listPrice, it.currency);
+  return `<s class="${sinif}"><span class="sr-only">Eski fiyat: </span>${e.yaklasik ? '≈ ' : ''}${e.sayi} ${e.birim}</s>`;
 }
 
 /* Tek bir kartin isaretlemesi. Zaman filtresi olan seritlerde liste filtre
@@ -758,11 +818,12 @@ function poiCardMarkup(sec, it){
   const baslik = it.href
     ? `<a href="${it.href}">${it.title}</a>`
     : it.title;
+  const fiyat = kartFiyati(it.priceMain, it.currency);
   return `
         <article class="poi-card"${it.href ? ` data-href="${it.href}"` : ''}>
           <div class="poi-media">
             <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="">
-            <div class="poi-badges">${it.badges.map(b=>`<span class="poi-badge">${b}</span>`).join('')}</div>
+            <div class="poi-badges">${kartIndirimEtiketi(it)}${it.badges.map(b=>`<span class="poi-badge">${b}</span>`).join('')}</div>
             <button class="poi-fav-btn" type="button" aria-label="Favorilere ekle"><span class="icon">${svg('heart')}</span></button>
           </div>
           ${it.sponsored
@@ -775,9 +836,12 @@ function poiCardMarkup(sec, it){
             <p class="poi-meta-row"><span class="icon">${svg(sec.meta1Icon)}</span><span class="poi-meta-text">${it.meta1}</span></p>
             <p class="poi-meta-row"><span class="icon">${svg('calendar')}</span><strong>${sec.meta2Label}</strong><span class="poi-meta-text">${it.meta2}</span></p>
           </div>
-          <div class="poi-price-bar">
-            <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">${paraBirimiEtiketi(it.currency)}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
-            <button class="poi-cart-btn"><span class="icon">${svg('basket')}</span></button>
+          <div class="poi-price-bar${it.listPrice ? ' has-old' : ''}">
+            <span class="poi-price">
+              ${kartEskiFiyat(it, 'poi-price-old')}
+              <span class="poi-price-now">${fiyat.yaklasik ? '<span class="approx" title="Yaklaşık karşılık; ödeme TL">≈</span>' : ''}<span class="main">${fiyat.sayi}</span><span class="currency">${fiyat.birim}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
+            </span>
+            ${it.href ? `<a class="poi-go-btn" href="${it.href}" tabindex="-1" aria-hidden="true"><span class="icon">${svg('arrowRight')}</span></a>` : ''}
           </div>
         </article>`;
 }
@@ -796,6 +860,7 @@ function compactCardMarkup(sec, it){
         <article class="compact-card"${it.href ? ` data-href="${it.href}"` : ''}>
           <div class="compact-card-media">
             <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/400/300')}" alt="" loading="lazy">
+            ${it.discountPct ? `<span class="compact-card-off">%${it.discountPct} indirim</span>` : ''}
             <span class="compact-card-when"><span class="icon">${svg('calendar')}</span>${it.meta2}</span>
             <button class="poi-fav-btn compact-card-fav" type="button" aria-label="Favorilere ekle"><span class="icon">${svg('heart')}</span></button>
           </div>
@@ -808,7 +873,7 @@ function compactCardMarkup(sec, it){
             </div>
             <h3 class="compact-card-title">${baslik}</h3>
             <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>
-            <span class="compact-card-price">${it.priceMain} ${paraBirimiEtiketi(it.currency)}</span>
+            <span class="compact-card-price">${kartEskiFiyat(it, 'compact-card-price-old')}${(f => (f.yaklasik ? '≈ ' : '') + f.sayi + ' ' + f.birim)(kartFiyati(it.priceMain, it.currency))}</span>
           </div>
         </article>`;
 }
@@ -1203,7 +1268,7 @@ function sonGorulenlerCiz() {
               <span class="sidebar-recent-meta"><span class="icon">${svg('clock')}</span>${k.meta1 || ''}</span>
               <span class="sidebar-recent-foot">
                 ${k.rating ? `<span class="sidebar-recent-rating"><span class="icon">${svg('star')}</span>${k.rating}</span>` : '<span></span>'}
-                <span class="sidebar-recent-price">${k.priceMain} ${paraBirimiEtiketi(k.currency)}</span>
+                <span class="sidebar-recent-price">${(f => (f.yaklasik ? '≈ ' : '') + f.sayi + ' ' + f.birim)(kartFiyati(k.priceMain, k.currency))}</span>
               </span>
             </span>
           </a>`).join('');
@@ -1977,6 +2042,112 @@ onId('profileLogoutBtn', 'click', () => {
   closeProfilePanel();
   if (typeof MolaVeri !== 'undefined' && MolaVeri.cikisYap) MolaVeri.cikisYap();
 });
+/* Sol menünün alt satırındaki çıkış düğmesi (oturum açıkken giriş
+   düğmesinin yerinde; çekmecede ve sol menü kopyasında). */
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('[data-hesap-cikis]')) return;
+  if (typeof window.closeMola360Drawer === 'function') window.closeMola360Drawer();
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.cikisYap) MolaVeri.cikisYap();
+});
+
+/* ---------------- sol menü: destek ve sosyal bağlar ----------------
+   Adresler tek yerde: CONTACT (home-blocks.js). Sosyal hesap adresi
+   henüz girilmemişse düğme görünür ama pasif ve bunu söylüyor. */
+(function destekBaglariniDoldur(){
+  const c = (typeof CONTACT !== 'undefined') ? CONTACT : null;
+  if (!c) return;
+  document.querySelectorAll('[data-destek-whatsapp]').forEach(a => { a.href = c.whatsappHref; });
+  document.querySelectorAll('[data-sosyal]').forEach(a => {
+    const adres = c.social && c.social[a.getAttribute('data-sosyal')];
+    if (adres) { a.href = adres; return; }
+    a.removeAttribute('href');
+    a.setAttribute('aria-disabled', 'true');
+    a.setAttribute('role', 'link');
+    a.title = a.getAttribute('aria-label') + ' hesabımız yakında eklenecek';
+  });
+})();
+
+/* ---------------- dil ve para birimi (alt çekmece) ----------------
+   Sol menüdeki "TR · ₺" düğmesi açar. Seçenekler veri kapısından; hazır
+   olmayan dil pasif ("Yakında"). Para birimi değişince fiyatlar yeni
+   birimde çizilsin diye sayfa yenileniyor. */
+/* İçerik sayfalarında app.js veri kapısından önce yükleniyor; kurulum
+   bütün betikler çalıştıktan sonra. */
+function tercihCekmecesiniKur(){
+  const cekmece = document.getElementById('tercihCekmece');
+  const katman = document.getElementById('tercihKatman');
+  const form = document.getElementById('tercihForm');
+  if (!cekmece || !katman || !form || typeof MolaVeri === 'undefined' || !MolaVeri.tercihler) return;
+  let donus = null;
+  const etiketleriYaz = () => {
+    const t = MolaVeri.tercihler();
+    document.querySelectorAll('[data-tercih-etiket]').forEach(el => { el.textContent = t.etiket; });
+  };
+  const secenekleriCiz = () => {
+    const t = MolaVeri.tercihler();
+    cekmece.querySelector('[data-tercih-diller]').innerHTML = MolaVeri.diller().map(d => `
+      <label class="tercih-secenek${d.hazir ? '' : ' is-pasif'}">
+        <input type="radio" name="dil" value="${d.kod}"${d.kod === t.dil ? ' checked' : ''}${d.hazir ? '' : ' disabled'}>
+        <span class="tercih-kod">${d.etiket}</span><span class="tercih-ad">${d.ad}</span>${d.hazir ? '' : '<span class="tercih-yakinda">Yakında</span>'}
+      </label>`).join('');
+    cekmece.querySelector('[data-tercih-paralar]').innerHTML = MolaVeri.paraBirimleri().map(p => `
+      <label class="tercih-secenek">
+        <input type="radio" name="para" value="${p.kod}"${p.kod === t.para ? ' checked' : ''}>
+        <span class="tercih-kod">${p.sembol}</span><span class="tercih-ad">${p.ad}</span>
+      </label>`).join('');
+  };
+  const ac = (tetik) => {
+    donus = tetik || null;
+    if (typeof window.closeMola360Drawer === 'function') window.closeMola360Drawer();
+    if (typeof window.closeMola360Menu === 'function') window.closeMola360Menu();
+    secenekleriCiz();
+    katman.hidden = false;
+    cekmece.hidden = false;
+    requestAnimationFrame(() => { katman.classList.add('open'); cekmece.classList.add('open'); });
+    const secili = cekmece.querySelector('input:checked');
+    if (secili) secili.focus();
+  };
+  const kapat = () => {
+    katman.classList.remove('open');
+    cekmece.classList.remove('open');
+    setTimeout(() => { katman.hidden = true; cekmece.hidden = true; }, 250);
+    if (donus && document.contains(donus)) donus.focus();
+  };
+  document.addEventListener('click', (e) => {
+    const tetik = e.target.closest('[data-tercih-ac]');
+    if (tetik) { e.preventDefault(); ac(tetik); return; }
+    if (e.target.closest('[data-tercih-kapat]')) kapat();
+  });
+  katman.addEventListener('click', kapat);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !cekmece.hidden) kapat(); });
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const veri = new FormData(form);
+    const sonuc = MolaVeri.tercihKaydet({ dil: veri.get('dil') || undefined, para: veri.get('para') || undefined });
+    etiketleriYaz();
+    kapat();
+    if (sonuc.tamam && sonuc.degisti) setTimeout(() => location.reload(), 260);
+  });
+  etiketleriYaz();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tercihCekmecesiniKur);
+else tercihCekmecesiniKur();
+
+/* ---------------- sol menü: bulunulan bölüm ----------------
+   Birincil satırda (Keşfet, Favorilerim, Biletlerim, Hesabım) yalnızca
+   bulunulan sayfanın düğmesi seçili. */
+(function birincilSekmeyiIsaretle(){
+  const yol = location.pathname;
+  const bolum = new URLSearchParams(location.search).get('bolum');
+  let sekme = document.body.dataset.sayfa === 'ana' ? 'explore' : null;
+  if (/\/(hesabim|favorilerim|biletlerim|kuponlarim)\/?$/.test(yol)) {
+    const ad = bolum || (yol.match(/\/(favorilerim|biletlerim)\/?$/) || [])[1];
+    sekme = ad === 'favorilerim' ? 'favorites' : ad === 'biletlerim' ? 'tickets' : 'account';
+  }
+  document.querySelectorAll('.sidebar-primary-nav a[data-sidebar-tab]').forEach(a => {
+    a.classList.toggle('active', a.dataset.sidebarTab === sekme);
+  });
+})();
 /* Başlıktaki kalp: favoriler (hesap panelinin bölümü; misafirde de açık). */
 onId('favoritesBtn', 'click', () => { window.location.href = mola360Kok() + 'hesabim/?bolum=favorilerim'; });
 
@@ -2062,6 +2233,109 @@ function updateClearAllVisibility() {
   const hasActive = Object.values(filterState).some(Boolean);
   const clearBtn = document.getElementById('clearAllFilters');
   if (clearBtn) clearBtn.classList.toggle('visible', hasActive);
+  /* Her süzgeç değişikliği buradan geçiyor: sonuçları aynı sayfada çiz. */
+  anasayfaSonuclariniCiz(false);
+}
+
+/* ---------------- anasayfa süzgeçleri: sonuçlar bu sayfada ----------------
+   Seçenekler ve sonuçlar liste sayfalarıyla aynı kaynaktan: süzgeç
+   tanımları ve liste motoru (MolaVeri.yuzeyTanimlari / MolaVeri.liste,
+   listing-engine.js). Seçenek düğmesinin data-value'su motorun slug'ı
+   (bolge=ege, sure=gunubirlik, fiyat=0-2500 …); yalnızca en az bir
+   ürünü olan seçenek listeleniyor. Süzgeç seçiliyken şeritlerin yerinde
+   sonuç ızgarası ve gerçek sonuç sayısı; süzgeç kalkınca şeritler geri. */
+const ANA_TUTAR_SINIRLARI = [1000, 2500, 5000, 10000, 20000];
+/* Kart satırlarının ikon ve etiketi: liste sayfasındakiyle aynı
+   (listing-page.js, LSP_KART_AYARI). */
+const ANA_KART_AYARI = {
+  tour:     { meta1Icon: 'mapPin', meta2Label: 'En yakın:' },
+  hotel:    { meta1Icon: 'mapPin', meta2Label: 'Müsait:' },
+  activity: { meta1Icon: 'clock',  meta2Label: 'En yakın:' },
+  event:    { meta1Icon: 'clock',  meta2Label: 'En yakın:' },
+  venue:    { meta1Icon: 'mapPin', meta2Label: '' }
+};
+let anaSonucSayfasi = 1;
+let anaSonucIstegi = 0;
+
+function anaSuzgecEtkin(){
+  return ['tarih', 'sure', 'bolge', 'tema', 'tutar', 'siralama'].some(k => !!filterState[k]);
+}
+
+function anaSuzgecSorgusu(){
+  const secim = {};
+  ['sure', 'bolge', 'tema'].forEach(k => { if (filterState[k]) secim[k] = [filterState[k]]; });
+  if (filterState.tutar) secim.fiyat = [filterState.tutar];
+  return {
+    bugun: new Date(),
+    tarihAraligi: filterState.tarih || null,
+    durum: { secim, siralama: filterState.siralama || 'onerilen', sayfa: anaSonucSayfasi }
+  };
+}
+
+function anaSecenekleriYaz(key, secenekler){
+  const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
+  const panel = wrap && (wrap._dropdownPanel || wrap.querySelector('.filter-dropdown-panel'));
+  const kutu = panel && panel.querySelector('.generic-filter-options');
+  if (!kutu) return;
+  kutu.innerHTML = secenekler.map(o => `<button type="button" data-value="${o.slug}">${o.name}</button>`).join('');
+  if (!secenekler.length && wrap) wrap.hidden = true;
+}
+
+function anaSuzgecSecenekleriniKur(){
+  if (!document.getElementById('homeResults') || typeof MolaVeri === 'undefined' || !MolaVeri.liste) return;
+  const siralamalar = (typeof SUZ_SIRALAMALAR !== 'undefined') ? SUZ_SIRALAMALAR.filter(x => !x.arama) : [];
+  anaSecenekleriYaz('siralama', siralamalar.map(x => ({ slug: x.slug, name: x.name })));
+  anaSecenekleriYaz('tutar', ANA_TUTAR_SINIRLARI.map(n => ({ slug: '0-' + n, name: n.toLocaleString('tr-TR') + ' TL altı' })));
+  MolaVeri.liste({ bugun: new Date() }).then(sonuc => {
+    if (!sonuc) return;
+    ['sure', 'bolge', 'tema'].forEach(key => {
+      const alan = (sonuc.yuzeyler || []).find(y => y.key === key);
+      anaSecenekleriYaz(key, alan ? alan.secenekler.filter(o => o.adet > 0) : []);
+    });
+  });
+}
+
+function anasayfaSonuclariniCiz(dahaFazla){
+  const kutu = document.getElementById('homeResults');
+  if (!kutu) return;
+  const serit = document.getElementById('cardSections');
+  const sayac = document.getElementById('homeResultCount');
+  const izgara = document.getElementById('homeResultsGrid');
+  const bos = document.getElementById('homeResultsEmpty');
+  const daha = document.getElementById('homeResultsMore');
+  const etkin = anaSuzgecEtkin();
+  anaSonucSayfasi = dahaFazla ? anaSonucSayfasi + 1 : 1;
+  if (!etkin || typeof MolaVeri === 'undefined' || !MolaVeri.liste) {
+    kutu.hidden = true;
+    if (serit) serit.hidden = false;
+    if (sayac) { sayac.hidden = true; sayac.textContent = ''; }
+    return;
+  }
+  const istek = ++anaSonucIstegi;
+  MolaVeri.liste(anaSuzgecSorgusu()).then(sonuc => {
+    if (istek !== anaSonucIstegi || !sonuc) return;
+    const uret = (typeof KATALOG_KART !== 'undefined') ? KATALOG_KART : null;
+    izgara.innerHTML = sonuc.satirlar.map(satir => {
+      const kart = uret && uret[satir.type] ? uret[satir.type](satir.kayit, new Date()) : null;
+      return kart ? poiCardMarkup(ANA_KART_AYARI[satir.type] || ANA_KART_AYARI.tour, kart) : '';
+    }).join('');
+    kutu.hidden = false;
+    if (serit) serit.hidden = true;
+    bos.hidden = sonuc.toplam > 0;
+    daha.hidden = !sonuc.dahaVar;
+    const metin = sonuc.toplam.toLocaleString('tr-TR') + ' sonuç';
+    if (sayac) { sayac.hidden = false; sayac.textContent = metin; }
+    const ozet = document.getElementById('homeResultsSummary');
+    if (ozet) ozet.textContent = metin;
+    if (!dahaFazla) {
+      /* Sayfa aşağıdayken süzgeç değiştiyse sonuçların başına dön
+         (yapışkan süzgeç çubuğunun altına). */
+      const cubuk = document.querySelector('.filter-bar');
+      const sinir = cubuk ? Math.max(0, cubuk.getBoundingClientRect().bottom) : 0;
+      const ust = kutu.getBoundingClientRect().top - sinir - 8;
+      if (ust < 0) window.scrollBy(0, ust);
+    }
+  });
 }
 
 function setChipActive(key, active, value) {
@@ -2080,8 +2354,11 @@ function setChipActive(key, active, value) {
   if (key === 'popular') {
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   } else {
+    /* Seçeneğin değeri motorun slug'ı; çipte seçeneğin adı yazıyor. */
     const label = btn.querySelector(`[data-label-for="${key}"]`);
-    if (label) label.textContent = active ? value : filterDefaults[key];
+    const panel = wrap && (wrap._dropdownPanel || wrap.querySelector('.filter-dropdown-panel'));
+    const secenek = active && panel ? [...panel.querySelectorAll('button[data-value]')].find(b => b.dataset.value === value) : null;
+    if (label) label.textContent = active ? (secenek ? secenek.textContent.trim() : value) : filterDefaults[key];
   }
 }
 
@@ -2452,6 +2729,10 @@ if (popularBtn) {
   });
 }
 
+anaSuzgecSecenekleriniKur();
+onId('homeResultsMore', 'click', () => anasayfaSonuclariniCiz(true));
+document.addEventListener('click', (e) => { if (e.target.closest('[data-home-results-clear]')) clearAllFilters(); });
+
 const clearAllBtn = document.getElementById('clearAllFilters');
 if (clearAllBtn) {
   clearAllBtn.addEventListener('click', event => {
@@ -2770,7 +3051,7 @@ if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal(
       if (!link) return;
       /* Bağlar gerçek sayfalara (hesap paneli bölümleri); yalnızca
          anasayfadaysak "Keşfet" sayfayı yeniden yüklemez. */
-      if (link.dataset.sidebarTab === 'explore') e.preventDefault();
+      if (link.dataset.sidebarTab === 'explore' && document.body.dataset.sayfa === 'ana') e.preventDefault();
       // Masaüstü ve mobil drawer aynı aktif durumu paylaşır.
       sidebarNavs.forEach(nav => nav.querySelectorAll('a[data-sidebar-tab]').forEach(a => {
         a.classList.toggle('active', a.dataset.sidebarTab === link.dataset.sidebarTab);

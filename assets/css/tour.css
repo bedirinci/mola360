@@ -1400,6 +1400,7 @@
   color: var(--navy-deep);
 }
 .tour-similar-price span { font-size: 11.5px; font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+.tour-similar-price s { font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-right: 3px; }
 
 /* ---------------- rezervasyon kartı ---------------- */
 .tour-booking {

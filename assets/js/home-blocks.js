@@ -130,7 +130,15 @@ const CONTACT = {
      ust siniri disarida biraktigi icin (saat < kapanis) 23:59:59'a
      kadar acik, 00:00'da kapali oluyor. */
   whatsappOpenHour: 8,
-  whatsappCloseHour: 24
+  whatsappCloseHour: 24,
+  /* Sosyal medya hesaplarının adresleri (sol menünün alt satırı). Hesap
+     adresi yazılınca düğme o adrese gider; boşken düğme pasif ve
+     "yakında eklenecek" diyor. Başkasına ait olabilecek bir adres
+     tahminle yazılmıyor. */
+  social: {
+    facebook: null,
+    instagram: null
+  }
 };
 
 /* Destek su anda acik mi? Saatler TURKIYE saatine gore; ziyaretcinin

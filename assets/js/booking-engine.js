@@ -762,8 +762,16 @@ function rezTeklif(tip, kayit, secim, secenek, bugun, baglam) {
     taksit,
     tahsilat: secilen.toplam,
     iptal: rezIptalTakvimi(kayit, baslangic, net, simdi, simdiAn || rezTarih(gun)),
-    kontenjan
+    kontenjan,
+    paketTur: rezPaketTurMu(tip, kayit)
   };
+}
+
+/* Paket tur: konaklama içeren (gecesi olan) tur. Paket Tur Sözleşmeleri
+   Yönetmeliği'ne tabi; ödeme adımında paket tur sözleşmesi de
+   onaylatılıyor. Günübirlik tur (konaklamasız) paket tur değil. */
+function rezPaketTurMu(tip, kayit) {
+  return tip === 'tour' && !!kayit && ((Number(kayit.nights) || 0) > 0 || kayit.type === 'stay');
 }
 
 /* ---------------- form doğrulama ---------------- */
@@ -856,7 +864,7 @@ if (typeof module !== 'undefined' && module.exports) {
     rezKapsamaGirer, rezAktifKampanyalar, rezKalanGun, rezErkenRezervasyonVar, rezCumaCumartesi,
     rezKampanyaIndirimi, rezKuponBul, rezTLKarsiligi,
     rezKartAilesi, rezTaksitSecenekleri, rezTaksitTablosu,
-    rezIptalTakvimi, rezTeklif,
+    rezIptalTakvimi, rezTeklif, rezPaketTurMu,
     rezTCKimlikGecerli, rezPasaportGecerli, rezTelefonGecerli, rezEpostaGecerli, rezAdGecerli,
     rezFormHatalari, rezKodUret
   };
