@@ -538,7 +538,7 @@ Mevcut şemada karşılığı olmayanlar. Göç numaraları kesin değil:
 | Özellikler | `content_facets (content_id, facet, value)` veya `taxonomy_terms` genişletmesi (`transport` zaten var) |
 | Para birimi | `content.currency char(3)` |
 | Kapora | `deposit_policies (content_type, rate, min_days, balance_options)`; bugünkü karşılığı `REZ_KAPORA` |
-| Molapuan | Ürün başı `loyalty_points` + müşteri için hareket defteri `loyalty_ledger` |
+| Molapuan | Ürün başı puan: `tours.loyalty_points` (göç 020, eklendi); müşteri için hareket defteri `loyalty_ledger` (aşağıda) |
 | Taksit | `installment_plans (card_family, count, rate, valid_from)`; aile tespiti ödeme sağlayıcısının BIN sorgusuyla |
 | Kampanya ve kupon | `campaigns (code, kind, scope jsonb, conditions jsonb, discount jsonb, starts_at, ends_at, member_only)`; kupon kodu sunucuda doğrulanır, kullanım sayısı tutulur |
 | Rezervasyon | `bookings` (kod, seçim, teklif anının satırları, indirimler, kur, ödeme planı, iptal kademeleri — hepsi o anki hâliyle) + `booking_guests` (ad, yaş, kimlik **şifreli**) + `payments` (kapora/kalan/iade hareketleri) |

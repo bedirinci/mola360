@@ -232,6 +232,18 @@ describe('alt kayıtlar eksiksiz', () => {
   });
 });
 
+/* 020: Molapuan. Turun puanı kaynaktaki loyalty.points'in aynısı. */
+describe('Molapuan', () => {
+  it('her turun puanı kaynakla aynı', async () => {
+    for (const k of Object.values(KAYNAK.tour)) {
+      const { rows } = await sorgu(
+        'SELECT t.loyalty_points FROM tours t JOIN content c ON c.id = t.content_id WHERE c.type = $1 AND c.slug = $2',
+        ['tour', k.slug]);
+      expect(rows[0].loyalty_points, k.slug).toBe((k.loyalty && k.loyalty.points) || 0);
+    }
+  });
+});
+
 /* 019: ürünün taxonomy alanı ve sınıflandırma ana verisi. Göç raporunun
    "aktarılmayan alan 0" demesi yetmiyor; her bağ kaynaktan sayılıyor. */
 describe('sınıflandırma', () => {

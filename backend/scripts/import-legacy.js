@@ -417,8 +417,8 @@ async function turDetay(c, id, k, medya, kullanilan) {
        lead_days, departure_days, seats_per_departure, max_guests, max_infants,
        adult_price, adult_list_price, child_price, child_list_price, infant_price,
        per_person_price, per_person_list_price, single_room_supplement,
-       child_ages, infant_ages, unit_note, departure_note)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)`,
+       child_ages, infant_ages, unit_note, departure_note, loyalty_points)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)`,
     [id, konaklamali ? 'stay' : 'daily', metin(k.durationLabel),
      konaklamali ? sayi(k.nights) : null, konaklamali ? sayi(k.days) : null,
      saat(p.startTime), sayi(p.leadDays),
@@ -427,8 +427,10 @@ async function turDetay(c, id, k, medya, kullanilan) {
      sayi(p.adult), sayi(p.adultList), sayi(p.child), sayi(p.childList), sayi(p.infant),
      konaklamali ? sayi(p.perPerson) : null, konaklamali ? sayi(p.perPersonList) : null,
      sayi(p.singleRoom || p.singleSupplement),
-     metin(p.childAges), metin(p.infantAges), metin(p.unitNote), metin(p.departureNote)]);
+     metin(p.childAges), metin(p.infantAges), metin(p.unitNote), metin(p.departureNote),
+     sayi(k.loyalty && k.loyalty.points) || 0]);
   esle('tour.pricing.*', 'tours.*');
+  esle('tour.loyalty.points', 'tours.loyalty_points');
   esle('tour.nights/days/durationLabel', 'tours.nights/days/duration_label');
 
   /* PROGRAM — iki ayrı kaynak, tek hedef:
@@ -483,7 +485,7 @@ async function turDetay(c, id, k, medya, kullanilan) {
     esle('tour.accommodation', "content_blocks (kind='accommodation')");
   }
 
-  kullanilan.add('nights').add('days').add('durationLabel').add('pricing')
+  kullanilan.add('nights').add('days').add('durationLabel').add('pricing').add('loyalty')
     .add('program').add('itinerary').add('accommodation').add('departureCities');
 }
 
