@@ -1389,11 +1389,17 @@
     const favBtn = document.getElementById('tourGalleryFav');
     if (favBtn) {
       favBtn.addEventListener('click', () => {
-        state.favorite = !state.favorite;
-        syncFav();
-        toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        /* Favori veri kapısında (hesapta; misafirde bu tarayıcıda). */
+        const bitti = (v) => {
+          state.favorite = v;
+          syncFav();
+          toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        };
+        if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriDegistir) MolaVeri.favoriDegistir('tour', tour.slug).then(bitti);
+        else bitti(!state.favorite);
       });
     }
+    if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriMi) state.favorite = MolaVeri.favoriMi('tour', tour.slug);
     syncFav();
 
     /* Paylaş tek yerde: banner'ın sağ üst köşesinde, favorinin sağında.

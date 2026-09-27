@@ -204,10 +204,20 @@ function onId(id, olay, fn, opts) {
   return el;
 }
 
-const currentUser = {
-  name: 'Bedir İnci',
-  avatarUrl: null
-};
+/* Oturum açan kullanıcı veri kapısından (MolaVeri.oturum); oturum yoksa
+   misafir. Elle yazılmış bir kullanıcı yok. */
+const currentUser = { name: '', avatarUrl: null, uye: false };
+function currentUserYenile(){
+  const h = (typeof MolaVeri !== 'undefined' && MolaVeri.oturum) ? MolaVeri.oturum() : null;
+  currentUser.name = h ? [h.ad, h.soyad].filter(Boolean).join(' ') : '';
+  currentUser.uye = !!h;
+  return h;
+}
+currentUserYenile();
+/* Sayfa köküne göre bağ (data-root): anasayfada "", içerik sayfasında "../../". */
+function mola360Kok(){
+  return (document.body && document.body.getAttribute('data-root')) || '';
+}
 
 function setCssVars(el, vars){
   if(!el) return;
@@ -218,9 +228,12 @@ function setCssVars(el, vars){
 }
 /* normalizeSearchText, getSearchCategoryIcon, getSearchCardType, getInitials
    artık assets/js/search-utils.js içinde (bu dosyadan önce yüklenir). */
+const MISAFIR_AVATAR = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path></svg>';
 function renderProfileAvatar(el){
   if(!el) return;
-  if(currentUser.avatarUrl){
+  if(!currentUser.name){
+    el.innerHTML = MISAFIR_AVATAR;
+  } else if(currentUser.avatarUrl){
     el.innerHTML = '<img src="' + currentUser.avatarUrl + '" alt="' + currentUser.name + '">';
   } else {
     el.textContent = getInitials(currentUser.name);
@@ -469,15 +482,15 @@ const CAT_ICONS = {
 
 
 const categories = [
-  /* path: kategorinin sayfası (kök göreli). Kuponlarım hesabın içinde
-     (5. adım), henüz sayfası yok. */
+  /* path: kategorinin sayfası (kök göreli). Kuponlarım hesap panelinin
+     bir bölümü (bolum). */
   {name:'Fırsatlar', icon:'percent', img:'firsatlar', path:'firsatlar'},
   {name:'Turlar', icon:'compass', img:'turlar', path:'turlar'},
   {name:'Etkinlikler', icon:'ticket', img:'etkinlikler', path:'etkinlikler'},
   {name:'Oteller', icon:'home', img:'oteller', path:'oteller'},
   {name:'Aktiviteler', icon:'activity', img:'aktiviteler', path:'aktiviteler'},
   {name:'Mekanlar', icon:'mapPin', img:'mekanlar', path:'mekanlar'},
-  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim', path:null},
+  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim', path:'hesabim', bolum:'kuponlarim'},
   {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler', path:'yeni-eklenenler'},
   {name:'Bu Hafta', icon:'calendar', img:'buhafta', path:'bu-hafta'},
 ];
@@ -721,7 +734,7 @@ if (byId('top10Scroll')) byId('top10Scroll').innerHTML = enCokSatanlar().map((it
   </a>`).join('');
 
 if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
-  <a class="cat-item" href="${c.path ? c.path + '/' : '#'}">
+  <a class="cat-item" href="${c.path ? c.path + '/' + (c.bolum ? '?bolum=' + c.bolum : '') : '#'}">
     <span class="cat-icon-wrap"><img class="cat-icon-img" src="${CAT_ICONS[c.img]}" alt="${c.name}"></span>
     <span>${c.name}</span>
   </a>`).join('');
@@ -1629,28 +1642,18 @@ onId('searchHomeContent', 'click', (e)=>{
    Liste tek kaynaktan (bu dizi) uretilir; filtreleme, gruplama ve sayac
    metinleri notif-utils.js'teki saf fonksiyonlardan gelir.
    group: 'today' | 'week' | 'earlier'  ·  type: filtre cipleriyle ayni anahtar */
-const notifications = [
-  {id:'n1',  type:'deal',     group:'today',   time:'5 dakika önce', unread:true,  title:'Kapadokya Balon Turu\'nda %20 indirim!'},
-  {id:'n2',  type:'booking',  group:'today',   time:'1 saat önce',   unread:true,  title:'Rezervasyonunuz onaylandı: Pamukkale Termal Tatili'},
-  {id:'n3',  type:'event',    group:'today',   time:'3 saat önce',   unread:true,  title:'Yeni etkinlik: Bodrum Tekne Turu yakında başlıyor'},
-  {id:'n4',  type:'favorite', group:'week',    time:'Dün',           unread:true,  title:'Favorilediğiniz Efes Turu\'nda yer sayısı azalıyor'},
-  {id:'n5',  type:'system',   group:'week',    time:'2 gün önce',    unread:true,  title:'Hesap bilgilerinizi güncellemeyi unutmayın'},
-  {id:'n6',  type:'deal',     group:'week',    time:'2 gün önce',    unread:true,  title:'Antalya Tekne Turu\'nda son 3 gün: %15 indirim'},
-  {id:'n7',  type:'booking',  group:'week',    time:'2 gün önce',    unread:false, title:'Rezervasyonunuz onaylandı: Fethiye Yamaç Paraşütü'},
-  {id:'n8',  type:'event',    group:'week',    time:'3 gün önce',    unread:false, title:'Yeni etkinlik: Pamukkale Gün Doğumu Turu eklendi'},
-  {id:'n9',  type:'favorite', group:'week',    time:'3 gün önce',    unread:false, title:'Favorilediğiniz Kapadokya Balon Turu\'nda fiyat düştü'},
-  {id:'n10', type:'system',   group:'week',    time:'3 gün önce',    unread:false, title:'Ödeme yönteminizin süresi yakında doluyor'},
-  {id:'n11', type:'deal',     group:'week',    time:'4 gün önce',    unread:false, title:'Hafta sonuna özel: Bursa Uludağ Turu\'nda %10 indirim'},
-  {id:'n12', type:'booking',  group:'week',    time:'4 gün önce',    unread:false, title:'Rezervasyon hatırlatması: İzmir Efes Turu yarın'},
-  {id:'n13', type:'event',    group:'week',    time:'5 gün önce',    unread:false, title:'Yeni etkinlik: Bodrum Gece Turu programı yayında'},
-  {id:'n14', type:'favorite', group:'week',    time:'5 gün önce',    unread:false, title:'Favorilediğiniz Pamukkale Termal Tatili\'nde son 5 kontenjan'},
-  {id:'n15', type:'system',   group:'week',    time:'6 gün önce',    unread:false, title:'Gizlilik politikamızda güncelleme yapıldı'},
-  {id:'n16', type:'deal',     group:'earlier', time:'1 hafta önce',  unread:false, title:'Erken rezervasyon fırsatı: Fethiye Tekne Turu\'nda %25 indirim'},
-  {id:'n17', type:'booking',  group:'earlier', time:'1 hafta önce',  unread:false, title:'Rezervasyonunuz onaylandı: Kapadokya Balon Turu'},
-  {id:'n18', type:'event',    group:'earlier', time:'1 hafta önce',  unread:false, title:'Yeni etkinlik: Antalya Rafting Turu takvime eklendi'},
-  {id:'n19', type:'system',   group:'earlier', time:'1 hafta önce',  unread:false, title:'Uygulamamızın yeni sürümü yayında, güncellemeyi unutmayın'},
-  {id:'n20', type:'favorite', group:'earlier', time:'1 hafta önce',  unread:false, title:'Favorilediğiniz Bodrum Tekne Turu\'nda yeni tarihler eklendi'}
-];
+/* Bildirimler hesabın durumundan türetiliyor (MolaVeri.bildirimler,
+   account-engine.js): rezervasyon, kalan ödeme hatırlatması, kupon,
+   puan, favori. Okundu/kaldırıldı işareti kalıcı. Elle yazılmış
+   bildirim yok. */
+const notifications = [];
+function bildirimleriYukle(){
+  notifications.length = 0;
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimler) {
+    MolaVeri.bildirimler(new Date()).forEach(n => notifications.push(n));
+  }
+}
+bildirimleriYukle();
 
 const notifTypeIcons = {
   deal:     '<circle cx="7.5" cy="7.5" r="1.6"></circle><circle cx="16.5" cy="16.5" r="1.6"></circle><line x1="18" y1="6" x2="6" y2="18"></line>',
@@ -1739,6 +1742,7 @@ function markNotifRead(id, itemEl){
   const item = notifications.find(n => n.id === id);
   if (!item || !item.unread) return;
   item.unread = false;
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimOkundu) MolaVeri.bildirimOkundu(id);
   /* Liste yeniden cizilmez; kullanicinin kaydirma konumu korunur. */
   if (itemEl) itemEl.classList.remove('unread');
   refreshNotifChrome();
@@ -1747,6 +1751,7 @@ function markNotifRead(id, itemEl){
 function dismissNotification(id, itemEl){
   const index = notifications.findIndex(n => n.id === id);
   if (index > -1) notifications.splice(index, 1);
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimKaldir) MolaVeri.bildirimKaldir(id);
   refreshNotifChrome();
   if (!itemEl) { renderNotifList(); return; }
   itemEl.classList.add('is-removing');
@@ -1817,6 +1822,7 @@ onId('notifPanelClose', 'click', (e)=>{
   closeNotifPanel();
 });
 notifMarkAllBtn.addEventListener('click', ()=>{
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimOkundu) MolaVeri.bildirimOkundu(notifications.map(n => n.id));
   notifications.forEach(item => { item.unread = false; });
   notifListEl.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
   if (notifFilter === 'unread') renderNotifList();
@@ -1841,6 +1847,7 @@ notifListEl.addEventListener('click', (e)=>{
   const item = e.target.closest('.notif-item');
   if (!item) return;
   markNotifRead(item.dataset.notifId, item);
+  bildirimeGit(item.dataset.notifId);
 });
 notifListEl.addEventListener('keydown', (e)=>{
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -1848,26 +1855,68 @@ notifListEl.addEventListener('keydown', (e)=>{
   if (!item) return;
   e.preventDefault();
   markNotifRead(item.dataset.notifId, item);
+  bildirimeGit(item.dataset.notifId);
 });
-
-/* ---------------- profil menüsü toggle ---------------- */
-renderProfileAvatar(document.getElementById('headerProfileAvatar'));
-renderProfileAvatar(document.getElementById('profileMenuAvatar'));
-renderProfileAvatar(document.getElementById('sidebarUserAvatar'));
-const sidebarUserNameEl = document.getElementById('sidebarUserName');
-if (sidebarUserNameEl) sidebarUserNameEl.textContent = currentUser.name;
-const drawerProfileNameEl = document.getElementById('drawerProfileName');
-const drawerProfileAvatarEl = document.getElementById('drawerProfileAvatar');
-if (drawerProfileNameEl) {
-  // textContent tüm alt öğeleri (doğrulanmış rozet dahil) silip düz metinle
-  // değiştirirdi; bu yüzden yalnızca isim span'ının metni güncellenir.
-  const nameSpan = drawerProfileNameEl.querySelector('span:first-of-type');
-  if (nameSpan) nameSpan.textContent = currentUser.name;
-  else drawerProfileNameEl.textContent = currentUser.name;
+/* Bildirimin bağı (hesap paneli bölümü ya da ürün sayfası). */
+function bildirimeGit(id){
+  const n = notifications.find(x => x.id === id);
+  if (n && n.href) window.location.href = mola360Kok() + n.href;
 }
-if (drawerProfileAvatarEl) drawerProfileAvatarEl.textContent = getInitials(currentUser.name);
-const profileMenuNameEl = byId('profileMenuName');
-if (profileMenuNameEl) profileMenuNameEl.textContent = currentUser.name;
+
+/* ---------------- hesap çerçevesi ----------------
+   Başlıktaki avatar ve giriş düğmesi, profil menüsü, çekmece ve kenar
+   çubuğundaki profil kartları oturumdan çiziliyor. Sayılar (rezervasyon,
+   yaklaşan, favori, kupon), Molapuan ve seviye hesap panelinin verisi
+   (MolaVeri.hesapPaneli); misafirde giriş çağrısı. Oturum, favori ya da
+   rezervasyon değişince (mola360:* olayları) yeniden çiziliyor. */
+function hesapCercevesiniCiz(){
+  const h = currentUserYenile();
+  const uye = !!h;
+  document.body.classList.toggle('is-uye', uye);
+  /* Masaüstü kenar çubuğu çekmecenin kopyası ve kimlikleri siliniyor;
+     bu yüzden kartlar kimlikle değil data-hesap-* ile bulunuyor. */
+  ['headerProfileAvatar', 'profileMenuAvatar'].forEach(id => renderProfileAvatar(byId(id)));
+  document.querySelectorAll('[data-hesap-avatar]').forEach(renderProfileAvatar);
+  const ad = uye ? currentUser.name : 'Misafir';
+  document.querySelectorAll('[data-hesap-ad]').forEach(el => { el.textContent = ad; });
+  const profileMenuNameEl = byId('profileMenuName');
+  if (profileMenuNameEl) profileMenuNameEl.textContent = ad;
+  if (!uye) document.querySelectorAll('[data-hesap-seviye-rozet]').forEach(el => { el.hidden = true; });
+  const profilBtn = byId('profileBtn');
+  if (profilBtn) profilBtn.setAttribute('aria-label', uye ? 'Hesabım' : 'Giriş yap');
+  document.querySelectorAll('[data-hesap-uye]').forEach(el => { el.hidden = !uye; });
+  document.querySelectorAll('[data-hesap-misafir]').forEach(el => { el.hidden = uye; });
+  bildirimleriYukle();
+  if (typeof renderNotifications === 'function' && typeof notifListEl !== 'undefined') renderNotifications();
+  if (!uye || typeof MolaVeri === 'undefined' || !MolaVeri.hesapPaneli) return;
+  MolaVeri.hesapPaneli(new Date()).then(p => {
+    if (!p.hesap) return;
+    const sayilar = {
+      rezervasyon: p.rezervasyonlar.length,
+      yaklasan: p.rezervasyonlar.filter(r => r.durumu === 'yaklasan').length,
+      favori: p.favoriler.length,
+      kupon: p.kuponlar.filter(k => k.kisisel && k.durum === 'gecerli').length
+    };
+    document.querySelectorAll('[data-hesap-sayi]').forEach(el => { el.textContent = sayilar[el.getAttribute('data-hesap-sayi')] || 0; });
+    const sv = p.puan.seviye;
+    document.querySelectorAll('[data-hesap-puan]').forEach(el => { el.textContent = p.puan.bakiye.toLocaleString('tr-TR'); });
+    document.querySelectorAll('[data-hesap-seviye-adi]').forEach(el => { el.textContent = sv.seviye.ad; });
+    document.querySelectorAll('[data-hesap-seviye-rozet]').forEach(el => { el.hidden = false; });
+    document.querySelectorAll('[data-hesap-seviye-metni]').forEach(el => { el.textContent = sv.seviye.ad + ' seviyesindesin'; });
+    document.querySelectorAll('[data-hesap-sonraki]').forEach(el => {
+      el.textContent = sv.sonraki ? sv.sonraki.ad + '\'a ' + sv.kalan.toLocaleString('tr-TR') + ' puan' : 'En üst seviye';
+    });
+    document.querySelectorAll('[data-hesap-ilerleme]').forEach(el => { el.style.width = Math.round(sv.ilerleme * 100) + '%'; });
+    document.querySelectorAll('[data-hesap-bekleyen]').forEach(el => {
+      el.textContent = p.puan.bekleyen ? p.puan.bekleyen.toLocaleString('tr-TR') + ' puan tur sonrası' : '';
+    });
+  });
+}
+['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-hesap-giris]') && typeof openAuthModal === 'function') openAuthModal('login');
+});
+hesapCercevesiniCiz();
 
 const profileBtn = document.getElementById('profileBtn');
 const profilePanel = document.getElementById('profilePanel');
@@ -1881,6 +1930,8 @@ function closeProfilePanel(){
   refreshScrollLock();
 }
 profileBtn.addEventListener('click', (e)=>{
+  /* Misafirde profil menüsü yok: giriş penceresi açılır. */
+  if (!currentUser.uye) { e.stopPropagation(); openAuthModal('login'); return; }
   e.stopPropagation();
   const isOpen = profilePanel.classList.contains('open');
   if(isOpen){
@@ -1915,22 +1966,61 @@ document.querySelectorAll('.profile-menu-item[data-bottom-tab], .profile-menu-it
     closeProfilePanel();
   });
 });
-onId('profileLogoutBtn', 'click', closeProfilePanel);
+onId('profileLogoutBtn', 'click', () => {
+  closeProfilePanel();
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.cikisYap) MolaVeri.cikisYap();
+});
+/* Başlıktaki kalp: favoriler (hesap panelinin bölümü; misafirde de açık). */
+onId('favoritesBtn', 'click', () => { window.location.href = mola360Kok() + 'hesabim/?bolum=favorilerim'; });
 
-/* ---------------- favorite (heart) toggle ---------------- */
-onId('cardSections', 'click', e=>{
+/* ---------------- favori (kalp) ----------------
+   Bütün sayfalardaki kart kalpleri tek dinleyiciyle: kartın bağı
+   (data-href ya da başlıktaki <a>) veri kapısına sorulur, ürünse
+   favoriye eklenir/çıkarılır (MolaVeri.favoriDegistir). Kalplerin
+   durumu favori listesinden boyanır; sonradan çizilen kartlar
+   (süzgeç, "daha fazla göster") da gözlemciyle boyanır. */
+function mola360KartUrunu(btn){
+  const kart = btn.closest('.poi-card, .compact-card');
+  if (!kart || typeof MolaVeri === 'undefined' || !MolaVeri.adres) return null;
+  const bag = kart.getAttribute('data-href') || (kart.querySelector('a[href]') || {}).getAttribute?.('href');
+  if (!bag) return null;
+  try {
+    const hedef = new URL(bag, document.baseURI);
+    const kok = new URL(mola360Kok() || './', document.baseURI);
+    if (hedef.pathname.indexOf(kok.pathname) !== 0) return null;
+    const a = MolaVeri.adres(hedef.pathname.slice(kok.pathname.length));
+    return a && a.kind === 'product' ? a : null;
+  } catch (_) { return null; }
+}
+function mola360KalpleriBoya(kapsam){
+  if (typeof MolaVeri === 'undefined' || !MolaVeri.favoriMi) return;
+  (kapsam || document).querySelectorAll('.poi-fav-btn').forEach(btn => {
+    const u = mola360KartUrunu(btn);
+    if (!u) return;
+    const fav = MolaVeri.favoriMi(u.type, u.slug);
+    btn.classList.toggle('active', fav);
+    btn.setAttribute('aria-pressed', fav ? 'true' : 'false');
+    btn.setAttribute('aria-label', fav ? 'Favorilerden çıkar' : 'Favorilere ekle');
+  });
+}
+document.addEventListener('click', e=>{
   const btn = e.target.closest('.poi-fav-btn');
   if(!btn) return;
   e.preventDefault();
   e.stopPropagation();
-  btn.classList.toggle('active');
-  const card = btn.closest('.poi-card');
-  const key = card?.querySelector('.poi-title')?.textContent?.trim();
-  if(key){
-    if(btn.classList.contains('active')) Mola360App.state.favorites.add(key);
-    else Mola360App.state.favorites.delete(key);
-  }
-});
+  const u = mola360KartUrunu(btn);
+  if (!u || typeof MolaVeri === 'undefined') return;
+  MolaVeri.favoriDegistir(u.type, u.slug).then(() => mola360KalpleriBoya());
+}, true);
+mola360KalpleriBoya();
+if (typeof MutationObserver === 'function') {
+  let bekleyen = false;
+  new MutationObserver(() => {
+    if (bekleyen) return;
+    bekleyen = true;
+    requestAnimationFrame(() => { bekleyen = false; mola360KalpleriBoya(); });
+  }).observe(document.body, { childList: true, subtree: true });
+}
 
 /* Mobilde fotoğraflarda uzun basma kaynaklı menü/drag/önizleme açılmasını engelle. */
 document.addEventListener('contextmenu', e=>{
@@ -2629,6 +2719,36 @@ function setAuthTab(tab){
   authOverlay.classList.toggle('is-reset', tab === 'reset');
 }
 onId('headerRegisterBtn', 'click', ()=> openAuthModal('login'));
+
+/* Giriş ve üyelik formları: veri kapısına (MolaVeri.girisYap / uyeOl).
+   Deneme sürümünde şifre yok; pencere bunu söylüyor. Başarıda pencere
+   kapanır, çerçeve mola360:oturum olayıyla yeniden çizilir. */
+function authHatalariniYaz(form, hatalar){
+  form.querySelectorAll('[data-auth-hata]').forEach(el => { el.textContent = ''; });
+  (hatalar || []).forEach(h => {
+    const el = form.querySelector('[data-auth-hata="' + h.alan + '"]') || form.querySelector('[data-auth-hata]');
+    if (el) el.textContent = h.mesaj;
+  });
+}
+function authFormuBagla(id, islem){
+  const form = byId(id);
+  if (!form) return;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (typeof MolaVeri === 'undefined') return;
+    islem(form).then(sonuc => {
+      if (!sonuc.tamam) { authHatalariniYaz(form, sonuc.hatalar); return; }
+      authHatalariniYaz(form, []);
+      form.reset();
+      closeAuthModal();
+    });
+  });
+}
+authFormuBagla('authLoginForm', form => MolaVeri.girisYap(form.eposta.value));
+authFormuBagla('authRegisterForm', form => MolaVeri.uyeOl({
+  ad: form.ad.value, soyad: form.soyad.value, eposta: form.eposta.value, telefon: form.telefon.value,
+  kvkk: form.kvkk.checked, izinEposta: form.izinEposta.checked
+}, new Date()));
 onId('drawerAuthBtn', 'click', ()=> openAuthModal('login'));
 const sidebarAuthBtn = document.getElementById('sidebarAuthBtn');
 if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal('login'));
@@ -2641,7 +2761,9 @@ if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal(
     sidebarNav.addEventListener('click', e=>{
       const link = e.target.closest('a[data-sidebar-tab]');
       if (!link) return;
-      e.preventDefault();
+      /* Bağlar gerçek sayfalara (hesap paneli bölümleri); yalnızca
+         anasayfadaysak "Keşfet" sayfayı yeniden yüklemez. */
+      if (link.dataset.sidebarTab === 'explore') e.preventDefault();
       // Masaüstü ve mobil drawer aynı aktif durumu paylaşır.
       sidebarNavs.forEach(nav => nav.querySelectorAll('a[data-sidebar-tab]').forEach(a => {
         a.classList.toggle('active', a.dataset.sidebarTab === link.dataset.sidebarTab);
@@ -2689,11 +2811,12 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       '<circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path>',
       '<circle cx="12" cy="8" r="4" fill="currentColor" stroke="currentColor"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5Z" fill="currentColor" stroke="currentColor"></path>']
   ];
-  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="#" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
+  const hedefler = { explore: './', favorites: 'hesabim/?bolum=favorilerim', tickets: 'hesabim/?bolum=biletlerim', account: 'hesabim/' };
+  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
   nav.addEventListener('click', e=>{
     const item=e.target.closest('.tab-item');
     if(!item) return;
-    e.preventDefault();
+    if (item.dataset.bottomTab === 'explore') e.preventDefault();
     nav.querySelectorAll('.tab-item').forEach(x=>x.classList.remove('active'));
     item.classList.add('active');
     Mola360App.state.ui.activeRoute = item.dataset.bottomTab || 'explore';

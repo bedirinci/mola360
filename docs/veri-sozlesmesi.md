@@ -366,6 +366,16 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `fiyatTeklifi(type, slug, secim, secenek, bugun)` | **Promise** | Teklif (bölüm 13) + `kontenjanDurumu` | `POST /api/teklif` |
 | `rezervasyonOlustur(istek)` | **Promise** | `{ tamam, kod, rezervasyon }` veya `{ tamam: false, hatalar, teklif }` | `POST /api/rezervasyon` → 3D Secure |
 | `rezervasyon(kod)`, `rezervasyonlar()` | **Promise** | Rezervasyon kaydı (bugün bu tarayıcıda) | `GET /api/rezervasyon/:kod`, hesap |
+| `rezervasyonSorgula(kod, eposta)` | **Promise** | Misafirin rezervasyonu (kod + e-posta ikisi birden) | `POST /api/rezervasyon/sorgula` |
+| `rezervasyonIptal(kod, simdi)` | **Promise** | İptal ve iade (yalnızca hesabın rezervasyonu) | `POST /api/rezervasyon/:kod/iptal` |
+| `oturum()` | senkron | Oturumdaki hesap veya `null` | Sayfaya gömülü oturum (çerez) |
+| `uyeOl(form)`, `girisYap(eposta)`, `cikisYap()` | **Promise** | `{ tamam, hesap }` / `{ tamam: false, hatalar }` | `POST /api/uyelik`, `/api/giris`, `/api/cikis` |
+| `profilGuncelle(alanlar)`, `izinGuncelle(izinler)`, `hesabiSil()` | **Promise** | Güncel hesap | `PATCH /api/hesap`, `DELETE /api/hesap` |
+| `favoriler()`, `favoriMi(tip, slug)` | senkron | Favori kimlikleri (yayından kalkan düşer) | Sayfaya gömülü |
+| `favoriDegistir(tip, slug)` | **Promise** | Yeni durum (`true` = favoride) | `PUT/DELETE /api/hesap/favoriler/:tip/:slug` |
+| `bildirimler(simdi)`, `bildirimOkundu(id)`, `bildirimKaldir(id)` | senkron | Türetilmiş bildirimler + okundu/kaldırıldı | `GET /api/hesap/bildirimler` |
+| `hesapPaneli(simdi)` | **Promise** | Panelin bütün verisi (bölüm 14) | `GET /api/hesap` |
+| `yorumYaz({ kod, puan, metin })` | **Promise** | Onay bekleyen yorum | `POST /api/yorum` |
 
 Arama sayfası aynı eşleşmeyi `liste({ temel: { q } })` ile alır (tek
 kural: `kapiAramaPuani`, bölüm 12).
@@ -381,6 +391,27 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 5. adım: Hesabım
+
+- `/hesabim/` TEK panel (talimattaki gibi); bölümler `?bolum=` ile:
+  Genel Bakış, Rezervasyonlarım, Biletlerim, Favorilerim, Kuponlarım,
+  Mola Puanlarım, Üyelik Seviyem, Yorumlarım, Bildirimlerim, Kişisel
+  Bilgilerim, Ödeme Yöntemlerim, Ayarlar. `/favorilerim/`,
+  `/biletlerim/`, `/kuponlarim/` panelin ilgili bölümüne gidiyor.
+- Üyelik ve giriş penceresi çalışıyor (deneme: hesap bu tarayıcıda,
+  şifre yok; pencere bunu söylüyor). Henüz çalışmayan sosyal girişler
+  pasif.
+- Karekodlu biletler (`qr-code.js`, bağımlılıksız üretici; testte jsQR
+  ile okunuyor). Rezervasyon iptali iade tutarını önceden gösteriyor.
+- Favoriler bütün kartlarda ve ürün sayfalarında gerçek (misafirde de).
+- Yeni üyeye kişiye özel %15 kupon; ödeme ekranında üye bilgileri ve
+  kuponlar hazır.
+- Molapuan tura katılınca kazanılıyor, tura göre (bölüm 14).
+- Elle yazılmış veriler kalktı: başlıktaki "Bedir İnci", profil
+  kartındaki 14 bilet / 27 favori / Gold / 2.480 puan, 20 örnek
+  bildirim, çekmecedeki kuralsız kampanya kartları ("%40'a varan",
+  "Gold üyeye %25", "3 al 2 öde").
 
 ### 4. adım: rezervasyon ve ödeme ekranları, kampanyalar
 
@@ -491,7 +522,7 @@ yerlerini gerçek ürünler alacak.
 |---|---|---|
 | ~~Kampanya bantları~~ | 4. adımda kural kaydına bağlandı (`kampanya` alanı) | — |
 | "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
-| Anasayfa kenar çubuğundaki profil kartı (puan, bilet sayıları) ve bildirimler | `index.html`, `app.js` | 5 (Hesabım) |
+| ~~Anasayfa kenar çubuğundaki profil kartı ve bildirimler~~ | 5. adımda hesaptan ve türetilmiş bildirimlerden | — |
 | Arama kutusundaki "Popüler Aramalar" | `app.js` `suggestedSearchTerms` | Editör listesi olarak kalabilir; canlıda arama kayıtlarından |
 
 ## 11. Backend'e eklenecekler
@@ -516,7 +547,14 @@ Mevcut şemada karşılığı olmayanlar. Göç numaraları kesin değil:
 | Liste sorgusu | `GET /api/liste?<temel süzgeç>&<seçimler>` → bölüm 12'deki cevap. Süzme ve sayım arama dizininde (`listeSatiri` biçimi), aynı kurallarla |
 | Arama | Aynı dizinde metin araması (Türkçe normalleştirme ve ek kuralıyla); arama kayıtları "Popüler Aramalar"ı besler |
 | Kur | Günlük banka satış kuru tablosu (`fx_rates (currency, rate, date, source)`); rezervasyona o anki kur yazılır |
-| Ziyaretçi geçmişi | Üye girişinde son görüntülenenler ve son aramalar hesaba da yazılır (5. adım) |
+| Ziyaretçi geçmişi | Üye girişinde son görüntülenenler ve son aramalar hesaba da yazılır |
+| Üyelik | `users (email unique, name, phone, email_verified_at, consents jsonb)`; giriş e-posta doğrulaması + şifre ya da tek kullanımlık kod; oturum çerezi |
+| Favori | `favorites (user_id, content_id, created_at)`; misafirin tarayıcıdaki favorileri girişte hesaba taşınır |
+| Kişisel kupon | `user_coupons (user_id, code unique, campaign_id, expires_at, used_booking_id)` |
+| Molapuan | `loyalty_ledger (user_id, booking_id, points, status: pending/earned/cancelled)`; tur tamamlanınca iş kuyruğu `earned` yapar |
+| Yorum | `reviews (booking_id unique, user_id, rating, body, status: pending/published/rejected)`; yayın yönetim panelinden |
+| Bilet | `tickets (booking_id, number unique, holder, signature)`; karekod = numara + sunucu imzası, girişte doğrulanır |
+| Bildirim | Olaylardan (`booking_created`, `balance_reminder`, `points_earned` …) üretilir; okundu durumu `notification_reads` |
 | Yönlendirici | Sunucu `/turlar/…`, `/temalar/…` ve dosyasız ürün adreslerini 200 ile ve `<head>` alanları doldurulmuş olarak sunar (bugün 404.html) |
 
 ## 12. Liste sayfaları ve adres parametreleri
@@ -666,4 +704,75 @@ Bugün `localStorage` (`mola360.rezervasyonlar`, en fazla 30) ve
 indirimler, kur, ödeme planı, taksit, iptal kademeleri, iletişim,
 katılımcıların **yalnızca adı ve yaşı**. Kimlik/pasaport numarası ve
 kart bilgisi yazılmıyor.
+
+## 14. Hesabım
+
+Panel `/hesabim/` (`account-page.js`), kurallar `account-engine.js`
+(saf), depolama veri kapısında. Bugün hesap, favoriler, bildirim
+durumu ve yorumlar **bu tarayıcıda** (localStorage); rezervasyonlar
+4. adımdaki gibi.
+
+### Üyelik (deneme)
+
+- Üye ol: ad, soyad, e-posta, telefon (isteğe bağlı), aydınlatma onayı
+  (zorunlu), kampanya e-postası izni (isteğe bağlı).
+- **Şifre yok.** Giriş, bu tarayıcıda o e-postayla açılmış hesabı açar.
+  Pencere ve Ayarlar bunu açıkça söylüyor. Gerçek girişte e-posta
+  doğrulaması ve şifre ya da tek kullanımlık kod olacak.
+- Hesabın rezervasyonları: hesapla yapılanlar + aynı e-postayla misafir
+  olarak yapılanlar. Misafir, rezervasyonunu kod + e-postayla bulabilir.
+
+### Rezervasyon durumu ve iptal
+
+`yaklasan` → dönüş günü geçince `tamamlandi`; iptalde `iptal`.
+Kayıtta iki ayrı alan: `iptalKosullari` (rezervasyon anındaki
+kademeler ve her birinin iadesi) ve `iptalBilgisi` (`{ t, iade,
+kademe }`). İptal, şimdiki kademenin iadesini önceden gösterir;
+başlangıç saati geçtiyse iptal yok.
+
+### Biletler
+
+Etkinlikte bilet başına, tur ve aktivitede katılımcı başına, otel ve
+mekânda rezervasyon başına bir karekod. Numara `M360-XXXXXX-01`.
+Karekod bugün numarayı taşıyor; canlıda numara + sunucu imzası
+olacak (sahte bilet üretilemesin). Ödeme alınmadığı için deneme
+biletleri "DENEME" damgalı ve "geçerli değil" yazıyor.
+
+### Molapuan ve seviye
+
+- **Kural (kullanıcı):** puan tura katılınca kazanılır ve tura göre
+  değişir: ürün kaydında `loyalty: { points }`. Bugün Efes 60, Kapadokya
+  3 Gece 250 (**örnek**). Puan rezervasyon başına (hesap sahibinin
+  katılımı); tur bitince `kazanildi`, öncesinde `bekliyor`, iptalde
+  düşer.
+- Puan harcama kuralı ve seviye avantajları **belirlenmedi**. Seviye
+  eşikleri örnek (Classic 0, Silver 500, Gold 1.500, Platinum 3.000
+  kazanılmış puan); panel avantaj vaat etmiyor.
+
+### Kuponlar
+
+Üyeliğe kişiye özel `HOSGELDIN-XXXXX` kodu: kampanya `yeni-uye` (%15,
+en fazla 1.500 TL), **yalnızca ilk rezervasyonda** (iptal edilmemiş
+rezervasyonu olmayan üye), 90 gün, tek kullanım. Kod başkasının
+hesabında çalışmaz; kullanılınca rezervasyon koduyla işaretlenir.
+Kuponlarım herkese açık kodları (örnek `MOLA100`) da listeler.
+
+### Favoriler
+
+Misafir de ekleyebilir (bu tarayıcıda). Kart kalpleri kartın bağından
+ürünü bulur (`mola360KartUrunu`); sonradan çizilen kartlar da boyanır.
+
+### Bildirimler
+
+Elle yazılmış bildirim yok; hepsi durumdan türetiliyor: hoş geldin,
+kişisel kupon (ve son 7 gün), rezervasyon talebi, yaklaşan tur
+(3 gün içinde), kalan ödeme ve arama günü (7 gün içinde), iptal ve
+iade, kazanılan puan, favorideki indirim. Kimlik kararlı; okundu ve
+kaldırıldı işaretleri kalıcı.
+
+### Ödeme yöntemleri
+
+Kart bilgisi sitede tutulmaz. Kart kaydı ödeme kuruluşunun kasasında
+(tokenizasyon) olacak; panel yalnızca son dört haneyi ve aileyi
+gösterecek.
 

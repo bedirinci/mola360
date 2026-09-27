@@ -728,6 +728,11 @@ function kapiAdres(yol) {
   if (temiz === 'rezervasyon') return { kind: 'checkout', path: temiz };
   if (temiz === 'rezervasyon/onay') return { kind: 'confirmation', path: temiz };
   if (temiz === 'kampanyalar') return { kind: 'campaigns', path: temiz };
+  /* Hesabım tek panel; bölümler ?bolum= ile. Alt sekmelerin kısa
+     adresleri panelin ilgili bölümüne. */
+  if (temiz === 'hesabim') return { kind: 'account', path: temiz, bolum: null };
+  const hesapBolumu = { favorilerim: 'favorilerim', biletlerim: 'biletlerim', kuponlarim: 'kuponlarim' }[temiz];
+  if (hesapBolumu) return { kind: 'account', path: 'hesabim', bolum: hesapBolumu };
   /* Menüdeki iki ürün sayfası: taksonomide "içerik dışı" duruyorlar ama
      ürün listeliyorlar. */
   if (temiz === 'yeni-eklenenler') return { kind: 'new', path: temiz };
@@ -864,6 +869,8 @@ function kapiSayfaModeli(adres, bugun) {
       temel: null,
       kirinti: [ana, { name: kapiMenuEtiketi(adres.path) || 'Bu Hafta', path: adres.path }]
     };
+  } else if (adres.kind === 'account') {
+    m = { baslik: 'Hesabım', tip: null, temel: null, kirinti: [ana, { name: 'Hesabım', path: 'hesabim' }] };
   } else if (adres.kind === 'checkout' || adres.kind === 'confirmation') {
     const baslik = adres.kind === 'checkout' ? 'Ödeme' : 'Rezervasyon onayı';
     m = { baslik, tip: null, temel: null, kirinti: [ana, { name: baslik, path: adres.path }] };

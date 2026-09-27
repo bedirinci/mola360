@@ -244,6 +244,36 @@ function odmFormOku(form) {
   return v;
 }
 
+/* ---------------- üyelik ----------------
+   Üyede iletişim alanları hesaptan doluyor ve kullanılabilir kuponlar
+   çip olarak çıkıyor; misafire giriş önerisi. Kuponun geçerliliğine
+   yine teklif karar veriyor (kapı üyelik bağlamını kendisi ekliyor). */
+function odmOturum() {
+  return (typeof MolaVeri !== 'undefined' && MolaVeri.oturum) ? MolaVeri.oturum() : null;
+}
+function odmUyeSeridi() {
+  const h = odmOturum();
+  if (h) return '<p class="odm-member">' + odmKacis(h.ad) + ', bilgilerin hesabından yazıldı. Rezervasyon ve biletler Hesabım\'da görünecek.</p>';
+  return '<p class="odm-member">Üye misin? <button type="button" class="odm-member-btn" data-giris="login">Giriş yap</button> ya da '
+    + '<button type="button" class="odm-member-btn" data-giris="register">üye ol</button>: kişisel kuponların ve Molapuanın hesabına işlesin.</p>';
+}
+function odmKuponCipleri() {
+  const h = odmOturum();
+  const liste = (h && typeof hspKuponlar === 'function') ? hspKuponlar(h, new Date()).filter(k => k.kisisel && k.durum === 'gecerli') : [];
+  if (!liste.length) return '';
+  return '<div class="odm-coupon-chips"><span>Kuponların:</span>' + liste.map(k =>
+    '<button type="button" class="odm-chip" data-kupon-cip="' + odmKacis(k.kod) + '"><strong>' + odmKacis(k.kod) + '</strong><span>' + odmKacis(k.ad) + '</span></button>').join('') + '</div>';
+}
+function odmUyeBilgileriniYaz(form) {
+  const h = odmOturum();
+  if (!h || !form) return;
+  [['iletisim.ad', h.ad], ['iletisim.soyad', h.soyad], ['iletisim.eposta', h.eposta], ['iletisim.telefon', h.telefon],
+    ['katilimci.0.ad', h.ad], ['katilimci.0.soyad', h.soyad]].forEach(([ad, deger]) => {
+    const el = form.querySelector('[name="' + ad + '"]');
+    if (el && !el.value && deger) el.value = deger;
+  });
+}
+
 /* ---------------- ödeme ekranı ---------------- */
 function odmKur(kok, bugun) {
   if (typeof document === 'undefined') return null;
@@ -348,6 +378,7 @@ function odmKur(kok, bugun) {
         + odmKacis(odmPara(t.kur.oran)) + ') rezervasyonla sabitlenir, kalan ödeme de bu kurla.</p>' : '';
     ana.innerHTML = '<form class="odm-form" id="odmForm" novalidate>'
       + '<div class="odm-errors" id="odmErrors" role="alert" hidden></div>'
+      + odmUyeSeridi()
       + '<section class="odm-card"><h2>İletişim bilgileri</h2>'
       + '<p class="odm-lead">Rezervasyon onayı ve bilet bu adrese gönderilir.</p>'
       + '<div class="odm-row">'
@@ -369,7 +400,7 @@ function odmKur(kok, bugun) {
       + '<section class="odm-card"><h2>İndirim kuponu</h2><div class="odm-coupon">'
       + '<label class="odm-field"><span class="lst-visually-hidden">Kupon kodu</span><input id="odmKupon" placeholder="Kupon kodu" autocomplete="off" maxlength="20"></label>'
       + '<button type="button" class="odm-coupon-btn" id="odmKuponUygula">Uygula</button></div>'
-      + '<p class="odm-coupon-msg" id="odmKuponMesaj" role="status"></p></section>'
+      + '<p class="odm-coupon-msg" id="odmKuponMesaj" role="status"></p>' + odmKuponCipleri() + '</section>'
       + '<section class="odm-card"><h2>Fatura</h2><div class="odm-options odm-options-compact odm-invoice" role="radiogroup" aria-label="Fatura türü">'
       + '<label class="odm-option is-selected"><input type="radio" name="fatura.tur" value="bireysel" checked><span class="odm-option-body"><strong>Bireysel</strong><span>İletişim bilgilerinize</span></span></label>'
       + '<label class="odm-option"><input type="radio" name="fatura.tur" value="kurumsal"><span class="odm-option-body"><strong>Kurumsal</strong><span>Firma adına</span></span></label>'
@@ -390,6 +421,7 @@ function odmKur(kok, bugun) {
       + '</section></form>';
 
     const form = document.getElementById('odmForm');
+    odmUyeBilgileriniYaz(form);
     /* İletişimdeki ad, dokunulmadıkça ilk katılımcıya da yazılıyor. */
     const elle = new Set();
     form.addEventListener('input', (e) => {
@@ -429,6 +461,15 @@ function odmKur(kok, bugun) {
         if (!secenek.aile) secenek.taksit = 1;
         yenile();
       }
+      const kuponCip = e.target.closest('[data-kupon-cip]');
+      if (kuponCip) {
+        document.getElementById('odmKupon').value = kuponCip.getAttribute('data-kupon-cip');
+        secenek.kupon = kuponCip.getAttribute('data-kupon-cip');
+        yenile();
+        return;
+      }
+      const girisBtn = e.target.closest('[data-giris]');
+      if (girisBtn && typeof openAuthModal === 'function') { openAuthModal(girisBtn.getAttribute('data-giris')); return; }
       if (e.target.closest('#odmKuponUygula')) {
         secenek.kupon = document.getElementById('odmKupon').value.trim();
         yenile();
@@ -475,6 +516,9 @@ function odmKur(kok, bugun) {
     if (t.hesap) ozet.innerHTML = odmOzetMarkup(Object.assign({ indirimler: [], odeme: { sekil: 'tam' }, taksit: { vadeFarki: 0, secilen: { taksit: 1 } }, iptal: [] }, t), kart, gorsel);
     bar.hidden = true;
   }
+
+  /* Giriş/çıkış olunca form üye bilgileri ve kuponlarıyla yeniden kurulur. */
+  window.addEventListener('mola360:oturum', () => { teklif = null; yenile(); });
 
   function yenile() {
     const benim = ++sira;
@@ -551,6 +595,9 @@ function odmOnayMarkup(r) {
       + odmIptalKosullari(r).map((k, i) => '<li><strong>' + (k.sonAnMetni ? odmKacis(k.sonAnMetni) + '’e kadar' : (i === 0 ? 'Her zaman' : 'Sonrasında'))
         + '</strong><span>' + (o.sekil === 'mekanda' ? odmKacis(k.metin) : (k.iade > 0 ? odmKacis(odmPara(k.iade)) + ' iade' : 'İade yok')) + '</span></li>').join('')
       + '</ol></div>' : '')
+    + (odmOturum()
+      ? '<p class="odm-info">Rezervasyon ve biletler <a href="hesabim/?bolum=rezervasyonlarim">Hesabım</a> sayfanda.</p>'
+      : '<p class="odm-info">Bu e-postayla üye olursan rezervasyon hesabında görünür. <button type="button" class="odm-member-btn" data-giris="register">Üye ol</button></p>')
     + '<div class="odm-done-actions">'
     + (yol ? '<a class="odm-coupon-btn" href="' + odmHref(yol) + '">Ürün sayfası</a>' : '')
     + '<button type="button" class="odm-coupon-btn" data-yazdir>Yazdır</button>'
@@ -582,6 +629,10 @@ function odmOnayKur(kok) {
       + odmOnayMarkup(r) + '</main>';
     const yazdir = kok.querySelector('[data-yazdir]');
     if (yazdir) yazdir.addEventListener('click', () => window.print());
+    kok.addEventListener('click', (e) => {
+      const giris = e.target.closest('[data-giris]');
+      if (giris && typeof openAuthModal === 'function') openAuthModal(giris.getAttribute('data-giris'));
+    });
     return r;
   });
 }

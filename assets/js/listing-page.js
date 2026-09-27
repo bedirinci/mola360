@@ -763,7 +763,9 @@ function lspBaslat() {
      sayfanın iki adresi olmasın. */
   const kanonik = adres.path ? adres.path + '/' : '';
   if (goreli !== kanonik) {
-    history.replaceState(history.state, '', kokYol + kanonik + location.search + location.hash);
+    /* /favorilerim/ gibi kısa adres: panelin bölümü adres satırına. */
+    const arama = adres.kind === 'account' && adres.bolum ? '?bolum=' + adres.bolum : location.search;
+    history.replaceState(history.state, '', kokYol + kanonik + arama + location.hash);
   }
   if (adres.kind === 'home') { location.replace(kokYol + location.search + location.hash); return null; }
   govde.setAttribute('data-rota', adres.kind);
@@ -779,6 +781,7 @@ function lspBaslat() {
   if (adres.kind === 'checkout') return typeof odmKur === 'function' ? odmKur(kok, bugun) : lspBulunamadi(kok, goreli, bugun);
   if (adres.kind === 'confirmation') return typeof odmOnayKur === 'function' ? odmOnayKur(kok) : lspBulunamadi(kok, goreli, bugun);
   if (adres.kind === 'campaigns') return lspKampanyalarKur(kok, bugun);
+  if (adres.kind === 'account') return typeof hsaKur === 'function' ? hsaKur(kok, adres, bugun) : lspBulunamadi(kok, goreli, bugun);
   if (adres.kind === 'week') return lspHaftaKur(kok, adres, bugun);
 
   const model = MolaVeri.sayfaModeli(adres, bugun);

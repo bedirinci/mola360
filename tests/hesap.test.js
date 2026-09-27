@@ -276,3 +276,120 @@ describe('veri kapısı: hesap', () => {
     expect(MolaVeri.oturum()).toBe(null);
   });
 });
+
+/* ---------------- ekranlar ---------------- */
+import { readFileSync } from 'node:fs';
+const P = require('../assets/js/account-page.js');
+const oku = (yol) => readFileSync(new URL('../' + yol, import.meta.url), 'utf8');
+
+describe('Hesabım paneli', () => {
+  const panel = () => ({
+    hesap: { id: 'U1', ad: 'Ayşe', soyad: 'Yılmaz', eposta: 'a@b.co', izinler: {} },
+    rezervasyonlar: [Object.assign(rez(), { durumu: 'yaklasan', iptalOnizleme: A.hspIptalOnizleme(rez(), an(27)), toplam: 2580, deneme: true })],
+    biletler: A.hspBiletler(Object.assign(rez(), { deneme: true })),
+    puan: Object.assign({ hareketler: [], bakiye: 0, bekleyen: 60 }, { seviye: A.hspSeviye(0) }),
+    kuponlar: A.hspKuponlar({ kuponlar: [{ kod: 'HOSGELDIN-AAAAA', kampanya: 'yeni-uye', sonGun: '2026-12-26' }] }, an(27)),
+    favoriler: [], yorumlar: [], bildirimler: []
+  });
+
+  it('tek panel: talimattaki 12 bölüm; misafire yalnızca favoriler', () => {
+    expect(P.HSA_BOLUMLER.map(b => b.ad)).toEqual(['Genel Bakış', 'Rezervasyonlarım', 'Biletlerim', 'Favorilerim', 'Kuponlarım',
+      'Mola Puanlarım', 'Üyelik Seviyem', 'Yorumlarım', 'Bildirimlerim', 'Kişisel Bilgilerim', 'Ödeme Yöntemlerim', 'Ayarlar']);
+    expect((P.hsaNavMarkup('genel', true).match(/data-bolum=/g) || []).length).toBe(12);
+    expect((P.hsaNavMarkup('genel', false).match(/data-bolum="([a-z-]+)"/g) || [])).toEqual(['data-bolum="favorilerim"']);
+    P.HSA_BOLUMLER.forEach(b => expect(MolaVeri.adres('hesabim').kind).toBe('account'));
+  });
+
+  it('biletlerde karekod, bilet numarası ve deneme uyarısı', () => {
+    const html = P.hsaBiletlerMarkup(panel());
+    expect((html.match(/<svg class="karekod"/g) || []).length).toBe(2);
+    expect(html).toContain('M360-ABCDEF-01');
+    expect(html).toContain('DENEME');
+    expect(html).toContain('bilet geçerli değil');
+  });
+
+  it('rezervasyon kartı iptalde iade tutarını önceden söylüyor', () => {
+    const html = P.hsaRezervasyonKart(panel().rezervasyonlar[0]);
+    expect(html).toContain('data-iptal-ac="M360-ABCDEF"');
+    expect(html).toContain('<strong>516 TL</strong> iade edilir');
+    expect(html).toContain('Kapora 516 TL');
+  });
+
+  it('seviye eşikleri örnek olduğunu söylüyor; avantaj vaat etmiyor', () => {
+    const html = P.hsaSeviyeMarkup(panel().puan, A.HSP_SEVIYELER);
+    expect(html).toContain('Eşikler örnek');
+    expect(html).not.toMatch(/%\d+|indirim/);
+  });
+
+  it('ödeme yöntemleri kart bilgisi tutmuyor; ayarlarda şifre olmadığı yazıyor', () => {
+    expect(P.hsaOdemeMarkup()).toContain('tutulmaz');
+    expect(P.hsaAyarlarMarkup(panel().hesap)).toContain('şifre yok');
+    expect(P.hsaKuponlarMarkup(panel().kuponlar)).toContain('data-kopyala="HOSGELDIN-AAAAA"');
+  });
+
+  it('başlık kaçışlı', () => {
+    const r = Object.assign(panel().rezervasyonlar[0], { baslik: '<b>x</b>' });
+    expect(P.hsaRezervasyonKart(r)).toContain('&lt;b&gt;x&lt;/b&gt;');
+  });
+});
+
+describe('sayfalar ve çerçeve', () => {
+  it('kısa adresler panelin bölümüne gidiyor', () => {
+    expect(MolaVeri.adres('favorilerim')).toEqual({ kind: 'account', path: 'hesabim', bolum: 'favorilerim' });
+    expect(MolaVeri.adres('biletlerim').bolum).toBe('biletlerim');
+    expect(MolaVeri.adres('kuponlarim').bolum).toBe('kuponlarim');
+  });
+
+  it('yönlendirici hesap betiklerini doğru sırada yüklüyor', () => {
+    const y = oku('404.html');
+    const sira = (d) => y.indexOf('src="assets/js/' + d + '"');
+    expect(sira('account-engine.js')).toBeLessThan(sira('data-gateway.js'));
+    expect(sira('qr-code.js')).toBeLessThan(sira('data-gateway.js'));
+    expect(sira('account-page.js')).toBeGreaterThan(0);
+    expect(sira('account-page.js')).toBeLessThan(sira('listing-page.js'));
+    expect(y).toContain('href="assets/css/account.css"');
+    const ana = oku('index.html');
+    expect(ana.indexOf('assets/js/account-engine.js')).toBeLessThan(ana.indexOf('assets/js/data-gateway.js'));
+  });
+
+  it('anasayfada elle yazılmış profil sayısı, puan ve bildirim yok', () => {
+    const ana = oku('index.html');
+    ['Bedir İnci', 'Gold seviyesindesin', '2.480', '320 Mola Puanı', 'Toplam Bilet', 'Doğrulanmış hesap'].forEach(m =>
+      expect(ana, m).not.toContain(m));
+    const app = oku('assets/js/app.js');
+    expect(app).not.toContain("name: 'Bedir İnci'");
+    expect(app).not.toContain("Kapadokya Balon Turu\\'nda %20 indirim");
+    expect(app).toContain('MolaVeri.bildirimler(');
+  });
+
+  it('çekmecedeki kampanya kartları yürürlükteki kurallardan', () => {
+    const ana = oku('index.html');
+    const kartlar = [...ana.matchAll(/<a href="([^"]+)" class="drawer-promo-card">[\s\S]*?<span class="num">([^<]+)<\/span>/g)].map(m => [m[1], m[2]]);
+    expect(kartlar.length).toBeGreaterThan(0);
+    const R2 = require('../assets/js/booking-engine.js');
+    kartlar.forEach(([yol, num]) => {
+      expect(MolaVeri.adres(yol), yol).toBeTruthy();
+      const tl = num.match(/^(\d[\d.]*) TL$/);
+      if (tl) expect(R2.REZ_KAMPANYALAR.some(k => k.indirim.tutar === Number(tl[1].replace(/\./g, ''))), num).toBe(true);
+      const oran = num.match(/^%(\d+)$/);
+      if (oran) expect(R2.REZ_KAMPANYALAR.some(k => Math.round((k.indirim.oran || 0) * 100) === Number(oran[1])), num).toBe(true);
+    });
+    expect(ana).not.toContain("'a varan indirim");
+  });
+
+  it('giriş penceresi şifre almıyor; henüz çalışmayan sosyal giriş pasif', () => {
+    const c = oku('assets/js/site-chrome.js');
+    expect(c).not.toContain('type="password"');
+    expect(c).toContain('şifre alınmaz');
+    expect((c.match(/class="auth-social-btn [^"]+" type="button" disabled/g) || []).length).toBe(8);
+    expect(c).toContain('href="hesabim/?bolum=biletlerim"');
+  });
+
+  it('ürün sayfalarının kalbi veri kapısındaki favoriye yazıyor', () => {
+    ['tour', 'hotel', 'activity', 'event', 'venue'].forEach(t => {
+      const kod = oku('assets/js/' + t + '-page.js');
+      expect(kod, t).toContain('MolaVeri.favoriDegistir(');
+      expect(kod, t).toContain('MolaVeri.favoriMi(');
+    });
+  });
+});

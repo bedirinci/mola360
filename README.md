@@ -53,7 +53,8 @@ arama motorunda dizine girmez; sunucu geldiğinde aynı ekranlar 200 ile
 gelecek. Ödeme ekranı da aynı yoldan açılıyor (`/rezervasyon/?urun=…`,
 `assets/js/checkout-page.js`); hesabı `assets/js/booking-engine.js`'te.
 Ödeme sağlayıcısı henüz bağlı değil: rezervasyon bu tarayıcıda deneme
-kaydı olarak yazılıyor, kart çekimi yok. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
+kaydı olarak yazılıyor, kart çekimi yok. Hesabım paneli (`/hesabim/`,
+`assets/js/account-page.js`) de deneme: üyelik bu tarayıcıda, şifre yok. Sözleşme `docs/veri-sozlesmesi.md`, backend mimarisi
 `docs/yonetim-sistemi.md`, backend'in kendi belgesi `backend/README.md`.
 
 **`index.html`'i çift tıklayıp açmayın.** `file://` ile açılan sayfada

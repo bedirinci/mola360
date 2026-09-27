@@ -446,3 +446,23 @@
   .odm-more > summary { display: list-item; }
   .odm-more[open] > summary { margin-bottom: 4px; }
 }
+
+/* ---------------- üyelik (5. adım) ---------------- */
+.odm-member {
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--navy);
+  background: #EEF2FB;
+  border-radius: var(--radius-sm);
+}
+.odm-member-btn {
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--navy);
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.odm-coupon-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--text-muted); }

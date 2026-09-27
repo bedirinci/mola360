@@ -81,7 +81,8 @@ describe('ortak çerçeve tek kaynak', () => {
   it('alt klasördeki sayfalar için görsel yolu data-root ile önekleniyor', () => {
     /* Çerçeve koke göre yazılmış; /tur/<slug>/ iki dizin içeride. */
     expect(cerceve).toContain('data-root');
-    expect(cerceve).toMatch(/replace\(\/\(src\|href\)="assets\\\//);
+    /* Görseller ve çerçevedeki sayfa bağları (hesap paneli, yardım). */
+    expect(cerceve).toMatch(/replace\(\/\(src\|href\)="\(assets\|hesabim\|kurumsal\)\\\//);
     turSayfalari.forEach(([slug, html]) => {
       expect(html, slug + ' kökünü bildirmiyor').toContain('data-root="../../"');
     });

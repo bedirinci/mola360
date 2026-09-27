@@ -3784,8 +3784,8 @@ ul {
   .desktop-sidebar .mobile-profile-edit { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); flex-shrink:0; }
   .desktop-sidebar .mobile-profile-edit .icon { width:16px; height:16px; }
   .desktop-sidebar .mobile-profile-stats { position:relative; z-index:2; margin:-32px 14px 0; display:grid; grid-template-columns:repeat(4,1fr); background:#fff; border-radius:16px 16px 0 0; box-shadow:0 -4px 18px rgba(21,32,72,.08); }
-  .desktop-sidebar .mobile-profile-stats > div { min-height:54px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; border-right:1px solid var(--border); }
-  .desktop-sidebar .mobile-profile-stats > div:last-child { border-right:0; }
+  .desktop-sidebar .mobile-profile-stats > :is(div, a) { min-height:54px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; border-right:1px solid var(--border); }
+  .desktop-sidebar .mobile-profile-stats > :is(div, a):last-child { border-right:0; }
   .desktop-sidebar .mobile-profile-stats strong { font-size:14.5px; line-height:1; font-weight:800; color:var(--navy); }
   .desktop-sidebar .mobile-profile-stats span { margin-top:4px; font-size:8.5px; line-height:1.2; color:var(--text-muted); }
   .desktop-sidebar .mobile-profile-loyalty { margin:0 14px 14px; padding:10px 11px; border-radius:0 0 14px 14px; background:var(--bg); border-top:1px solid var(--border); }
@@ -3998,8 +3998,8 @@ ul {
   .mobile-profile-edit { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); flex-shrink:0; }
   .mobile-profile-edit .icon { width:18px; height:18px; }
   .mobile-profile-stats { position:relative; z-index:2; margin:-34px 16px 0; display:grid; grid-template-columns:repeat(4,1fr); background:#fff; border-radius:18px 18px 0 0; box-shadow:0 -4px 18px rgba(21,32,72,.08); }
-  .mobile-profile-stats > div { min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 5px; border-right:1px solid var(--border); }
-  .mobile-profile-stats > div:last-child { border-right:0; }
+  .mobile-profile-stats > :is(div, a) { min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 5px; border-right:1px solid var(--border); }
+  .mobile-profile-stats > :is(div, a):last-child { border-right:0; }
   .mobile-profile-stats strong { font-size:16px; line-height:1; font-weight:800; color:var(--navy); }
   .mobile-profile-stats span { margin-top:4px; font-size:9.5px; line-height:1.25; color:var(--text-muted); }
   .mobile-profile-loyalty { margin:0 16px 14px; padding:10px 12px; border-radius:0 0 14px 14px; background:var(--bg); border-top:1px solid var(--border); }
@@ -5992,3 +5992,56 @@ ul {
 .smt-link[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
 .smt-all { color: var(--green-dark); font-weight: 700; }
 .desktop-sidebar .sidebar-section-menu { display: none; }
+
+/* =====================================================
+   HESAP DURUMU (5. adım)
+   Giriş penceresinin deneme formu, profil kartının misafir hâli ve
+   üye/misafir görünürlüğü. [hidden] öğeler display kurallarını
+   ezer: kartlardaki display:grid/flex hidden'ı yenmesin.
+   ===================================================== */
+[data-hesap-uye][hidden], [data-hesap-misafir][hidden], [data-hesap-seviye-rozet][hidden] { display: none !important; }
+a.mobile-profile-loyalty { display: block; color: inherit; }
+.mobile-profile-stats > a { color: inherit; }
+
+.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.auth-form-row > span { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.auth-form-error { margin-top: -8px; font-size: 12px; color: #C62828; }
+.auth-form-error:empty { display: none; }
+.auth-demo-note {
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6B4E00;
+  background: #FFF6DB;
+  border-radius: var(--radius-sm);
+}
+.auth-modal-panel label.auth-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+}
+.auth-modal-panel label.auth-check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; padding: 0; accent-color: var(--navy); }
+.auth-check a { color: var(--navy); text-decoration: underline; }
+.auth-social-btn:disabled { opacity: .55; cursor: not-allowed; }
+.auth-social-soon { margin-top: -4px; font-size: 12px; color: var(--text-faint); text-align: center; }
+
+.mobile-profile-guest { padding: 12px 16px 16px; }
+.mobile-profile-guest p { margin-bottom: 10px; font-size: 13px; line-height: 1.45; color: var(--text-muted); }
+.mobile-profile-guest .btn-primary { width: 100%; text-align: center; padding: 11px 16px; }
+.sidebar-user-login {
+  align-self: flex-start;
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  background: none;
+  text-decoration: underline;
+}
+body.is-uye #headerRegisterBtn { display: none; }
