@@ -163,10 +163,12 @@
 
 
 </head>
-<body>
+<body data-sayfa="ana">
 
 
-<!-- 3 saniyelik açılış loader'ı -->
+<!-- 3 saniyelik açılış ekranı: yalnızca siteye İLK girişte. Daha önce
+     görüldüyse (mola360.acilisGoruldu) boyanmadan kaldırılıyor;
+     gösterimi ve bayrağı ui.js yönetiyor. -->
 <div id="siteLoader" role="status" aria-label="Mola360 yükleniyor">
   <img
     class="site-loader-logo"
@@ -175,219 +177,13 @@
     draggable="false"
   >
 </div>
+<script>
+  try { if (localStorage.getItem('mola360.acilisGoruldu')) document.getElementById('siteLoader').remove(); } catch (e) {}
+</script>
 
 
 <main class="device-frame" id="deviceFrame">
 
-  <div class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></div>
-  <aside class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Ana menü">
-    <div class="sidebar-scroll drawer-sidebar-scroll">
-
-      <!-- Mobil profil kartı: profil ekranındaki üst bölümle aynı görsel dil -->
-      <!-- Profil kartları hesaptan dolduruluyor (app.js, MolaVeri.hesapPaneli):
-           sayılar, puan ve seviye gerçek; misafirde giriş çağrısı. Burada
-           elle yazılmış sayı yok. -->
-      <div class="mobile-profile-card" id="drawerProfileCard">
-        <div class="mobile-profile-hero">
-          <div class="mobile-profile-top">
-            <div class="mobile-profile-avatar" id="drawerProfileAvatar" data-hesap-avatar></div>
-            <div class="mobile-profile-main">
-              <strong id="drawerProfileName"><span data-hesap-ad>Misafir</span></strong>
-              <div class="mobile-profile-badges">
-                <span class="mobile-profile-badge gold" data-hesap-seviye-rozet hidden><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span><span data-hesap-seviye-adi></span></span>
-              </div>
-            </div>
-            <div class="mobile-profile-actions" data-hesap-uye hidden>
-              <a class="mobile-profile-edit" href="hesabim/?bolum=bilgilerim" aria-label="Kişisel bilgilerim"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></span></a>
-              <a class="mobile-profile-edit" href="hesabim/?bolum=ayarlar" aria-label="Ayarlar"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></span></a>
-            </div>
-          </div>
-        </div>
-        <div class="mobile-profile-guest" data-hesap-misafir>
-          <p>Rezervasyonların, biletlerin ve Molapuanın tek yerde. Yeni üyelere ilk rezervasyonda %15 indirim.</p>
-        </div>
-        <div class="mobile-profile-stats" data-hesap-uye hidden>
-          <a href="hesabim/?bolum=rezervasyonlarim"><strong data-hesap-sayi="rezervasyon">0</strong><span>Rezervasyon</span></a>
-          <a href="hesabim/?bolum=biletlerim"><strong data-hesap-sayi="yaklasan">0</strong><span>Yaklaşan</span></a>
-          <a href="hesabim/?bolum=favorilerim"><strong data-hesap-sayi="favori">0</strong><span>Favorilerim</span></a>
-          <a href="hesabim/?bolum=kuponlarim"><strong data-hesap-sayi="kupon">0</strong><span>Kuponlarım</span></a>
-        </div>
-        <a class="mobile-profile-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
-          <div class="mobile-profile-loyalty-head"><strong data-hesap-seviye-metni></strong><span data-hesap-sonraki></span></div>
-          <div class="mobile-profile-progress"><span data-hesap-ilerleme></span></div>
-          <div class="mobile-profile-loyalty-foot"><strong data-hesap-puan>0</strong><span>Molapuan</span><span class="reward" data-hesap-bekleyen></span></div>
-        </a>
-      </div>
-
-      <div class="sidebar-user" id="drawerUserCard">
-        <div class="sidebar-user-top">
-          <span class="sidebar-user-avatar" id="drawerUserAvatar" data-hesap-avatar></span>
-          <span class="sidebar-user-info">
-            <strong id="drawerUserName" data-hesap-ad>Misafir</strong>
-            <a href="hesabim/" data-hesap-uye hidden>Hesabıma git</a>
-            <button type="button" class="sidebar-user-login" data-hesap-giris data-hesap-misafir>Giriş yap / Üye ol</button>
-          </span>
-        </div>
-        <a class="sidebar-user-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
-          <span class="sidebar-user-loyalty-icon"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span></span>
-          <div class="sidebar-user-loyalty-info">
-            <strong><span data-hesap-puan>0</span> Molapuan</strong>
-            <span data-hesap-sonraki></span>
-            <div class="sidebar-user-loyalty-bar"><div class="sidebar-user-loyalty-bar-fill" data-hesap-ilerleme></div></div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Birincil menü: mobildeki alt sekme çubuğuyla aynı 4 ana bölüm -->
-      <nav class="sidebar-primary-nav" aria-label="Ana bölümler">
-        <a href="./" class="active" data-sidebar-tab="explore"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="15 9 13 13 9 15 11 11"></polygon></svg></span>Keşfet</a>
-        <a href="hesabim/?bolum=favorilerim" data-sidebar-tab="favorites"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.9c0 5.5-8.8 10.2-8.8 10.2S3.2 14.4 3.2 8.9A4.6 4.6 0 0 1 12 6.5a4.6 4.6 0 0 1 8.8 2.4Z"></path></svg></span>Favorilerim</a>
-        <a href="hesabim/?bolum=biletlerim" data-sidebar-tab="tickets"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4.4v2A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4.4z"></path><line x1="9.5" y1="6.5" x2="9.5" y2="19" stroke-dasharray="2.2 2.2"></line></svg></span>Biletlerim</a>
-        <a href="hesabim/" data-sidebar-tab="account"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path></svg></span>Hesabım</a>
-      </nav>
-
-      <!-- Kampanya slider'ı: birincil menü ile kategoriler arasında, yatay kaydırmalı kampanya kartları -->
-      <div class="drawer-promo-slider">
-        <!-- Kartlar yürürlükteki kampanya kurallarının (booking-engine.js,
-             REZ_KAMPANYALAR) aynısı; kuralı olmayan indirim yazılmıyor
-             (tests/rezervasyon.test.js). -->
-        <div class="drawer-promo-track" id="drawerPromoTrack">
-          <a href="turlar/kapadokya-turlari/" class="drawer-promo-card">
-            <img class="drawer-promo-bg" src="https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?auto=format&fit=crop&w=508&h=244&q=75" alt="Kapadokya balon turu görseli">
-            <div class="drawer-promo-content">
-              <span class="drawer-promo-badge">Erken rezervasyon</span>
-              <div>
-                <div class="drawer-promo-title">Kapadokya turlarında</div>
-                <div class="drawer-promo-bottom">
-                  <span class="drawer-promo-discount"><span class="num">500 TL</span><span class="unit">indirim</span></span>
-                  <span class="drawer-promo-cta">İncele</span>
-                </div>
-              </div>
-            </div>
-          </a>
-          <a href="oteller/" class="drawer-promo-card">
-            <img class="drawer-promo-bg" src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=508&h=244&q=75" alt="Ferah bir otel odası ve yapılmış yatak">
-            <div class="drawer-promo-content">
-              <span class="drawer-promo-badge">Hafta sonu</span>
-              <div>
-                <div class="drawer-promo-title">Otellerde 2 gece kal</div>
-                <div class="drawer-promo-bottom">
-                  <span class="drawer-promo-discount"><span class="num">1 gece</span><span class="unit">bizden</span></span>
-                  <span class="drawer-promo-cta">İncele</span>
-                </div>
-              </div>
-            </div>
-          </a>
-          <a href="hesabim/" class="drawer-promo-card">
-            <img class="drawer-promo-bg" src="https://images.unsplash.com/photo-1705229643252-2e2694a193b0?auto=format&fit=crop&w=508&h=244&q=75" alt="Ayder Yaylası'nda sisli yeşil tepeler">
-            <div class="drawer-promo-content">
-              <span class="drawer-promo-badge">Yeni üyelere</span>
-              <div>
-                <div class="drawer-promo-title">İlk rezervasyonda</div>
-                <div class="drawer-promo-bottom">
-                  <span class="drawer-promo-discount"><span class="num">%15</span><span class="unit">indirim</span></span>
-                  <span class="drawer-promo-cta">İncele</span>
-                </div>
-              </div>
-            </div>
-          </a>
-          <a href="kampanyalar/" class="drawer-promo-card">
-            <img class="drawer-promo-bg" src="https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=508&h=244&q=75" alt="Ege'de mavi bir koyda demirlemiş gezi teknesi">
-            <div class="drawer-promo-content">
-              <span class="drawer-promo-badge">Kampanyalar</span>
-              <div>
-                <div class="drawer-promo-title">Bütün kampanyalar</div>
-                <div class="drawer-promo-bottom">
-                  <span class="drawer-promo-discount"><span class="num">Tümü</span><span class="unit">ve koşulları</span></span>
-                  <span class="drawer-promo-cta">İncele</span>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <div class="sidebar-section">
-        <h4>Kategoriler</h4>
-        <div class="sidebar-cat-grid">
-          <a href="firsatlar/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="7" cy="7" r="2.4"></circle><circle cx="17" cy="17" r="2.4"></circle></svg></span>Fırsatlar</a>
-          <a href="turlar/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="15 9 13 13 9 15 11 11"></polygon></svg></span>Turlar</a>
-          <a href="etkinlikler/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4.4v2A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4.4z"></path><line x1="9.5" y1="6.5" x2="9.5" y2="19" stroke-dasharray="2.2 2.2"></line></svg></span>Etkinlikler</a>
-          <a href="oteller/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.5 20.5 11"></path><path d="M5.5 9.8V20h13V9.8"></path></svg></span>Oteller</a>
-          <a href="aktiviteler/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="15 9 13 13 9 15 11 11"></polygon></svg></span>Aktiviteler</a>
-          <a href="mekanlar/"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="2.6"></circle></svg></span>Mekanlar</a>
-          <a href="hesabim/?bolum=kuponlarim" class="sidebar-more-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M4 8h13.5A2.5 2.5 0 0 1 20 10.5v3H16a2 2 0 0 1 0-4h4"></path><circle cx="16" cy="11.5" r=".7" fill="currentColor" stroke="none"></circle></svg></span>Kuponlarım</a>
-          <a href="yeni-eklenenler/" class="sidebar-more-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span>Yeni Eklenenler</a>
-          <a href="bu-hafta/" class="sidebar-more-item"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"></rect><line x1="8" y1="3" x2="8" y2="7.5"></line><line x1="16" y1="3" x2="16" y2="7.5"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>Bu Hafta</a>
-        </div>
-        <button type="button" class="sidebar-more-toggle" data-more-toggle>
-          <span class="label">Devamını gör</span>
-          <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-        </button>
-      </div>
-
-      <!-- Menü ağacı: masaüstünde başlığın altındaki ana menünün mobil
-           karşılığı. İçeriği site-chrome.js taksonomiden (TAXONOMY_MENU)
-           basıyor; masaüstü kenar çubuğunda gizli. -->
-      <div class="sidebar-section sidebar-section-menu">
-        <h4>Menü</h4>
-        <nav class="site-menu-tree" data-site-menu aria-label="Tüm kategoriler"></nav>
-      </div>
-
-      <div class="sidebar-section">
-        <h4>Popüler Rotalar</h4>
-        <div class="sidebar-route-list sidebar-route-grid">
-          <a href="turlar/karadeniz-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Karadeniz Rüyası</strong><span>Yayla &amp; doğa turları</span></span></a>
-          <a href="turlar/kapadokya-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img src="https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Kapadokya &amp; Erciyes</strong><span>Balon turları &amp; kayak</span></span></a>
-          <a href="turlar/ege-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Ege &amp; Bodrum</strong><span>Tekne turları &amp; koylar</span></span></a>
-          <a href="koleksiyonlar/" class="sidebar-route"><span class="sidebar-route-thumb sidebar-route-thumb-star"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span></span><span class="sidebar-route-info"><strong>Momo'nun Seçtikleri</strong><span>Editörden özel öneriler</span></span></a>
-          <a href="temalar/doga-yayla/" class="sidebar-route sidebar-more-item"><span class="sidebar-route-thumb"><img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Karadeniz Yaylaları</strong><span>Doğa &amp; kamp rotaları</span></span></a>
-          <a href="temalar/deniz-tekne/" class="sidebar-route sidebar-more-item"><span class="sidebar-route-thumb"><img src="https://images.unsplash.com/photo-1601751818856-8ba24a2e0d84?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Antalya Sahilleri</strong><span>Plaj &amp; tekne aktiviteleri</span></span></a>
-        </div>
-        <button type="button" class="sidebar-more-toggle" data-more-toggle>
-          <span class="label">Devamını gör</span>
-          <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-        </button>
-      </div>
-
-      <!-- Son Görüntülenenler: ziyaretçinin kendi geçmişi (visitor-history.js,
-           bu tarayıcıda). Kartlar ürünün kendi kaydından app.js'te
-           basılıyor; geçmiş yoksa bölüm gizli kalıyor. -->
-      <div class="sidebar-section" data-son-gorulenler-bolum hidden>
-        <h4>Son Görüntülenenler</h4>
-        <div class="sidebar-recent-list" data-son-gorulenler></div>
-      </div>
-
-      <div class="sidebar-section sidebar-section-help">
-        <h4>Yardım &amp; Destek</h4>
-        <a href="kurumsal/iletisim/" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><rect x="3" y="13" width="4.5" height="6" rx="1.5"></rect><rect x="16.5" y="13" width="4.5" height="6" rx="1.5"></rect></svg></span>Bize Ulaşın</a>
-        <a href="kurumsal/iptal-iade/" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 8"></path><path d="M20 4v4h-4"></path><path d="M20 12a8 8 0 0 1-14 5.3L4 16"></path><path d="M4 20v-4h4"></path></svg></span>İptal ve İade</a>
-        <a href="#" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1.4-3.4A8 8 0 0 1 4 12Z"></path><line x1="8.5" y1="10.5" x2="15.5" y2="10.5"></line><line x1="8.5" y1="13.5" x2="13" y2="13.5"></line></svg></span>Canlı Destek</a>
-        <a href="#" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"></path></svg></span>TR · ₺</a>
-      </div>
-
-      <div class="drawer-social-footer">
-        <div class="drawer-social-icons">
-          <a href="#" aria-label="Facebook"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.4-3H13.5V8.4c0-.87.24-1.46 1.5-1.46h1.6V4.3c-.28-.04-1.23-.12-2.34-.12-2.32 0-3.9 1.42-3.9 4.02v2.3H8v3h2.36V21h3.14Z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.6" cy="7.4" r=".9" fill="currentColor" stroke="none"/></svg></a>
-          <a href="#" aria-label="Blog360"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5h11a2 2 0 0 1 2 2v13l-3-2-3 2-3-2-3 2v-13a2 2 0 0 1 2-2Z"/><line x1="7.5" y1="9" x2="13.5" y2="9"/><line x1="7.5" y1="12.2" x2="13.5" y2="12.2"/></svg></a>
-        </div>
-        <span class="drawer-copyright">© 2026 Mola360. Tüm hakları saklıdır.</span>
-      </div>
-
-    </div>
-
-    <div class="drawer-footer sidebar-footer">
-      <div class="drawer-footer-row">
-        <button class="btn-primary" id="drawerAuthBtn" data-hesap-misafir>Giriş Yap / Üye Ol</button>
-        <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="drawer-whatsapp-btn" aria-label="WhatsApp Destek">
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/></svg>
-        </a>
-      </div>
-    </div>
-  </aside>
 
   <!-- Ortak site cercevesi: header, bildirim paneli, profil menusu,
        mobil arama cubugu, tam ekran arama ve giris modali. Isaretleme
@@ -477,7 +273,7 @@
               <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
             </button>
           </div>
-          <div class="generic-filter-options"><button data-value="En Popüler">En Popüler</button><button data-value="En Yeni">En Yeni</button><button data-value="Fiyat: Artan">Fiyat: Artan</button><button data-value="Fiyat: Azalan">Fiyat: Azalan</button><button data-value="Puan: Yüksek">Puan: Yüksek</button></div>
+          <div class="generic-filter-options"></div>
           <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="siralama">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="siralama">Uygula</button></div></div>
         </div>
       </div>
@@ -523,7 +319,7 @@
               <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
             </button>
           </div>
-          <div class="generic-filter-options"><button data-value="1 Gün">1 Gün</button><button data-value="2-3 Gün">2-3 Gün</button><button data-value="4-7 Gün">4-7 Gün</button><button data-value="8-14 Gün">8-14 Gün</button><button data-value="15+ Gün">15+ Gün</button></div>
+          <div class="generic-filter-options"></div>
           <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="sure">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="sure">Uygula</button></div></div>
         </div>
       </div>
@@ -538,9 +334,7 @@
               <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
             </button>
           </div>
-          <div class="generic-filter-options">
-            <button data-value="Marmara">Marmara</button><button data-value="İç Anadolu">İç Anadolu</button><button data-value="Ege">Ege</button><button data-value="Akdeniz">Akdeniz</button><button data-value="Doğu Anadolu">Doğu Anadolu</button><button data-value="Güneydoğu Anadolu">Güneydoğu Anadolu</button><button data-value="Tüm Türkiye">Tüm Türkiye</button><button data-value="Yurtdışı">Yurtdışı</button>
-          </div>
+          <div class="generic-filter-options"></div>
           <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="bolge">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="bolge">Uygula</button></div></div>
         </div>
       </div>
@@ -555,7 +349,7 @@
               <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
             </button>
           </div>
-          <div class="generic-filter-options"><button data-value="Doğa">Doğa</button><button data-value="Wellness">Wellness</button><button data-value="Eğlence">Eğlence</button><button data-value="Gastronomi">Gastronomi</button><button data-value="Deniz">Deniz</button><button data-value="Kültür">Kültür</button><button data-value="Macera">Macera</button><button data-value="Romantik">Romantik</button><button data-value="Aile">Aile</button><button data-value="Spor">Spor</button></div>
+          <div class="generic-filter-options"></div>
           <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="tema">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tema">Uygula</button></div></div>
         </div>
       </div>
@@ -570,15 +364,33 @@
               <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
             </button>
           </div>
-          <div class="generic-filter-options"><button data-value="2.500₺ altı">2.500₺ altı</button><button data-value="5.000₺ altı">5.000₺ altı</button><button data-value="10.000₺ altı">10.000₺ altı</button><button data-value="20.000₺ altı">20.000₺ altı</button></div>
+          <div class="generic-filter-options"></div>
           <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="tutar">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tutar">Uygula</button></div></div>
         </div>
       </div>
 
       <button class="filter-clear-all" id="clearAllFilters" type="button">Filtreleri temizle</button>
     </div>
-    <span class="filter-result-count">248 sonuç listeleniyor</span>
+    <!-- Süzgeç seçiliyken gerçek sonuç sayısı (app.js); boşken gizli. -->
+    <span class="filter-result-count" id="homeResultCount" aria-live="polite" hidden></span>
   </div>
+
+  <!-- Anasayfa süzgeçlerinin sonuçları: aynı sayfada, süzgeç çubuğunun
+       hemen altında. Süzgeç seçiliyken şeritlerin yerini alıyor; liste
+       sayfalarıyla aynı liste motoru ve kart (MolaVeri.liste, poiCardMarkup). -->
+  <section class="home-results" id="homeResults" aria-label="Süzgeç sonuçları" hidden>
+    <div class="home-results-head">
+      <strong id="homeResultsSummary"></strong>
+      <button type="button" class="home-results-clear" data-home-results-clear>Süzgeçleri temizle</button>
+    </div>
+    <div class="home-results-grid" id="homeResultsGrid"></div>
+    <div class="home-results-empty" id="homeResultsEmpty" hidden>
+      <strong>Bu seçimlere uyan sonuç yok</strong>
+      <p>Bir süzgeci kaldırmayı ya da tarih aralığını genişletmeyi dene.</p>
+      <button type="button" class="btn-primary" data-home-results-clear>Süzgeçleri temizle</button>
+    </div>
+    <button type="button" class="home-results-more" id="homeResultsMore" hidden>Daha fazla göster</button>
+  </section>
 
   <div id="cardSections">
   </div>
@@ -648,6 +460,7 @@
 <script src="assets/js/taxonomy-data.js"></script>
 <script src="assets/js/inventory-data.js"></script>
 <script src="assets/js/sample-catalog-data.js"></script>
+<script src="assets/js/listing-engine.js"></script>
 <!-- Hesap (üyelik, favori, bildirim, profil kartı) ve kampanya kuralları. -->
 <script src="assets/js/booking-engine.js"></script>
 <script src="assets/js/account-engine.js"></script>

@@ -199,6 +199,22 @@ function cardDayKey(iso, bugun) {
   return ({ 5: 'cuma', 6: 'cumartesi', 0: 'pazar' })[gun.getDay()] || '';
 }
 
+/* Kartın indirimi: liste fiyatı ürünün kendi fonksiyonundan (veri
+   kapısının özeti, ürün sayfasındaki üstü çizili fiyatla aynı kaynak);
+   yüzde de ürün sayfasındakiyle aynı yuvarlama (tour-data.js,
+   discountPercent). İndirim yoksa kart olduğu gibi kalır. */
+function katalogIndirimEkle(kayit, kart) {
+  const kapi = katalogKapi();
+  const ozet = kapi && kapi.ozet ? kapi.ozet(kayit) : null;
+  const liste = ozet ? Number(ozet.listPrice) || 0 : 0;
+  const guncel = Number(kart.priceMain) || 0;
+  if (liste > guncel && guncel > 0) {
+    kart.listPrice = String(liste);
+    kart.discountPct = Math.round(((liste - guncel) / liste) * 100);
+  }
+  return kart;
+}
+
 /* ---------------- tur kartı ---------------- */
 function tourCatalogCard(tur, bugun) {
   const kart = tur.card || {};
@@ -207,7 +223,7 @@ function tourCatalogCard(tur, bugun) {
   /* Kalkış takvimi kayıttan: kartta yazan tarih, tur sayfasındaki
      takvimin ilk seçilebilir günüyle aynı gün. */
   const kalkis = kSonrakiKalkis(bugun || new Date(), p.departureDays, 1, p.leadDays)[0] || '';
-  return {
+  return katalogIndirimEkle(tur, {
     img: kart.img,
     href: katalogBag('tur', tur),
     /* Örnek özet kayıt: sayfası özet (detail-shell.js). */
@@ -226,7 +242,7 @@ function tourCatalogCard(tur, bugun) {
     inDays: cardDaysUntil(kalkis, bugun),
     dayKey: cardDayKey(kalkis, bugun),
     sponsored: !!kart.sponsored
-  };
+  });
 }
 
 /* ---------------- otel kartı ----------------
@@ -248,7 +264,7 @@ function hotelCatalogCard(otel, bugun) {
   const bas = kAsDate(bugun) || new Date();
   const ilkGiris = kToISODate(new Date(bas.getFullYear(), bas.getMonth(),
     bas.getDate() + Math.max(0, Math.round(Number(p.leadDays) || 0))));
-  return {
+  return katalogIndirimEkle(otel, {
     img: kart.img,
     href: katalogBag('otel', otel),
     ornek: !!otel.sample,
@@ -263,7 +279,7 @@ function hotelCatalogCard(otel, bugun) {
     currency: otel.currency || 'TRY',
     unit: '/gece',
     sponsored: !!kart.sponsored
-  };
+  });
 }
 
 /* ---------------- aktivite kartı ----------------
@@ -283,7 +299,7 @@ function activityCatalogCard(aktivite, bugun) {
   const bas = kAsDate(bugun) || new Date();
   const ilkGun = kToISODate(new Date(bas.getFullYear(), bas.getMonth(),
     bas.getDate() + Math.max(0, Math.round(Number(p.leadDays) || 0))));
-  return {
+  return katalogIndirimEkle(aktivite, {
     img: kart.img,
     href: katalogBag('aktivite', aktivite),
     ornek: !!aktivite.sample,
@@ -297,7 +313,7 @@ function activityCatalogCard(aktivite, bugun) {
     priceMain: String(fiyatFn(aktivite)),
     currency: aktivite.currency || 'TRY',
     sponsored: !!kart.sponsored
-  };
+  });
 }
 
 /* ---------------- etkinlik kartı ----------------
@@ -318,7 +334,7 @@ function eventCatalogCard(etkinlik, bugun) {
 
   const kart = etkinlik.card || {};
   const puan = katalogPuan(etkinlik, false);
-  return {
+  return katalogIndirimEkle(etkinlik, {
     img: kart.img,
     href: katalogBag('etkinlik', etkinlik),
     ornek: !!etkinlik.sample,
@@ -334,7 +350,7 @@ function eventCatalogCard(etkinlik, bugun) {
     inDays: cardDaysUntil(sonraki.date, bugun),
     dayKey: cardDayKey(sonraki.date, bugun),
     sponsored: !!kart.sponsored
-  };
+  });
 }
 
 /* ---------------- mekân kartı ----------------
@@ -358,7 +374,7 @@ function venueCatalogCard(mekan, bugun) {
   const an = (bugun instanceof Date) ? bugun : (kAsDate(bugun) || new Date());
   const durum = durumFn ? durumFn(mekan, an) : { open: false, text: '' };
 
-  return {
+  return katalogIndirimEkle(mekan, {
     img: kart.img,
     href: katalogBag('mekan', mekan),
     ornek: !!mekan.sample,
@@ -376,7 +392,7 @@ function venueCatalogCard(mekan, bugun) {
     area: mekan.area,
     hours: durum.open ? ('Açık · ' + durum.text) : (durum.text || 'Kapalı'),
     open: !!durum.open
-  };
+  });
 }
 
 /* ---------------- kaynak kütüğü ----------------
@@ -557,6 +573,12 @@ function catalogBenzerMarkup(kayit, secenek) {
          event: 'Benzer etkinlikler', venue: 'Benzer mekânlar' })[[...tipler][0]]
     : 'Bunlar da ilgini çekebilir';
   const para = (k) => ({ TRY: 'TL', EUR: 'EUR', USD: 'USD' })[k.currency || 'TRY'] || k.currency;
+  /* Kartlardaki biçim (app.js, kartFiyati): binlik ayırıcı, tercih
+     edilen para birimi; app.js yüklü değilse ürünün kendi para birimi. */
+  const fiyatMetni = (tutar, k) => {
+    if (typeof kartFiyati === 'function') { const f = kartFiyati(tutar, k.currency); return (f.yaklasik ? '≈ ' : '') + f.sayi + ' ' + f.birim; }
+    return Math.round(Number(tutar) || 0).toLocaleString('tr-TR') + ' ' + para(k);
+  };
   const gorsel = typeof o.gorsel === 'function' ? o.gorsel : (() => '');
   return `
       <div class="tour-block-head"><h2>${baslik}</h2><p>Aynı kategoride, temada ya da bölgede.</p></div>
@@ -570,7 +592,7 @@ function catalogBenzerMarkup(kayit, secenek) {
             <span class="tour-similar-body">
               <strong>${k.title}</strong>
               <span class="tour-similar-meta">${k.meta1 || ''}</span>
-              <span class="tour-similar-price">${k.priceMain} ${para(k)}<span>${k.unit || ''}</span></span>
+              <span class="tour-similar-price">${k.listPrice ? `<s>${fiyatMetni(k.listPrice, k)}</s> ` : ''}${fiyatMetni(k.priceMain, k)}<span>${k.unit || ''}</span></span>
             </span>
           </a>`).join('')}
       </div>`;

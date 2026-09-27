@@ -81,8 +81,14 @@ describe('ortak çerçeve tek kaynak', () => {
   it('alt klasördeki sayfalar için görsel yolu data-root ile önekleniyor', () => {
     /* Çerçeve koke göre yazılmış; /tur/<slug>/ iki dizin içeride. */
     expect(cerceve).toContain('data-root');
-    /* Görseller ve çerçevedeki sayfa bağları (hesap paneli, yardım). */
-    expect(cerceve).toMatch(/replace\(\/\(src\|href\)="\(assets\|hesabim\|kurumsal\)\\\//);
+    /* Görseller ve çerçevedeki bütün göreli sayfa bağları (menü,
+       hesap paneli, yardım) kökten; tam adres, # ve / dokunulmuyor. */
+    const onekle = menuCerceve.siteCerceveOneki;
+    expect(onekle('<a href="./" class="logo"><img src="assets/img/logo.png"><a href="turlar/ege-turlari/">', '../../'))
+      .toBe('<a href="../../" class="logo"><img src="../../assets/img/logo.png"><a href="../../turlar/ege-turlari/">');
+    expect(onekle('<a href="https://wa.me/1"><a href="#"><a href="tel:+90"><a href="/x">', '../../'))
+      .toBe('<a href="https://wa.me/1"><a href="#"><a href="tel:+90"><a href="/x">');
+    expect(onekle('<a href="turlar/">', '')).toBe('<a href="turlar/">');
     turSayfalari.forEach(([slug, html]) => {
       expect(html, slug + ' kökünü bildirmiyor').toContain('data-root="../../"');
     });
@@ -143,26 +149,46 @@ function menuDugumleri(liste = TAXONOMY_MENU, out = []) {
 }
 
 describe('ana menü', () => {
-  it('masaüstü satırı menüdeki her adrese bağ veriyor', () => {
-    const html = menuCerceve.siteMenuMasaustu(TAXONOMY_MENU, '', '', TAXONOMY_TYPES);
-    menuDugumleri().forEach(d => expect(html, d.label).toContain('href="' + d.path + '/"'));
-    /* Üst satırda her bölüm bir kez. */
-    expect((html.match(/class="site-nav-item/g) || []).length).toBe(TAXONOMY_MENU.length);
-  });
+  const anaMenu = TAXONOMY_MENU.filter(d => d.grup !== 'destek');
+  const destek = TAXONOMY_MENU.filter(d => d.grup === 'destek');
 
-  it('içerik sayfasında bağlar kökten (../../)', () => {
-    const html = menuCerceve.siteMenuMasaustu(TAXONOMY_MENU, '../../', '', TAXONOMY_TYPES);
-    expect(html).toContain('href="../../turlar/ege-turlari/"');
-    expect(html).not.toMatch(/href="turlar\//);
-  });
-
-  it('mobil ağaç aynı adresleri taşıyor; "Tüm …" yalnızca eksikse', () => {
-    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', '');
-    menuDugumleri().forEach(d => expect(html, d.label).toContain('href="' + d.path + '/"'));
+  it('sol menü ağacı ana menüdeki her adrese bağ veriyor; "Tüm …" yalnızca eksikse', () => {
+    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', '', TAXONOMY_TYPES);
+    menuDugumleri(anaMenu).forEach(d => expect(html, d.label).toContain('href="' + d.path + '/"'));
     /* Turlar'ın çocuklarında kendi sayfası yok: "Tüm Turlar" ekleniyor.
        Oteller'in çocuklarında "Tüm Oteller" zaten var: ikinci kez yok. */
     expect(html).toContain('>Tüm Turlar<');
     expect((html.match(/href="oteller\/"/g) || []).length).toBe(1);
+  });
+
+  it('üst satırlar ikonlu düğme; her biri bir kez', () => {
+    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', '', TAXONOMY_TYPES);
+    expect((html.match(/class="smt-top/g) || []).length).toBe(anaMenu.length);
+    expect((html.match(/<span class="icon">/g) || []).length).toBe(anaMenu.length);
+  });
+
+  it('Blog360 ve Kurumsal ana menüde değil, Yardım & Destek bölümünde', () => {
+    expect(destek.map(d => d.label)).toEqual(['Blog360', 'Kurumsal']);
+    const agac = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', '', TAXONOMY_TYPES);
+    const html = menuCerceve.siteMenuDestek(TAXONOMY_MENU, '', '');
+    destek.forEach(d => {
+      expect(agac, d.label).not.toContain('href="' + d.path + '/"');
+      expect(html, d.label).toContain('href="' + d.path + '/"');
+      expect(html).toContain('>' + d.label + '</a>');
+    });
+    expect(html).toMatch(/class="sidebar-link"/);
+  });
+
+  it('içerik sayfasında bağlar kökten (../../)', () => {
+    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '../../', '', TAXONOMY_TYPES);
+    expect(html).toContain('href="../../turlar/ege-turlari/"');
+    expect(html).not.toMatch(/href="turlar\//);
+    expect(menuCerceve.siteMenuDestek(TAXONOMY_MENU, '../../', '')).toContain('href="../../blog/"');
+  });
+
+  it('bulunulan bölümün düğmesi işaretli', () => {
+    const html = menuCerceve.siteMenuAgac(TAXONOMY_MENU, '', 'turlar/ege-turlari', TAXONOMY_TYPES);
+    expect(html).toMatch(/<details class="smt-group smt-level-0 is-current"><summary class="smt-top">.*?Turlar</);
   });
 
   it('bulunulan bölüm: liste sayfası da ürün sayfası da kendi bölümünde', () => {
@@ -177,9 +203,27 @@ describe('ana menü', () => {
     menuDugumleri().forEach(d => expect(menuKapi.adres(d.path), d.path).toBeTruthy());
   });
 
-  it('başlıkta menünün yeri var; çekmecede mobil ağaç', () => {
-    expect(cerceve).toContain('id="siteNav"');
-    expect(anasayfa).toContain('data-site-menu');
+  it('başlıkta ayrı menü satırı yok; menü sol menüde, her sayfada', () => {
+    expect(cerceve).not.toContain('id="siteNav"');
+    expect(cerceve).toContain('data-site-menu');
+    expect(cerceve).toContain('data-site-destek');
+    expect(cerceve).toContain('id="mobileDrawer"');
+    expect(cerceve).toContain('id="headerMenuBtn"');
+    expect(anasayfa).not.toContain('id="mobileDrawer"');
+    expect(app).toContain("'headerMenuBtn'");
+  });
+
+  it('sol menüde Kategoriler bölümü yok', () => {
+    expect(cerceve).not.toContain('<h4>Kategoriler</h4>');
+    expect(cerceve).not.toContain('sidebar-cat-grid');
+  });
+
+  it('alt satır: misafirde giriş, üyede çıkış; yanında WhatsApp, Facebook, Instagram', () => {
+    const satir = cerceve.slice(cerceve.indexOf('<div class="drawer-footer-row">'));
+    expect(satir).toMatch(/id="drawerAuthBtn" data-hesap-misafir/);
+    expect(satir).toMatch(/data-hesap-cikis data-hesap-uye hidden>[\s\S]*?Çıkış Yap<\/button>/);
+    ['data-destek-whatsapp', 'data-sosyal="facebook"', 'data-sosyal="instagram"'].forEach(x => expect(satir).toContain(x));
+    expect(app).toContain("closest('[data-hesap-cikis]')");
   });
 
   it('logo anasayfaya gidiyor', () => {

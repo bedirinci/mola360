@@ -360,8 +360,10 @@ const TAXONOMY_MENU = [
   ] },
   { label: 'Yeni Eklenenler', path: 'yeni-eklenenler' },
   { label: 'Bu Hafta',        path: 'bu-hafta' },
-  { label: 'Blog / Gezi Rehberi', path: 'blog' },
-  { label: 'Kurumsal', path: 'kurumsal/hakkimizda', children: [
+  /* grup: 'destek' satırları sol menüde "Yardım & Destek" bölümünde
+     (site-chrome.js, siteMenuDestek); ana menü ağacında yer almıyor. */
+  { label: 'Blog360', path: 'blog', grup: 'destek' },
+  { label: 'Kurumsal', path: 'kurumsal/hakkimizda', grup: 'destek', children: [
     { label: 'Hakkımızda',         path: 'kurumsal/hakkimizda' },
     { label: 'İletişim',           path: 'kurumsal/iletisim' },
     { label: 'Yardım Merkezi',     path: 'kurumsal/yardim' },

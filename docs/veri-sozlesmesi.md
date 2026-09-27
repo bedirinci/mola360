@@ -352,12 +352,14 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex` | Sunucu `<head>`'e yazar |
 | `yuzeyTanimlari(bugun)` | senkron | Süzgeç alanları ve seçenekleri (bölüm 12) | Önbellekli uç nokta |
 | `listeSatiri(kayit, bugun)` | senkron | Ürünün süzülen/sıralanan nitelikleri (arama dizininin satırı) | Arama dizini |
-| `liste({ temel, durum, bugun })` | **Promise** | `{ toplam, satirlar, dahaVar, yuzeyler, etiketler }` | `GET /api/liste?…` |
+| `liste({ temel, durum, bugun, tarihAraligi? })` | **Promise** | `{ toplam, satirlar, dahaVar, yuzeyler, etiketler }`; `tarihAraligi { start, end }` sabit tarihli ürünü o aralıkta tarihi olana indirir (anasayfa süzgeci) | `GET /api/liste?…` |
 | `listeYolu(kayit)` | senkron | Ürünün liste sayfası (`turlar/gunubirlik-turlar`): kırıntının orta halkası | — |
 | `hizliAra(q, bugun, adet)` | senkron | Başlıktaki kutunun anlık sonuçları (ürün kayıtları, alakaya göre) | `GET /api/ara?q=` |
 | `aramaModeli(q)`, `aramaSayfalari(q)` | senkron | Arama sayfasının başlığı/temel süzgeci; adı eşleşen liste sayfaları | — |
 | `haftaAjandasi(bugun, gun)` | senkron | Bu Hafta: gün gün tur kalkışları ve etkinlik temsilleri | Ajanda uç noktası |
 | `kur(paraBirimi)`, `tlKarsiligi(tutar, paraBirimi)` | senkron | Günün kuru `{ oran, tarih, kaynak }`; TL karşılığı (yukarı yuvarlı) | Sunucu sayfaya gömer (banka kuru) |
+| `tercihler()`, `tercihKaydet({ dil, para })`, `diller()`, `paraBirimleri()` | senkron | Ziyaretçinin dil ve para birimi tercihi (bu tarayıcıda); yalnızca hazır dil ve kuru bilinen para birimi kabul edilir | Hesaba bağlı tercih |
+| `fiyatGosterimi(tutar, paraBirimi, hedef?)` | senkron | `{ tutar, kod, kisa, sembol, yaklasik }`: tercih edilen birimde gösterim; çevrildiyse `yaklasik: true`. Tahsilat her zaman TL | — |
 | `benzerler(kayit, bugun, adet)` | senkron | Kurala dayalı benzer ürünler (ortak kategori, tema, bölge) | Satış/görüntülenme verisiyle sunucuda |
 | `musaitlik(type, slug, { from, to })` | **Promise** | Bölüm 6 | `GET /api/…/musaitlik` |
 | `kampanyalar(bugun)` | senkron | Yürürlükteki kampanyalar (+ `kalanGun`) | Kampanya tablosu |
@@ -392,6 +394,44 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 7. adım: arayüz düzeni
+
+- **Menü:** masaüstünde başlığın altındaki menü satırı kaldırıldı; ana
+  menü sol menüde. Sol menü (çekmece) artık ortak çerçevede
+  (`site-chrome.js`), yani her sayfada var: anasayfada sabit sol menü,
+  diğer sayfalarda başlıktaki menü düğmesiyle açılan panel, mobilde
+  çekmece. "Kategoriler" bölümü kaldırıldı; menünün üst satırları ikonlu
+  düğme, alt sayfalar düğmenin altında açılıyor.
+- **Yardım & Destek:** Bize Ulaşın, İptal ve İade, Canlı Destek, Blog360,
+  Kurumsal ve dil/para düğmesi tek bölümde. Blog360 ve Kurumsal
+  taksonomide `grup: 'destek'` ile işaretli; ana menü ağacına girmiyor.
+- **Alt satır:** misafirde "Giriş Yap / Üye Ol", oturum açıkken "Çıkış
+  Yap"; yanında WhatsApp, Facebook, Instagram. Sosyal hesap adresleri
+  `CONTACT.social` (home-blocks.js); boşken düğme pasif ve "yakında
+  eklenecek" diyor.
+- **Dil ve para birimi:** "TR · ₺" alt çekmece açıyor
+  (`MolaVeri.tercihler / tercihKaydet / fiyatGosterimi`). Kartlardaki
+  fiyat seçilen para biriminde yaklaşık karşılık (≈); ürün sayfası ve
+  ödeme TL. Yalnızca kuru bilinen para birimi seçilebiliyor; İngilizce
+  çeviri gelene kadar pasif.
+- **Kartlar:** indirimli üründe "%N indirim" etiketi, üstü çizili liste
+  fiyatı ve yeni fiyat (liste fiyatı ürünün kendi kaydından,
+  `catalog.js/katalogIndirimEkle`). Fiyat binlik ayırıcılı ve kuruşsuz
+  ("1.290 TL"). İşlevsiz sepet düğmesi yerine ürüne giden ok.
+- **Anasayfa süzgeçleri:** seçenekler ve sonuçlar liste sayfalarıyla
+  aynı motordan (`MolaVeri.liste`); sonuçlar aynı sayfada, süzgeç
+  çubuğunun altında. Elle yazılmış "248 sonuç" kaldırıldı; sayı yalnızca
+  süzgeç seçiliyken ve gerçek. Tarih aralığı sabit tarihli ürünü
+  (tur kalkışı, etkinlik temsili) eliyor; her gün satılan ürün her
+  aralığa uyuyor.
+- **Paket tur sözleşmesi:** konaklamalı turlarda (`rezPaketTurMu`)
+  ödeme adımında üçüncü belge olarak, rezervasyonun bilgileriyle.
+- **Açılış ekranı** yalnızca ilk girişte (`mola360.acilisGoruldu`).
+- **Düzeltmeler:** Hesabım'da bölüm değişince sayfa aşağı kaymıyor;
+  dokunmatik ekranda arama ve sıralama kutuları 16 px (iOS odakta
+  sayfayı yakınlaştırıyordu); ödeme ekranındaki belgelerde yinelenen
+  bölüm kimlikleri önekli.
 
 ### 6. adım: kurumsal ve yasal sayfalar
 
@@ -828,6 +868,10 @@ panelinden düzenlenecek; biçim aynı.
   geçmelidir.** Cayma hakkı istisnası (Mesafeli Sözleşmeler
   Yönetmeliği md. 15), paket tur hükümleri, KVKK aydınlatma içeriği ve
   tüketici hakem heyeti bilgisi genel çerçevedir.
+- **Paket tur sözleşmesi** (`paket-tur-sozlesmesi`) konaklamalı turlarda
+  mesafeli satış sözleşmesine ek olarak onaylatılır: içerik, fiyatın
+  sonradan artırılmaması, esaslı değişiklikte dönme hakkı, düzenleyicinin
+  iptali, 7 gün önceden devir, sorumluluk, yardım, formaliteler.
 
 ### Yayından önce gerekenler
 
@@ -838,5 +882,6 @@ panelinden düzenlenecek; biçim aynı.
 | KEP adresi ve destek e-postası | `KRM_SIRKET.kep`, `.eposta` |
 | ETBİS kaydı | `KRM_SIRKET.etbisNo` |
 | Gerçek telefon ve WhatsApp numarası | `home-blocks.js` `CONTACT` (ve `yerTutucu: false`) |
-| Hukukçu incelemesi | Kullanım Koşulları, KVKK, Ön Bilgilendirme, Mesafeli Satış, İptal ve İade |
+| Sosyal medya hesap adresleri | `home-blocks.js` `CONTACT.social` |
+| Hukukçu incelemesi | Kullanım Koşulları, KVKK, Ön Bilgilendirme, Mesafeli Satış, Paket Tur, İptal ve İade |
 

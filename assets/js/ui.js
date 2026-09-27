@@ -3,6 +3,12 @@
   const loader = document.getElementById('siteLoader');
   if (!loader) return;
 
+  /* Yalnızca ilk girişte: daha önce görüldüyse index.html'deki satır içi
+     betik öğeyi zaten kaldırdı. Buraya geldiysek ilk giriş; bayrak hemen
+     yazılır ki açılış sırasında yenilenen sayfa ekranı tekrar göstermesin.
+     Depo kapalıysa (gizli pencere) ekran her girişte gösterilir. */
+  try { localStorage.setItem('mola360.acilisGoruldu', '1'); } catch (e) { /* depo yok */ }
+
   // Loader tam 3 saniye ekranda kalır; ardından kısa bir fade-out ile kapanır.
   const hideLoader = () => {
     loader.classList.add('is-hidden');

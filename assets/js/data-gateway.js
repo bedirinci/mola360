@@ -988,13 +988,23 @@ function kapiListeSorgusu(sorgu) {
     const motor = kapiFn('suzListe', KAPI_MOTOR, typeof suzListe !== 'undefined' ? suzListe : null);
     if (!motor) return null;
     const q = s.temel && s.temel.q;
-    const satirlar = kapiListele(s.temel || {}, s.bugun)
+    let satirlar = kapiListele(s.temel || {}, s.bugun)
       .map(k => {
         const satir = kapiListeSatiri(k, s.bugun);
         /* Arama sonucunda "en alakalı" sıralamasının puanı. */
         if (satir && q) satir.alaka = kapiAramaPuani(k, q);
         return satir;
       }).filter(Boolean);
+    /* Tarih aralığı (anasayfa süzgeci): sabit tarihli ürün (tur kalkışı,
+       etkinlik temsili) aralıkta bir tarihi varsa; her gün satılan ürün
+       (otel, aktivite, mekân) her aralığa uyar. */
+    const aralik = s.tarihAraligi;
+    if (aralik && aralik.start && aralik.end) {
+      satirlar = satirlar.filter(satir => {
+        const tarihler = kapiSabitTarihler(satir.kayit, satir.type, s.bugun);
+        return tarihler === null || tarihler.some(d => d >= aralik.start && d <= aralik.end);
+      });
+    }
     return motor(satirlar, s.alanlar || kapiYuzeyTanimlari(s.bugun), s.durum || {});
   });
 }
@@ -1085,6 +1095,59 @@ function kapiTLKarsiligi(tutar, paraBirimi) {
   const t = Number(tutar);
   if (!k || !Number.isFinite(t)) return null;
   return (paraBirimi || 'TRY') === 'TRY' ? t : Math.ceil(t * k.oran);
+}
+
+/* ---------------- dil ve para birimi tercihi ----------------
+   Ziyaretçinin seçtiği para birimi kartlarda YAKLAŞIK karşılık olarak
+   gösteriliyor (≈); ürünün kendi fiyatı ve tahsilat değişmiyor: ödeme
+   her zaman TL, kur rezervasyonda sabitleniyor. Yalnızca kuru bilinen
+   para birimleri seçilebiliyor. Dil: bugün yalnızca Türkçe; diğerleri
+   çeviri gelince açılacak (hazir: false). */
+const KAPI_PARA_BIRIMLERI = [
+  { kod: 'TRY', ad: 'Türk Lirası', sembol: '₺', kisa: 'TL' },
+  { kod: 'EUR', ad: 'Euro', sembol: '€', kisa: 'EUR' },
+  { kod: 'USD', ad: 'ABD Doları', sembol: '$', kisa: 'USD' }
+];
+const KAPI_DILLER = [
+  { kod: 'tr', ad: 'Türkçe', etiket: 'TR', hazir: true },
+  { kod: 'en', ad: 'English', etiket: 'EN', hazir: false }
+];
+function kapiParaBirimleri() {
+  return KAPI_PARA_BIRIMLERI.filter(p => !!kapiKur(p.kod));
+}
+function kapiTercihler() {
+  const kayit = kapiDepoOku(KAPI_DEPO.tercihler, null) || {};
+  const dil = KAPI_DILLER.find(d => d.kod === kayit.dil && d.hazir) || KAPI_DILLER[0];
+  const para = kapiParaBirimleri().find(p => p.kod === kayit.para) || KAPI_PARA_BIRIMLERI[0];
+  return { dil: dil.kod, para: para.kod, etiket: dil.etiket + ' · ' + para.sembol };
+}
+function kapiTercihKaydet(yeni) {
+  const t = yeni || {};
+  if (t.dil && !KAPI_DILLER.some(d => d.kod === t.dil && d.hazir)) return { tamam: false, mesaj: 'Bu dil henüz hazır değil.' };
+  if (t.para && !kapiParaBirimleri().some(p => p.kod === t.para)) return { tamam: false, mesaj: 'Bu para biriminin kuru yok.' };
+  const onceki = kapiTercihler();
+  const kayit = { dil: t.dil || onceki.dil, para: t.para || onceki.para };
+  kapiDepoYaz(KAPI_DEPO.tercihler, kayit);
+  const sonuc = kapiTercihler();
+  kapiHesapOlay('tercih', sonuc);
+  return { tamam: true, tercihler: sonuc, degisti: sonuc.para !== onceki.para || sonuc.dil !== onceki.dil };
+}
+/* Tutarı tercih edilen para biriminde göster. Aynı para biriminde tutar
+   aynen; farklıysa TL üzerinden çevrilip yuvarlanır ve yaklasik: true
+   (TL'ye çeviri tahsilattaki gibi yukarı yuvarlı). Kur yoksa ürünün
+   kendi para birimi. */
+function kapiFiyatGosterimi(tutar, paraBirimi, hedef) {
+  const kaynak = paraBirimi || 'TRY';
+  const hedefKod = hedef || kapiTercihler().para;
+  const t = Number(tutar);
+  const bilgi = (kod) => KAPI_PARA_BIRIMLERI.find(p => p.kod === kod) || { kod, sembol: kod, kisa: kod };
+  if (!Number.isFinite(t)) return null;
+  if (hedefKod === kaynak) return { tutar: t, kod: kaynak, kisa: bilgi(kaynak).kisa, sembol: bilgi(kaynak).sembol, yaklasik: false };
+  const tl = kapiTLKarsiligi(t, kaynak);
+  const k = kapiKur(hedefKod);
+  if (tl === null || !k) return { tutar: t, kod: kaynak, kisa: bilgi(kaynak).kisa, sembol: bilgi(kaynak).sembol, yaklasik: false };
+  const tutarHedef = hedefKod === 'TRY' ? tl : Math.round(tl / k.oran);
+  return { tutar: tutarHedef, kod: hedefKod, kisa: bilgi(hedefKod).kisa, sembol: bilgi(hedefKod).sembol, yaklasik: true };
 }
 
 /* ---------------- canlı sorgu: kontenjan ----------------
@@ -1239,7 +1302,8 @@ const KAPI_DEPO = {
   favoriler: 'mola360.favoriler',
   bildirim: 'mola360.bildirimDurumu',
   yorumlar: 'mola360.yorumlar',
-  talepler: 'mola360.talepler'
+  talepler: 'mola360.talepler',
+  tercihler: 'mola360.tercihler'
 };
 const KAPI_BELLEK = {};
 function kapiDepoOku(anahtar, varsayilan) {
@@ -1669,6 +1733,11 @@ const MolaVeri = {
   koleksiyonUrunleri: (slug, bugun) => kapiListele({ collection: slug }, bugun),
   seo: kapiSeo,
   kur: kapiKur,
+  paraBirimleri: kapiParaBirimleri,
+  diller: () => KAPI_DILLER.slice(),
+  tercihler: kapiTercihler,
+  tercihKaydet: kapiTercihKaydet,
+  fiyatGosterimi: kapiFiyatGosterimi,
   tlKarsiligi: kapiTLKarsiligi,
   /* liste sayfaları (sayfa yükü) */
   adres: kapiAdres,

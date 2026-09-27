@@ -17,6 +17,210 @@
 
 (function () {
   const SITE_CHROME_MARKUP = `
+  <!-- Ana menü (çekmece): TEK KAYNAK burası; her sayfada var. Mobilde
+       başlıktaki menü düğmesiyle, masaüstünde anasayfada sabit sol menü
+       olarak (app.js kopyalıyor), diğer sayfalarda başlıktaki menü
+       düğmesiyle açılan sol panel olarak görünüyor. -->
+  <div class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></div>
+  <aside class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Ana menü">
+    <div class="sidebar-scroll drawer-sidebar-scroll">
+
+      <!-- Mobil profil kartı: profil ekranındaki üst bölümle aynı görsel dil -->
+      <!-- Profil kartları hesaptan dolduruluyor (app.js, MolaVeri.hesapPaneli):
+           sayılar, puan ve seviye gerçek; misafirde giriş çağrısı. Burada
+           elle yazılmış sayı yok. -->
+      <div class="mobile-profile-card" id="drawerProfileCard">
+        <div class="mobile-profile-hero">
+          <div class="mobile-profile-top">
+            <div class="mobile-profile-avatar" id="drawerProfileAvatar" data-hesap-avatar></div>
+            <div class="mobile-profile-main">
+              <strong id="drawerProfileName"><span data-hesap-ad>Misafir</span></strong>
+              <div class="mobile-profile-badges">
+                <span class="mobile-profile-badge gold" data-hesap-seviye-rozet hidden><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span><span data-hesap-seviye-adi></span></span>
+              </div>
+            </div>
+            <div class="mobile-profile-actions" data-hesap-uye hidden>
+              <a class="mobile-profile-edit" href="hesabim/?bolum=bilgilerim" aria-label="Kişisel bilgilerim"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></span></a>
+              <a class="mobile-profile-edit" href="hesabim/?bolum=ayarlar" aria-label="Ayarlar"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></span></a>
+            </div>
+          </div>
+        </div>
+        <div class="mobile-profile-guest" data-hesap-misafir>
+          <p>Rezervasyonların, biletlerin ve Molapuanın tek yerde. Yeni üyelere ilk rezervasyonda %15 indirim.</p>
+        </div>
+        <div class="mobile-profile-stats" data-hesap-uye hidden>
+          <a href="hesabim/?bolum=rezervasyonlarim"><strong data-hesap-sayi="rezervasyon">0</strong><span>Rezervasyon</span></a>
+          <a href="hesabim/?bolum=biletlerim"><strong data-hesap-sayi="yaklasan">0</strong><span>Yaklaşan</span></a>
+          <a href="hesabim/?bolum=favorilerim"><strong data-hesap-sayi="favori">0</strong><span>Favorilerim</span></a>
+          <a href="hesabim/?bolum=kuponlarim"><strong data-hesap-sayi="kupon">0</strong><span>Kuponlarım</span></a>
+        </div>
+        <a class="mobile-profile-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
+          <div class="mobile-profile-loyalty-head"><strong data-hesap-seviye-metni></strong><span data-hesap-sonraki></span></div>
+          <div class="mobile-profile-progress"><span data-hesap-ilerleme></span></div>
+          <div class="mobile-profile-loyalty-foot"><strong data-hesap-puan>0</strong><span>Molapuan</span><span class="reward" data-hesap-bekleyen></span></div>
+        </a>
+      </div>
+
+      <div class="sidebar-user" id="drawerUserCard">
+        <div class="sidebar-user-top">
+          <span class="sidebar-user-avatar" id="drawerUserAvatar" data-hesap-avatar></span>
+          <span class="sidebar-user-info">
+            <strong id="drawerUserName" data-hesap-ad>Misafir</strong>
+            <a href="hesabim/" data-hesap-uye hidden>Hesabıma git</a>
+            <button type="button" class="sidebar-user-login" data-hesap-giris data-hesap-misafir>Giriş yap / Üye ol</button>
+          </span>
+        </div>
+        <a class="sidebar-user-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
+          <span class="sidebar-user-loyalty-icon"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span></span>
+          <div class="sidebar-user-loyalty-info">
+            <strong><span data-hesap-puan>0</span> Molapuan</strong>
+            <span data-hesap-sonraki></span>
+            <div class="sidebar-user-loyalty-bar"><div class="sidebar-user-loyalty-bar-fill" data-hesap-ilerleme></div></div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Birincil menü: mobildeki alt sekme çubuğuyla aynı 4 ana bölüm -->
+      <nav class="sidebar-primary-nav" aria-label="Ana bölümler">
+        <a href="./" data-sidebar-tab="explore"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="15 9 13 13 9 15 11 11"></polygon></svg></span>Keşfet</a>
+        <a href="hesabim/?bolum=favorilerim" data-sidebar-tab="favorites"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.9c0 5.5-8.8 10.2-8.8 10.2S3.2 14.4 3.2 8.9A4.6 4.6 0 0 1 12 6.5a4.6 4.6 0 0 1 8.8 2.4Z"></path></svg></span>Favorilerim</a>
+        <a href="hesabim/?bolum=biletlerim" data-sidebar-tab="tickets"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4.4v2A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4.4z"></path><line x1="9.5" y1="6.5" x2="9.5" y2="19" stroke-dasharray="2.2 2.2"></line></svg></span>Biletlerim</a>
+        <a href="hesabim/" data-sidebar-tab="account"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path></svg></span>Hesabım</a>
+      </nav>
+
+      <!-- Kampanya slider'ı: birincil menü ile kategoriler arasında, yatay kaydırmalı kampanya kartları -->
+      <div class="drawer-promo-slider">
+        <!-- Kartlar yürürlükteki kampanya kurallarının (booking-engine.js,
+             REZ_KAMPANYALAR) aynısı; kuralı olmayan indirim yazılmıyor
+             (tests/rezervasyon.test.js). -->
+        <div class="drawer-promo-track" id="drawerPromoTrack">
+          <a href="turlar/kapadokya-turlari/" class="drawer-promo-card">
+            <img loading="lazy" class="drawer-promo-bg" src="https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?auto=format&fit=crop&w=508&h=244&q=75" alt="Kapadokya balon turu görseli">
+            <div class="drawer-promo-content">
+              <span class="drawer-promo-badge">Erken rezervasyon</span>
+              <div>
+                <div class="drawer-promo-title">Kapadokya turlarında</div>
+                <div class="drawer-promo-bottom">
+                  <span class="drawer-promo-discount"><span class="num">500 TL</span><span class="unit">indirim</span></span>
+                  <span class="drawer-promo-cta">İncele</span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a href="oteller/" class="drawer-promo-card">
+            <img loading="lazy" class="drawer-promo-bg" src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=508&h=244&q=75" alt="Ferah bir otel odası ve yapılmış yatak">
+            <div class="drawer-promo-content">
+              <span class="drawer-promo-badge">Hafta sonu</span>
+              <div>
+                <div class="drawer-promo-title">Otellerde 2 gece kal</div>
+                <div class="drawer-promo-bottom">
+                  <span class="drawer-promo-discount"><span class="num">1 gece</span><span class="unit">bizden</span></span>
+                  <span class="drawer-promo-cta">İncele</span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a href="hesabim/" class="drawer-promo-card">
+            <img loading="lazy" class="drawer-promo-bg" src="https://images.unsplash.com/photo-1705229643252-2e2694a193b0?auto=format&fit=crop&w=508&h=244&q=75" alt="Ayder Yaylası'nda sisli yeşil tepeler">
+            <div class="drawer-promo-content">
+              <span class="drawer-promo-badge">Yeni üyelere</span>
+              <div>
+                <div class="drawer-promo-title">İlk rezervasyonda</div>
+                <div class="drawer-promo-bottom">
+                  <span class="drawer-promo-discount"><span class="num">%15</span><span class="unit">indirim</span></span>
+                  <span class="drawer-promo-cta">İncele</span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a href="kampanyalar/" class="drawer-promo-card">
+            <img loading="lazy" class="drawer-promo-bg" src="https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=508&h=244&q=75" alt="Ege'de mavi bir koyda demirlemiş gezi teknesi">
+            <div class="drawer-promo-content">
+              <span class="drawer-promo-badge">Kampanyalar</span>
+              <div>
+                <div class="drawer-promo-title">Bütün kampanyalar</div>
+                <div class="drawer-promo-bottom">
+                  <span class="drawer-promo-discount"><span class="num">Tümü</span><span class="unit">ve koşulları</span></span>
+                  <span class="drawer-promo-cta">İncele</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Ana menü: taksonomideki ağaç (TAXONOMY_MENU), ikonlu düğmeler;
+           alt sayfalar düğmenin altında açılıyor. İçeriği siteMenuDoldur
+           basıyor. Masaüstünde başlıkta ayrı bir menü satırı yok. -->
+      <div class="sidebar-section sidebar-section-menu">
+        <h4>Menü</h4>
+        <nav class="site-menu-tree" data-site-menu aria-label="Tüm kategoriler"></nav>
+      </div>
+
+      <div class="sidebar-section">
+        <h4>Popüler Rotalar</h4>
+        <div class="sidebar-route-list sidebar-route-grid">
+          <a href="turlar/karadeniz-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img loading="lazy" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Karadeniz Rüyası</strong><span>Yayla &amp; doğa turları</span></span></a>
+          <a href="turlar/kapadokya-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img loading="lazy" src="https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Kapadokya &amp; Erciyes</strong><span>Balon turları &amp; kayak</span></span></a>
+          <a href="turlar/ege-turlari/" class="sidebar-route"><span class="sidebar-route-thumb"><img loading="lazy" src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Ege &amp; Bodrum</strong><span>Tekne turları &amp; koylar</span></span></a>
+          <a href="koleksiyonlar/" class="sidebar-route"><span class="sidebar-route-thumb sidebar-route-thumb-star"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span></span><span class="sidebar-route-info"><strong>Momo'nun Seçtikleri</strong><span>Editörden özel öneriler</span></span></a>
+          <a href="temalar/doga-yayla/" class="sidebar-route sidebar-more-item"><span class="sidebar-route-thumb"><img loading="lazy" src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Karadeniz Yaylaları</strong><span>Doğa &amp; kamp rotaları</span></span></a>
+          <a href="temalar/deniz-tekne/" class="sidebar-route sidebar-more-item"><span class="sidebar-route-thumb"><img loading="lazy" src="https://images.unsplash.com/photo-1601751818856-8ba24a2e0d84?auto=format&amp;fit=crop&amp;w=120&amp;h=120&amp;q=70" alt=""></span><span class="sidebar-route-info"><strong>Antalya Sahilleri</strong><span>Plaj &amp; tekne aktiviteleri</span></span></a>
+        </div>
+        <button type="button" class="sidebar-more-toggle" data-more-toggle>
+          <span class="label">Devamını gör</span>
+          <span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </button>
+      </div>
+
+      <!-- Son Görüntülenenler: ziyaretçinin kendi geçmişi (visitor-history.js,
+           bu tarayıcıda). Kartlar ürünün kendi kaydından app.js'te
+           basılıyor; geçmiş yoksa bölüm gizli kalıyor. -->
+      <div class="sidebar-section" data-son-gorulenler-bolum hidden>
+        <h4>Son Görüntülenenler</h4>
+        <div class="sidebar-recent-list" data-son-gorulenler></div>
+      </div>
+
+      <!-- Yardım & Destek: destek bağları, Blog360 ve Kurumsal tek bölümde.
+           Blog360 ve Kurumsal taksonominin "destek" grubundan
+           (TAXONOMY_MENU, grup: 'destek') siteMenuDoldur ile basılıyor.
+           Canlı Destek'in adresi CONTACT.whatsappHref (app.js). -->
+      <div class="sidebar-section sidebar-section-help">
+        <h4>Yardım &amp; Destek</h4>
+        <a href="kurumsal/iletisim/" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><rect x="3" y="13" width="4.5" height="6" rx="1.5"></rect><rect x="16.5" y="13" width="4.5" height="6" rx="1.5"></rect></svg></span>Bize Ulaşın</a>
+        <a href="kurumsal/iptal-iade/" class="sidebar-link"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 8"></path><path d="M20 4v4h-4"></path><path d="M20 12a8 8 0 0 1-14 5.3L4 16"></path><path d="M4 20v-4h4"></path></svg></span>İptal ve İade</a>
+        <a href="#" class="sidebar-link" data-destek-whatsapp target="_blank" rel="noopener"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1.4-3.4A8 8 0 0 1 4 12Z"></path><line x1="8.5" y1="10.5" x2="15.5" y2="10.5"></line><line x1="8.5" y1="13.5" x2="13" y2="13.5"></line></svg></span>Canlı Destek</a>
+        <div class="sidebar-destek-menu" data-site-destek></div>
+        <button type="button" class="sidebar-link" data-tercih-ac aria-haspopup="dialog"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="3" y1="12" x2="21" y2="12"></line><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"></path></svg></span><span data-tercih-etiket>TR · ₺</span></button>
+      </div>
+
+      <div class="drawer-social-footer">
+        <span class="drawer-copyright">© 2026 Mola360. Tüm hakları saklıdır.</span>
+      </div>
+
+    </div>
+
+    <div class="drawer-footer sidebar-footer">
+      <!-- Oturum açıkken giriş düğmesi yerine çıkış düğmesi (data-hesap-*).
+           Sosyal hesap adresleri CONTACT.social (home-blocks.js); adres
+           girilmemişse düğme pasif ve bunu söylüyor (app.js). -->
+      <div class="drawer-footer-row">
+        <button class="btn-primary" id="drawerAuthBtn" data-hesap-misafir>Giriş Yap / Üye Ol</button>
+        <button type="button" class="btn-primary drawer-logout-btn" data-hesap-cikis data-hesap-uye hidden><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Çıkış Yap</button>
+        <a href="#" target="_blank" rel="noopener" class="drawer-social-btn drawer-whatsapp-btn" data-destek-whatsapp aria-label="WhatsApp destek">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/></svg>
+        </a>
+        <a href="#" target="_blank" rel="noopener" class="drawer-social-btn drawer-facebook-btn" data-sosyal="facebook" aria-label="Facebook">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.4-3H13.5V8.4c0-.87.24-1.46 1.5-1.46h1.6V4.3c-.28-.04-1.23-.12-2.34-.12-2.32 0-3.9 1.42-3.9 4.02v2.3H8v3h2.36V21h3.14Z"/></svg>
+        </a>
+        <a href="#" target="_blank" rel="noopener" class="drawer-social-btn drawer-instagram-btn" data-sosyal="instagram" aria-label="Instagram">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.6" cy="7.4" r=".9" fill="currentColor" stroke="none"/></svg>
+        </a>
+      </div>
+    </div>
+  </aside>
   <div class="auth-modal-overlay" id="authModalOverlay">
     <div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-label="Giriş yap" tabindex="-1">
       <button class="auth-modal-close" id="authModalCloseBtn" aria-label="Kapat"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span></button>
@@ -114,9 +318,36 @@
     </div>
   </div>
 
+  <!-- Dil ve para birimi: sol menüdeki "TR · ₺" düğmesiyle açılan alt
+       çekmece. Seçenekler veri kapısından (MolaVeri.diller,
+       MolaVeri.paraBirimleri); seçim bu tarayıcıda saklanıyor (app.js). -->
+  <div class="tercih-katman" id="tercihKatman" hidden></div>
+  <div class="tercih-cekmece" id="tercihCekmece" role="dialog" aria-modal="true" aria-labelledby="tercihBaslik" hidden>
+    <span class="tercih-tutamac" aria-hidden="true"></span>
+    <div class="tercih-bas">
+      <h2 id="tercihBaslik">Dil ve para birimi</h2>
+      <button type="button" class="tercih-kapat" data-tercih-kapat aria-label="Kapat"><span aria-hidden="true">×</span></button>
+    </div>
+    <form class="tercih-form" id="tercihForm">
+      <fieldset>
+        <legend>Dil</legend>
+        <div class="tercih-secenekler" data-tercih-diller></div>
+      </fieldset>
+      <fieldset>
+        <legend>Para birimi</legend>
+        <div class="tercih-secenekler" data-tercih-paralar></div>
+      </fieldset>
+      <p class="tercih-not">Kartlardaki fiyatlar seçtiğin para biriminde yaklaşık karşılık (≈) olarak gösterilir. Ürün sayfası ve ödeme Türk lirasıyla; kur rezervasyonda sabitlenir.</p>
+      <button type="submit" class="btn-primary tercih-kaydet">Kaydet</button>
+    </form>
+  </div>
+
   <header class="site-header">
     <div class="header-inner">
       <div class="header-logo-group">
+        <!-- Masaüstü menü düğmesi: sabit sol menüsü olmayan sayfalarda
+             (anasayfa dışı) sol menüyü açıp kapatıyor. -->
+        <button class="header-menu-btn" id="headerMenuBtn" type="button" aria-label="Menüyü aç" aria-expanded="false"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button>
         <a href="./" class="logo" aria-label="mola360 anasayfa">
           <img src="assets/img/logo.png" alt="mola360">
         </a>
@@ -142,10 +373,6 @@
         <button class="header-mobile-btn" id="mobileMenuBtn" aria-label="Menü"><span class="icon" id="ic-menu"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button>
       </div>
     </div>
-    <!-- Ana menü (681px ve üstü). Satırlar taksonomideki menü ağacından
-         (TAXONOMY_MENU) sayfa yüklenince basılıyor; burada yalnızca yeri
-         var. Mobilde aynı ağaç anasayfa çekmecesinde. -->
-    <nav class="site-nav" id="siteNav" aria-label="Ana menü"></nav>
   </header>
   <!-- Bildirimler: mobilde tam ekran bildirim sayfasi, masaustunde header'a
        bitisik acilir panel. Liste app.js'teki "notifications" verisinden
@@ -261,11 +488,11 @@
   if (!script) return;
 
   /* data-root sayfanin koke uzakligi. Anasayfada bos, tur sayfasinda
-     "../../". Yalnizca kok-goreli assets/ yollari onekleniyor. */
+     "../../". Cercevedeki butun goreli yollar koke gore yazildigi icin
+     (assets/, turlar/, kurumsal/, ./ …) hepsi onekleniyor; tam adresler
+     (https:, tel:), # ve / ile baslayanlar dokunulmadan kaliyor. */
   const kok = (document.body && document.body.getAttribute("data-root")) || "";
-  const markup = kok
-    ? SITE_CHROME_MARKUP.replace(/(src|href)="(assets|hesabim|kurumsal)\//g, "$1=\"" + kok + "$2/").replace('href="./" class="logo"', 'href="' + kok + '" class="logo"')
-    : SITE_CHROME_MARKUP;
+  const markup = siteCerceveOneki(SITE_CHROME_MARKUP, kok);
 
   script.insertAdjacentHTML("afterend", markup);
 
@@ -276,11 +503,18 @@
   else doldur();
 })();
 
+/* Çerçevedeki göreli yolları sayfa köküne göre önekle (data-root). */
+function siteCerceveOneki(markup, kok) {
+  if (!kok) return markup;
+  return markup.replace(/(src|href)="(?![a-z][a-z0-9+.-]*:|#|\/)([^"]*)"/gi, (m, nitelik, yol) =>
+    nitelik + '="' + kok + (yol === "./" ? "" : yol) + '"');
+}
+
 /* ---------------- ana menü ----------------
-   Menü ağacı TEK kaynaktan: taxonomy-data.js/TAXONOMY_MENU. Masaüstünde
-   başlığın altındaki satır (üzerine gelince açılan paneller), mobilde
-   anasayfa çekmecesindeki açılır liste. İkisi aynı ağacı okuyor; menüye
-   satır eklemek taksonomiye bir satır.
+   Menü ağacı TEK kaynaktan: taxonomy-data.js/TAXONOMY_MENU. Sol menüde
+   (mobil çekmece ve masaüstü sol menü) üst satırlar ikonlu düğme, alt
+   sayfalar düğmenin altında açılan liste. grup: 'destek' işaretli
+   satırlar (Blog360, Kurumsal) "Yardım & Destek" bölümünde.
 
    Bağlar sayfa köküne göre (data-root): anasayfada "turlar/", içerik
    sayfasında "../../turlar/". */
@@ -305,8 +539,29 @@ function siteMenuSimdikiYol(kok) {
   }
 }
 
-/* Üst satırın hangi bölümü "bulunduğun yer": /turlar/… ve /tur/<slug>/
-   ikisi de Turlar. */
+/* Üst satırların ikonları; yolun ilk parçasına göre. Listede olmayan
+   satır genel ikonla çiziliyor. */
+const SITE_MENU_IKON_BAS = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+const SITE_MENU_IKONLAR = {
+  turlar: '<circle cx="12" cy="12" r="9"></circle><polygon points="15 9 13 13 9 15 11 11"></polygon>',
+  oteller: '<path d="M3.5 11 12 3.5 20.5 11"></path><path d="M5.5 9.8V20h13V9.8"></path><path d="M10 20v-5h4v5"></path>',
+  aktiviteler: '<path d="M3 20 9.5 9.5l3.5 5.5 2.5-3.5L21 20Z"></path><path d="M9.5 9.5V4l4.5 1.8-4.5 1.8"></path>',
+  etkinlikler: '<path d="M3 8.5A2 2 0 0 1 5 6.5h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4.4v2A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4.4z"></path><line x1="9.5" y1="6.5" x2="9.5" y2="19" stroke-dasharray="2.2 2.2"></line>',
+  mekanlar: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="2.6"></circle>',
+  firsatlar: '<line x1="19" y1="5" x2="5" y2="19"></line><circle cx="7" cy="7" r="2.4"></circle><circle cx="17" cy="17" r="2.4"></circle>',
+  "yeni-eklenenler": '<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon>',
+  "bu-hafta": '<rect x="3" y="5" width="18" height="16" rx="2.5"></rect><line x1="8" y1="3" x2="8" y2="7.5"></line><line x1="16" y1="3" x2="16" y2="7.5"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
+  blog: '<path d="M4 5.5h11a2 2 0 0 1 2 2v13l-3-2-3 2-3-2-3 2v-13a2 2 0 0 1 2-2Z"></path><line x1="7.5" y1="9" x2="13.5" y2="9"></line><line x1="7.5" y1="12.2" x2="13.5" y2="12.2"></line>',
+  kurumsal: '<path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h9A1.5 1.5 0 0 1 16 5.5V21"></path><path d="M16 10h2.5a1.5 1.5 0 0 1 1.5 1.5V21"></path><line x1="3" y1="21" x2="21" y2="21"></line><line x1="8" y1="8" x2="12" y2="8"></line><line x1="8" y1="12" x2="12" y2="12"></line><line x1="8" y1="16" x2="12" y2="16"></line>',
+  genel: '<circle cx="12" cy="12" r="9"></circle><line x1="8" y1="12" x2="16" y2="12"></line>'
+};
+function siteMenuIkonu(yol) {
+  const bas = String(yol || "").split("/")[0];
+  return '<span class="icon">' + SITE_MENU_IKON_BAS + (SITE_MENU_IKONLAR[bas] || SITE_MENU_IKONLAR.genel) + "</svg></span>";
+}
+
+/* Satır bulunulan sayfa ya da onun altı mı: /turlar/ege-turlari/ Turlar
+   düğmesini, /tur/efes-sirince/ de (tur tipi turlar altında) işaretler. */
 function siteMenuBolumu(simdiki, dugum, tipler) {
   if (!simdiki) return false;
   const bas = String(dugum.path || "").split("/")[0];
@@ -316,67 +571,51 @@ function siteMenuBolumu(simdiki, dugum, tipler) {
   return !!tip && tipler[tip].path === ilk;
 }
 
-function siteMenuMasaustu(menu, kok, simdiki, tipler) {
-  const bag = (d, sinif) => '<a' + (sinif ? ' class="' + sinif + '"' : "") + ' href="' + siteMenuHref(kok, d.path) + '"'
-    + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + siteMenuKacis(d.label) + "</a>";
-  return '<ul class="site-nav-list">' + menu.map(d => {
-    const cocuk = d.children || [];
-    const aktif = siteMenuBolumu(simdiki, d, tipler) ? " is-current" : "";
-    if (!cocuk.length) return '<li class="site-nav-item' + aktif + '">' + bag(d, "site-nav-link") + "</li>";
-    const gruplu = cocuk.filter(c => c.children && c.children.length);
-    let panel;
-    if (gruplu.length) {
-      /* Geniş panel: alt ağacı olan her çocuk bir sütun, yapraklar son
-         sütunda. */
-      const yapraklar = cocuk.filter(c => !(c.children && c.children.length));
-      panel = '<div class="site-nav-panel is-mega">'
-        + gruplu.map(g => '<div class="site-nav-col">' + bag(g, "site-nav-col-title")
-          + g.children.filter(c => c.path !== g.path).map(c => bag(c)).join("")
-          + '<a class="site-nav-all" href="' + siteMenuHref(kok, g.path) + '">Tümünü gör</a></div>').join("")
-        + (yapraklar.length ? '<div class="site-nav-col is-plain">' + yapraklar.map(c => bag(c)).join("") + "</div>" : "")
-        + "</div>";
-    } else {
-      panel = '<div class="site-nav-panel">' + cocuk.map(c => bag(c)).join("") + "</div>";
-    }
-    return '<li class="site-nav-item has-panel' + aktif + '">'
-      + '<a class="site-nav-link" href="' + siteMenuHref(kok, d.path) + '" aria-haspopup="true">' + siteMenuKacis(d.label)
-      + '<svg class="site-nav-chev" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></a>'
-      + panel + "</li>";
-  }).join("") + "</ul>";
-}
-
-/* Mobil çekmece: iç içe açılır liste (details/summary; JS gerekmez). */
-function siteMenuAgac(menu, kok, simdiki) {
+/* Sol menü: üst satırlar ikonlu düğme; alt sayfaları olan satır
+   details/summary ile açılıyor (JS gerekmez). */
+function siteMenuAgac(menu, kok, simdiki, tipler) {
   const dal = (d, derin) => {
     const cocuk = d.children || [];
+    const ust = derin === 0;
+    const bolum = ust && siteMenuBolumu(simdiki, d, tipler);
+    const icerik = ust ? siteMenuIkonu(d.path) + '<span class="smt-ad">' + siteMenuKacis(d.label) + "</span>" : siteMenuKacis(d.label);
     if (!cocuk.length) {
-      return '<a class="smt-link" href="' + siteMenuHref(kok, d.path) + '"'
-        + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + siteMenuKacis(d.label) + "</a>";
+      return '<a class="' + (ust ? "smt-top" + (bolum ? " is-current" : "") : "smt-link") + '" href="' + siteMenuHref(kok, d.path) + '"'
+        + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + icerik + "</a>";
     }
     /* Düğümün kendi sayfası çocuklarda yoksa en üste "Tümü" bağı. */
     const kendisi = cocuk.some(c => c.path === d.path) ? ""
       : '<a class="smt-link smt-all" href="' + siteMenuHref(kok, d.path) + '">Tüm ' + siteMenuKacis(d.label) + "</a>";
-    return '<details class="smt-group smt-level-' + derin + '"><summary>' + siteMenuKacis(d.label) + "</summary>"
+    return '<details class="smt-group smt-level-' + derin + (bolum ? " is-current" : "") + '">'
+      + "<summary" + (ust ? ' class="smt-top"' : "") + ">" + icerik + "</summary>"
       + '<div class="smt-body">' + kendisi + cocuk.map(c => dal(c, derin + 1)).join("") + "</div></details>";
   };
-  return menu.map(d => dal(d, 0)).join("");
+  return (menu || []).filter(d => d.grup !== "destek").map(d => dal(d, 0)).join("");
+}
+
+/* "Yardım & Destek" bölümündeki taksonomi satırları (Blog360, Kurumsal):
+   bölümün diğer bağlarıyla aynı düğme. Kurumsal'ın alt sayfaları kendi
+   sayfasındaki kurumsal menüde. */
+function siteMenuDestek(menu, kok, simdiki) {
+  return (menu || []).filter(d => d.grup === "destek").map(d =>
+    '<a class="sidebar-link" href="' + siteMenuHref(kok, d.path) + '"'
+      + (d.path === simdiki ? ' aria-current="page"' : "") + ">" + siteMenuIkonu(d.path)
+      + siteMenuKacis(d.label) + "</a>").join("");
 }
 
 function siteMenuDoldur(kok) {
   const menu = (typeof TAXONOMY_MENU !== "undefined") ? TAXONOMY_MENU : null;
   const tipler = (typeof TAXONOMY_TYPES !== "undefined") ? TAXONOMY_TYPES : {};
-  const nav = document.getElementById("siteNav");
-  if (!menu) {
-    if (nav) nav.hidden = true;
-    return;
-  }
+  if (!menu) return;
   const simdiki = siteMenuSimdikiYol(kok);
-  if (nav) nav.innerHTML = siteMenuMasaustu(menu, kok, simdiki, tipler);
   document.querySelectorAll("[data-site-menu]").forEach(el => {
-    el.innerHTML = siteMenuAgac(menu, kok, simdiki);
+    el.innerHTML = siteMenuAgac(menu, kok, simdiki, tipler);
+  });
+  document.querySelectorAll("[data-site-destek]").forEach(el => {
+    el.innerHTML = siteMenuDestek(menu, kok, simdiki);
   });
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { siteMenuHref, siteMenuMasaustu, siteMenuAgac, siteMenuBolumu };
+  module.exports = { siteMenuHref, siteMenuAgac, siteMenuDestek, siteMenuBolumu, siteCerceveOneki };
 }

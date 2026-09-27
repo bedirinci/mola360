@@ -174,6 +174,19 @@ function odmTaksitTablosuMarkup(tablo) {
 /* Sağdaki (mobilde üstteki) özet. Fiyat ayrıntısı ve iptal koşulları
    açılır bölümde: mobilde kapalı başlıyor (form aşağı itilmesin),
    masaüstünde açık. acik: bölümün başlangıç durumu. */
+/* Ödeme adımında onaylatılan belgeler. Konaklamalı turda (paket tur)
+   paket tur sözleşmesi de var (booking-engine.js, rezPaketTurMu). */
+function odmBelgeleri(t) {
+  const liste = [['on-bilgilendirme', 'Ön bilgilendirme formu'], ['mesafeli-satis-sozlesmesi', 'Mesafeli satış sözleşmesi']];
+  if (t && t.paketTur) liste.push(['paket-tur-sozlesmesi', 'Paket tur sözleşmesi']);
+  return liste;
+}
+function odmBelgeAdlariMetni(t) {
+  return t && t.paketTur
+    ? 'ön bilgilendirme formunu, mesafeli satış sözleşmesini ve paket tur sözleşmesini'
+    : 'ön bilgilendirme formunu ve mesafeli satış sözleşmesini';
+}
+
 function odmOzetMarkup(t, kart, gorsel, acik) {
   const pb = t.paraBirimi;
   const satir = (ad, deger, sinif) => '<li' + (sinif ? ' class="' + sinif + '"' : '') + '><span>' + ad + '</span><strong>' + deger + '</strong></li>';
@@ -368,10 +381,12 @@ function odmKur(kok, bugun) {
     const belgeler = document.getElementById('odmBelgeler');
     if (belgeler && typeof krsSozlesmeMarkup === 'function') {
       const acikBelgeler = Array.from(belgeler.querySelectorAll('details[open]')).map(d => d.getAttribute('data-belge'));
-      belgeler.innerHTML = [['on-bilgilendirme', 'Ön bilgilendirme formu'], ['mesafeli-satis-sozlesmesi', 'Mesafeli satış sözleşmesi']]
+      belgeler.innerHTML = odmBelgeleri(teklif)
         .map(([slug, ad]) => '<details class="odm-doc" data-belge="' + slug + '"' + (acikBelgeler.indexOf(slug) !== -1 ? ' open' : '') + '><summary>' + ad + '</summary>'
           + krsSozlesmeMarkup(slug, teklif) + '</details>').join('');
     }
+    const onayAdlari = document.getElementById('odmBelgeAdlari');
+    if (onayAdlari) onayAdlari.textContent = odmBelgeAdlariMetni(teklif);
     const tutar = teklif.odeme.sekil === 'mekanda' ? 'Rezervasyonu tamamla' : 'Ödemeye geç · ' + odmTL(teklif.tahsilat);
     const dugme = document.getElementById('odmSubmit');
     if (dugme) dugme.textContent = tutar;
@@ -424,7 +439,7 @@ function odmKur(kok, bugun) {
       + '</section>'
       + '<section class="odm-card odm-confirm">'
       + '<div class="odm-docs" id="odmBelgeler"></div>'
-      + '<label class="odm-check"><input type="checkbox" name="sozlesme"><span>Yukarıdaki ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, onaylıyorum. <a href="kurumsal/iptal-iade/" target="_blank" rel="noopener">İptal ve iade koşulları</a>'
+      + '<label class="odm-check"><input type="checkbox" name="sozlesme"><span>Yukarıdaki <span id="odmBelgeAdlari">' + odmKacis(odmBelgeAdlariMetni(teklif)) + '</span> okudum, onaylıyorum. <a href="kurumsal/iptal-iade/" target="_blank" rel="noopener">İptal ve iade koşulları</a>'
       + ' ve <a href="kurumsal/kvkk/" target="_blank" rel="noopener">kişisel verilerin işlenmesi</a> hakkında bilgilendirildim.</span></label>'
       + '<small class="odm-error" data-hata="sozlesme"></small>'
       + '<p class="odm-demo">Deneme sürümü: ödeme altyapısı henüz bağlı değil. Bu düğme rezervasyon talebini oluşturur; kartınızdan çekim yapılmaz.</p>'
@@ -651,6 +666,6 @@ function odmOnayKur(kok) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ODM_TIP_ADI, odmKacis, odmTL, odmKatilimciMarkup, odmPlanMarkup, odmTaksitMarkup,
-    odmTaksitTablosuMarkup, odmOzetMarkup, odmOnayMarkup
+    odmTaksitTablosuMarkup, odmOzetMarkup, odmOnayMarkup, odmBelgeleri, odmBelgeAdlariMetni
   };
 }

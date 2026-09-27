@@ -336,13 +336,66 @@ const KRM_SAYFALAR = [
         'Satıcı kaynaklı iptalde ödenen tutarın tamamı iade edilir. İade, ödemenin yapıldığı karta yapılır.'
       ] },
       { id: 'cayma', baslik: '6. Cayma hakkı', icerik: [
-        'Hizmet belirli bir tarihte ya da dönemde yapılması gereken konaklama, ulaşım ve eğlence veya dinlenme amaçlı bir hizmet olduğundan, Mesafeli Sözleşmeler Yönetmeliği\'nin 15. maddesi gereği cayma hakkı bulunmaz. Paket turlarda Paket Tur Sözleşmeleri Yönetmeliği hükümleri saklıdır.'
+        'Hizmet belirli bir tarihte ya da dönemde yapılması gereken konaklama, ulaşım ve eğlence veya dinlenme amaçlı bir hizmet olduğundan, Mesafeli Sözleşmeler Yönetmeliği\'nin 15. maddesi gereği cayma hakkı bulunmaz. Konaklamalı turlarda ayrıca [Paket Tur Sözleşmesi](kurumsal/paket-tur-sozlesmesi/) kurulur ve Paket Tur Sözleşmeleri Yönetmeliği hükümleri saklıdır.'
       ] },
       { id: 'uyusmazlik', baslik: '7. Uyuşmazlık', icerik: [
         'Bu sözleşmeye Türkiye Cumhuriyeti kanunları uygulanır. Uyuşmazlıklarda Ticaret Bakanlığı\'nca belirlenen parasal sınırlar içinde Tüketici Hakem Heyetleri, üzerinde Tüketici Mahkemeleri yetkilidir.'
       ] },
       { id: 'yururluk', baslik: '8. Yürürlük', icerik: [
         'Alıcı, ödeme adımında bu sözleşmeyi ve ön bilgilendirme formunu okuyup onayladığında sözleşme kurulur; rezervasyon ödemenin onaylanmasıyla kesinleşir.'
+      ] }
+    ]
+  },
+  {
+    /* Konaklamalı turlar (paket tur): 6502 sayılı Kanun md. 51 ve Paket
+       Tur Sözleşmeleri Yönetmeliği. Ödeme adımında yalnızca paket turda
+       (booking-engine.js, rezPaketTurMu) rezervasyonun bilgileriyle dolu
+       olarak gösteriliyor ve onaylatılıyor. Taslak: yayından önce
+       hukukçuya okutulmalı. */
+    slug: 'paket-tur-sozlesmesi', baslik: 'Paket Tur Sözleşmesi', yasal: true, menu: false,
+    aciklama: 'Konaklamalı turlar için paket tur sözleşmesi.',
+    bolumler: [
+      { id: 'taraflar', baslik: '1. Taraflar ve kapsam', icerik: [
+        'Paket tur düzenleyicisi: aşağıda bilgileri yazan {unvan} (TÜRSAB belge no: {tursabBelgeNo}). Tüketici: rezervasyonu yapan ve ödeme adımında bilgilerini veren kişi; katılımcılar rezervasyonda adı yazan kişilerdir.',
+        { ozel: 'sirket' },
+        'Bu sözleşme, konaklama içeren turlar (paket turlar) için mesafeli satış sözleşmesine ek olarak kurulur ve 6502 sayılı Tüketicinin Korunması Hakkında Kanun ile Paket Tur Sözleşmeleri Yönetmeliği\'ne tabidir.'
+      ] },
+      { id: 'icerik', baslik: '2. Paket turun içeriği', icerik: [
+        { ozel: 'rezervasyon-ozeti' },
+        'Tur programı, varış yerleri, konaklama tesisinin türü ve niteliği, ulaşım aracı, öğünler, rehberlik ile fiyata dahil olan ve olmayan hizmetler ürün sayfasında yazar ve bu sözleşmenin parçasıdır. Fiyata dahil sigorta varsa ürün sayfasının "Dahil olanlar" bölümünde belirtilir.'
+      ] },
+      { id: 'bedel', baslik: '3. Fiyat ve ödeme', icerik: [
+        { ozel: 'bedel' },
+        'Rezervasyonda onaylanan fiyat sonradan artırılmaz. Döviz fiyatlı turlarda Türk lirası karşılığı rezervasyon anındaki kurla sabitlenir.'
+      ] },
+      { id: 'degisiklik', baslik: '4. Sözleşmenin esaslı unsurlarında değişiklik', icerik: [
+        'Düzenleyici; tarih, tur programı, konaklama tesisi ya da ulaşım aracı gibi esaslı bir unsuru zorunlu bir nedenle değiştirmek zorunda kalırsa bunu tüketiciye gecikmeden bildirir. Tüketici değişikliği kabul edebilir ya da sözleşmeden dönebilir; dönerse ödediği tutarın tamamı iade edilir.'
+      ] },
+      { id: 'duzenleyici-iptal', baslik: '5. Turun düzenleyici tarafından iptali', icerik: [
+        'Turun yapılması için asgari katılımcı sayısı gerekiyorsa bu sayı ürün sayfasında yazar. Bu sayıya ulaşılamazsa ya da doğal afet, salgın, resmî yasak gibi düzenleyicinin elinde olmayan bir neden turu imkânsız kılarsa tur iptal edilebilir. İptal, öğrenildiği anda tüketiciye bildirilir ve ödenen tutarın tamamı iade edilir.'
+      ] },
+      { id: 'devir', baslik: '6. Rezervasyonun devri', icerik: [
+        'Tüketici tura katılamayacaksa, turun başlangıç tarihinden en az yedi gün önce bildirmek koşuluyla rezervasyonunu tura katılım koşullarını taşıyan başka bir kişiye devredebilir. Devreden ve devralan, kalan bedelden ve devir nedeniyle doğan ek masraflardan birlikte sorumludur.'
+      ] },
+      { id: 'tuketici-iptal', baslik: '7. Tüketicinin iptali', icerik: [
+        { ozel: 'iptal-kosullari' },
+        'Belirli bir tarihte yapılan turlarda Mesafeli Sözleşmeler Yönetmeliği\'nin 15. maddesi gereği cayma hakkı bulunmaz; iptalde yukarıdaki koşullar uygulanır.'
+      ] },
+      { id: 'sorumluluk', baslik: '8. Düzenleyicinin sorumluluğu', icerik: [
+        'Düzenleyici, sözleşmedeki hizmetlerin gereği gibi yerine getirilmesinden, hizmetleri başka sağlayıcılar verse de, sorumludur. Hizmetin önemli bir kısmı verilemezse eşdeğer bir alternatif sunar; sunamazsa ya da tüketici haklı bir nedenle kabul etmezse verilmeyen hizmetin bedelini iade eder. Ayıplı ifada tüketicinin kanundan doğan seçimlik hakları saklıdır.',
+        'Tur sırasında fark edilen aksaklığı rehbere ya da [İletişim](kurumsal/iletisim/) sayfasındaki destek kanallarına hemen bildir; yerinde çözülebilmesi için bu önemlidir.'
+      ] },
+      { id: 'yardim', baslik: '9. Yardım', icerik: [
+        'Tur sırasında hastalık, kaza ya da belge kaybı gibi bir nedenle zor durumda kalan katılımcıya rehber ve destek ekibi gecikmeden yardım eder; sağlık hizmeti, yerel makamlar ve dönüş düzenlemesi konusunda bilgi verir.'
+      ] },
+      { id: 'formaliteler', baslik: '10. Belgeler ve formaliteler', icerik: [
+        'Yurt dışı turlarda pasaport, vize ve sağlık formaliteleri ürün sayfasında yazar. Belgeleri zamanında edinmek katılımcının sorumluluğundadır; belge eksikliği nedeniyle tura katılamamak tüketicinin iptali sayılır.'
+      ] },
+      { id: 'uyusmazlik', baslik: '11. Uyuşmazlık', icerik: [
+        'Bu sözleşmeye Türkiye Cumhuriyeti kanunları uygulanır. Uyuşmazlıklarda Ticaret Bakanlığı\'nca belirlenen parasal sınırlar içinde Tüketici Hakem Heyetleri, üzerinde Tüketici Mahkemeleri yetkilidir.'
+      ] },
+      { id: 'yururluk', baslik: '12. Yürürlük', icerik: [
+        'Tüketici, ödeme adımında bu sözleşmeyi, ön bilgilendirme formunu ve mesafeli satış sözleşmesini okuyup onayladığında sözleşme kurulur; rezervasyon ödemenin onaylanmasıyla kesinleşir. Sözleşme, rezervasyon onayıyla birlikte e-posta adresine ve Hesabım bölümüne gönderilir.'
       ] }
     ]
   },
@@ -428,6 +481,8 @@ const KRM_DEPO = [
   { anahtar: 'mola360.bildirimDurumu', amac: 'Okuduğun ve kaldırdığın bildirimler' },
   { anahtar: 'mola360.yorumlar', amac: 'Onay bekleyen yorumların' },
   { anahtar: 'mola360.talepler', amac: 'İletişim ve geri arama taleplerin' },
+  { anahtar: 'mola360.acilisGoruldu', amac: 'Açılış ekranının bir kez gösterildiği' },
+  { anahtar: 'mola360.tercihler', amac: 'Seçtiğin dil ve para birimi' },
   { anahtar: 'm360-admin-taslaklar', amac: 'Yalnızca yönetim ekranını kullananlarda: kaydedilmemiş içerik taslakları' },
   { anahtar: 'm360-admin-kilit', amac: 'Yalnızca yönetim ekranını kullananlarda: ekran kilidi' },
   { anahtar: 'm360-admin-oturum', amac: 'Yalnızca yönetim ekranını kullananlarda: oturum (sekme kapanınca silinir)' }

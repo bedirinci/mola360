@@ -188,9 +188,9 @@ function krsIcerikMarkup(oge, b, ozel) {
   return '';
 }
 
-function krsBolumlerMarkup(sayfa, b, ozel, baslikSeviyesi) {
+function krsBolumlerMarkup(sayfa, b, ozel, baslikSeviyesi, idOnEki) {
   const h = baslikSeviyesi || 'h2';
-  return sayfa.bolumler.map(bl => '<section class="krs-section" id="' + krsK(bl.id) + '">'
+  return sayfa.bolumler.map(bl => '<section class="krs-section" id="' + krsK((idOnEki || '') + bl.id) + '">'
     + (bl.baslik ? '<' + h + '>' + krsMetin(bl.baslik, b) + '</' + h + '>' : '')
     + bl.icerik.map(x => krsIcerikMarkup(x, b, ozel)).join('') + '</section>').join('');
 }
@@ -206,7 +206,9 @@ function krsSozlesmeMarkup(slug, teklif) {
     bedel: () => krsBedelMarkup(teklif),
     'iptal-kosullari': () => krsIptalKosullariMarkup(teklif)
   };
-  return '<div class="krs-doc">' + krsBolumlerMarkup(sayfa, b, ozel, 'h4') + '</div>';
+  /* Ödeme ekranında birden fazla belge yan yana: bölüm kimlikleri
+     belgenin adıyla önekleniyor (iki belgede de "bedel" var). */
+  return '<div class="krs-doc">' + krsBolumlerMarkup(sayfa, b, ozel, 'h4', slug + '-') + '</div>';
 }
 
 function krsNavMarkup(aktif) {

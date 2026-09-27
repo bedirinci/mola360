@@ -363,7 +363,8 @@ describe('sayfalar ve çerçeve', () => {
   });
 
   it('çekmecedeki kampanya kartları yürürlükteki kurallardan', () => {
-    const ana = oku('index.html');
+    /* Çekmece (sol menü) ortak çerçevede: her sayfada aynı. */
+    const ana = oku('assets/js/site-chrome.js');
     const kartlar = [...ana.matchAll(/<a href="([^"]+)" class="drawer-promo-card">[\s\S]*?<span class="num">([^<]+)<\/span>/g)].map(m => [m[1], m[2]]);
     expect(kartlar.length).toBeGreaterThan(0);
     const R2 = require('../assets/js/booking-engine.js');
