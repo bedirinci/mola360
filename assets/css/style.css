@@ -14,7 +14,14 @@
   --radius-sm: 10px;
   --shadow: 0 3px 12px rgba(21,32,72,.05);
   --shadow-lg: 0 8px 22px rgba(21,32,72,.09);
-  --desktop-header-height: 66px;
+  /* Masaüstü başlığı iki satır: arama/logo çubuğu + ana menü satırı.
+     --desktop-header-height ikisinin toplamı; başlığa yapışan her şey
+     (gövde boşluğu, kenar çubuğu, yapışkan kartlar) onu kullanıyor.
+     Başlık çubuğuna bitişik açılan paneller (arama, bildirim, profil)
+     --header-bar-height kullanıyor. Menü satırı 680px altında yok. */
+  --header-bar-height: 66px;
+  --site-nav-height: 0px;
+  --desktop-header-height: calc(var(--header-bar-height) + var(--site-nav-height));
   /* Mobil arama kutusunun alt köşe yarıçapı. Filtre çubuğu yapıştığında
      oluşan köşe oyuğunu doldurmak için de aynı değer kullanılır. */
   --m360-search-radius: 25px;
@@ -472,8 +479,8 @@ ul {
   .notif-item { transition: none; }
 }
 /* =============== ORTAK MOBİL EKRAN BAŞLIĞI ===============
-   Üç ekran aynı başlığı kullanır: bildirimler, giriş/üye ol ve tur
-   içerik sayfası. Düzen her üçünde de aynı — solda yuvarlak geri oku,
+   Dört ekran aynı başlığı kullanır: bildirimler, giriş/üye ol, tur
+   içerik sayfası ve liste sayfaları (listing.css). Düzen her üçünde de aynı — solda yuvarlak geri oku,
    ortada iki satırlık başlık. Sağdaki eylem yalnızca bildirimlerde
    var; tur sayfasında paylaş banner'a taşındı, giriş ekranında da
    böyle bir eylem yok.
@@ -485,7 +492,8 @@ ul {
    kuralına sahip (bildirimler her zaman, diğer ikisi yalnızca mobilde). */
 .notif-panel-header,
 .auth-modal-hero,
-.tour-mobile-header {
+.tour-mobile-header,
+.lst-mobile-header {
   align-items: center;
   gap: 10px;
   padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
@@ -501,7 +509,8 @@ ul {
 }
 .notif-panel-back,
 .auth-modal-back,
-.tour-mobile-back {
+.tour-mobile-back,
+.lst-mobile-back {
   flex-shrink: 0;
   width: 34px;
   height: 34px;
@@ -513,7 +522,8 @@ ul {
 }
 .notif-panel-back:hover,
 .auth-modal-back:hover,
-.tour-mobile-back:hover {
+.tour-mobile-back:hover,
+.lst-mobile-back:hover {
   background: rgba(255,255,255,.1);
 }
 .notif-panel-back .icon,
@@ -521,13 +531,16 @@ ul {
 .auth-modal-back .icon,
 .auth-modal-back svg,
 .tour-mobile-back .icon,
-.tour-mobile-back svg {
+.tour-mobile-back svg,
+.lst-mobile-back .icon,
+.lst-mobile-back svg {
   width: 22px;
   height: 22px;
 }
 .notif-panel-heading,
 .auth-modal-hero-text,
-.tour-mobile-heading {
+.tour-mobile-heading,
+.lst-mobile-heading {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -537,7 +550,8 @@ ul {
 /* Başlık tek satırda kalır; sığmayan uzun tur adı sarmak yerine kısalır. */
 .notif-panel-title,
 .auth-modal-hero-text strong,
-.tour-mobile-title {
+.tour-mobile-title,
+.lst-mobile-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -549,7 +563,8 @@ ul {
 /* Alt satır da tek satırda kalır. */
 .notif-panel-subtitle,
 .auth-modal-hero-text span,
-.tour-mobile-subtitle {
+.tour-mobile-subtitle,
+.lst-mobile-subtitle {
   font-size: 12px;
   color: rgba(255,255,255,.72);
   white-space: nowrap;
@@ -1887,6 +1902,25 @@ ul {
   overflow:hidden;
   text-overflow:ellipsis;
 }
+/* Kapatma düğmesi sağ üstte duruyor; ilk bölümün başlık satırı ("1
+   eşleşme") onun altına girmesin. */
+.m360-search-home > :first-child .m360-search-section-title { padding-right: 48px; }
+
+/* Anlık sonuçların altında: tam sonuç sayfasına (/arama/?q=). */
+.m360-search-all {
+  display: block;
+  margin-top: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--green-dark);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.m360-search-all:hover { border-color: rgba(140,198,63,.5); }
 .m360-search-empty {
   padding:34px 12px;
   text-align:center;
@@ -3260,7 +3294,7 @@ ul {
     z-index: 3000;
     box-shadow: 0 1px 0 rgba(21,32,72,.08);
   }
-  .header-inner { height: var(--desktop-header-height); }
+  .header-inner { height: var(--header-bar-height); }
 }
 
 @media (min-width: 681px) and (max-width: 1024px) {
@@ -3495,15 +3529,15 @@ ul {
     height: 20px;
   }
   .search-overlay {
-    top: var(--desktop-header-height);
+    top: var(--header-bar-height);
     left: 50%;
     right: auto;
     bottom: auto;
     width: min(760px, calc(100vw - 32px));
-    height: min(640px, calc(100vh - var(--desktop-header-height)));
-    height: min(640px, calc(100dvh - var(--desktop-header-height)));
-    max-height: calc(100vh - var(--desktop-header-height));
-    max-height: calc(100dvh - var(--desktop-header-height));
+    height: min(640px, calc(100vh - var(--header-bar-height)));
+    height: min(640px, calc(100dvh - var(--header-bar-height)));
+    max-height: calc(100vh - var(--header-bar-height));
+    max-height: calc(100dvh - var(--header-bar-height));
     transform: translate(-50%, -10px);
     background: var(--card);
     border: 1px solid var(--border);
@@ -3750,8 +3784,8 @@ ul {
   .desktop-sidebar .mobile-profile-edit { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); flex-shrink:0; }
   .desktop-sidebar .mobile-profile-edit .icon { width:16px; height:16px; }
   .desktop-sidebar .mobile-profile-stats { position:relative; z-index:2; margin:-32px 14px 0; display:grid; grid-template-columns:repeat(4,1fr); background:#fff; border-radius:16px 16px 0 0; box-shadow:0 -4px 18px rgba(21,32,72,.08); }
-  .desktop-sidebar .mobile-profile-stats > div { min-height:54px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; border-right:1px solid var(--border); }
-  .desktop-sidebar .mobile-profile-stats > div:last-child { border-right:0; }
+  .desktop-sidebar .mobile-profile-stats > :is(div, a) { min-height:54px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; border-right:1px solid var(--border); }
+  .desktop-sidebar .mobile-profile-stats > :is(div, a):last-child { border-right:0; }
   .desktop-sidebar .mobile-profile-stats strong { font-size:14.5px; line-height:1; font-weight:800; color:var(--navy); }
   .desktop-sidebar .mobile-profile-stats span { margin-top:4px; font-size:8.5px; line-height:1.2; color:var(--text-muted); }
   .desktop-sidebar .mobile-profile-loyalty { margin:0 14px 14px; padding:10px 11px; border-radius:0 0 14px 14px; background:var(--bg); border-top:1px solid var(--border); }
@@ -3964,8 +3998,8 @@ ul {
   .mobile-profile-edit { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); flex-shrink:0; }
   .mobile-profile-edit .icon { width:18px; height:18px; }
   .mobile-profile-stats { position:relative; z-index:2; margin:-34px 16px 0; display:grid; grid-template-columns:repeat(4,1fr); background:#fff; border-radius:18px 18px 0 0; box-shadow:0 -4px 18px rgba(21,32,72,.08); }
-  .mobile-profile-stats > div { min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 5px; border-right:1px solid var(--border); }
-  .mobile-profile-stats > div:last-child { border-right:0; }
+  .mobile-profile-stats > :is(div, a) { min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 5px; border-right:1px solid var(--border); }
+  .mobile-profile-stats > :is(div, a):last-child { border-right:0; }
   .mobile-profile-stats strong { font-size:16px; line-height:1; font-weight:800; color:var(--navy); }
   .mobile-profile-stats span { margin-top:4px; font-size:9.5px; line-height:1.25; color:var(--text-muted); }
   .mobile-profile-loyalty { margin:0 16px 14px; padding:10px 12px; border-radius:0 0 14px 14px; background:var(--bg); border-top:1px solid var(--border); }
@@ -5800,3 +5834,216 @@ ul {
   .desktop-sidebar .mobile-profile-loyalty-head { gap: 6px; }
   .desktop-sidebar .mobile-profile-loyalty-head strong { white-space: nowrap; }
 }
+
+
+/* =============== ANA MENÜ ===============
+   Başlığın altındaki satır (681px ve üstü). İşaretleme site-chrome.js'te
+   taksonomideki menü ağacından (TAXONOMY_MENU) üretiliyor. 1025px
+   üstünde üzerine gelince/odaklanınca alt menü paneli açılıyor; tablet
+   genişliğinde yalnızca üst bağlar (yatay kaydırılabilir), alt sayfalar
+   liste sayfasının çiplerinde. */
+.site-nav { display: none; }
+@media (min-width: 681px) {
+  :root { --site-nav-height: 44px; }
+  .site-nav {
+    display: block;
+    height: var(--site-nav-height);
+    padding: 0 16px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .site-nav[hidden] { display: none; }
+  .site-nav-list {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: 100%;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site-nav-list::-webkit-scrollbar { display: none; }
+  .site-nav-item { position: relative; display: flex; }
+  .site-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 11px;
+    border-bottom: 2px solid transparent;
+    color: rgba(255,255,255,.84);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .site-nav-link:hover,
+  .site-nav-item:hover > .site-nav-link,
+  .site-nav-item:focus-within > .site-nav-link { color: #fff; }
+  .site-nav-item.is-current > .site-nav-link {
+    color: #fff;
+    border-bottom-color: var(--green);
+  }
+  .site-nav-link:focus-visible { outline: 2px solid var(--green); outline-offset: -4px; border-radius: 6px; }
+  .site-nav-chev { width: 14px; height: 14px; opacity: .65; }
+  .site-nav-panel { display: none; }
+}
+@media (min-width: 681px) and (max-width: 1024px) {
+  .site-nav-chev { display: none; }
+}
+/* Dar masaüstünde on bölüm tek satıra sığsın. */
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .site-nav-link { padding: 0 7px; font-size: 13px; }
+}
+@media (min-width: 1025px) {
+  .site-nav { padding: 0 24px; }
+  .site-nav-list { overflow: visible; }
+  .site-nav-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 3100;
+    min-width: 230px;
+    padding: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    box-shadow: var(--shadow-lg);
+  }
+  /* Sağ uçtaki bölümlerin paneli ekran dışına taşmasın. */
+  .site-nav-item:nth-last-child(-n+3) > .site-nav-panel { left: auto; right: 0; }
+  .site-nav-item.has-panel:hover > .site-nav-panel,
+  .site-nav-item.has-panel:focus-within > .site-nav-panel { display: grid; }
+  .site-nav-panel a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .site-nav-panel a:hover,
+  .site-nav-panel a:focus-visible { background: var(--bg); color: var(--navy); outline: none; }
+  .site-nav-panel a[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
+  .site-nav-panel.is-mega {
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    gap: 0 12px;
+    padding: 14px;
+  }
+  .site-nav-col { display: flex; flex-direction: column; }
+  .site-nav-col + .site-nav-col { border-left: 1px solid var(--border); padding-left: 12px; }
+  .site-nav-panel .site-nav-col-title {
+    margin-bottom: 4px;
+    color: var(--navy);
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .site-nav-col.is-plain { padding-top: 38px; }
+  .site-nav-panel .site-nav-all {
+    margin-top: 4px;
+    color: var(--green-dark);
+    font-weight: 700;
+    font-size: 13px;
+  }
+}
+
+/* ---- mobil çekmecedeki menü ağacı ----
+   Aynı ağaç, iç içe açılır liste. Masaüstü kenar çubuğu çekmecenin
+   kopyası; orada menü başlıkta durduğu için bu bölüm gizli. */
+.site-menu-tree { display: flex; flex-direction: column; }
+.smt-group > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 4px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.smt-group > summary::-webkit-details-marker { display: none; }
+.smt-group > summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  transform: rotate(45deg);
+  transition: transform .15s ease;
+}
+.smt-group[open] > summary::after { transform: rotate(-135deg); }
+.smt-body { display: flex; flex-direction: column; padding: 2px 0 8px 12px; }
+.smt-level-1 > summary { font-size: 13.5px; font-weight: 600; border-bottom: 0; padding: 9px 4px; }
+.smt-link {
+  padding: 9px 4px;
+  color: var(--text);
+  font-size: 13.5px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.smt-body .smt-link { border-bottom: 0; }
+.site-menu-tree > .smt-link { font-weight: 700; font-size: 14px; }
+.smt-link[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
+.smt-all { color: var(--green-dark); font-weight: 700; }
+.desktop-sidebar .sidebar-section-menu { display: none; }
+
+/* =====================================================
+   HESAP DURUMU (5. adım)
+   Giriş penceresinin deneme formu, profil kartının misafir hâli ve
+   üye/misafir görünürlüğü. [hidden] öğeler display kurallarını
+   ezer: kartlardaki display:grid/flex hidden'ı yenmesin.
+   ===================================================== */
+[data-hesap-uye][hidden], [data-hesap-misafir][hidden], [data-hesap-seviye-rozet][hidden] { display: none !important; }
+a.mobile-profile-loyalty { display: block; color: inherit; }
+.mobile-profile-stats > a { color: inherit; }
+
+.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.auth-form-row > span { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.auth-form-error { margin-top: -8px; font-size: 12px; color: #C62828; }
+.auth-form-error:empty { display: none; }
+.auth-demo-note {
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6B4E00;
+  background: #FFF6DB;
+  border-radius: var(--radius-sm);
+}
+.auth-modal-panel label.auth-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+}
+.auth-modal-panel label.auth-check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; padding: 0; accent-color: var(--navy); }
+.auth-check a { color: var(--navy); text-decoration: underline; }
+.auth-social-btn:disabled { opacity: .55; cursor: not-allowed; }
+.auth-social-soon { margin-top: -4px; font-size: 12px; color: var(--text-faint); text-align: center; }
+
+.mobile-profile-guest { padding: 12px 16px 16px; }
+.mobile-profile-guest p { margin-bottom: 10px; font-size: 13px; line-height: 1.45; color: var(--text-muted); }
+.mobile-profile-guest .btn-primary { width: 100%; text-align: center; padding: 11px 16px; }
+.sidebar-user-login {
+  align-self: flex-start;
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  background: none;
+  text-decoration: underline;
+}
+body.is-uye #headerRegisterBtn { display: none; }
+.footer-legal a { color: inherit; }
+.footer-legal a:hover { color: #fff; text-decoration: underline; }

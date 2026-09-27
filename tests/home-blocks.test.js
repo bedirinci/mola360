@@ -4,9 +4,10 @@ import {
   HOME_BLOCK_PLACEMENT,
   UPCOMING_FILTERS,
   UPCOMING_DAY_KEYS,
-  THEME_COLLECTIONS,
-  GRID_COLLECTIONS,
-  VENUES,
+  homeThemeCards,
+  homeCollectionCards,
+  temaSayisiMetni,
+  GEZI_NOKTALARI,
   PROMO_BANDS,
   NEWSLETTER_PERKS,
   CONTACT,
@@ -20,6 +21,8 @@ import {
   supportOnline,
   istanbulSaati,
 } from '../assets/js/home-blocks.js';
+import { MolaVeri } from '../assets/js/data-gateway.js';
+import { TAXONOMY_COLLECTIONS } from '../assets/js/taxonomy-data.js';
 
 const ornek = [
   { title: 'Uzak',      inDays: 12 },
@@ -105,31 +108,78 @@ describe('blok verileri', () => {
   });
 
   it('koleksiyon blokları beklenen sayıda', () => {
-    expect(THEME_COLLECTIONS.length).toBeGreaterThanOrEqual(6);
-    expect(GRID_COLLECTIONS.length).toBeGreaterThanOrEqual(8);
-    const basliklar = GRID_COLLECTIONS.map(k => k.title);
+    expect(homeThemeCards().length).toBeGreaterThanOrEqual(6);
+    expect(homeCollectionCards().length).toBeGreaterThanOrEqual(8);
+    const basliklar = homeCollectionCards().map(k => k.title);
     expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('tema sayısı temadaki ürünlerden hesaplanıyor, elle yazılmıyor', () => {
+    /* Eskiden "31 tur", "15 etkinlik" gibi sayılar elle yazılıydı ve hiçbir
+       ürüne karşılık gelmiyordu. */
+    const kaynak = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    expect(kaynak).not.toMatch(/count:\s*'\d+/);
+    for (const t of homeThemeCards('2026-09-21')) {
+      const urunler = MolaVeri.temaUrunleri(t.slug, '2026-09-21');
+      expect(t.adet, t.title).toBe(urunler.length);
+      expect(t.count.startsWith(urunler.length + ' '), t.title + ' · ' + t.count).toBe(true);
+    }
+  });
+
+  it('tema sayısının birimi ürünlerin tipinden', () => {
+    const kapi = MolaVeri;
+    const tur = kapi.urun('tour', 'efes-sirince');
+    const etkinlik = kapi.urun('event', 'aspendos-opera-bale-festivali');
+    expect(temaSayisiMetni([tur], kapi)).toBe('1 tur');
+    expect(temaSayisiMetni([etkinlik, etkinlik], kapi)).toBe('2 etkinlik');
+    expect(temaSayisiMetni([tur, etkinlik], kapi)).toBe('2 seçenek');
+  });
+
+  it('ürünü olmayan tema gösterilmiyor', () => {
+    /* Bütün temaların bugün ürünü var; ürünü olmayanı gizleyen kural,
+       temaların sayısından az kart dönmesiyle değil süzgeçle ölçülüyor. */
+    const kaynak = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    const fn = kaynak.match(/function homeThemeCards\(bugun\) \{([\s\S]*?)\n\}/)[1];
+    expect(fn).toContain('.filter(t => t.adet > 0)');
+  });
+
+  it('koleksiyonlar sınıflandırmadan: başlık, alt yazı, görsel', () => {
+    const kartlar = homeCollectionCards();
+    expect(kartlar.map(k => k.slug)).toEqual(TAXONOMY_COLLECTIONS.map(c => c.slug));
+    kartlar.forEach((k, i) => {
+      expect(k.title).toBe(TAXONOMY_COLLECTIONS[i].name);
+      expect(k.text).toBe(TAXONOMY_COLLECTIONS[i].text);
+    });
   });
 
   it('temalar ile koleksiyonlar aynı başlığı paylaşmaz', () => {
     /* Temalar aktivite türü, koleksiyonlar kitle/durum başlığı taşır;
        ikisi çakışırsa aynı fikir sayfada iki kez görünür. */
-    const temalar = THEME_COLLECTIONS.map(t => t.title);
-    const koleksiyonlar = GRID_COLLECTIONS.map(k => k.title);
+    const temalar = homeThemeCards().map(t => t.title);
+    const koleksiyonlar = homeCollectionCards().map(k => k.title);
     expect(temalar.filter(t => koleksiyonlar.includes(t))).toEqual([]);
   });
 
-  it('mekan kayıtlarında gerekli alanlar var ve başlıklar tekil', () => {
-    /* Masaüstünde 6 mekan / 8 koleksiyon görünmesi isteniyor. */
-    expect(VENUES.length).toBeGreaterThanOrEqual(6);
-    VENUES.forEach(mekan => {
-      ['img', 'type', 'title', 'area', 'rating', 'reviews', 'hours'].forEach(alan => {
-        expect(String(mekan[alan] || '')).not.toBe('');
+  it('gezi noktalarında gerekli alanlar var, başlıklar tekil, uydurma puan yok', () => {
+    expect(GEZI_NOKTALARI.length).toBeGreaterThanOrEqual(6);
+    GEZI_NOKTALARI.forEach(yer => {
+      ['img', 'type', 'title', 'area', 'hours', 'hedef'].forEach(alan => {
+        expect(String(yer[alan] || ''), yer.title + ' ' + alan).not.toBe('');
       });
-      expect(typeof mekan.open).toBe('boolean');
+      /* Ölçülmüş puan ve anlık açık/kapalı verisi yok: yazılmıyor. */
+      ['rating', 'reviews', 'open'].forEach(alan => expect(yer[alan], yer.title).toBeUndefined());
+      /* Her kart gerçek bir sayfaya. */
+      expect(MolaVeri.adres(yer.hedef.split('?')[0]), yer.hedef).toBeTruthy();
     });
-    const basliklar = VENUES.map(m => m.title);
+    const basliklar = GEZI_NOKTALARI.map(m => m.title);
     expect(new Set(basliklar).size).toBe(basliklar.length);
+  });
+
+  it('"Mekanlar" bloğunda yalnızca rezervasyonlu mekânlar', () => {
+    const blok = readFileSync(new URL('../assets/js/home-blocks.js', import.meta.url), 'utf8');
+    const venues = blok.match(/venues: \(\) => `([\s\S]*?)<\/section>`,/)[1];
+    expect(venues).not.toContain('GEZI_NOKTALARI');
+    expect(HOME_BLOCK_PLACEMENT['Aktiviteler']).toEqual(['venues', 'sights']);
   });
 
   it('kampanya bandı yaklaşan planların altında geliyor', () => {
@@ -169,9 +219,16 @@ describe('blok verileri', () => {
     expect(SEO_LINK_GROUPS.length).toBeGreaterThanOrEqual(4);
     const tumu = SEO_LINK_GROUPS.flatMap(g => g.links).concat(SEO_RELATED_SEARCHES);
     expect(tumu.length).toBeGreaterThanOrEqual(60);
+    /* Her bağ gerçek bir sayfaya: yönlendiricinin tanıdığı bir adres
+       (ya da dosyası olan ürün) ve yalnızca bilinen parametreler. */
+    const bilinen = new Set(MolaVeri.yuzeyTanimlari('2026-09-21').map(a => a.key).concat(['q', 'sirala', 'sayfa']));
     tumu.forEach(bag => {
       expect(bag.label.trim()).not.toBe('');
-      expect(bag.href.startsWith('#/')).toBe(true);
+      expect(bag.href.startsWith('#'), bag.href + ' yer tutucu').toBe(false);
+      const [yol, sorgu] = bag.href.split('#')[0].split('?');
+      expect(MolaVeri.adres(yol), bag.label + ' → ' + bag.href).toBeTruthy();
+      (sorgu || '').split('&').filter(Boolean).forEach(p =>
+        expect(bilinen.has(p.split('=')[0]), bag.href).toBe(true));
     });
   });
 

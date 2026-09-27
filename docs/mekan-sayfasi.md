@@ -173,8 +173,11 @@ doğrulandı — test kırmızıya döndü.
 ## Bilerek yapılmayanlar
 
 - **Masa planı yok.** Alan seçiliyor, masa numarası mekânda veriliyor.
-- **Canlı doluluk yok.** Kalan yer tarihten, saatten ve alandan
-  türetiliyor; aynı seçim her yenilemede aynı sayıyı veriyor.
+- **Doluluk örnek veriden.** Kalan yer veri kapısının kontenjan
+  cevabından (birim alan/hizmet × seans); bugün örnek rezervasyonlardan
+  hesaplanıyor (`assets/js/inventory-data.js`), backend gelince gerçek
+  rezervasyonlardan gelecek. Bütün alanları dolu seans ve bütün
+  seansları dolu gün seçilemiyor.
 - **Telefonla arama düğmesi yok.** Numara kurgusal olduğu sürece arama
   başlatan bir düğme koymak doğru değil.
 - **Üçüncü mekan sayfası yok.** `PLACES`'a kayıt eklemek ve

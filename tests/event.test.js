@@ -11,6 +11,7 @@
    3) OGRENCI BILETI her blokta satilmaz (locada yok).
    4) HIZMET BEDELI bilet basina ve ayri satir. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   EVENTS,
@@ -27,9 +28,7 @@ import {
   calcEventTotal,
   eventPriceFrom,
   eventListPriceFrom,
-  eventSeatsLeft,
   eventSlugFromPath,
-  resolveEvent,
 } from '../assets/js/event-data.js';
 import { TOUR_ICONS, ratingSummary, refundAmount } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText, eventCatalogCard } from '../assets/js/catalog.js';
@@ -221,23 +220,56 @@ describe('yagmur ve iade', () => {
   });
 });
 
-/* ---------------- kalan koltuk ---------------- */
-describe('kalan koltuk', () => {
-  it('ayni secim her zaman ayni sayiyi veriyor', () => {
-    expect(eventSeatsLeft('2026-10-03', 'orta', 40)).toBe(eventSeatsLeft('2026-10-03', 'orta', 40));
+/* ---------------- kontenjan ----------------
+   Kalan yer artık uydurulmuyor. Önceki eventSeatsLeft() tarih metninin karma
+   değerinden bir "son N yer" sayısı üretiyordu; hiçbir satışla ilgisi
+   yoktu ve dolu durumu hiç oluşmuyordu. Kalan yer veri kapısının
+   kontenjan cevabından geliyor (MolaVeri.musaitlik). Cevabın kendisi ve
+   hesap tests/veri-kapisi.test.js'te; burada sayfanın onu kullandığı
+   ölçülüyor. */
+describe('kontenjan', () => {
+  const kontenjanFn = () => sayfaJs.match(/function syncSeats\(hesap\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('karma değerden kalan yer üreten fonksiyon yok', () => {
+    expect(veriJs).not.toMatch(/function \w*(seatsLeft|SeatsLeft|roomsLeft)\(/);
+    expect(sayfaJs).not.toMatch(/(seatsLeft|SeatsLeft|roomsLeft)\(/);
   });
 
-  it('ayni gecenin iki blogu ayrisiyor', () => {
-    expect(eventSeatsLeft('2026-10-03', 'orta', 40))
-      .not.toBe(eventSeatsLeft('2026-10-03', 'ust', 40));
+  it('kayıt ve kalan yer veri kapısından', () => {
+    expect(sayfaJs).toMatch(/MolaVeri\.urun\('event',\s/);
+    expect(sayfaJs).not.toMatch(/resolveEvent\(/);
+    expect(sayfaJs).toContain("MolaVeri.musaitlik('event', ");
+    expect(kontenjanFn()).toContain('kontenjanDurumu(');
   });
 
-  it('sonuc kapasiteyi asmiyor', () => {
-    etkinlik.categories.forEach(k => {
-      const kalan = eventSeatsLeft('2026-10-10', k.id, 40);
-      expect(kalan).toBeGreaterThan(0);
-      expect(kalan).toBeLessThanOrEqual(40);
-    });
+  it('dolu tarih takvimde kalıyor ama seçilemiyor', () => {
+    const fn = sayfaJs.match(/function dateChipsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('tarihDoluMu(musaitlik, ');
+    expect(fn).toContain('is-dolu');
+    expect(fn).toContain('disabled');
+  });
+
+  it('dolu veya yetmeyen kontenjanda rezervasyon düğmeleri pasif', () => {
+    const fn = kontenjanFn();
+    expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
+    expect(fn).toContain('dugme.disabled = !!satisEngeli');
+    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+  });
+
+  it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
+    expect(kontenjanFn()).toContain("el.hidden = durum.durum === 'bilinmiyor'");
+    expect(readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8'))
+      .toContain('.tour-seats[hidden] { display: none; }');
+  });
+
+  it('her sayfa veri kapısını kendi betiğinden önce yüklüyor', () => {
+    for (const s of sayfalar) {
+      const yer = (ad) => s.html.indexOf('assets/js/' + ad + '"');
+      expect(yer('taxonomy-data.js'), s.slug).toBeGreaterThan(-1);
+      expect(yer('inventory-data.js'), s.slug).toBeGreaterThan(yer('taxonomy-data.js'));
+      expect(yer('data-gateway.js'), s.slug).toBeGreaterThan(yer('inventory-data.js'));
+      expect(yer('event-page.js'), s.slug).toBeGreaterThan(yer('data-gateway.js'));
+    }
   });
 });
 
@@ -256,8 +288,8 @@ describe('adres ve kayit cozumleme', () => {
     expect(eventSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilana duser', () => {
-    expect(resolveEvent('yok').slug).toBe(DEFAULT_EVENT_SLUG);
+  it('taninmayan slug varsayilana DUSMUYOR', () => {
+    expect(MolaVeri.urun('event', 'yok')).toBe(null);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -270,7 +302,6 @@ describe('gorseller ve ikonlar', () => {
   it('kullanilan her gorsel anahtari kayitli', () => {
     const kullanilan = new Set();
     etkinlik.gallery.forEach(g => kullanilan.add(g.key));
-    etkinlik.similar.forEach(s => kullanilan.add(s.key));
     etkinlik.categories.forEach(k => kullanilan.add(k.key));
     [...kullanilan].forEach(k =>
       expect(EVENT_IMAGE_FILES[k], 'kayitsiz gorsel anahtari: ' + k).toBeTruthy());
@@ -339,7 +370,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(ld.itemListElement.map(i => i.name)).toEqual(['Anasayfa', e.categoryPlural, e.title]);
-      expect(ld.itemListElement[1].item).toContain('#' + e.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(e) + '/');
       expect(ld.itemListElement[2].item).toContain('/etkinlik/' + slug + '/');
     });
   });
@@ -407,8 +438,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });
@@ -416,7 +447,7 @@ describe('sayfa etiketleri', () => {
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href.startsWith('etkinlik/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('etkinlik/'));
 
   it('her etkinlik anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);
@@ -465,7 +496,7 @@ describe('anasayfa baglantisi', () => {
        yazilmis kartlarin dustugu tuzagin ta kendisi olurdu. */
     expect(eventCatalogCard(etkinlik, SONRASI)).toBe(null);
     expect(catalogCards('etkinlikler', SONRASI)).toEqual([]);
-    expect(catalogCards('yaklasan-planlar', SONRASI).every(k => !k.href.startsWith('etkinlik/')))
+    expect(catalogCards('yaklasan-planlar', SONRASI).every(k => !k.href || !k.href.startsWith('etkinlik/')))
       .toBe(true);
   });
 

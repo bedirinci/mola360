@@ -18,7 +18,6 @@ const AKTIVITE_TUR_VERI = (typeof require === 'function' && typeof module !== 'u
   : null;
 
 const aAsDate     = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.asDate : asDate;
-const aSeatsLeft  = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.seatsLeft : seatsLeft;
 const aCommonsUrl = AKTIVITE_TUR_VERI ? AKTIVITE_TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ----------------
@@ -220,13 +219,8 @@ function activityListPriceFrom(aktivite) {
   return Number(ucuz.perPersonList) || Number(ucuz.perPerson) || 0;
 }
 
-/* Kalan yer tarihten, seanstan VE paketten türetilir: aynı sabahın iki
-   kalkışı farklı sayı gösterir, ama aynı seçim her yenilemede aynı sayıyı
-   verir. Rastgele sayı kullanılsaydı "son 3 kişilik yer" uyarısı her
-   yenilemede zıplardı. */
-function activitySeatsLeft(iso, sessionId, packId, total) {
-  return aSeatsLeft(String(iso || '') + '|' + String(sessionId || '') + '|' + String(packId || ''), total);
-}
+/* Kalan yer burada hesaplanmıyor: veri kapısının kontenjan cevabından
+   (MolaVeri.musaitlik; birim paket × seans). */
 
 /* Aktivite her gün yapılıyor ama hava koşuluna bağlı. Uçuşun yapılıp
    yapılmayacağı ancak o sabah belli oluyor; bu yüzden "iptal" iki ayrı
@@ -272,6 +266,26 @@ const ACTIVITIES = {
     area: 'Göreme, Nevşehir',
     region: 'İç Anadolu',
     code: 'MLA-AKT-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. */
+    taxonomy: {
+      categories: ['doga-macera'],
+      themes: ['macera-adrenalin'],
+      collections: ['romantik', 'yeni-baslayanlar'],
+      city: 'nevsehir',
+      facets: {}
+    },
+    currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
+    seo: {
+      title: 'Kapadokya Sıcak Hava Balonu Turu — Göreme | mola360',
+      description: 'Göreme\'de gün doğumunda bir saat balon uçuşu: otelden alım, kahvaltı, köpüklü ikram ve uçuş sertifikası dahil. Üç paket, {fiyat}\'den başlayan fiyatlar, hava koşulunda tam iade.',
+      ogTitle: 'Kapadokya Sıcak Hava Balonu Turu — Göreme',
+      ogDescription: 'Gün doğumunda bir saat uçuş, otelden alım dahil. Hava koşulunda koşulsuz tam iade.'
+    },
     durationLabel: '1 saat uçuş · 3 saat toplam',
     /* Başlık satırında geçen kısa süre cümlesi. */
     activityLabel: 'Gün doğumunda 1 saat uçuş',
@@ -554,25 +568,20 @@ const ACTIVITIES = {
        kayıt anasayfaya. Tur ve otel sayfalarındaki "similar" alanından
        farkı: burada adres doğrudan yazılır, çünkü benzer içerik başka
        bir TÜRDEN de olabiliyor (tur, otel, aktivite). */
-    similar: [
-      { key: 'kapadokyaBalon', href: 'tur/kapadokya-3-gece/', title: 'Kapadokya Turu — 3 Gece 4 Gün',
-        meta: 'Uçaklı · 3 gece', rating: '4,7', price: 8990, unit: 'kişi başı' },
-      { key: 'uchisar',  title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat',
-        rating: '4,7', price: 750, unit: 'kişi başı' },
-      { key: 'goreme',   title: 'Göreme Açık Hava Müzesi Turu',  meta: 'Rehberli · 3 saat',
-        rating: '4,8', price: 620, unit: 'kişi başı' },
-      { key: 'kizilVadi', title: 'Kızıl Vadi Gün Batımı Yürüyüşü', meta: 'Çavuşin çıkışlı · 3 saat',
-        rating: '4,6', price: 480, unit: 'kişi başı' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ href: 'tur/kapadokya-3-gece/' }, { href: 'otel/goreme-magara-otel/' }],
 
     /* Sayfa etiketleri: hepsi gerçek bir hedefe gidiyor — anasayfadaki
        şerit çapası, bu sayfanın bölümü ya da yazılmış bir içerik
        sayfası. docs/seo-arastirma.md madde 4. */
     tags: [
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Uçuş paketleri',       href: '#paketler' },
       { label: 'Sabahın programı',     href: '#program' },
       { label: 'Katılım şartları',     href: '#bilgiler' },
@@ -585,11 +594,6 @@ const ACTIVITIES = {
 
 const DEFAULT_ACTIVITY_SLUG = 'kapadokya-balon-turu';
 
-function resolveActivity(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(ACTIVITIES, anahtar)) return ACTIVITIES[anahtar];
-  return ACTIVITIES[DEFAULT_ACTIVITY_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -604,9 +608,7 @@ if (typeof module !== 'undefined' && module.exports) {
     calcActivityTotal,
     activityPriceFrom,
     activityListPriceFrom,
-    activitySeatsLeft,
     weatherRefundAmount,
-    activitySlugFromPath,
-    resolveActivity
+    activitySlugFromPath
   };
 }

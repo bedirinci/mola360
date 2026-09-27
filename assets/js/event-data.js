@@ -21,7 +21,6 @@ const ETKINLIK_TUR_VERI = (typeof require === 'function' && typeof module !== 'u
   : null;
 
 const eAsDate     = ETKINLIK_TUR_VERI ? ETKINLIK_TUR_VERI.asDate : asDate;
-const eSeatsLeft  = ETKINLIK_TUR_VERI ? ETKINLIK_TUR_VERI.seatsLeft : seatsLeft;
 const eCommonsUrl = ETKINLIK_TUR_VERI ? ETKINLIK_TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ----------------
@@ -235,12 +234,8 @@ function eventListPriceFrom(event) {
   return Number(ucuz.priceList) || Number(ucuz.price) || 0;
 }
 
-/* Kalan koltuk temsil tarihinden VE kategoriden türetilir: aynı gecenin
-   iki bloğu farklı sayı gösterir, ama aynı seçim her yenilemede aynı
-   sayıyı verir. */
-function eventSeatsLeft(iso, categoryId, total) {
-  return eSeatsLeft(String(iso || '') + '#' + String(categoryId || ''), total);
-}
+/* Kalan koltuk burada hesaplanmıyor: veri kapısının kontenjan
+   cevabından (MolaVeri.musaitlik; birim temsil × bilet kategorisi). */
 
 /* /mola360/etkinlik/aspendos-opera-bale-festivali/ -> slug */
 function eventSlugFromPath(pathname) {
@@ -273,6 +268,28 @@ const EVENTS = {
     area: 'Serik, Antalya',
     region: 'Akdeniz',
     code: 'MLA-ETK-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. Opera ve bale menüdeki etkinlik
+       türlerine sığmadığı için "Sahne Sanatları" kategorisi açıldı
+       (menüde yok, onaya sunulu); festival olduğu için Festivaller'de de. */
+    taxonomy: {
+      categories: ['sahne-sanatlari', 'festivaller'],
+      themes: ['kultur-tarih'],
+      collections: ['romantik'],
+      city: 'antalya',
+      facets: {}
+    },
+    currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
+    seo: {
+      title: 'Aspendos Opera ve Bale Festivali — Antik Tiyatro | mola360',
+      description: 'Aspendos Antik Tiyatro\'da açık hava opera ve bale gecesi: numaralı koltuk, dört bilet bloğu, {fiyat}\'den başlayan fiyatlar. Yağmurda yeni tarihe ücretsiz aktarım.',
+      ogTitle: 'Aspendos Opera ve Bale Festivali',
+      ogDescription: 'İki bin yıllık Roma tiyatrosunda açık hava opera ve bale gecesi. Numaralı koltuk, {fiyat}\'den başlayan biletler.'
+    },
     venueName: 'Aspendos Antik Tiyatro',
     durationLabel: '≈ 2 saat 30 dk · bir ara',
     doorsLabel: 'Kapılar 19:00’da açılır',
@@ -506,18 +523,17 @@ const EVENTS = {
         a: 'Temsil 20:30’da başlar ve kapılar kapanır. Geç gelen misafirler ilk aranın sonuna kadar bekler, sonra kendi koltuklarına yerleştirilir. Bilet geçerliliğini yitirmez ama kaçırılan perde için iade yapılmaz.' }
     ],
 
-    similar: [
-      { key: 'opera',    title: 'İstanbul Opera Festivali',  meta: 'Harbiye, İstanbul · 20:00', rating: '4,8', price: 890, unit: 'bilet başı' },
-      { key: 'orkestra', title: 'Efes Antik Tiyatro Konseri', meta: 'Selçuk, İzmir · 21:00',    rating: '4,7', price: 680, unit: 'bilet başı' },
-      { key: 'bale',     title: 'Ankara Bale Gecesi',        meta: 'Opera Sahnesi · 20:00',    rating: '4,6', price: 520, unit: 'bilet başı' },
-      { key: 'kaleici',  title: 'Kaleiçi Akşam Turu',        meta: 'Antalya · 2 saat',         rating: '4,5', price: 380, unit: 'kişi başı' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [],
 
     tags: [
-      { label: 'Etkinlikler',        href: 'index.html#etkinlikler' },
-      { label: 'Yaklaşan planlar',   href: 'index.html#yaklasan-planlar' },
-      { label: 'Aktiviteler',        href: 'index.html#aktiviteler' },
-      { label: 'Oteller',            href: 'index.html#oteller' },
+      { label: 'Etkinlikler',        href: 'etkinlikler/' },
+      { label: 'Yaklaşan planlar',   href: 'bu-hafta/' },
+      { label: 'Aktiviteler',        href: 'aktiviteler/' },
+      { label: 'Oteller',            href: 'oteller/' },
       { label: 'Temsil takvimi',     href: '#program' },
       { label: 'Bilet kategorileri', href: '#biletler' },
       { label: 'Mekân ve ulaşım',    href: '#mekan' },
@@ -530,11 +546,6 @@ const EVENTS = {
 
 const DEFAULT_EVENT_SLUG = 'aspendos-opera-bale-festivali';
 
-function resolveEvent(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(EVENTS, anahtar)) return EVENTS[anahtar];
-  return EVENTS[DEFAULT_EVENT_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -552,8 +563,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcEventTotal,
     eventPriceFrom,
     eventListPriceFrom,
-    eventSeatsLeft,
-    eventSlugFromPath,
-    resolveEvent
+    eventSlugFromPath
   };
 }

@@ -7,8 +7,10 @@
    tests/tour.test.js onları doğrudan çağırır. Sayfa bir tuşa basıldığında
    yeniden hesap yapmaz, bu fonksiyonların sonucunu basar.
 
-   Yeni tur eklemek: TOURS'a bir kayıt daha. Sayfa ?tur=<slug> ile o kaydı
-   açar, slug bilinmiyorsa DEFAULT_TOUR_SLUG'a düşer. */
+   Yeni tur eklemek: TOURS'a bir kayıt daha. Adresi /tur/<slug>/; dosyası
+   yoksa yönlendirici (404.html) aynı şablonu kuruyor. Bilinmeyen slug
+   "bulunamadı" ekranına düşer; varsayılan bir tura DÜŞMEZ (başka bir
+   ürünü o adreste göstermek yanlış içerik olurdu). */
 
 /* ---------------- görseller ----------------
    Adresler Wikimedia Commons dosya adından deterministik olarak kurulur;
@@ -204,17 +206,11 @@ function nextDepartureDates(from, weekdays, count, leadDays) {
   return out;
 }
 
-/* Kalan kontenjan tarihten türetilir. Rastgele sayı kullanılsa rakam her
-   sayfa yenilemesinde zıplar ve "acele et" mesajı inandırıcılığını
-   kaybeder; aynı tarih her zaman aynı sayıyı verir. */
-function seatsLeft(iso, total) {
-  const kapasite = Math.max(1, Math.round(Number(total) || 1));
-  const metin = String(iso || '');
-  let h = 7;
-  for (let i = 0; i < metin.length; i++) h = (h * 31 + metin.charCodeAt(i)) % 9973;
-  const ust = Math.min(kapasite, 9);
-  return 2 + (h % Math.max(1, ust - 1));
-}
+/* Kalan kontenjan burada HESAPLANMIYOR. Önceki sürümde seatsLeft() tarih
+   metninin karma değerinden bir "son N yer" sayısı üretiyordu; hiçbir
+   satışla ilgisi yoktu ve "dolu" durumu hiç oluşmuyordu. Kalan yer artık
+   veri kapısının kontenjan cevabından geliyor (MolaVeri.musaitlik,
+   docs/veri-sozlesmesi.md bölüm 6). */
 
 /* ---------------- fiyat ----------------
    Kişi sayısı sınırları tek yerde: hem sayaç butonları hem toplam hesabı
@@ -594,6 +590,32 @@ const TOURS = {
     region: 'Ege',
     code: 'MLA-EFS-01',
 
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. Yukarıdaki region ve category*
+       metinleri bunun görüntüsü; tests/veri-kapisi.test.js ikisinin
+       ayrışmadığını ölçüyor. seo, tur/<slug>/index.html kabuğundaki
+       başlıkla birebir aynı olmak zorunda (aynı test). */
+    taxonomy: {
+      categories: ['ege-turlari'],
+      themes: ['kultur-tarih'],
+      collections: ['ailece', 'tek-basina'],
+      city: 'izmir',
+      facets: { transport: ['minibus'], departFrom: ['izmir'] }
+    },
+    currency: 'TRY',
+    /* Molapuan: tura katılınca kazanılır, tura göre değişir. ÖRNEK değer;
+       kural belirlenince güncellenecek (account-engine.js). */
+    loyalty: { points: 60 },
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-19',
+    seo: {
+      title: 'Efes Antik Kenti, Meryem Ana Evi ve Şirince Turu — mola360',
+      description: 'İzmir çıkışlı tam gün Efes turu: Celsus Kütüphanesi, Büyük Tiyatro, Meryem Ana Evi, Artemis Tapınağı ve Şirince. Lisanslı rehber, öğle yemeği ve girişler dahil, en fazla 16 kişi.',
+      ogTitle: 'Efes Antik Kenti, Meryem Ana Evi ve Şirince Turu',
+      ogDescription: 'İzmir çıkışlı tam gün, küçük grup, lisanslı rehber. Girişler, öğle yemeği ve Şirince\'de şarap tadımı dahil.'
+    },
+
     /* Anasayfa kartı: bu kayıt catalog.js tarafından anasayfadaki
        "Günübirlik Turlar" ve "Yaklaşan Planlar" şeritlerine kendiliğinden
        giriyor. Fiyat, puan, yorum sayısı ve tarih KAYITTAN türetiliyor;
@@ -825,12 +847,11 @@ const TOURS = {
 
     /* slug tasiyan kayit gercek bir icerik sayfasina gider; tasimayan
        kayit anasayfaya. Yeni sayfa yazildikca slug eklenir. */
-    similar: [
-      { key: 'kapadokyaBalon', slug: 'kapadokya-3-gece', title: 'Kapadokya Turu — 3 Gece 4 Gün', meta: 'Uçaklı · 3 gece', rating: '4.7', price: 8990 },
-      { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
-      { key: 'alacati',   title: 'Alaçatı ve Çeşme Turu',        meta: 'İzmir çıkışlı · 8 saat',  rating: '4.6', price: 990 },
-      { key: 'bodrum',    title: 'Bodrum Tekne Turu',            meta: 'Bodrum çıkışlı · 6 saat', rating: '4.8', price: 1150 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'kapadokya-3-gece' }, { slug: 'pamukkale-hierapolis' }, { href: 'aktivite/bodrum-tekne-turu/' }],
     /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
        HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
        capasina, ya bu sayfanin bir bolumune, ya da diger tur
@@ -839,10 +860,10 @@ const TOURS = {
        gercek olana kadar sifir oldugunu soyluyor.
        href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
     tags: [
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Turun programı',       href: '#program' },
       { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
       { label: 'Buluşma noktası',      href: '#bulusma' },
@@ -873,6 +894,31 @@ const TOURS = {
     area: 'Göreme, Nevşehir',
     region: 'İç Anadolu',
     code: 'MLA-KPD-04',
+
+    /* Açıklama efes-sirince kaydında. Ankara çıkışı otobüslü transfer
+       ama turun kendisi uçaklı; ulaşım özelliği ana ulaşımı söylüyor. */
+    taxonomy: {
+      categories: ['kapadokya-turlari'],
+      themes: ['kultur-tarih', 'doga-yayla'],
+      collections: ['ailece'],
+      city: 'nevsehir',
+      /* Kalkış şehirleri aşağıdaki departureCities'ten türetiliyor;
+         burada ikinci kez yazılmıyor. */
+      facets: { transport: ['ucak'] }
+    },
+    currency: 'TRY',
+    /* Molapuan: tura katılınca kazanılır, tura göre değişir. ÖRNEK değer;
+       kural belirlenince güncellenecek (account-engine.js). */
+    loyalty: { points: 250 },
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-19',
+    seo: {
+      title: 'Kapadokya Turu — 3 Gece 4 Gün — mola360',
+      description: 'Uçaklı Kapadokya turu, 3 gece 4 gün: Göreme Açık Hava Müzesi, Zelve, Ihlara Vadisi, Derinkuyu ve Uçhisar. Göreme\'de mağara otel, uçak bileti ve transferler dahil, üç tam gün rehberli.',
+      ogTitle: 'Kapadokya Turu — 3 Gece 4 Gün',
+      ogDescription: 'Uçaklı, Göreme\'de mağara otel, üç tam gün rehberli program. Uçak bileti, transferler ve girişler dahil.'
+    },
 
     /* Anasayfa kartı — açıklama efes-sirince kaydında. */
     card: {
@@ -977,9 +1023,9 @@ const TOURS = {
     /* Kalkış şehri farkı ücretli kişi başına eklenir; fee 0 olan şehirde
        özet satırı hiç görünmez. */
     departureCities: [
-      { id: 'ist', label: 'İstanbul', fee: 0,   note: 'IST veya SAW, sabah uçuşu' },
-      { id: 'izm', label: 'İzmir',    fee: 350, note: 'ADB, sabah uçuşu' },
-      { id: 'ank', label: 'Ankara',   fee: 0,   note: 'Otobüslü transfer, 4,5 saat' }
+      { id: 'ist', city: 'istanbul', label: 'İstanbul', fee: 0,   note: 'IST veya SAW, sabah uçuşu' },
+      { id: 'izm', city: 'izmir',    label: 'İzmir',    fee: 350, note: 'ADB, sabah uçuşu' },
+      { id: 'ank', city: 'ankara',   label: 'Ankara',   fee: 0,   note: 'Otobüslü transfer, 4,5 saat' }
     ],
 
     meeting: {
@@ -1116,12 +1162,11 @@ const TOURS = {
     ],
 
 
-    similar: [
-      { key: 'efesKutuphane', slug: 'efes-sirince', title: 'Efes Antik Kenti ve Şirince Turu', meta: 'İzmir çıkışlı · 9 saat', rating: '4.8', price: 1290 },
-      { key: 'pamukkale', title: 'Pamukkale ve Hierapolis Turu', meta: 'İzmir çıkışlı · 12 saat', rating: '4.7', price: 1890 },
-      { key: 'ihlara',    title: 'Ihlara Vadisi Yürüyüş Turu',   meta: 'Nevşehir çıkışlı · 8 saat', rating: '4.6', price: 1150 },
-      { key: 'uchisar',   title: 'Kapadokya Gün Batımı ATV Turu', meta: 'Göreme çıkışlı · 2 saat', rating: '4.7', price: 750 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'efes-sirince' }, { slug: 'pamukkale-hierapolis' }, { href: 'aktivite/kapadokya-balon-turu/' }],
     /* Sayfa etiketleri: sayfanin en altindaki cip bulutu.
        HEPSI gercek bir hedefe gidiyor -- ya anasayfadaki serit
        capasina, ya bu sayfanin bir bolumune, ya da diger tur
@@ -1130,10 +1175,10 @@ const TOURS = {
        gercek olana kadar sifir oldugunu soyluyor.
        href kok-goreli yazilir, '#' ile baslayanlar oldugu gibi kalir. */
     tags: [
-      { label: 'Konaklamalı turlar',   href: 'index.html#konaklamali-turlar' },
-      { label: 'Günübirlik turlar',    href: 'index.html#turlar' },
-      { label: 'Aktiviteler',          href: 'index.html#aktiviteler' },
-      { label: 'Oteller',              href: 'index.html#oteller' },
+      { label: 'Konaklamalı turlar',   href: 'turlar/konaklamali-turlar/' },
+      { label: 'Günübirlik turlar',    href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Aktiviteler',          href: 'aktiviteler/' },
+      { label: 'Oteller',              href: 'oteller/' },
       { label: 'Gün gün program',      href: '#program' },
       { label: 'Konaklama',            href: '#konaklama' },
       { label: 'Fiyata dahil olanlar', href: '#dahil-olanlar' },
@@ -1150,11 +1195,6 @@ const TOURS = {
 
 const DEFAULT_TOUR_SLUG = 'efes-sirince';
 
-function resolveTour(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(TOURS, anahtar)) return TOURS[anahtar];
-  return TOURS[DEFAULT_TOUR_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -1177,7 +1217,6 @@ if (typeof module !== 'undefined' && module.exports) {
     formatTrDateRangeShort,
     trDateParts,
     nextDepartureDates,
-    seatsLeft,
     clampParty,
     addonLines,
     calcDailyTotal,
@@ -1195,7 +1234,6 @@ if (typeof module !== 'undefined' && module.exports) {
     filterReviews,
     reviewerInitials,
     tourSlugFromPath,
-    tourSlugFromQuery,
-    resolveTour
+    tourSlugFromQuery
   };
 }

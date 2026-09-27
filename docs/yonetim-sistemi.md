@@ -35,7 +35,18 @@ Bu yüzden sistem ikiye ayrıldı:
               └──── müsaitlik / rezervasyon (runtime API) ─┘
 ```
 
-**Statik üretim** seçildi: "Yayınla" işlemi veritabanından okuyup
+> **Bu karar değişti (dinamik adres mimarisi).** Aşağıdaki "statik
+> üretim" kararı iptal edildi: yeni ürün eklemek yeni bir HTML dosyası,
+> klasör veya sayfa üretmeyecek. Ürün yalnızca veritabanına bir kayıt;
+> `/tur/<slug>/` gibi adresler tek bir şablon tarafından karşılanacak ve
+> sayfa kaydı sunucudan alacak. Ön yüz bu geçişe hazırlanıyor: bütün
+> ekranlar veriyi tek bir veri kapısından istiyor, backend geldiğinde
+> yalnızca o kapının içi değişecek (`docs/veri-sozlesmesi.md`). Mevcut
+> 7 ürün sayfasının HTML kabuğu, sosyal medya önizlemesi bozulmasın diye
+> sunucu gelene kadar duruyor; yenisi yazılmayacak. Aşağıdaki paragraf
+> kararın tarihçesi olarak bırakıldı.
+
+~~**Statik üretim** seçildi~~ (iptal): "Yayınla" işlemi veritabanından okuyup
 `assets/js/*-data.js` dosyalarını ve içerik sayfalarını **yeniden
 üretiyor**. Böylece:
 
@@ -202,21 +213,22 @@ atar.
 | 5 | Takvim, müsaitlik, fiyat motoru, rezervasyon | |
 | 6 | Kampanya, kupon, anasayfa yönetimi | |
 | 7 | Raporlar, denetim, bildirim, yedekleme | |
-| 8b | Statik üretim (yayınla), üretim sertleştirme, E2E | |
+| 8b | ~~Statik üretim~~ → dinamik adresler (tek şablon + veritabanı), üretim sertleştirme, E2E | |
 
-**Şema fazların tamamını kapsıyor** (38 tablo): şema değişikliği en pahalı
+**Şema fazların tamamını kapsıyor** (84 tablo; bu belgede önceden 38 yazıyordu, göç dosyalarından sayılınca 019 öncesi 77 çıktı): şema değişikliği en pahalı
 göç türü, bu yüzden temel baştan tam kuruldu. Fazlar API ve arayüzü
 ekliyor.
 
 ## Şu an ne çalışıyor
 
-- 18 göç, 38 tablo, gerçek PostgreSQL
+- 19 göç, 84 tablo, gerçek PostgreSQL (019: sınıflandırma — çoklu
+  kategori, tema, koleksiyon, liste sayfası, özellik, para birimi)
 - Kimlik doğrulama: scrypt, sunucu oturumu, hesap kilidi, hız sınırı,
   oturum sonlandırma, şifre değişikliğinde toplu çıkış
 - RBAC: 7 rol, 34 izin, middleware seviyesinde uygulama
 - Denetim kaydı (öncesi/sonrası farkı)
 - Mevcut 7 içeriğin tam göçü, sıfır kayıp
-- 72 backend testi, gerçek veritabanına karşı
+- 82 backend testi, gerçek veritabanına karşı
 
 ## Henüz olmayan
 
@@ -224,9 +236,10 @@ Bunlar **bilerek** sonraki fazlarda:
 
 - İçerik CRUD uç noktaları ve panel arayüzü (`/admin/` hâlâ eski,
   statik dosyaları okuyan sürüm — `docs/admin-paneli.md`)
-- Statik üretim ("Yayınla" → dosya üretimi)
+- Dinamik adresler: sunucunun `/tur/<slug>/` gibi adresleri tek şablonla
+  karşılaması (statik üretimin yerine)
 - Rezervasyon, ödeme ve envanter **servisleri** (şema hazır, iş mantığı yok)
 - Medya yükleme (şema ve soyutlama hazır, storage sürücüsü yok)
 - Zamanlanmış iş çalıştırıcısı (`jobs` tablosu hazır)
 
-Panel bu geçiş boyunca çalışmaya devam ediyor; frontend'e dokunulmadı.
+Panel bu geçiş boyunca çalışmaya devam ediyor.

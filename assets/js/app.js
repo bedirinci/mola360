@@ -204,10 +204,20 @@ function onId(id, olay, fn, opts) {
   return el;
 }
 
-const currentUser = {
-  name: 'Bedir İnci',
-  avatarUrl: null
-};
+/* Oturum açan kullanıcı veri kapısından (MolaVeri.oturum); oturum yoksa
+   misafir. Elle yazılmış bir kullanıcı yok. */
+const currentUser = { name: '', avatarUrl: null, uye: false };
+function currentUserYenile(){
+  const h = (typeof MolaVeri !== 'undefined' && MolaVeri.oturum) ? MolaVeri.oturum() : null;
+  currentUser.name = h ? [h.ad, h.soyad].filter(Boolean).join(' ') : '';
+  currentUser.uye = !!h;
+  return h;
+}
+currentUserYenile();
+/* Sayfa köküne göre bağ (data-root): anasayfada "", içerik sayfasında "../../". */
+function mola360Kok(){
+  return (document.body && document.body.getAttribute('data-root')) || '';
+}
 
 function setCssVars(el, vars){
   if(!el) return;
@@ -218,9 +228,12 @@ function setCssVars(el, vars){
 }
 /* normalizeSearchText, getSearchCategoryIcon, getSearchCardType, getInitials
    artık assets/js/search-utils.js içinde (bu dosyadan önce yüklenir). */
+const MISAFIR_AVATAR = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path></svg>';
 function renderProfileAvatar(el){
   if(!el) return;
-  if(currentUser.avatarUrl){
+  if(!currentUser.name){
+    el.innerHTML = MISAFIR_AVATAR;
+  } else if(currentUser.avatarUrl){
     el.innerHTML = '<img src="' + currentUser.avatarUrl + '" alt="' + currentUser.name + '">';
   } else {
     el.textContent = getInitials(currentUser.name);
@@ -429,13 +442,32 @@ const cardImages = {
   "erciyes": "https://commons.wikimedia.org/wiki/Special:FilePath/Erciyes_Da%C4%9F%C4%B1_Kayseri.JPG?width=800"
 };
 
+/* Günün en çok satanları: SIRALAMA, ürün kopyası değil. Her satır bir
+   ürüne işaret ediyor ("içerik tipi/slug"); başlık ve görsel ürünün kendi
+   kaydından geliyor. Sıralama bugün elle; backend gelince satış
+   verisinden hesaplanacak (docs/veri-sozlesmesi.md). */
 const top10 = [
-  {img:'kapadokya',t:'Kapadokya Balon Turu',p:'2.450₺'},{img:'pamukkale',t:'Pamukkale Termal Tatili',p:'1.890₺'},
-  {img:'bodrum',t:'Bodrum Tekne Turu',p:'980₺'},{img:'efes',t:'Efes Antik Kent Turu',p:'750₺'},
-  {img:'uludag',t:'Uludağ Kayak Paketi',p:'3.200₺'},{img:'bogaz',t:'İstanbul Boğaz Turu',p:'650₺'},
-  {img:'ayder',t:'Karadeniz Yayla Turu',p:'2.100₺'},{img:'assos',t:'Assos Gün Batımı Turu',p:'1.150₺'},
-  {img:'sile',t:'Şile Kamp Deneyimi',p:'890₺'},{img:'iznik',t:'İznik Kültür Turu',p:'520₺'},
+  'activity/kapadokya-balon-turu', 'tour/pamukkale-hierapolis', 'activity/bodrum-tekne-turu',
+  'tour/efes-sirince', 'activity/uludag-kayak-paketi', 'activity/istanbul-bogaz-turu',
+  'tour/karadeniz-yaylalari', 'tour/assos-gun-batimi', 'activity/sile-kamp-deneyimi',
+  'tour/iznik-golu-antik-kent'
 ];
+
+/* Sıralamadaki ürünler kapıdan: bulunamayan (yayından kalkmış) satır
+   düşüyor, sıralama boşluk bırakmadan kayıyor. Sayfası olan ürün kendi
+   adresine, örnek özet kayıt hiçbir yere gitmiyor. */
+function enCokSatanlar() {
+  if (typeof MolaVeri === 'undefined') return [];
+  const YOL = { tour: 'tur', hotel: 'otel', activity: 'aktivite', event: 'etkinlik', venue: 'mekan' };
+  return top10.map(ref => {
+    const [tip, slug] = ref.split('/');
+    const kayit = MolaVeri.urun(tip, slug);
+    if (!kayit) return null;
+    const kart = kayit.card || {};
+    return { img: kart.img, t: kart.title || kayit.title,
+             href: kayit.sample ? '' : YOL[tip] + '/' + kayit.slug + '/' };
+  }).filter(Boolean);
+}
 const CAT_ICONS = {
   "firsatlar": "assets/img/kategori/firsatlar.webp",
   "turlar": "assets/img/kategori/turlar.webp",
@@ -450,15 +482,17 @@ const CAT_ICONS = {
 
 
 const categories = [
-  {name:'Fırsatlar', icon:'percent', img:'firsatlar'},
-  {name:'Turlar', icon:'compass', img:'turlar'},
-  {name:'Etkinlikler', icon:'ticket', img:'etkinlikler'},
-  {name:'Oteller', icon:'home', img:'oteller'},
-  {name:'Aktiviteler', icon:'activity', img:'aktiviteler'},
-  {name:'Mekanlar', icon:'mapPin', img:'mekanlar'},
-  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim'},
-  {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler'},
-  {name:'Bu Hafta', icon:'calendar', img:'buhafta'},
+  /* path: kategorinin sayfası (kök göreli). Kuponlarım hesap panelinin
+     bir bölümü (bolum). */
+  {name:'Fırsatlar', icon:'percent', img:'firsatlar', path:'firsatlar'},
+  {name:'Turlar', icon:'compass', img:'turlar', path:'turlar'},
+  {name:'Etkinlikler', icon:'ticket', img:'etkinlikler', path:'etkinlikler'},
+  {name:'Oteller', icon:'home', img:'oteller', path:'oteller'},
+  {name:'Aktiviteler', icon:'activity', img:'aktiviteler', path:'aktiviteler'},
+  {name:'Mekanlar', icon:'mapPin', img:'mekanlar', path:'mekanlar'},
+  {name:'Kuponlarım', icon:'wallet', img:'kuponlarim', path:'hesabim', bolum:'kuponlarim'},
+  {name:'Yeni Eklenenler', icon:'sparkle', img:'yenieklenenler', path:'yeni-eklenenler'},
+  {name:'Bu Hafta', icon:'calendar', img:'buhafta', path:'bu-hafta'},
 ];
 
 // Arama ekranında gösterilecek kategori listesi yalnızca bu dört kategoriden oluşur.
@@ -471,11 +505,22 @@ const searchCategories = [
 ];
 
 // Arama ekranında örnek olarak gösterilen son aramalar.
-const recentSearchTerms = [
-  'İstanbul konserleri',
-  'Kapadokya otelleri',
-  'İzmir mekanları'
-];
+/* Son aramalar ziyaretçinin kendi geçmişi (visitor-history.js); elle
+   yazılmış örnek liste kaldırıldı. Geçmiş yoksa bölüm çizilmiyor. */
+function sonAramalar() {
+  return (typeof gecOku === 'function') ? gecOku('arama') : [];
+}
+
+/* Arama sayfası: tam sonuçlar, süzgeçler ve sıralama (/arama/?q=). */
+function aramaSayfasiAdresi(metin) {
+  return SITE_KOK + 'arama/?q=' + encodeURIComponent(String(metin || '').trim());
+}
+function aramaSayfasinaGit(metin) {
+  const m = String(metin || '').trim();
+  if (!m) return;
+  if (typeof gecAramaEkle === 'function') gecAramaEkle(m);
+  window.location.href = aramaSayfasiAdresi(m);
+}
 
 // Arama ekranında gösterilen önerilen aramalar (trend/öneri niteliğinde, sabit liste).
 const suggestedSearchTerms = [
@@ -485,56 +530,52 @@ const suggestedSearchTerms = [
   'Boğaz turu',
   'Kamp alanları'
 ];
+/* Anasayfa şeritleri. Kartların İÇERİĞİ burada yazmıyor: başlık, fiyat,
+   puan ve tarih ürün kaydından türetiliyor (catalog.js).
+
+   Bir şeride iki yoldan kart girer:
+     1) kendiliğinden: sayfası olan her ürün kendi tipinin şeridine
+        (catalog.js/KATALOG_KAYNAKLARI);
+     2) elle seçim (picks): "içerik tipi/slug" listesi. Bugün seçilenler
+        henüz sayfası olmayan örnek kayıtlar (sample-catalog-data.js).
+
+   Eskiden bu dizide kartlar elle yazılıydı: aynı ürün iki şeritte iki
+   farklı adla görünebiliyor, "Bu Cuma" yazan kart her hafta "Bu Cuma"
+   diyordu. Taşımada hiçbir alanın kaybolmadığını
+   tests/ornek-katalog.test.js ölçüyor.
+
+   Bu yapı backend'deki homepage_blocks tablosunun karşılığı: mode 'mixed'
+   (kendiliğinden + elle), 3. adımda yönetimden düzenlenebilir olacak. */
 const cardSections = [
   /* Etkinlikler Turkiye geneli: farkli sehirlerden programlar. */
-  {title:'Popüler Etkinlikler', anchor:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Cemil Topuzlu Sahnesi, İstanbul · 21:00', meta2:'12 Eylül, Cuma', priceMain:'890'},
-    {img:'festival1', badges:['Festival'], rating:'4.6', reviews:'310+', title:'Çeşme Yaz Festivali', meta1:'Alaçatı Sahil, İzmir · Tüm gün', meta2:'19 Eylül, Cuma', priceMain:'650'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'21 Eylül, Pazartesi', priceMain:'420'},
+  {title:'Popüler Etkinlikler', anchor:'etkinlikler', hepsi:'etkinlikler', titleIcon:'flame', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+    'event/harbiye-acikhava-konserleri', 'event/cesme-yaz-festivali', 'event/stand-up-gecesi'
   ]},
   /* filterKey: bu seride baslik altinda zaman filtresi cikar (UPCOMING_FILTERS).
-     inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun. */
-  /* Serit hem etkinlikleri hem turlari tasidigi icin baslik "Planlar".
-     Icerik Turkiye geneli: her gun filtresinde farkli sehirler bulunur. */
-  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[
-    /* dayKey: gun filtreleri (Bu Cuma / Bu Cumartesi / Bu Pazar) bununla suzer.
-       inDays: siralama icin kalan gun. meta2: kartta gorunen tarih metni. */
-    {img:'run1', badges:['Spor'], rating:'4.6', reviews:'240+', title:'İstanbul Gece Yarısı Koşusu', meta1:'Kadıköy Sahil, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'350', inDays:0, dayKey:'cuma'},
-    {img:'standup1', badges:['Stand Up'], sponsored:true, title:'Stand Up Gecesi', meta1:'Jolly Joker, Ankara · 21:30', meta2:'Bu Cuma', priceMain:'420', inDays:0, dayKey:'cuma'},
-    {img:'concert1', badges:['Konser'], rating:'4.8', reviews:'640+', title:'Harbiye Açıkhava Konserleri', meta1:'Harbiye, İstanbul · 21:00', meta2:'Bu Cuma', priceMain:'890', inDays:0, dayKey:'cuma'},
-    {img:'concert2', badges:['Konser'], rating:'4.7', reviews:'120+', title:'Kordon Caz Akşamları', meta1:'Alsancak, İzmir · 20:00', meta2:'Bu Cumartesi', priceMain:'480', inDays:1, dayKey:'cumartesi'},
-    {img:'sapanca2', badges:['Günübirlik'], rating:'4.6', reviews:'75+', title:'Sapanca ve Maşukiye Turu', meta1:'İstanbul Çıkışlı · 07:30', meta2:'Bu Cumartesi', priceMain:'780', inDays:1, dayKey:'cumartesi'},
-    {img:'market1', badges:['Günübirlik'], rating:'4.4', reviews:'96+', title:'Alaçatı Pazar Turu', meta1:'İzmir Çıkışlı · 09:00', meta2:'Bu Pazar', priceMain:'350', inDays:2, dayKey:'pazar'},
-    {img:'coffee1', badges:['Festival'], rating:'4.5', reviews:'210+', title:'İstanbul Kahve Festivali', meta1:'Küçükçiftlik Park · 11:00', meta2:'Bu Pazar', priceMain:'290', inDays:2, dayKey:'pazar'},
-    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · 08:00', meta2:'Bu Pazar', priceMain:'450', inDays:2, dayKey:'pazar'},
-    {img:'abant2', badges:['Doğa Turu'], rating:'4.4', reviews:'155+', title:'Abant Gölü Doğa Yürüyüşü', meta1:'Ankara Çıkışlı · 08:30', meta2:'3 gün kaldı', priceMain:'620', inDays:3},
-    {img:'kapadokya2', badges:['Konaklamalı'], rating:'4.8', reviews:'910+', title:'Kapadokya 3 Gece Turu', meta1:'3 Gece 4 Gün · Uçaklı', meta2:'9 gün kaldı', priceMain:'8990', inDays:9},
-    {img:'erciyes', badges:['Kış Sporu'], rating:'4.6', reviews:'140+', title:'Erciyes Kayak Haftası', meta1:'Kayseri · 4 Gece 5 Gün', meta2:'12 gün kaldı', priceMain:'6400', inDays:12},
+     inDays = etkinlige kac gun kaldigi, dayKey = hafta sonu filtreleri icin gun;
+     ikisi de kaydin takviminden turetiliyor. Serit hem etkinlikleri hem
+     turlari tasidigi icin baslik "Planlar". */
+  {title:'Yaklaşan Planlar', anchor:'yaklasan-planlar', hepsi:'koleksiyonlar/son-dakika', titleIcon:'calendar', meta1Icon:'clock', meta2Label:'Tarih:', filterKey:'upcoming', cardStyle:'compact', items:[], picks:[
+    'event/istanbul-gece-yarisi-kosusu', 'event/stand-up-gecesi', 'event/harbiye-acikhava-konserleri',
+    'event/kordon-caz-aksamlari', 'tour/sapanca-masukiye', 'tour/alacati-pazar-turu',
+    'event/istanbul-kahve-festivali', 'tour/iznik-golu-antik-kent', 'tour/abant-golcuk',
+    'tour/erciyes-kayak-haftasi'
   ]},
   /* Turlar Turkiye geneli: kalkis noktalari farkli sehirlerden.
      titleIcon konaklamayi (moon), meta1Icon kalkis noktasini (mapPin)
      anlatir; ayni ikon iki anlam tasimaz. */
-  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'karadeniz2', badges:['Doğa'], sponsored:true, title:'Karadeniz Yaylaları Turu', meta1:'4 Gece 5 Gün · Uçaklı, İstanbul Çıkışlı', meta2:'2 Kasım, Pazar', priceMain:'12500'},
-    {img:'ege2', badges:['Balayı'], rating:'4.9', reviews:'288+', title:'Ege Adaları Balayı Kaçamağı', meta1:'2 Gece 3 Gün · Feribotlu, İzmir Çıkışlı', meta2:'15 Eylül, Salı', priceMain:'6990'},
-    {img:'dogu2', badges:['Doğu Ekspresi'], rating:'4.6', reviews:'450+', title:'Turistik Doğu Ekspresi Turu', meta1:'5 Gece 6 Gün · Trenli, Ankara Çıkışlı', meta2:'8 Aralık, Salı', priceMain:'9750'},
+  {title:'Konaklamalı Turlar', anchor:'konaklamali-turlar', hepsi:'turlar/konaklamali-turlar', titleIcon:'moon', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+    'tour/karadeniz-yaylalari', 'tour/ege-adalari-balayi', 'tour/dogu-ekspresi'
   ]},
-  {title:'Günübirlik Turlar', anchor:'turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[
-    {img:'sile', badges:['Günübirlik'], rating:'4.5', reviews:'190+', title:'Şile ve Ağva Turu', meta1:'İstanbul Çıkışlı · Öğle Yemeği Dahil', meta2:'Bu Cumartesi', priceMain:'690'},
-    {img:'cunda2', badges:['Günübirlik'], sponsored:true, title:'Cunda Adası ve Ayvalık', meta1:'İzmir Çıkışlı · Tekne Dahil', meta2:'Bu Pazar', priceMain:'890'},
-    {img:'abant2', badges:['Günübirlik'], rating:'4.4', reviews:'155+', title:'Abant ve Gölcük Turu', meta1:'Ankara Çıkışlı · Kahvaltı Dahil', meta2:'12 Ekim, Pazar', priceMain:'620'},
-    {img:'iznik2', badges:['Günübirlik'], rating:'4.5', reviews:'70+', title:'İznik Gölü ve Antik Kent', meta1:'Bursa Çıkışlı · Rehberli', meta2:'19 Ekim, Pazar', priceMain:'450'},
+  {title:'Günübirlik Turlar', anchor:'turlar', hepsi:'turlar/gunubirlik-turlar', titleIcon:'sun', meta1Icon:'mapPin', meta2Label:'En yakın:', items:[], picks:[
+    'tour/sile-agva', 'tour/cunda-ayvalik', 'tour/abant-golcuk', 'tour/iznik-golu-antik-kent'
   ]},
   /* Aktiviteler Turkiye geneli; titleIcon kategoriyle ayni (activity). */
-  {title:'Aktiviteler', anchor:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[
-    {img:'rafting3', badges:['Su Sporları'], rating:'4.8', reviews:'440+', title:'Köprülü Kanyon Rafting', meta1:'Antalya, Manavgat · Yarım Gün', meta2:'Her gün', priceMain:'850'},
-    {img:'paraglide3', badges:['Macera'], rating:'4.9', reviews:'1,2b+', title:'Ölüdeniz Yamaç Paraşütü', meta1:'Fethiye, Muğla · 20 dk Uçuş', meta2:'Her gün', priceMain:'1450'},
-    {img:'kayak3', badges:['Kış Sporu'], rating:'4.5', reviews:'330+', title:'Uludağ Kayak Dersi', meta1:'Bursa, Uludağ · 2 Saat Özel Ders', meta2:'Hafta içi', priceMain:'750'},
+  {title:'Aktiviteler', anchor:'aktiviteler', hepsi:'aktiviteler', titleIcon:'activity', meta1Icon:'clock', meta2Label:'En yakın:', items:[], picks:[
+    'activity/koprulu-kanyon-rafting', 'activity/oludeniz-yamac-parasutu', 'activity/uludag-kayak-dersi'
   ]},
-  {title:'Oteller', anchor:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[
-    {img:'hotel4', badges:['Her Şey Dahil'], rating:'9.2', reviews:'340+', title:'Sealight Resort', meta1:'Kemer, Antalya · Denize Sıfır', meta2:'Bu hafta', priceMain:'2100', unit:'/gece'},
-    {img:'hotel6', badges:['Termal'], sponsored:true, title:'Termal Vadi Resort', meta1:'Termal, Yalova · Termal Havuz Dahil', meta2:'Bu ay', priceMain:'1590', unit:'/gece'},
-    {img:'hotel7', badges:['Butik'], rating:'9.4', reviews:'96+', title:'Göreme Mağara Otel', meta1:'Göreme, Nevşehir · Tarihi Doku', meta2:'Bu hafta', priceMain:'2450', unit:'/gece'},
+  {title:'Oteller', anchor:'oteller', hepsi:'oteller', titleIcon:'home', meta1Icon:'mapPin', meta2Label:'Müsait:', items:[], picks:[
+    'hotel/sealight-resort', 'hotel/termal-vadi-resort', 'hotel/goreme-magara-otel'
   ]},
 ];
 
@@ -683,8 +724,8 @@ function updateCategoryLayout() {
 }
 
 /* ---------------- render ---------------- */
-if (byId('top10Scroll')) byId('top10Scroll').innerHTML = top10.map((it,i)=>`
-  <a class="top10-card" href="#">
+if (byId('top10Scroll')) byId('top10Scroll').innerHTML = enCokSatanlar().map((it,i)=>`
+  <a class="top10-card" href="${it.href || '#'}">
     <div class="top10-media">
       <span class="top10-rank">${i+1}</span>
       <img src="${cardImages[it.img] || ('https://picsum.photos/seed/'+it.img+'/236/296')}" alt="${it.t}">
@@ -693,12 +734,19 @@ if (byId('top10Scroll')) byId('top10Scroll').innerHTML = top10.map((it,i)=>`
   </a>`).join('');
 
 if (byId('catScroll')) byId('catScroll').innerHTML = categories.map(c=>`
-  <a class="cat-item" href="#">
+  <a class="cat-item" href="${c.path ? c.path + '/' + (c.bolum ? '?bolum=' + c.bolum : '') : '#'}">
     <span class="cat-icon-wrap"><img class="cat-icon-img" src="${CAT_ICONS[c.img]}" alt="${c.name}"></span>
     <span>${c.name}</span>
   </a>`).join('');
 updateCategoryLayout();
 onViewportResize(updateCategoryLayout);
+
+/* Kartta fiyatin yanindaki birim. Yurt disi turlar doviz fiyatli; kart
+   fiyati kaydin kendi para biriminde gosteriyor, TL'ye cevirmiyor (kur
+   rezervasyonda sabitleniyor). Para birimi yazmayan kart TL. */
+function paraBirimiEtiketi(kod){
+  return ({ TRY:'TL', EUR:'EUR', USD:'USD' })[kod || 'TRY'] || kod;
+}
 
 /* Tek bir kartin isaretlemesi. Zaman filtresi olan seritlerde liste filtre
    degistikce bu fonksiyonla yeniden cizildigi icin ayri tutuluyor. */
@@ -719,14 +767,16 @@ function poiCardMarkup(sec, it){
           </div>
           ${it.sponsored
             ? `<div class="poi-status-badge sponsored">Sponsorlu</div>`
-            : `<div class="poi-status-badge"><span class="icon">${svg('star')}</span>${it.rating}<span class="count">(${it.reviews})</span></div>`}
+            : (it.rating
+              ? `<div class="poi-status-badge"><span class="icon">${svg('star')}</span>${it.rating}${it.reviews ? `<span class="count">(${it.reviews})</span>` : ''}</div>`
+              : '')}
           <div class="poi-body">
             <h3 class="poi-title">${baslik}</h3>
             <p class="poi-meta-row"><span class="icon">${svg(sec.meta1Icon)}</span><span class="poi-meta-text">${it.meta1}</span></p>
             <p class="poi-meta-row"><span class="icon">${svg('calendar')}</span><strong>${sec.meta2Label}</strong><span class="poi-meta-text">${it.meta2}</span></p>
           </div>
           <div class="poi-price-bar">
-            <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">TL</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
+            <span class="poi-price"><span class="main">${it.priceMain}</span><span class="decimals">.00</span><span class="currency">${paraBirimiEtiketi(it.currency)}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
             <button class="poi-cart-btn"><span class="icon">${svg('basket')}</span></button>
           </div>
         </article>`;
@@ -754,11 +804,11 @@ function compactCardMarkup(sec, it){
               <span class="compact-card-tag">${(it.badges && it.badges[0]) || ''}</span>
               ${it.sponsored
                 ? `<span class="compact-card-sponsored">Sponsorlu</span>`
-                : `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>`}
+                : (it.rating ? `<span class="compact-card-rating"><span class="icon">${svg('star')}</span>${it.rating}</span>` : '')}
             </div>
             <h3 class="compact-card-title">${baslik}</h3>
             <p class="compact-card-place"><span class="icon">${svg('mapPin')}</span><span>${it.meta1}</span></p>
-            <span class="compact-card-price">${it.priceMain} TL</span>
+            <span class="compact-card-price">${it.priceMain} ${paraBirimiEtiketi(it.currency)}</span>
           </div>
         </article>`;
 }
@@ -781,7 +831,7 @@ function sectionFilterMarkup(sec){
 
 if (byId('cardSections')) byId('cardSections').innerHTML = cardSections.map(sec=>`
   <section class="section"${sec.anchor ? ` id="${sec.anchor}"` : ''}>
-    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="#">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
+    <div class="section-head"><h2>${sec.title}</h2><a class="see-all" href="${sec.hepsi ? sec.hepsi + '/' : '#'}">Tümünü Gör <span class="icon">${svg('chevRight')}</span></a></div>
     ${sectionFilterMarkup(sec)}
     <div class="hscroll-wrap">
     <div class="h-scroll"${sec.filterKey ? ` data-section-list="${sec.filterKey}"` : ''}>${sectionCardsMarkup(sec, UPCOMING_FILTERS[0].key)}</div>
@@ -929,15 +979,22 @@ function initHomeBlocks(){
         return;
       }
       callbackForm.classList.remove('has-error');
-      const satir = callbackForm.querySelector('.home-callback-row');
-      const etiket = callbackForm.querySelector('label');
-      if (satir) satir.remove();
-      if (etiket) etiket.remove();
-      if (callbackNote) {
-        callbackNote.textContent = 'Talebin alındı. En kısa sürede seni arayacağız.';
-        callbackNote.classList.remove('is-error');
-        callbackNote.classList.add('is-success');
-      }
+      const bitir = (kod) => {
+        const satir = callbackForm.querySelector('.home-callback-row');
+        const etiket = callbackForm.querySelector('label');
+        if (satir) satir.remove();
+        if (etiket) etiket.remove();
+        if (callbackNote) {
+          /* Deneme sürümü: talep yalnızca bu tarayıcıda kayıtlı, ekibe
+             iletilmiyor; ekran bunu söylüyor. */
+          callbackNote.textContent = 'Talebin kaydedildi' + (kod ? ' (' + kod + ')' : '') + '. Deneme sürümü: talepler henüz ekibe iletilmiyor.';
+          callbackNote.classList.remove('is-error');
+          callbackNote.classList.add('is-success');
+        }
+      };
+      if (typeof MolaVeri !== 'undefined' && MolaVeri.iletisimTalebi) {
+        MolaVeri.iletisimTalebi({ tur: 'geri-arama', telefon: input.value }).then(r => bitir(r.kod));
+      } else bitir(null);
     });
   }
 
@@ -1122,17 +1179,51 @@ document.addEventListener('click', (e) => {
   if (label) label.textContent = expanded ? 'Daha az göster' : 'Devamını gör';
 });
 
+/* ---------------- son görüntülenenler ----------------
+   Kenar çubuğundaki bölüm ziyaretçinin kendi geçmişinden
+   (visitor-history.js). Kart ürünün kendi kaydından: ad, fiyat, puan
+   ve görsel güncel. Geçmiş yoksa bölüm gizli. Çekmece ve masaüstü kenar
+   çubuğu (kopya) birlikte doluyor. */
+function sonGorulenlerCiz() {
+  const kaplar = document.querySelectorAll('[data-son-gorulenler]');
+  if (!kaplar.length || typeof gecUrunler !== 'function' || typeof MolaVeri === 'undefined'
+      || typeof KATALOG_KART === 'undefined') return;
+  const kartlar = gecUrunler(MolaVeri, 4).map(k => {
+    const uret = KATALOG_KART[MolaVeri.icerikTipi(k)];
+    return uret ? uret(k) : null;
+  }).filter(Boolean);
+  const html = kartlar.map(k => `
+          <a href="${SITE_KOK}${k.href}" class="sidebar-recent-card">
+            <span class="sidebar-recent-thumb">
+              <img src="${cardImages[k.img] || ''}" alt="">
+              <span class="sidebar-recent-badge">${(k.badges && k.badges[0]) || k.type}</span>
+            </span>
+            <span class="sidebar-recent-info">
+              <strong>${k.title}</strong>
+              <span class="sidebar-recent-meta"><span class="icon">${svg('clock')}</span>${k.meta1 || ''}</span>
+              <span class="sidebar-recent-foot">
+                ${k.rating ? `<span class="sidebar-recent-rating"><span class="icon">${svg('star')}</span>${k.rating}</span>` : '<span></span>'}
+                <span class="sidebar-recent-price">${k.priceMain} ${paraBirimiEtiketi(k.currency)}</span>
+              </span>
+            </span>
+          </a>`).join('');
+  kaplar.forEach(el => { el.innerHTML = html; });
+  document.querySelectorAll('[data-son-gorulenler-bolum]').forEach(el => { el.hidden = !kartlar.length; });
+}
+document.addEventListener('DOMContentLoaded', sonGorulenlerCiz);
+
 /* ---------------- full-screen search overlay ---------------- */
 const searchOverlay = document.getElementById('searchOverlay');
 const searchOverlayInput = document.getElementById('searchOverlayInput');
 const searchOverlayClose = document.getElementById('searchOverlayClose');
 /* Markup degisirse tum arama bloğu sessizce cokmesin diye korumali erisim. */
+/* Enter: tam sonuç sayfası (süzgeç ve sıralamayla). Anlık sonuçlar
+   yazarken kutunun altında kalıyor. */
 if (searchOverlayInput) searchOverlayInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') {
     event.preventDefault();
     const term = searchOverlayInput.value.trim();
-    if (term) renderSearchResults(term);
-    searchOverlayInput.blur();
+    if (term) aramaSayfasinaGit(term);
   }
 });
 
@@ -1157,8 +1248,11 @@ function getSearchImage(item) {
 function aramaKayitlari() {
   const kayitlar = [];
   const gorulen = new Set();
+  /* Sayfası olmayan örnek ürünün adresi yok; aynı ürün hem şeritten hem
+     katalogdan geldiğinde tipi + başlığıyla tanınıyor (şerit başlığıyla
+     tanınsaydı arama aynı ürünü iki kez gösterirdi). */
   const anahtar = (item, bolum) =>
-    (item.href || (bolum + '|' + item.title)).toLocaleLowerCase('tr-TR');
+    (item.href || ((item.type || bolum) + '|' + item.title)).toLocaleLowerCase('tr-TR');
 
   cardSections.forEach(sec => {
     (sec.items || []).forEach(item => {
@@ -1227,7 +1321,7 @@ function renderSearchHome() {
     <button type="button" class="m360-pill" data-search-term="${term}">${term}</button>
   `).join('');
 
-  const recentHtml = recentSearchTerms.map(term => `
+  const recentHtml = sonAramalar().map(term => `
     <button type="button" class="search-recent-item m360-recent-search-item" data-search-term="${term}">
       <span class="icon clock-icon">${svg('clock')}</span>
       <span class="recent-term">${term}</span>
@@ -1290,12 +1384,12 @@ function renderSearchHome() {
       <div class="m360-pill-list">${suggestedHtml}</div>
     </section>
 
-    <section class="m360-search-section">
+    ${recentHtml ? `<section class="m360-search-section">
       <div class="m360-search-section-title">
-        <h3>Son Aramalar</h3><button class="m360-see-all" type="button">Tümünü Gör</button>
+        <h3>Son Aramalar</h3>
       </div>
       <div class="search-recent-list m360-search-list">${recentHtml}</div>
-    </section>
+    </section>` : ''}
 
     <section class="m360-search-section">
       <div class="m360-search-section-title">
@@ -1321,14 +1415,32 @@ function renderSearchResults(query) {
   }
 
   const categoryMatches = searchCategories.filter(c => normalizeSearchText(c.name).includes(q));
-  const results = [];
 
-  aramaKayitlari().forEach(item => {
-    const haystack = normalizeSearchText([
-      item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
-    ].join(' '));
-    if (haystack.includes(q)) results.push(item);
-  });
+  /* Sonuçlar veri kapısının aramasından (arama sayfasıyla AYNI kural:
+     MolaVeri.hizliAra / liste({ temel: { q } })). Kapı yüklü değilse
+     eski yol: kart metninde geçiyor mu. */
+  const kapi = (typeof MolaVeri !== 'undefined') ? MolaVeri : null;
+  const kartUret = (typeof KATALOG_KART !== 'undefined') ? KATALOG_KART : null;
+  let results = [];
+  let toplam = 0;
+  let sayfalar = [];
+  if (kapi && kartUret) {
+    toplam = kapi.listele({ q: query }).length;
+    results = kapi.hizliAra(query, undefined, 12).map(k => {
+      const uret = kartUret[kapi.icerikTipi(k)];
+      const kart = uret ? uret(k) : null;
+      return kart ? { ...kart, sectionTitle: kart.type || '' } : null;
+    }).filter(Boolean);
+    sayfalar = kapi.aramaSayfalari(query);
+  } else {
+    aramaKayitlari().forEach(item => {
+      const haystack = normalizeSearchText([
+        item.title, item.sectionTitle, ...(item.badges || []), item.meta1, item.meta2
+      ].join(' '));
+      if (haystack.includes(q)) results.push(item);
+    });
+    toplam = results.length;
+  }
 
   const catHtml = categoryMatches.length ? `
     <section class="m360-search-section">
@@ -1343,21 +1455,31 @@ function renderSearchResults(query) {
       </div>
     </section>` : '';
 
+  /* Adı sorguyla eşleşen liste sayfaları: "Kapadokya Turları" gibi. */
+  const sayfaHtml = sayfalar.length ? `
+    <section class="m360-search-section">
+      <div class="m360-search-section-title"><h3>Sayfalar</h3></div>
+      <div class="m360-pill-list">${sayfalar.map(x => `<a class="m360-pill" href="${SITE_KOK}${x.path}/">${x.name}</a>`).join('')}</div>
+    </section>` : '';
+
   const resultHtml = results.slice(0, 12).map(item => `
     ${searchResultMarkup(item)}
   `).join('');
 
+  const tumu = toplam ? `<a class="m360-search-all" href="${aramaSayfasiAdresi(query)}" data-arama-sayfasi>Tüm sonuçları gör (${toplam})</a>` : '';
+
   const resultsHtml = resultHtml ? `
     <section class="m360-search-section">
-      <div class="m360-search-section-title"><h3>Sonuçlar</h3><span>${results.length} eşleşme</span></div>
+      <div class="m360-search-section-title"><h3>Sonuçlar</h3><span>${toplam} eşleşme</span></div>
       <div class="m360-search-list">${resultHtml}</div>
+      ${tumu}
     </section>` : `
     <div class="m360-search-empty">
       <strong>Aradığın şeyi bulamadık.</strong>
       <span>Etkinlik, tur, otel, aktivite veya kategori adıyla tekrar deneyebilirsin.</span>
     </div>`;
 
-  home.innerHTML = catHtml + resultsHtml;
+  home.innerHTML = catHtml + sayfaHtml + resultsHtml;
 }
 
 /* Arama ekranının kendi ayrı kilit mekanizması vardı; kullandığı
@@ -1366,13 +1488,30 @@ function renderSearchResults(query) {
 function lockSearchPageScroll()   { refreshScrollLock(); }
 function unlockSearchPageScroll() { refreshScrollLock(); }
 
+/* Masaüstünde arama katmanının kendi kutusu gizli: katman başlıktaki
+   kutunun altına açılıyor ve yazı BAŞLIKTAKİ kutuya yazılıyor. Önceden o
+   kutu salt okunurdu ve masaüstünde arama hiç yazılamıyordu (odak
+   görünmeyen katman kutusuna gidiyordu). */
+function masaustuAramaKutusu() {
+  const ust = document.querySelector('.search-overlay-top');
+  if (!ust || getComputedStyle(ust).display !== 'none') return null;
+  return document.querySelector('#headerSearchTrigger input');
+}
+
 function openSearchOverlay() {
   activeSearchCategory = null;
-  renderSearchHome();
+  const baslikKutusu = masaustuAramaKutusu();
+  if (baslikKutusu && baslikKutusu.value.trim()) renderSearchResults(baslikKutusu.value);
+  else renderSearchHome();
   searchOverlay.classList.add('open');
   document.body.classList.add('search-modal-open');
   lockSearchPageScroll();
 
+  if (baslikKutusu) {
+    baslikKutusu.readOnly = false;
+    setTimeout(() => baslikKutusu.focus({preventScroll:true}), 30);
+    return;
+  }
   /* iOS'ta klavye açılırken zoom oluşmaması için 16px input + kısa gecikme. */
   setTimeout(() => {
     searchOverlayInput.focus({preventScroll:true});
@@ -1392,6 +1531,8 @@ function closeSearchOverlay() {
   searchOverlay.classList.remove('open');
   document.body.classList.remove('search-modal-open');
   searchOverlayInput.blur();
+  const baslikKutusu = document.querySelector('#headerSearchTrigger input');
+  if (baslikKutusu) { baslikKutusu.readOnly = true; baslikKutusu.blur(); }
   unlockSearchPageScroll();
 }
 
@@ -1425,7 +1566,25 @@ searchOverlayInput.addEventListener('focus', () => setTimeout(updateSearchOverla
 searchOverlayInput.addEventListener('blur', () => setTimeout(updateSearchOverlayKeyboardInset, 300));
 
 onId('headerSearchTrigger', 'click', openSearchOverlay);
-onId('headerSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
+onId('headerSearchTrigger', 'keydown', (e)=>{
+  /* Kutu yazılabilir durumdayken tuşlar kutunun: boşluk yazılabilmeli,
+     Enter tam sonuç sayfasına gitmeli. */
+  if (e.target.tagName === 'INPUT' && !e.target.readOnly) {
+    if (e.key === 'Enter') { e.preventDefault(); aramaSayfasinaGit(e.target.value); }
+    else if (e.key === 'Escape') closeSearchOverlay();
+    return;
+  }
+  if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); }
+});
+(function baslikAramaKutusunuBagla(){
+  const kutu = document.querySelector('#headerSearchTrigger input');
+  if (!kutu) return;
+  kutu.addEventListener('input', () => {
+    if (!searchOverlayInput) return;
+    searchOverlayInput.value = kutu.value;
+    searchOverlayInput.dispatchEvent(new Event('input'));
+  });
+})();
 onId('mobileSearchTrigger', 'click', openSearchOverlay);
 onId('mobileSearchTrigger', 'keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openSearchOverlay(); } });
 onId('searchOverlayBack', 'click', closeSearchOverlay);
@@ -1445,14 +1604,17 @@ searchOverlayClear.addEventListener('click', ()=>{
 });
 
 onId('searchHomeContent', 'click', (e)=>{
+  if (e.target.closest('[data-arama-sayfasi]') && searchOverlayInput && typeof gecAramaEkle === 'function') {
+    gecAramaEkle(searchOverlayInput.value);
+    return;
+  }
   const removeButton = e.target.closest('.search-recent-remove');
   if (removeButton) {
     e.preventDefault();
     e.stopPropagation();
     const item = removeButton.closest('[data-search-term]');
     const term = item?.dataset.searchTerm || '';
-    const index = recentSearchTerms.indexOf(term);
-    if (index !== -1) recentSearchTerms.splice(index, 1);
+    if (typeof gecAramaSil === 'function') gecAramaSil(term);
     renderSearchHome();
     return;
   }
@@ -1487,28 +1649,18 @@ onId('searchHomeContent', 'click', (e)=>{
    Liste tek kaynaktan (bu dizi) uretilir; filtreleme, gruplama ve sayac
    metinleri notif-utils.js'teki saf fonksiyonlardan gelir.
    group: 'today' | 'week' | 'earlier'  ·  type: filtre cipleriyle ayni anahtar */
-const notifications = [
-  {id:'n1',  type:'deal',     group:'today',   time:'5 dakika önce', unread:true,  title:'Kapadokya Balon Turu\'nda %20 indirim!'},
-  {id:'n2',  type:'booking',  group:'today',   time:'1 saat önce',   unread:true,  title:'Rezervasyonunuz onaylandı: Pamukkale Termal Tatili'},
-  {id:'n3',  type:'event',    group:'today',   time:'3 saat önce',   unread:true,  title:'Yeni etkinlik: Bodrum Tekne Turu yakında başlıyor'},
-  {id:'n4',  type:'favorite', group:'week',    time:'Dün',           unread:true,  title:'Favorilediğiniz Efes Turu\'nda yer sayısı azalıyor'},
-  {id:'n5',  type:'system',   group:'week',    time:'2 gün önce',    unread:true,  title:'Hesap bilgilerinizi güncellemeyi unutmayın'},
-  {id:'n6',  type:'deal',     group:'week',    time:'2 gün önce',    unread:true,  title:'Antalya Tekne Turu\'nda son 3 gün: %15 indirim'},
-  {id:'n7',  type:'booking',  group:'week',    time:'2 gün önce',    unread:false, title:'Rezervasyonunuz onaylandı: Fethiye Yamaç Paraşütü'},
-  {id:'n8',  type:'event',    group:'week',    time:'3 gün önce',    unread:false, title:'Yeni etkinlik: Pamukkale Gün Doğumu Turu eklendi'},
-  {id:'n9',  type:'favorite', group:'week',    time:'3 gün önce',    unread:false, title:'Favorilediğiniz Kapadokya Balon Turu\'nda fiyat düştü'},
-  {id:'n10', type:'system',   group:'week',    time:'3 gün önce',    unread:false, title:'Ödeme yönteminizin süresi yakında doluyor'},
-  {id:'n11', type:'deal',     group:'week',    time:'4 gün önce',    unread:false, title:'Hafta sonuna özel: Bursa Uludağ Turu\'nda %10 indirim'},
-  {id:'n12', type:'booking',  group:'week',    time:'4 gün önce',    unread:false, title:'Rezervasyon hatırlatması: İzmir Efes Turu yarın'},
-  {id:'n13', type:'event',    group:'week',    time:'5 gün önce',    unread:false, title:'Yeni etkinlik: Bodrum Gece Turu programı yayında'},
-  {id:'n14', type:'favorite', group:'week',    time:'5 gün önce',    unread:false, title:'Favorilediğiniz Pamukkale Termal Tatili\'nde son 5 kontenjan'},
-  {id:'n15', type:'system',   group:'week',    time:'6 gün önce',    unread:false, title:'Gizlilik politikamızda güncelleme yapıldı'},
-  {id:'n16', type:'deal',     group:'earlier', time:'1 hafta önce',  unread:false, title:'Erken rezervasyon fırsatı: Fethiye Tekne Turu\'nda %25 indirim'},
-  {id:'n17', type:'booking',  group:'earlier', time:'1 hafta önce',  unread:false, title:'Rezervasyonunuz onaylandı: Kapadokya Balon Turu'},
-  {id:'n18', type:'event',    group:'earlier', time:'1 hafta önce',  unread:false, title:'Yeni etkinlik: Antalya Rafting Turu takvime eklendi'},
-  {id:'n19', type:'system',   group:'earlier', time:'1 hafta önce',  unread:false, title:'Uygulamamızın yeni sürümü yayında, güncellemeyi unutmayın'},
-  {id:'n20', type:'favorite', group:'earlier', time:'1 hafta önce',  unread:false, title:'Favorilediğiniz Bodrum Tekne Turu\'nda yeni tarihler eklendi'}
-];
+/* Bildirimler hesabın durumundan türetiliyor (MolaVeri.bildirimler,
+   account-engine.js): rezervasyon, kalan ödeme hatırlatması, kupon,
+   puan, favori. Okundu/kaldırıldı işareti kalıcı. Elle yazılmış
+   bildirim yok. */
+const notifications = [];
+function bildirimleriYukle(){
+  notifications.length = 0;
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimler) {
+    MolaVeri.bildirimler(new Date()).forEach(n => notifications.push(n));
+  }
+}
+bildirimleriYukle();
 
 const notifTypeIcons = {
   deal:     '<circle cx="7.5" cy="7.5" r="1.6"></circle><circle cx="16.5" cy="16.5" r="1.6"></circle><line x1="18" y1="6" x2="6" y2="18"></line>',
@@ -1597,6 +1749,7 @@ function markNotifRead(id, itemEl){
   const item = notifications.find(n => n.id === id);
   if (!item || !item.unread) return;
   item.unread = false;
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimOkundu) MolaVeri.bildirimOkundu(id);
   /* Liste yeniden cizilmez; kullanicinin kaydirma konumu korunur. */
   if (itemEl) itemEl.classList.remove('unread');
   refreshNotifChrome();
@@ -1605,6 +1758,7 @@ function markNotifRead(id, itemEl){
 function dismissNotification(id, itemEl){
   const index = notifications.findIndex(n => n.id === id);
   if (index > -1) notifications.splice(index, 1);
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimKaldir) MolaVeri.bildirimKaldir(id);
   refreshNotifChrome();
   if (!itemEl) { renderNotifList(); return; }
   itemEl.classList.add('is-removing');
@@ -1675,6 +1829,7 @@ onId('notifPanelClose', 'click', (e)=>{
   closeNotifPanel();
 });
 notifMarkAllBtn.addEventListener('click', ()=>{
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.bildirimOkundu) MolaVeri.bildirimOkundu(notifications.map(n => n.id));
   notifications.forEach(item => { item.unread = false; });
   notifListEl.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
   if (notifFilter === 'unread') renderNotifList();
@@ -1699,6 +1854,7 @@ notifListEl.addEventListener('click', (e)=>{
   const item = e.target.closest('.notif-item');
   if (!item) return;
   markNotifRead(item.dataset.notifId, item);
+  bildirimeGit(item.dataset.notifId);
 });
 notifListEl.addEventListener('keydown', (e)=>{
   if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -1706,26 +1862,68 @@ notifListEl.addEventListener('keydown', (e)=>{
   if (!item) return;
   e.preventDefault();
   markNotifRead(item.dataset.notifId, item);
+  bildirimeGit(item.dataset.notifId);
 });
-
-/* ---------------- profil menüsü toggle ---------------- */
-renderProfileAvatar(document.getElementById('headerProfileAvatar'));
-renderProfileAvatar(document.getElementById('profileMenuAvatar'));
-renderProfileAvatar(document.getElementById('sidebarUserAvatar'));
-const sidebarUserNameEl = document.getElementById('sidebarUserName');
-if (sidebarUserNameEl) sidebarUserNameEl.textContent = currentUser.name;
-const drawerProfileNameEl = document.getElementById('drawerProfileName');
-const drawerProfileAvatarEl = document.getElementById('drawerProfileAvatar');
-if (drawerProfileNameEl) {
-  // textContent tüm alt öğeleri (doğrulanmış rozet dahil) silip düz metinle
-  // değiştirirdi; bu yüzden yalnızca isim span'ının metni güncellenir.
-  const nameSpan = drawerProfileNameEl.querySelector('span:first-of-type');
-  if (nameSpan) nameSpan.textContent = currentUser.name;
-  else drawerProfileNameEl.textContent = currentUser.name;
+/* Bildirimin bağı (hesap paneli bölümü ya da ürün sayfası). */
+function bildirimeGit(id){
+  const n = notifications.find(x => x.id === id);
+  if (n && n.href) window.location.href = mola360Kok() + n.href;
 }
-if (drawerProfileAvatarEl) drawerProfileAvatarEl.textContent = getInitials(currentUser.name);
-const profileMenuNameEl = byId('profileMenuName');
-if (profileMenuNameEl) profileMenuNameEl.textContent = currentUser.name;
+
+/* ---------------- hesap çerçevesi ----------------
+   Başlıktaki avatar ve giriş düğmesi, profil menüsü, çekmece ve kenar
+   çubuğundaki profil kartları oturumdan çiziliyor. Sayılar (rezervasyon,
+   yaklaşan, favori, kupon), Molapuan ve seviye hesap panelinin verisi
+   (MolaVeri.hesapPaneli); misafirde giriş çağrısı. Oturum, favori ya da
+   rezervasyon değişince (mola360:* olayları) yeniden çiziliyor. */
+function hesapCercevesiniCiz(){
+  const h = currentUserYenile();
+  const uye = !!h;
+  document.body.classList.toggle('is-uye', uye);
+  /* Masaüstü kenar çubuğu çekmecenin kopyası ve kimlikleri siliniyor;
+     bu yüzden kartlar kimlikle değil data-hesap-* ile bulunuyor. */
+  ['headerProfileAvatar', 'profileMenuAvatar'].forEach(id => renderProfileAvatar(byId(id)));
+  document.querySelectorAll('[data-hesap-avatar]').forEach(renderProfileAvatar);
+  const ad = uye ? currentUser.name : 'Misafir';
+  document.querySelectorAll('[data-hesap-ad]').forEach(el => { el.textContent = ad; });
+  const profileMenuNameEl = byId('profileMenuName');
+  if (profileMenuNameEl) profileMenuNameEl.textContent = ad;
+  if (!uye) document.querySelectorAll('[data-hesap-seviye-rozet]').forEach(el => { el.hidden = true; });
+  const profilBtn = byId('profileBtn');
+  if (profilBtn) profilBtn.setAttribute('aria-label', uye ? 'Hesabım' : 'Giriş yap');
+  document.querySelectorAll('[data-hesap-uye]').forEach(el => { el.hidden = !uye; });
+  document.querySelectorAll('[data-hesap-misafir]').forEach(el => { el.hidden = uye; });
+  bildirimleriYukle();
+  if (typeof renderNotifications === 'function' && typeof notifListEl !== 'undefined') renderNotifications();
+  if (!uye || typeof MolaVeri === 'undefined' || !MolaVeri.hesapPaneli) return;
+  MolaVeri.hesapPaneli(new Date()).then(p => {
+    if (!p.hesap) return;
+    const sayilar = {
+      rezervasyon: p.rezervasyonlar.length,
+      yaklasan: p.rezervasyonlar.filter(r => r.durumu === 'yaklasan').length,
+      favori: p.favoriler.length,
+      kupon: p.kuponlar.filter(k => k.kisisel && k.durum === 'gecerli').length
+    };
+    document.querySelectorAll('[data-hesap-sayi]').forEach(el => { el.textContent = sayilar[el.getAttribute('data-hesap-sayi')] || 0; });
+    const sv = p.puan.seviye;
+    document.querySelectorAll('[data-hesap-puan]').forEach(el => { el.textContent = p.puan.bakiye.toLocaleString('tr-TR'); });
+    document.querySelectorAll('[data-hesap-seviye-adi]').forEach(el => { el.textContent = sv.seviye.ad; });
+    document.querySelectorAll('[data-hesap-seviye-rozet]').forEach(el => { el.hidden = false; });
+    document.querySelectorAll('[data-hesap-seviye-metni]').forEach(el => { el.textContent = sv.seviye.ad + ' seviyesindesin'; });
+    document.querySelectorAll('[data-hesap-sonraki]').forEach(el => {
+      el.textContent = sv.sonraki ? sv.sonraki.ad + '\'a ' + sv.kalan.toLocaleString('tr-TR') + ' puan' : 'En üst seviye';
+    });
+    document.querySelectorAll('[data-hesap-ilerleme]').forEach(el => { el.style.width = Math.round(sv.ilerleme * 100) + '%'; });
+    document.querySelectorAll('[data-hesap-bekleyen]').forEach(el => {
+      el.textContent = p.puan.bekleyen ? p.puan.bekleyen.toLocaleString('tr-TR') + ' puan tur sonrası' : '';
+    });
+  });
+}
+['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-hesap-giris]') && typeof openAuthModal === 'function') openAuthModal('login');
+});
+hesapCercevesiniCiz();
 
 const profileBtn = document.getElementById('profileBtn');
 const profilePanel = document.getElementById('profilePanel');
@@ -1739,6 +1937,8 @@ function closeProfilePanel(){
   refreshScrollLock();
 }
 profileBtn.addEventListener('click', (e)=>{
+  /* Misafirde profil menüsü yok: giriş penceresi açılır. */
+  if (!currentUser.uye) { e.stopPropagation(); openAuthModal('login'); return; }
   e.stopPropagation();
   const isOpen = profilePanel.classList.contains('open');
   if(isOpen){
@@ -1773,22 +1973,61 @@ document.querySelectorAll('.profile-menu-item[data-bottom-tab], .profile-menu-it
     closeProfilePanel();
   });
 });
-onId('profileLogoutBtn', 'click', closeProfilePanel);
+onId('profileLogoutBtn', 'click', () => {
+  closeProfilePanel();
+  if (typeof MolaVeri !== 'undefined' && MolaVeri.cikisYap) MolaVeri.cikisYap();
+});
+/* Başlıktaki kalp: favoriler (hesap panelinin bölümü; misafirde de açık). */
+onId('favoritesBtn', 'click', () => { window.location.href = mola360Kok() + 'hesabim/?bolum=favorilerim'; });
 
-/* ---------------- favorite (heart) toggle ---------------- */
-onId('cardSections', 'click', e=>{
+/* ---------------- favori (kalp) ----------------
+   Bütün sayfalardaki kart kalpleri tek dinleyiciyle: kartın bağı
+   (data-href ya da başlıktaki <a>) veri kapısına sorulur, ürünse
+   favoriye eklenir/çıkarılır (MolaVeri.favoriDegistir). Kalplerin
+   durumu favori listesinden boyanır; sonradan çizilen kartlar
+   (süzgeç, "daha fazla göster") da gözlemciyle boyanır. */
+function mola360KartUrunu(btn){
+  const kart = btn.closest('.poi-card, .compact-card');
+  if (!kart || typeof MolaVeri === 'undefined' || !MolaVeri.adres) return null;
+  const bag = kart.getAttribute('data-href') || (kart.querySelector('a[href]') || {}).getAttribute?.('href');
+  if (!bag) return null;
+  try {
+    const hedef = new URL(bag, document.baseURI);
+    const kok = new URL(mola360Kok() || './', document.baseURI);
+    if (hedef.pathname.indexOf(kok.pathname) !== 0) return null;
+    const a = MolaVeri.adres(hedef.pathname.slice(kok.pathname.length));
+    return a && a.kind === 'product' ? a : null;
+  } catch (_) { return null; }
+}
+function mola360KalpleriBoya(kapsam){
+  if (typeof MolaVeri === 'undefined' || !MolaVeri.favoriMi) return;
+  (kapsam || document).querySelectorAll('.poi-fav-btn').forEach(btn => {
+    const u = mola360KartUrunu(btn);
+    if (!u) return;
+    const fav = MolaVeri.favoriMi(u.type, u.slug);
+    btn.classList.toggle('active', fav);
+    btn.setAttribute('aria-pressed', fav ? 'true' : 'false');
+    btn.setAttribute('aria-label', fav ? 'Favorilerden çıkar' : 'Favorilere ekle');
+  });
+}
+document.addEventListener('click', e=>{
   const btn = e.target.closest('.poi-fav-btn');
   if(!btn) return;
   e.preventDefault();
   e.stopPropagation();
-  btn.classList.toggle('active');
-  const card = btn.closest('.poi-card');
-  const key = card?.querySelector('.poi-title')?.textContent?.trim();
-  if(key){
-    if(btn.classList.contains('active')) Mola360App.state.favorites.add(key);
-    else Mola360App.state.favorites.delete(key);
-  }
-});
+  const u = mola360KartUrunu(btn);
+  if (!u || typeof MolaVeri === 'undefined') return;
+  MolaVeri.favoriDegistir(u.type, u.slug).then(() => mola360KalpleriBoya());
+}, true);
+mola360KalpleriBoya();
+if (typeof MutationObserver === 'function') {
+  let bekleyen = false;
+  new MutationObserver(() => {
+    if (bekleyen) return;
+    bekleyen = true;
+    requestAnimationFrame(() => { bekleyen = false; mola360KalpleriBoya(); });
+  }).observe(document.body, { childList: true, subtree: true });
+}
 
 /* Mobilde fotoğraflarda uzun basma kaynaklı menü/drag/önizleme açılmasını engelle. */
 document.addEventListener('contextmenu', e=>{
@@ -2487,6 +2726,36 @@ function setAuthTab(tab){
   authOverlay.classList.toggle('is-reset', tab === 'reset');
 }
 onId('headerRegisterBtn', 'click', ()=> openAuthModal('login'));
+
+/* Giriş ve üyelik formları: veri kapısına (MolaVeri.girisYap / uyeOl).
+   Deneme sürümünde şifre yok; pencere bunu söylüyor. Başarıda pencere
+   kapanır, çerçeve mola360:oturum olayıyla yeniden çizilir. */
+function authHatalariniYaz(form, hatalar){
+  form.querySelectorAll('[data-auth-hata]').forEach(el => { el.textContent = ''; });
+  (hatalar || []).forEach(h => {
+    const el = form.querySelector('[data-auth-hata="' + h.alan + '"]') || form.querySelector('[data-auth-hata]');
+    if (el) el.textContent = h.mesaj;
+  });
+}
+function authFormuBagla(id, islem){
+  const form = byId(id);
+  if (!form) return;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (typeof MolaVeri === 'undefined') return;
+    islem(form).then(sonuc => {
+      if (!sonuc.tamam) { authHatalariniYaz(form, sonuc.hatalar); return; }
+      authHatalariniYaz(form, []);
+      form.reset();
+      closeAuthModal();
+    });
+  });
+}
+authFormuBagla('authLoginForm', form => MolaVeri.girisYap(form.eposta.value));
+authFormuBagla('authRegisterForm', form => MolaVeri.uyeOl({
+  ad: form.ad.value, soyad: form.soyad.value, eposta: form.eposta.value, telefon: form.telefon.value,
+  kvkk: form.kvkk.checked, izinEposta: form.izinEposta.checked
+}, new Date()));
 onId('drawerAuthBtn', 'click', ()=> openAuthModal('login'));
 const sidebarAuthBtn = document.getElementById('sidebarAuthBtn');
 if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal('login'));
@@ -2499,7 +2768,9 @@ if (sidebarAuthBtn) sidebarAuthBtn.addEventListener('click', ()=> openAuthModal(
     sidebarNav.addEventListener('click', e=>{
       const link = e.target.closest('a[data-sidebar-tab]');
       if (!link) return;
-      e.preventDefault();
+      /* Bağlar gerçek sayfalara (hesap paneli bölümleri); yalnızca
+         anasayfadaysak "Keşfet" sayfayı yeniden yüklemez. */
+      if (link.dataset.sidebarTab === 'explore') e.preventDefault();
       // Masaüstü ve mobil drawer aynı aktif durumu paylaşır.
       sidebarNavs.forEach(nav => nav.querySelectorAll('a[data-sidebar-tab]').forEach(a => {
         a.classList.toggle('active', a.dataset.sidebarTab === link.dataset.sidebarTab);
@@ -2547,11 +2818,12 @@ document.querySelectorAll('[data-auth-switch]').forEach(link=>{
       '<circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5"></path>',
       '<circle cx="12" cy="8" r="4" fill="currentColor" stroke="currentColor"></circle><path d="M4.5 20.5c0-4.1 3.6-6.5 7.5-6.5s7.5 2.4 7.5 6.5Z" fill="currentColor" stroke="currentColor"></path>']
   ];
-  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="#" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
+  const hedefler = { explore: './', favorites: 'hesabim/?bolum=favorilerim', tickets: 'hesabim/?bolum=biletlerim', account: 'hesabim/' };
+  nav.innerHTML = items.map(([key,label,outline,filled],i)=>`<a href="${mola360Kok() + hedefler[key]}" class="tab-item${i===0?' active':''}" data-bottom-tab="${key}" aria-label="${label}"><span class="icon"><svg aria-hidden="true" focusable="false" class="icon-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${outline}</svg><svg aria-hidden="true" focusable="false" class="icon-filled" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${filled}</svg></span><span>${label}</span></a>`).join('');
   nav.addEventListener('click', e=>{
     const item=e.target.closest('.tab-item');
     if(!item) return;
-    e.preventDefault();
+    if (item.dataset.bottomTab === 'explore') e.preventDefault();
     nav.querySelectorAll('.tab-item').forEach(x=>x.classList.remove('active'));
     item.classList.add('active');
     Mola360App.state.ui.activeRoute = item.dataset.bottomTab || 'explore';

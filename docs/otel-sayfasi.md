@@ -175,11 +175,13 @@ dokunuşta ("Rezervasyona git") götürüyor.
 
 ## Kalan oda sayısı
 
-Tarihten **ve** oda tipinden türetiliyor (`roomsLeft`, tur tarafındaki
-`seatsLeft`'in tohumu genişletilmiş hâli). Aynı tarihte her oda tipi
-farklı bir sayı veriyor, ama aynı oda aynı tarihte her yenilemede aynı
-sayıyı veriyor. Rastgele sayı kullanılsaydı "son 2 oda" uyarısı her
-yenilemede zıplar ve inandırıcılığını kaybederdi.
+Veri kapısının kontenjan cevabından geliyor (`MolaVeri.musaitlik`,
+docs/veri-sozlesmesi.md bölüm 6) ve konaklamanın **her gecesinin en küçüğü** (`konaklamaKalan`).
+Önceki sürüm sayıyı tarihin karma değerinden üretiyordu (`roomsLeft`) ve
+yalnızca giriş gecesine bakıyordu: üçüncü gecesi dolu bir oda "3 oda
+kaldı" diyerek satılabiliyordu. Seçili tarihlerde oda doluysa ya da
+istenen oda sayısı kalandan fazlaysa rezervasyon düğmesi pasifleşiyor;
+hiçbir oda tipinde yer olmayan gece giriş günü olarak seçilemiyor.
 
 Azalınca satır rengi değişiyor ama kutu kırmızıya boyanmıyor: sahte
 aciliyet üretmeden haber veriyor.
@@ -277,8 +279,9 @@ Safari'de tekrar denenmedi.
   ayrı tarih alanı ("giriş" ve "çıkış") ikisini tutarlı tutmayı
   gerektiriyor; çıkış giriş + gece sayısından türetiliyor ve
   ayrışamıyor. Gerçek müsaitlik bağlandığında takvim gerekecek.
-- **Müsaitlik gerçek değil.** Kalan oda sayısı tarihten türetilen
-  tutarlı bir kurgu; envanter bağlanana kadar öyle kalmalı.
+- **Müsaitlik örnek veriden.** Kalan oda sayısı örnek rezervasyonlardan
+  hesaplanıyor (`assets/js/inventory-data.js`); backend gelince gerçek
+  rezervasyonlardan gelecek, sayfa değişmeyecek.
 - **İkinci otel sayfası yok.** `HOTELS`'e kayıt eklemek ve
   `otel/<slug>/index.html` yazmak yeterli; testler yeni kaydı
   kendiliğinden kapsıyor (sayfa yoksa düşüyor).

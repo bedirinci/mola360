@@ -8,6 +8,7 @@
       sekme, sayfada karsiligi olmayan kap, anasayfada tur sayfasindan
       farkli bir fiyat gibi sessiz kaymalar burada yakalanir. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   TOURS,
@@ -27,7 +28,6 @@ import {
   formatTrDateRangeShort,
   trDateParts,
   nextDepartureDates,
-  seatsLeft,
   clampParty,
   calcDailyTotal,
   calcStayTotal,
@@ -45,7 +45,6 @@ import {
   reviewerInitials,
   tourSlugFromPath,
   tourSlugFromQuery,
-  resolveTour,
 } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText, formatReviewCount } from '../assets/js/catalog.js';
 
@@ -158,23 +157,56 @@ describe('nextDepartureDates', () => {
   });
 });
 
-describe('seatsLeft', () => {
-  it('aynı tarih her zaman aynı sayıyı verir', () => {
-    expect(seatsLeft('2026-10-11', 16)).toBe(seatsLeft('2026-10-11', 16));
+/* ---------------- kontenjan ----------------
+   Kalan yer artık uydurulmuyor. Önceki seatsLeft() tarih metninin karma
+   değerinden bir "son N yer" sayısı üretiyordu; hiçbir satışla ilgisi
+   yoktu ve dolu durumu hiç oluşmuyordu. Kalan yer veri kapısının
+   kontenjan cevabından geliyor (MolaVeri.musaitlik). Cevabın kendisi ve
+   hesap tests/veri-kapisi.test.js'te; burada sayfanın onu kullandığı
+   ölçülüyor. */
+describe('kontenjan', () => {
+  const kontenjanFn = () => sayfaJs.match(/function syncSeats\(hesap\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('karma değerden kalan yer üreten fonksiyon yok', () => {
+    expect(veriJs).not.toMatch(/function \w*(seatsLeft|SeatsLeft|roomsLeft)\(/);
+    expect(sayfaJs).not.toMatch(/(seatsLeft|SeatsLeft|roomsLeft)\(/);
   });
 
-  it('2 ile kapasite (en çok 9) arasında kalır', () => {
-    nextDepartureDates('2026-09-19', tur.pricing.departureDays, 30, 1).forEach(iso => {
-      const kalan = seatsLeft(iso, 16);
-      expect(kalan).toBeGreaterThanOrEqual(2);
-      expect(kalan).toBeLessThanOrEqual(9);
-    });
+  it('kayıt ve kalan yer veri kapısından', () => {
+    expect(sayfaJs).toMatch(/MolaVeri\.urun\('tour',\s/);
+    expect(sayfaJs).not.toMatch(/resolveTour\(/);
+    expect(sayfaJs).toContain("MolaVeri.musaitlik('tour', ");
+    expect(kontenjanFn()).toContain('kontenjanDurumu(');
   });
 
-  it('farklı tarihler farklı sayılar üretebilir', () => {
-    const liste = nextDepartureDates('2026-09-19', tur.pricing.departureDays, 12, 1)
-      .map(iso => seatsLeft(iso, 16));
-    expect(new Set(liste).size).toBeGreaterThan(1);
+  it('dolu tarih takvimde kalıyor ama seçilemiyor', () => {
+    const fn = sayfaJs.match(/function dateChipsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('tarihDoluMu(musaitlik, ');
+    expect(fn).toContain('is-dolu');
+    expect(fn).toContain('disabled');
+  });
+
+  it('dolu veya yetmeyen kontenjanda rezervasyon düğmeleri pasif', () => {
+    const fn = kontenjanFn();
+    expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
+    expect(fn).toContain('dugme.disabled = !!satisEngeli');
+    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+  });
+
+  it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
+    expect(kontenjanFn()).toContain("el.hidden = durum.durum === 'bilinmiyor'");
+    expect(readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8'))
+      .toContain('.tour-seats[hidden] { display: none; }');
+  });
+
+  it('her sayfa veri kapısını kendi betiğinden önce yüklüyor', () => {
+    for (const s of sayfalar) {
+      const yer = (ad) => s.html.indexOf('assets/js/' + ad + '"');
+      expect(yer('taxonomy-data.js'), s.slug).toBeGreaterThan(-1);
+      expect(yer('inventory-data.js'), s.slug).toBeGreaterThan(yer('taxonomy-data.js'));
+      expect(yer('data-gateway.js'), s.slug).toBeGreaterThan(yer('inventory-data.js'));
+      expect(yer('tour-page.js'), s.slug).toBeGreaterThan(yer('data-gateway.js'));
+    }
   });
 });
 
@@ -392,17 +424,19 @@ describe('slug çözümleme', () => {
     expect(tourSlugFromQuery('?tur=%E0%A4%A')).toBe('');
   });
 
-  it('bilinmeyen veya boş slug varsayılan tura düşer', () => {
-    expect(resolveTour('efes-sirince')).toBe(tur);
-    expect(resolveTour('EFES-SIRINCE'.toLowerCase())).toBe(tur);
-    expect(resolveTour('olmayan-tur')).toBe(tur);
-    expect(resolveTour('')).toBe(tur);
-    expect(resolveTour(undefined)).toBe(tur);
+  it('bilinmeyen veya boş slug varsayılan tura DÜŞMEZ', () => {
+    /* Eskiden resolveTour bilinmeyen adreste Efes turunu gösteriyordu:
+       yanlış ürün, yanlış fiyat. Artık kapı null dönüyor ve adres
+       "bulunamadı" ekranına düşüyor (tests/yonlendirici.test.js). */
+    expect(MolaVeri.urun('tour', 'efes-sirince').slug).toBe(tur.slug);
+    expect(MolaVeri.urun('tour', 'olmayan-tur')).toBe(null);
+    expect(MolaVeri.urun('tour', '')).toBe(null);
+    expect(MolaVeri.urun('tour', undefined)).toBe(null);
   });
 
   it('prototip anahtarları tur sanılmaz', () => {
-    expect(resolveTour('constructor')).toBe(tur);
-    expect(resolveTour('__proto__')).toBe(tur);
+    expect(MolaVeri.urun('tour', 'constructor')).toBe(null);
+    expect(MolaVeri.urun('tour', '__proto__')).toBe(null);
   });
 });
 
@@ -424,7 +458,6 @@ describe('görseller', () => {
   it('kullanılan her görsel anahtarı kayıtlı', () => {
     const kullanilan = new Set();
     tur.gallery.forEach(g => kullanilan.add(g.key));
-    tur.similar.forEach(s => kullanilan.add(s.key));
     const eksik = [...kullanilan].filter(k => !TOUR_IMAGE_FILES[k]);
     expect(eksik, 'kayıtsız görsel anahtarı: ' + eksik.join(', ')).toEqual([]);
     kullanilan.forEach(k => expect(tourImage(k, 800)).toMatch(/^https:\/\/commons\.wikimedia\.org\//));
@@ -574,8 +607,10 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect(yol).toContain('Anasayfa');
     expect(yol).toContain(t.categoryPlural);
     expect(yol).toContain(t.title);
-    /* Orta adım anasayfadaki şeridin gerçek çapasına gider. */
-    expect(yol).toContain('#' + t.categoryAnchor);
+    /* Orta adım turun liste sayfasına gider (Günübirlik/Konaklamalı
+       Turlar); o adres yönlendirici sayfada açılıyor. */
+    expect(yol).toContain('href="../../' + MolaVeri.listeYolu(t) + '/"');
+    expect(ldBlok).toContain('"item": "' + KAPI_SITE_ADRESI + MolaVeri.listeYolu(t) + '/"');
   });
 
   it('uydurma envanter yapısal veriyle işaretlenmez', () => {
@@ -712,7 +747,7 @@ describe('anasayfa bağlantısı', () => {
      kayitlarindan uretip seritlere karistiriyor (docs/icerik-katalogu.md).
      Bu yuzden asagidaki testler app.js metnine degil, uretilen kartlara
      bakiyor. Katalogun kendi kurallari tests/katalog.test.js icinde. */
-  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('tur/'));
+  const turKartlari = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('tur/'));
 
   it('şerit bağ hedefleri tekil ve tur sayfalarındaki çapalarla eşleşiyor', () => {
     const ankrajlar = [...kartBloku.matchAll(/anchor:'([a-z-]+)'/g)].map(m => m[1]);
@@ -1112,19 +1147,21 @@ describe('her turun ortak alanları', () => {
 
   it('her turun görsel anahtarları kayıtlı', () => {
     Object.entries(TOURS).forEach(([anahtar, t]) => {
-      const kullanilan = t.gallery.map(g => g.key).concat(t.similar.map(x => x.key));
+      const kullanilan = t.gallery.map(g => g.key);
       const eksik = kullanilan.filter(k => !TOUR_IMAGE_FILES[k]);
       expect(eksik, anahtar + ' kayıtsız görsel: ' + eksik.join(', ')).toEqual([]);
     });
   });
 
-  it('benzer turlardaki slug gerçek bir tur ve kendisi değil', () => {
+  it('elle seçilmiş benzerler yalnızca kimlik ve gerçek bir ürün', () => {
+    /* Eskiden başlık, puan ve fiyat kopyası taşıyordu; kopya eskiyordu.
+       Artık kart ürünün kendi kaydından (catalogBenzerMarkup). */
     Object.entries(TOURS).forEach(([anahtar, t]) => {
-      t.similar.filter(x => x.slug).forEach(x => {
-        expect(TOURS[x.slug], anahtar + ' -> ' + x.slug + ' yok').toBeTruthy();
-        expect(x.slug, anahtar + ' kendine benzer tur olarak bağlanmış').not.toBe(anahtar);
-        /* Kart fiyatı hedef turun fiyatıyla aynı olmalı. */
-        expect(x.price, anahtar + ' -> ' + x.slug + ' fiyatı tutmuyor').toBe(basePrice(TOURS[x.slug]));
+      t.similar.forEach(x => {
+        expect(Object.keys(x).every(a => a === 'slug' || a === 'href'), anahtar + ' kopya alan taşıyor').toBe(true);
+        const hedef = x.slug ? MolaVeri.urun('tour', x.slug) : MolaVeri.adres(x.href);
+        expect(hedef, anahtar + ' -> ' + (x.slug || x.href) + ' yok').toBeTruthy();
+        expect(x.slug, anahtar + ' kendine benzer olarak bağlanmış').not.toBe(anahtar);
       });
     });
   });
@@ -1138,12 +1175,13 @@ describe('her turun ortak alanları', () => {
 
 /* ---------------- ortak mobil ekran başlığı ---------------- */
 describe('mobil başlık stili', () => {
-  it('üç ekran tek tanımı paylaşır, kopya yok', () => {
-    /* Bildirimler, giriş/üye ol ve tur sayfası aynı başlığı kullanıyor.
+  it('dört ekran tek tanımı paylaşır, kopya yok', () => {
+    /* Bildirimler, giriş/üye ol, tur sayfası ve liste sayfaları aynı
+       başlığı kullanıyor.
        Eskiden ölçüler her biri için ayrı yazılıydı ve yanında "biri
        değişirse diğeri de güncellenmeli" notu vardı; artık tek tanım. */
     const kapsayici = ortakStil.match(
-      /\.notif-panel-header,\s*\n\.auth-modal-hero,\s*\n\.tour-mobile-header \{([\s\S]*?)\}/);
+      /\.notif-panel-header,\s*\n\.auth-modal-hero,\s*\n\.tour-mobile-header,\s*\n\.lst-mobile-header \{([\s\S]*?)\}/);
     expect(kapsayici, 'ortak başlık tanımı bulunamadı').toBeTruthy();
     /* Görünümü belirleyen değerler ortak blokta olmalı. */
     ['background: var(--navy)', 'border-bottom-left-radius', 'box-shadow', 'gap: 10px']
@@ -1152,10 +1190,10 @@ describe('mobil başlık stili', () => {
 
   it('geri oku, başlık yığını ve alt başlık da ortak', () => {
     [
-      /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back \{/,
-      /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading \{/,
-      /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title \{/,
-      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle \{/
+      /\.notif-panel-back,\s*\n\.auth-modal-back,\s*\n\.tour-mobile-back,\s*\n\.lst-mobile-back \{/,
+      /\.notif-panel-heading,\s*\n\.auth-modal-hero-text,\s*\n\.tour-mobile-heading,\s*\n\.lst-mobile-heading \{/,
+      /\.notif-panel-title,\s*\n\.auth-modal-hero-text strong,\s*\n\.tour-mobile-title,\s*\n\.lst-mobile-title \{/,
+      /\.notif-panel-subtitle,\s*\n\.auth-modal-hero-text span,\s*\n\.tour-mobile-subtitle,\s*\n\.lst-mobile-subtitle \{/
     ].forEach(kalip => expect(ortakStil, 'ortak değil: ' + kalip).toMatch(kalip));
     /* Sağdaki eylem artık yalnızca bildirimlerde; tur başlığındaki
        paylaş banner'a taşındı ve sınıfı hiçbir yerde kalmadı. */
@@ -1571,8 +1609,9 @@ describe('sayfa etiketleri', () => {
         }
 
         const [yol, capa] = href.split('#');
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + yol + ' diskte yok').toBe(true);
+        /* Dosyası olan sayfa ya da yönlendiricinin açtığı liste sayfası. */
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(yol),
+          slug + ' -> ' + yol + ' hedefsiz').toBe(true);
         if (capa) {
           expect(anaAnkrajlar, slug + ' -> #' + capa + ' anasayfada yok').toContain(capa);
         }
@@ -2092,9 +2131,9 @@ describe('yapışkan tur başlığı', () => {
     expect(ortakStil, 'ortak yuvarlaklık belirteci yok')
       .toMatch(/--m360-header-radius:\s*22px/);
     expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
-      /\.tour-mobile-header \{[^}]*border-bottom-left-radius:\s*var\(--m360-header-radius\)/);
+      /\.tour-mobile-header,\s*\n\.lst-mobile-header \{[^}]*border-bottom-left-radius:\s*var\(--m360-header-radius\)/);
     expect(ortakStil, 'ortak başlık kuralı belirteci kullanmıyor').toMatch(
-      /\.tour-mobile-header \{[^}]*border-bottom-right-radius:\s*var\(--m360-header-radius\)/);
+      /\.tour-mobile-header,\s*\n\.lst-mobile-header \{[^}]*border-bottom-right-radius:\s*var\(--m360-header-radius\)/);
   });
 
   it('yapışık menü başlığın köşe oyuğunu KENDİ zeminiyle dolduruyor', () => {

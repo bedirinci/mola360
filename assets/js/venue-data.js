@@ -2,8 +2,9 @@
    /mekan/<slug>/ sayfasının bütün içeriği burada durur; venue-page.js
    yalnızca bu veriyi işaretlemeye çevirir.
 
-   KAYIT ADI NEDEN "PLACES": home-blocks.js zaten `const VENUES`
-   tanımlıyor ve anasayfada iki dosya da yükleniyor. Klasik <script>
+   KAYIT ADI NEDEN "PLACES": home-blocks.js o sırada `const VENUES`
+   tanımlıyordu (bugün gezi noktaları GEZI_NOKTALARI) ve anasayfada iki
+   dosya da yükleniyor. Klasik <script>
    etiketleri ÜST KAPSAMI PAYLAŞIR, yani aynı adı ikinci kez tanımlamak
    "Identifier 'VENUES' has already been declared" ile bütün sayfayı
    öldürürdü. Node tarafında modüller ayrı kapsamda olduğu için test bunu
@@ -29,7 +30,6 @@ const MEKAN_TUR_VERI = (typeof require === 'function' && typeof module !== 'unde
   : null;
 
 const mAsDate     = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.asDate : asDate;
-const mSeatsLeft  = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.seatsLeft : seatsLeft;
 const mCommonsUrl = MEKAN_TUR_VERI ? MEKAN_TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ---------------- */
@@ -294,12 +294,8 @@ function venuePriceUnit(place) {
   return p.unitNote || (place && place.booking === 'randevu' ? 'hizmet başı' : 'masada en az');
 }
 
-/* Kalan yer tarihten, saatten ve alandan/hizmetten türetilir: aynı
-   günün iki seansı farklı sayı gösterir, aynı seçim her yenilemede aynı
-   sayıyı verir. */
-function venueSeatsLeft(iso, slot, optionId, total) {
-  return mSeatsLeft(String(iso || '') + '@' + String(slot || '') + '/' + String(optionId || ''), total);
-}
+/* Kalan yer burada hesaplanmıyor: veri kapısının kontenjan cevabından
+   (MolaVeri.musaitlik; birim alan/hizmet × seans). */
 
 /* /mola360/mekan/kum-beach-club/ -> "kum-beach-club" */
 function venueSlugFromPath(pathname) {
@@ -338,6 +334,28 @@ const PLACES = {
     area: 'Alaçatı, Çeşme',
     region: 'Ege',
     code: 'MLA-MKN-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. Paylaşım görseli galerinin ilki
+       değil, Alaçatı değirmenleri (ogImage). */
+    taxonomy: {
+      categories: ['beach-club'],
+      themes: ['deniz-tekne'],
+      collections: ['arkadas-grubu'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
+    seo: {
+      title: 'Kum Beach Club | mola360',
+      description: 'Alaçatı koyunda denize sıfır beach club: şezlong, sedir ve loca alanları, {fiyat}\'den başlayan minimum harcama, kapora masadaki hesaptan düşer. Gün boyu DJ, mutfak 23:00\'e kadar açık.',
+      ogTitle: 'Kum Beach Club — Alaçatı, Çeşme',
+      ogDescription: 'Denize sıfır koyda şezlong, sedir ve loca. Kapora masadaki harcamadan düşer.',
+      ogImage: 'alacati'
+    },
     priceLevel: '₺₺₺',
     /* Künyede ve kartta geçen kısa tanım. */
     kindLabel: 'Beach Club',
@@ -562,19 +580,17 @@ const PLACES = {
         a: 'Mutfak 12:00 – 23:00 arası açık. Mekân hafta içi 02:00’de, cuma ve cumartesi 03:00’te kapanıyor; bar servisi kapanıştan yarım saat öncesine kadar sürüyor.' }
     ],
 
-    similar: [
-      { key: 'denizManzara', title: 'Çeşme Marina Teras',  meta: 'Çeşme · Restoran',    rating: '4,6', price: 1200, unit: 'masada en az' },
-      { key: 'beachBar',     title: 'Ilıca Sahil Kulübü',  meta: 'Ilıca · Beach club',  rating: '4,4', price: 1800, unit: 'masada en az' },
-      { key: 'kordonBoyu',   href: 'mekan/kordon-spa-masaj/', title: 'Kordon Spa & Masaj',
-        meta: 'Alsancak, İzmir · Masaj', rating: '4,8', price: 1200, unit: 'hizmet başı' },
-      { key: 'alacati',      title: 'Alaçatı Kahvaltı Bahçesi', meta: 'Alaçatı · Kahvaltı', rating: '4,7', price: 650, unit: 'kişi başı' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ href: 'mekan/kordon-spa-masaj/' }],
 
     tags: [
-      { label: 'Mekanlar',           href: 'index.html#mekanlar' },
-      { label: 'Aktiviteler',        href: 'index.html#aktiviteler' },
-      { label: 'Oteller',            href: 'index.html#oteller' },
-      { label: 'Günübirlik turlar',  href: 'index.html#turlar' },
+      { label: 'Mekanlar',           href: 'mekanlar/' },
+      { label: 'Aktiviteler',        href: 'aktiviteler/' },
+      { label: 'Oteller',            href: 'oteller/' },
+      { label: 'Günübirlik turlar',  href: 'turlar/gunubirlik-turlar/' },
       { label: 'Alanlar ve minimum', href: '#alanlar' },
       { label: 'Menüden seçmeler',   href: '#menu' },
       { label: 'Çalışma saatleri',   href: '#saatler' },
@@ -602,6 +618,26 @@ const PLACES = {
     area: 'Alsancak, İzmir',
     region: 'Ege',
     code: 'MLA-MKN-02',
+
+    /* Sınıflandırma: menüde spa kategorisi yok; "Spa & Masaj" bu kayıt
+       için açıldı (onaya sunulu, docs/veri-sozlesmesi.md bölüm 5). */
+    taxonomy: {
+      categories: ['spa-masaj'],
+      themes: [],
+      collections: ['romantik'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
+    seo: {
+      title: 'Kordon Spa & Masaj | mola360',
+      description: 'Alsancak\'ta randevulu masaj salonu: klasik, sıcak taş, aromaterapi ve çift masajı. {fiyat}\'den başlayan fiyatlar, ön ödeme yok, 6 saate kadar ücretsiz iptal.',
+      ogTitle: 'Kordon Spa & Masaj — Alsancak, İzmir',
+      ogDescription: 'Randevulu masaj ve bakım; sertifikalı terapistler, ön ödeme yok.'
+    },
     priceLevel: '₺₺',
     kindLabel: 'Masaj ve Bakım',
 
@@ -804,20 +840,17 @@ const PLACES = {
         a: 'Hayır, pazar günleri kapalıyız. Hafta içi 10:00 – 21:00, cuma ve cumartesi 10:00 – 22:00 arası hizmet veriyoruz. Son randevu kapanıştan bir saat önce başlar.' }
     ],
 
-    similar: [
-      { key: 'spaKarsilama', title: 'Alsancak Güzellik Merkezi', meta: 'Alsancak · Cilt bakımı', rating: '4,6', price: 950, unit: 'hizmet başı' },
-      { key: 'sicakTas',     title: 'Çeşme Termal Spa',          meta: 'Çeşme · Spa',          rating: '4,7', price: 1400, unit: 'hizmet başı' },
-      { key: 'alacati',      href: 'mekan/kum-beach-club/', title: 'Kum Beach Club',
-        meta: 'Alaçatı, Çeşme · Beach club', rating: '4,5', price: 1500, unit: 'masada en az' },
-      { key: 'kordonBoyu',   href: 'otel/kordon-butik-otel/', title: 'Kordon Butik Otel',
-        meta: 'Alsancak, İzmir · Şehir oteli', rating: '8,9', price: 1950, unit: 'gecelik' }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ href: 'mekan/kum-beach-club/' }, { href: 'otel/kordon-butik-otel/' }],
 
     tags: [
-      { label: 'Mekanlar',          href: 'index.html#mekanlar' },
-      { label: 'Oteller',           href: 'index.html#oteller' },
-      { label: 'Aktiviteler',       href: 'index.html#aktiviteler' },
-      { label: 'Etkinlikler',       href: 'index.html#etkinlikler' },
+      { label: 'Mekanlar',          href: 'mekanlar/' },
+      { label: 'Oteller',           href: 'oteller/' },
+      { label: 'Aktiviteler',       href: 'aktiviteler/' },
+      { label: 'Etkinlikler',       href: 'etkinlikler/' },
       { label: 'Hizmetler ve süreler', href: '#hizmetler' },
       { label: 'Çalışma saatleri',  href: '#saatler' },
       { label: 'Salon kuralları',   href: '#bilgiler' },
@@ -830,11 +863,6 @@ const PLACES = {
 
 const DEFAULT_VENUE_SLUG = 'kum-beach-club';
 
-function resolveVenue(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(PLACES, anahtar)) return PLACES[anahtar];
-  return PLACES[DEFAULT_VENUE_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -853,8 +881,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calcVenueBooking,
     venuePriceFrom,
     venuePriceUnit,
-    venueSeatsLeft,
-    venueSlugFromPath,
-    resolveVenue
+    venueSlugFromPath
   };
 }

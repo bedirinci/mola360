@@ -17,8 +17,9 @@
 
   /* Sayfa /tur/<slug>/ adresinde duruyor, slug adresten okunuyor.
      Eski tur.html?tur=... adresi de çalışmaya devam etsin diye sorgu
-     dizisi yedek olarak kalıyor. */
-  const tour = resolveTour(
+     dizisi yedek olarak kalıyor. Kayıt veri kapısından geliyor
+     (docs/veri-sozlesmesi.md); yayında olmayan veya bilinmeyen tur null. */
+  const tour = MolaVeri.urun('tour',
     tourSlugFromPath(window.location.pathname) || tourSlugFromQuery(window.location.search)
   );
   if (!tour) return;
@@ -76,6 +77,14 @@
     reviewsShown: REVIEWS_STEP,
     photo: 0
   };
+
+  /* Kontenjan canlı sorgu: sayfayla gelmiyor, kapıdan ayrıca isteniyor
+     (sözleşme bölüm 6). Cevap gelene kadar null; kontenjan satırı gizli
+     kalıyor, satış engellenmiyor (son kontrol ödeme adımında).
+     satisEngeli: seçili tarihte satışı durduran sebep ('doldu' |
+     'yetersiz') veya null. */
+  let musaitlik = null;
+  let satisEngeli = null;
 
   const $  = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
@@ -469,23 +478,16 @@
       </div>`;
   }
 
+  /* Benzer şeridi: elle seçilmiş öneriler + kurala dayalı benzerler,
+     kartlar ürünlerin kendi kaydından (catalog.js/catalogBenzerMarkup).
+     Katalog yüklü değilse ya da benzer yoksa bölüm gizleniyor. */
   function similarMarkup() {
-    return `
-      <div class="tour-block-head"><h2>Benzer turlar</h2><p>Aynı bölgede, aynı günübirlik tempoda.</p></div>
-      <div class="tour-similar-grid">
-        ${tour.similar.map(s => `
-          <a class="tour-similar-card" href="${s.slug ? KOK + 'tur/' + s.slug + '/' : KOK + 'index.html'}">
-            <span class="tour-similar-media">
-              <img src="${tourImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
-              <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
-            </span>
-            <span class="tour-similar-body">
-              <strong>${s.title}</strong>
-              <span class="tour-similar-meta">${s.meta}</span>
-              <span class="tour-similar-price">${formatTRY(s.price)}<span>${p.unitNote}</span></span>
-            </span>
-          </a>`).join('')}
-      </div>`;
+    if (typeof catalogBenzerMarkup !== 'function') return '';
+    return catalogBenzerMarkup(tour, {
+      kok: KOK,
+      yildiz: ic('star'),
+      gorsel: (anahtar) => (typeof cardImages !== 'undefined' && cardImages[anahtar]) || ''
+    });
   }
 
   /* ---------------- PDF belgesi ----------------
@@ -560,13 +562,15 @@
     return liste.map(iso => {
       const parca = trDateParts(iso);
       const on = iso === state.date;
+      /* Dolu kalkış takvimde kalıyor ama seçilemiyor. */
+      const dolu = tarihDoluMu(musaitlik, iso);
       return `
-        <button class="tour-date-chip${on ? ' active' : ''}" type="button"
-                data-date="${iso}" aria-pressed="${on}"
-                aria-label="${formatTrDate(iso)}">
+        <button class="tour-date-chip${on ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+                data-date="${iso}" aria-pressed="${on}"${dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(iso)}${dolu ? ' — dolu' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${parca.ay}</span>
+          <span class="tour-date-month">${dolu ? 'dolu' : parca.ay}</span>
         </button>`;
     }).join('');
   }
@@ -736,19 +740,30 @@
       </div>`;
   }
 
-  /* Kontenjan çubuğu: kalan yer tarihten türetilir (tour-data.js/seatsLeft),
-     böylece sayfa yenilendiğinde rakam zıplamaz. */
-  function syncSeats() {
+  /* Kontenjan çubuğu: kalan yer kontenjan cevabından (MolaVeri.musaitlik);
+     burada hesaplanmıyor, uydurulmuyor. Bebek kucakta seyahat ettiği için
+     koltuk tutmuyor. */
+  function syncSeats(hesap) {
+    const kayit = musaitlikKaydi(musaitlik, 'departure', state.date);
+    const durum = kontenjanDurumu(kayit ? kayit.remaining : null, hesap.adults + hesap.children, 4);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const kapasite = Math.max(1, Number(p.seatsPerDeparture) || 1);
-    const kalan = seatsLeft(state.date, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 4);
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
+    const kapasite = Math.max(1, Number(kayit.capacity) || 1);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: 'Bu tarihte <strong>yer kalmadı</strong> · başka bir tarih seçin',
+      yetersiz: 'Bu tarihte en fazla <strong>' + durum.kalan + ' kişilik</strong> yer var'
+    }[durum.durum] || 'Bu tarihte <strong>' + durum.kalan + ' kişilik</strong> yer kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic('users')}Bu tarihte
-        <strong>${kalan} kişilik</strong> yer kaldı</span>`;
+      <span class="tour-seats-text">${ic('users')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -835,7 +850,7 @@
     const ozet = document.getElementById('tourSummary');
     if (ozet) ozet.innerHTML = summaryMarkup(hesap);
 
-    syncSeats();
+    syncSeats(hesap);
     syncStickyBar(hesap);
   }
 
@@ -869,7 +884,7 @@
         </span>
         <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Rezervasyon yap</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -997,6 +1012,11 @@
   function openSheet() {
     const sheet = document.getElementById('tourSheet');
     if (!sheet) return;
+    /* Ödeme ekranı: seçim adres satırıyla taşınıyor (booking-engine.js,
+       rezSecimYaz). Kapı ya da motor yoksa eski davranış: destek hattı. */
+    const odemeYolu = (typeof MolaVeri !== 'undefined' && MolaVeri.odemeYolu) ? MolaVeri.odemeYolu('tour', tour.slug, state) : '';
+    const odemeAdresi = odemeYolu ? KOK + odemeYolu.replace(/&/g, '&amp;') : '';
+    const ODEME_NOTU = 'Sonraki adımda katılımcı bilgilerini girip tutarın tamamını ya da %20 kaporasını ödersiniz; kalanı turdan 1 gün önce ya da araçta. Kalkışa 2 günden az kaldıysa tamamı ödenir.';
     const hesap = calcTotal(tour, state);
     const satir = (label, value) => `<li><span>${label}</span><strong>${value}</strong></li>`;
 
@@ -1019,13 +1039,14 @@
           ${hesap.addons.map(a => satir(a.label, formatTRY(a.amount))).join('')}
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
-        <p class="tour-sheet-note">${ic('info')}<span>Ödeme adımı henüz bağlı değil.
-          Yukarıdaki özet, ödeme ekranına taşınacak bilgilerin tamamıdır.</span></p>
+        <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
         <div class="tour-sheet-actions">
           <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
           <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
              target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
-          <button class="tour-cta" type="button" data-sheet="close">Anladım</button>
+          ${odemeAdresi
+            ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
+            : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
         </div>
       </div>`;
 
@@ -1368,11 +1389,17 @@
     const favBtn = document.getElementById('tourGalleryFav');
     if (favBtn) {
       favBtn.addEventListener('click', () => {
-        state.favorite = !state.favorite;
-        syncFav();
-        toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        /* Favori veri kapısında (hesapta; misafirde bu tarayıcıda). */
+        const bitti = (v) => {
+          state.favorite = v;
+          syncFav();
+          toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        };
+        if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriDegistir) MolaVeri.favoriDegistir('tour', tour.slug).then(bitti);
+        else bitti(!state.favorite);
       });
     }
+    if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriMi) state.favorite = MolaVeri.favoriMi('tour', tour.slug);
     syncFav();
 
     /* Paylaş tek yerde: banner'ın sağ üst köşesinde, favorinin sağında.
@@ -1550,7 +1577,9 @@
   fill('bilgiler', infoMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('tourSimilar', similarMarkup());
+  const benzerIcerik = similarMarkup();
+  fill('tourSimilar', benzerIcerik);
+  if (!benzerIcerik && document.getElementById('tourSimilar')) document.getElementById('tourSimilar').hidden = true;
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
@@ -1566,5 +1595,21 @@
   initSectionNav();
   initGalleryCounter();
   initStickyBar();
+
+  /* Kontenjan: takvimde görünebilecek bütün kalkışlar için tek sorgu.
+     Varsayılan tarih doluysa ilk müsait kalkışa geçiliyor; sayfa
+     "yer kalmadı" diye açılmasın. */
+  MolaVeri.musaitlik('tour', tour.slug, { from: tarihler[0], to: tarihler[tarihler.length - 1] })
+    .then(cevap => {
+      musaitlik = cevap;
+      if (tarihDoluMu(musaitlik, state.date)) {
+        const ilk = tarihler.find(iso => !tarihDoluMu(musaitlik, iso));
+        if (ilk) state.date = ilk;
+      }
+      const kap = document.getElementById('tourDateChips');
+      if (kap) kap.innerHTML = dateChipsMarkup();
+      syncBooking();
+    })
+    .catch(() => { /* Kontenjan bilinmiyor: satır gizli, satış açık. */ });
 
 })();

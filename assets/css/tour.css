@@ -1503,6 +1503,11 @@
   color: #D8DEF5;
 }
 .tour-date-chip.active strong { color: #fff; }
+/* Dolu tarih: kontenjanın tamamı satılmış. Çip duruyor (takvimde boşluk
+   kalmasın) ama seçilemiyor; mekânın kapalı gün çipiyle aynı dil. */
+.tour-date-chip.is-dolu { opacity: .45; cursor: not-allowed; }
+.tour-date-chip.is-dolu:hover { border-color: var(--border); }
+.tour-date-chip.is-dolu .tour-date-month { color: var(--text-faint); }
 .tour-date-note {
   display: flex;
   align-items: center;
@@ -1543,6 +1548,9 @@
   white-space: nowrap;
 }
 .tour-city-chip:hover { border-color: var(--navy); }
+/* Seansı dolu seçenek (aktivite seansı, mekân saati): duruyor, seçilemiyor. */
+.tour-city-chip.is-dolu { opacity: .45; cursor: not-allowed; }
+.tour-city-chip.is-dolu:hover { border-color: var(--border); }
 .tour-city-chip.active {
   border-color: var(--navy);
   background: rgba(21,32,72,.045);
@@ -1582,6 +1590,9 @@
 .tour-seats.is-low .tour-seats-fill { background: #E8883A; }
 .tour-seats.is-low .tour-seats-text,
 .tour-seats.is-low .tour-seats-text strong { color: #B4530A; }
+/* Kontenjan cevabı gelmeden satır görünmüyor (display:flex [hidden]'ı
+   ezmesin diye açıkça). */
+.tour-seats[hidden] { display: none; }
 
 /* Kişi sayacı */
 .tour-party { display: grid; gap: 4px; }
@@ -1774,6 +1785,15 @@
   box-shadow: none;
 }
 .tour-cta.ghost:hover { background: #F6F8FC; border-color: var(--navy); color: var(--navy); }
+/* Seçili tarih dolu veya istenen kişiye yer yetmiyor: düğme pasif,
+   sebebi kontenjan satırında yazıyor. */
+.tour-cta:disabled,
+.tour-cta:disabled:hover {
+  background: #E6E9F2;
+  color: var(--text-faint);
+  cursor: not-allowed;
+  transform: none;
+}
 
 .tour-booking-trust { list-style: none; display: grid; gap: 7px; }
 .tour-booking-trust li {

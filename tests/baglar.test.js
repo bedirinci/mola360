@@ -17,6 +17,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { catalogAllCards } from '../assets/js/catalog.js';
+import { MolaVeri } from '../assets/js/data-gateway.js';
 import { istenenDosya } from '../scripts/sunucu.js';
 
 const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -30,6 +31,17 @@ function diskteVar(gorece) {
   const tam = path.resolve(KOK, temiz);
   if (!existsSync(tam)) return false;
   return statSync(tam).isDirectory() ? existsSync(path.join(tam, 'index.html')) : true;
+}
+
+/* Dosyasi olmayan adres GitHub Pages'te 404.html'e duser; o sayfa adresi
+   veri kapisina sorup ekrani kuruyor (liste, tema, "yakinda"). Kapinin
+   tanidigi adres gecerli bir bagdir; tanimadigi adres "bulunamadi"
+   ekranina duser ve KIRIK sayilir. */
+function bagCalisir(gorece) {
+  if (diskteVar(gorece)) return true;
+  const temiz = gorece.split('#')[0].split('?')[0];
+  const adres = MolaVeri.adres(temiz);
+  return !!adres && adres.kind !== 'home';
 }
 
 /* Depodaki butun HTML sayfalari (_backup yedekleri haric). */
@@ -46,13 +58,29 @@ function htmlSayfalari(dizin = KOK, toplam = []) {
 const sayfalar = htmlSayfalari();
 
 describe('kart baglari', () => {
-  it('her kart bagi diskte gercek bir sayfaya gidiyor', () => {
+  it('sayfasi olan urunun karti diskteki sayfasina gidiyor', () => {
     /* Katalogdan uretilen kartlar: adres kaydin slug'indan kuruluyor,
        yani slug ile klasor adi ayrisirsa kart olu bir adrese gider. */
-    const kartlar = catalogAllCards(BUGUN);
+    const kartlar = catalogAllCards(BUGUN).filter(k => !k.ornek);
     expect(kartlar.length).toBeGreaterThan(0);
     kartlar.forEach(kart =>
       expect(diskteVar(kart.href), kart.title + ' -> ' + kart.href + ' diskte yok').toBe(true));
+  });
+
+  it('her kart tiklanabilir; ornek urunun karti yonlendiricideki ozet sayfasina', () => {
+    /* Ornek ozet kaydin (sample: true) dosyasi yok; adresi 404.html'e
+       duser ve yonlendirici urunu taniyip ozet sayfasini kuruyor
+       (detail-shell.js). Kart artik baglantisiz degil. */
+    const kartlar = catalogAllCards(BUGUN);
+    expect(kartlar.every(k => k.href), 'baglantisiz kart var').toBe(true);
+    const ornekler = kartlar.filter(k => k.ornek);
+    expect(ornekler.length).toBeGreaterThan(0);
+    ornekler.forEach(kart => {
+      expect(diskteVar(kart.href), kart.href + ' icin dosya var, ornek sayilmamali').toBe(false);
+      const adres = MolaVeri.adres(kart.href);
+      expect(adres && adres.kind, kart.href).toBe('product');
+      expect(MolaVeri.urun(adres.type, adres.slug).sample, kart.href).toBe(true);
+    });
   });
 
   it('anasayfaya elle yazilmis kart baglari da diskte var', () => {
@@ -73,7 +101,7 @@ describe('sayfa ici baglar', () => {
     !adres
     || /^(https?:|tel:|mailto:|data:|javascript:|#|\/\/)/i.test(adres);
 
-  it('her sayfadaki gorece bag diskte var', () => {
+  it('her sayfadaki gorece bag diskte ya da yonlendiricide var', () => {
     expect(sayfalar.length).toBeGreaterThan(2);
     const kirik = [];
     sayfalar.forEach(sayfa => {
@@ -82,7 +110,7 @@ describe('sayfa ici baglar', () => {
       [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map(m => m[1]).forEach(adres => {
         if (atla(adres)) return;
         const hedef = path.relative(KOK, path.resolve(klasor, adres.split('#')[0].split('?')[0]));
-        if (!diskteVar(hedef)) kirik.push(sayfa + ' -> ' + adres);
+        if (!bagCalisir(hedef)) kirik.push(sayfa + ' -> ' + adres);
       });
     });
     expect(kirik, 'kirik bag: ' + kirik.join(' | ')).toEqual([]);

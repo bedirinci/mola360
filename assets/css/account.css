@@ -1,0 +1,211 @@
+/* =====================================================
+   HESABIM PANELİ (/hesabim/, tek yönlendirici)
+   İşaretleme account-page.js'te. Form alanları ve onay kutuları ödeme
+   ekranınınkiyle aynı (.odm-field, .odm-check, checkout.css).
+   Yerleşim: mobilde bölüm çipleri üstte yatay kayar; 1025px üstünde
+   solda yapışkan bölüm menüsü.
+   ===================================================== */
+
+.hsa-page {
+  max-width: calc(1180px + var(--page-gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter) 48px;
+  color: var(--text);
+}
+.hsa-page p, .hsa-page h1, .hsa-page h2, .hsa-page h3 { -webkit-user-select: text; user-select: text; }
+
+.hsa-head { display: flex; align-items: center; gap: 14px; margin: 14px 0 10px; }
+.hsa-avatar {
+  width: 52px; height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-weight: 800; font-size: 18px;
+  color: #fff; background: var(--navy);
+}
+.hsa-avatar:empty { display: none; }
+.hsa-head h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(20px, 2.6vw, 26px); color: var(--navy-deep); }
+.hsa-head p { font-size: 13.5px; color: var(--text-muted); }
+.hsa-demo {
+  margin-bottom: 14px; padding: 8px 12px;
+  font-size: 12.5px; color: #6B4E00; background: #FFF6DB; border-radius: var(--radius-sm);
+}
+
+.hsa-layout { display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 1025px) {
+  .hsa-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: start; gap: 24px; }
+  .hsa-nav { position: sticky; top: calc(var(--desktop-header-height) + 16px); }
+}
+
+/* ---------------- bölüm menüsü ---------------- */
+.hsa-nav ul { list-style: none; margin: 0; padding: 0; }
+@media (max-width: 1024px) {
+  .hsa-nav { margin: 0 calc(var(--page-gutter) * -1); }
+  .hsa-nav ul { display: flex; gap: 8px; overflow-x: auto; padding: 2px var(--page-gutter); scrollbar-width: none; }
+  .hsa-nav ul::-webkit-scrollbar { display: none; }
+  .hsa-nav a {
+    display: inline-flex; white-space: nowrap; padding: 8px 14px;
+    border: 1px solid var(--border); border-radius: 999px; background: #fff;
+    font-size: 13.5px; font-weight: 600; color: var(--text);
+  }
+  .hsa-nav a.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
+}
+@media (min-width: 1025px) {
+  .hsa-nav ul { padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+  .hsa-nav a { display: block; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; color: var(--text); }
+  .hsa-nav a:hover { background: var(--bg); }
+  .hsa-nav a.is-active { background: #EEF2FB; color: var(--navy); }
+}
+
+.hsa-main { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.hsa-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; color: var(--navy-deep); }
+.hsa-subtitle { margin-top: 8px; font-size: 15px; color: var(--navy-deep); }
+.hsa-lead { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+.hsa-note { font-size: 12.5px; color: var(--text-faint); }
+.hsa-ok { font-size: 13px; color: #2F7D12; }
+.hsa-ok:empty, .hsa-error:empty { display: none; }
+.hsa-error { font-size: 13px; color: #C62828; }
+
+.hsa-card {
+  display: block;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.hsa-card h3 { font-size: 16px; color: var(--navy-deep); margin-bottom: 4px; }
+.hsa-card p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+.hsa-list { display: flex; flex-direction: column; gap: 10px; }
+
+.hsa-btn { min-height: 44px; padding: 0 20px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.hsa-btn-ghost, .hsa-btn-danger {
+  min-height: 42px; padding: 0 18px;
+  border-radius: 999px; font-weight: 700; font-size: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.hsa-btn-ghost { border: 1.5px solid var(--navy); color: var(--navy); background: #fff; }
+.hsa-btn-danger { border: 1.5px solid #C62828; color: #fff; background: #C62828; }
+.hsa-link { font-size: 13.5px; font-weight: 700; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; background: none; }
+.hsa-link-danger { color: #C62828; }
+
+/* ---------------- kutucuklar ---------------- */
+.hsa-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.hsa-tile {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 14px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.hsa-tile-wide { grid-column: 1 / -1; }
+.hsa-tile-label { font-size: 12px; font-weight: 700; color: var(--green-dark); text-transform: uppercase; letter-spacing: .04em; }
+.hsa-tile strong { font-size: 20px; color: var(--navy-deep); }
+.hsa-tile-wide strong { font-size: 16px; }
+.hsa-tile span:last-child { font-size: 13px; color: var(--text-muted); }
+
+/* ---------------- rezervasyonlar ---------------- */
+.hsa-tabs { display: flex; gap: 6px; }
+.hsa-tab {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: #fff;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+}
+.hsa-tab span { color: var(--text-faint); }
+.hsa-tab.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.hsa-tab.is-active span { color: rgba(255,255,255,.7); }
+.hsa-rez-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.hsa-rez-kod { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-muted); }
+.hsa-rez h3 a { color: var(--navy-deep); }
+.hsa-rez-date, .hsa-rez-pay { font-size: 13.5px; }
+.hsa-rez-note { font-size: 12.5px !important; color: #6B4E00 !important; }
+.hsa-rez-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+.hsa-badge {
+  display: inline-flex; padding: 3px 9px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; color: var(--navy); background: #EEF2FB;
+}
+.hsa-badge-yaklasan, .hsa-badge-gecerli { color: #2F5A0B; background: rgba(140,198,63,.2); }
+.hsa-badge-iptal, .hsa-badge-suresi-doldu { color: #9E1C1C; background: #FFF0F0; }
+.hsa-badge-tamamlandi, .hsa-badge-kullanildi { color: var(--text-muted); background: var(--bg); }
+.hsa-confirm { margin-top: 10px; padding: 12px; border-radius: var(--radius-sm); background: #FFF7F7; border: 1px solid #F3C7C7; }
+.hsa-confirm p { color: var(--text) !important; }
+.hsa-confirm-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+/* ---------------- biletler ---------------- */
+.hsa-tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.hsa-ticket {
+  display: flex; gap: 14px; padding: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  scroll-margin-top: calc(var(--desktop-header-height) + 16px);
+}
+.hsa-ticket-qr { position: relative; width: 120px; flex-shrink: 0; }
+.hsa-ticket-qr .karekod { display: block; width: 120px; height: 120px; }
+.hsa-ticket-stamp {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-18deg);
+  padding: 2px 8px; border: 2px solid #C62828; border-radius: 4px;
+  font-size: 12px; font-weight: 800; letter-spacing: .1em; color: #C62828; background: rgba(255,255,255,.9);
+}
+.hsa-ticket-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.hsa-ticket-body h3 { font-size: 15px; line-height: 1.3; color: var(--navy-deep); }
+.hsa-ticket-body p { font-size: 13px; color: var(--text-muted); }
+.hsa-ticket-name { color: var(--text) !important; font-weight: 600; }
+.hsa-ticket-no { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px !important; }
+.hsa-ticket-note { color: #9E1C1C !important; font-size: 12px !important; }
+.hsa-type { font-size: 11.5px; font-weight: 700; color: var(--green-dark); text-transform: uppercase; letter-spacing: .04em; }
+.hsa-print { align-self: flex-start; }
+
+/* ---------------- kupon, puan, seviye ---------------- */
+.hsa-coupons { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.hsa-coupon { padding: 14px; border: 1.5px dashed #B9C3DA; border-radius: var(--radius); background: #fff; }
+.hsa-coupon.is-kullanildi, .hsa-coupon.is-suresi-doldu { opacity: .65; }
+.hsa-coupon-code { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.hsa-coupon-code strong { font-family: ui-monospace, Menlo, monospace; font-size: 16px; letter-spacing: .06em; color: var(--navy-deep); }
+.hsa-coupon h3 { font-size: 14.5px; color: var(--navy-deep); }
+.hsa-coupon p { font-size: 13px; color: var(--text-muted); }
+.hsa-coupon-meta { margin-top: 6px; }
+.hsa-ledger { list-style: none; padding: 0; margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.hsa-ledger li { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.hsa-ledger li:last-child { border-bottom: 0; }
+.hsa-ledger small { display: block; font-size: 12px; color: var(--text-muted); }
+.hsa-ledger-amount { text-align: right; font-weight: 800; color: #2F7D12; white-space: nowrap; }
+.hsa-ledger-amount.is-bekliyor { color: var(--text-muted); }
+.hsa-ledger-amount.is-iptal { color: var(--text-faint); text-decoration: line-through; }
+.hsa-level { padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.hsa-level strong { display: block; font-size: 22px; color: var(--navy-deep); }
+.hsa-level p { font-size: 13.5px; color: var(--text-muted); }
+.hsa-progress { height: 8px; margin-top: 10px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.hsa-progress span { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+.hsa-table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.hsa-table th, .hsa-table td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.hsa-table tr.is-current td { font-weight: 700; color: var(--navy); background: #EEF2FB; }
+
+/* ---------------- yorum ---------------- */
+.hsa-stars { display: flex; gap: 4px; border: 0; padding: 0; margin: 8px 0; }
+.hsa-stars legend { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.hsa-stars label { cursor: pointer; font-size: 26px; line-height: 1; color: #D5D9E3; }
+.hsa-stars input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.hsa-stars label:has(input:checked), .hsa-stars label:has(~ label input:checked) { color: #F5A623; }
+.hsa-stars input:focus-visible + span { outline: 2px solid var(--navy); outline-offset: 2px; }
+.hsa-stars-read { color: #F5A623; letter-spacing: 1px; }
+.hsa-stars-read span { color: #D5D9E3; }
+
+/* ---------------- bildirimler ---------------- */
+.hsa-notifs { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.hsa-notifs li { border-bottom: 1px solid var(--border); }
+.hsa-notifs li:last-child { border-bottom: 0; }
+.hsa-notifs a { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; font-size: 14px; color: var(--text); }
+.hsa-notifs li.is-unread a { background: #F6F8FE; font-weight: 600; }
+.hsa-notif-meta { font-size: 12px; font-weight: 500; color: var(--text-faint); }
+
+/* ---------------- misafir ---------------- */
+.hsa-guest { padding: 20px; border-radius: var(--radius); background: var(--navy); color: #fff; }
+.hsa-guest h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; }
+.hsa-guest p { margin-top: 6px; font-size: 14px; color: rgba(255,255,255,.85); }
+.hsa-guest-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.hsa-guest .hsa-btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.7); }
+.hsa-find { margin-top: 10px; }
+.hsa-empty { padding: 22px; text-align: center; background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius); }
+.hsa-empty strong { display: block; font-size: 15px; color: var(--navy-deep); }
+.hsa-empty p { margin: 4px 0 12px; font-size: 13.5px; color: var(--text-muted); }
+.hsa-fav-grid { margin-top: 4px; }
+
+@media print {
+  .site-header, .site-footer, .lst-mobile-header, .hsa-nav, .hsa-head, .hsa-demo, .hsa-print, .lst-crumbs, .hsa-lead, .hsa-title { display: none !important; }
+  .hsa-layout { display: block; }
+  .hsa-ticket { break-inside: avoid; box-shadow: none; }
+}

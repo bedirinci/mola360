@@ -22,7 +22,6 @@ const TUR_VERI = (typeof require === 'function' && typeof module !== 'undefined'
 
 const oAsDate      = TUR_VERI ? TUR_VERI.asDate      : asDate;
 const oToISODate   = TUR_VERI ? TUR_VERI.toISODate   : toISODate;
-const oSeatsLeft   = TUR_VERI ? TUR_VERI.seatsLeft   : seatsLeft;
 const oCommonsUrl  = TUR_VERI ? TUR_VERI.commonsImageUrl : commonsImageUrl;
 
 /* ---------------- görseller ----------------
@@ -181,11 +180,25 @@ function hotelAddonLines(hotel, secim, plan) {
     });
 }
 
+/* ---------------- çocuk yaşı ----------------
+   pricing.freeChildMaxAge yaşına kadar çocuk pansiyon farkı ödemez.
+   Yaşlar ürün sayfasında sorulmuyor, ödeme adımında soruluyor: yaş
+   verilmediyse (ya da eksikse) BÜTÜN çocuklar ücretli sayılır. Ürün
+   sayfasının gösterdiği tutar böylece üst sınır; ödeme adımında yaş
+   girilince ancak düşer, hiçbir zaman sürpriz artmaz. */
+function hotelPayingChildren(hotel, children, ages) {
+  const adet = Math.max(0, Math.floor(Number(children) || 0));
+  const sinir = Number(((hotel && hotel.pricing) || {}).freeChildMaxAge);
+  if (!Array.isArray(ages) || ages.length < adet || !Number.isFinite(sinir)) return adet;
+  return ages.slice(0, adet).filter(y => !(Number.isFinite(Number(y)) && y !== '' && Number(y) <= sinir)).length;
+}
+
 /* ---------------- tutar ----------------
    Kurallar ve her birinin ayrı testi var:
 
    oda        gecelik oda fiyatı × oda sayısı × gece
-   pansiyon   kişi başı gecelik fark × kişi × gece (çocuk tarifesi ayrı)
+   pansiyon   kişi başı gecelik fark × kişi × gece (çocuk tarifesi ayrı;
+              freeChildMaxAge yaşına kadar çocuk ücretsiz)
    ek hizmet  yukarıdaki üç çarpandan biri
    vergi      konaklama vergisi; matrah oda + pansiyon, ek hizmetler HARİÇ
 
@@ -205,7 +218,8 @@ function calcHotelTotal(hotel, secim) {
   const odaListeToplam = gecelikListe * plan.rooms * plan.nights;
 
   const yetiskinPansiyon = (Number(pansiyon.adultNight) || 0) * plan.adults * plan.nights;
-  const cocukPansiyon = (Number(pansiyon.childNight) || 0) * plan.children * plan.nights;
+  const ucretliCocuk = hotelPayingChildren(hotel, plan.children, secim && secim.childAges);
+  const cocukPansiyon = (Number(pansiyon.childNight) || 0) * ucretliCocuk * plan.nights;
   const pansiyonToplam = yetiskinPansiyon + cocukPansiyon;
 
   const araToplam = odaToplam + pansiyonToplam;
@@ -222,7 +236,7 @@ function calcHotelTotal(hotel, secim) {
   });
   if (pansiyonToplam > 0) {
     satirlar.push({
-      label: pansiyon.label + ' × ' + plan.guests + ' kişi × ' + plan.nights + ' gece',
+      label: pansiyon.label + ' × ' + (plan.adults + ucretliCocuk) + ' kişi × ' + plan.nights + ' gece',
       amount: pansiyonToplam,
       kind: 'base'
     });
@@ -301,13 +315,10 @@ function hotelScoreText(breakdown) {
   return String(hotelScore(breakdown)).replace('.', ',');
 }
 
-/* Kalan oda sayısı tarihten VE oda tipinden türetilir: aynı tarihte her
-   oda tipi farklı, ama aynı oda aynı tarihte her yenilemede aynı sayıyı
-   verir. Rastgele sayı kullanılsaydı "son 2 oda" uyarısı her yenilemede
-   zıplar ve inandırıcılığını kaybederdi. */
-function roomsLeft(iso, roomId, total) {
-  return oSeatsLeft(String(iso || '') + '|' + String(roomId || ''), total);
-}
+/* Kalan oda burada hesaplanmıyor: veri kapısının kontenjan cevabından,
+   konaklamanın her gecesinin en küçüğü olarak (konaklamaKalan,
+   data-gateway.js). Önceki roomsLeft() karma değerden sayı üretiyordu ve
+   yalnızca giriş gecesine bakıyordu. */
 
 /* /mola360/otel/kordon-butik-otel/ -> "kordon-butik-otel" */
 function hotelSlugFromPath(pathname) {
@@ -347,6 +358,30 @@ const HOTELS = {
     area: 'Alsancak, İzmir',
     region: 'Ege',
     code: 'MLA-OTL-01',
+
+    /* Sınıflandırma, para birimi ve arama motoru bilgisi:
+       docs/veri-sozlesmesi.md bölüm 4. categoryShort ana kategorinin
+       kısa adı, region şehrin bölgesi; tests/veri-kapisi.test.js
+       ayrışmadıklarını ölçüyor. Pansiyon özelliği boards[]'tan
+       türetiliyor, burada ayrıca yazılmıyor. Açıklamadaki {fiyat} sayfa
+       üretilirken güncel başlangıç fiyatıyla doluyor. */
+    taxonomy: {
+      categories: ['sehir-otelleri', 'butik-oteller'],
+      themes: [],
+      collections: ['romantik'],
+      city: 'izmir',
+      facets: {}
+    },
+    currency: 'TRY',
+    /* Yayına giriş tarihi: sayfanın depoya girdiği gün (git geçmişi).
+       "Yeni Eklenenler" ve "En yeni" sıralaması bununla. */
+    publishedAt: '2026-09-21',
+    seo: {
+      title: 'Kordon Butik Otel — Alsancak, İzmir | mola360',
+      description: 'Alsancak\'ta Kordon\'a 120 metre, 28 odalı butik şehir oteli. Teras katta körfez manzaralı açık büfe kahvaltı dahil, 72 saate kadar ücretsiz iptal, gecelik {fiyat}\'den başlayan fiyatlar.',
+      ogTitle: 'Kordon Butik Otel — Alsancak, İzmir',
+      ogDescription: 'Kordon\'a 120 metre, 28 odalı butik şehir oteli. Teras katta kahvaltı dahil, ücretsiz iptal.'
+    },
     /* Başlık satırında ve künyede geçen kısa konum cümlesi. */
     distanceLabel: 'Kordon’a 120 m',
 
@@ -556,6 +591,10 @@ const HOTELS = {
       maxNights: 14,
       maxRooms: 3,
       maxGuests: 8,
+      /* Kurallar metnindeki çocuk politikası: 0 – 6 yaş ücretsiz, 7 – 12
+         yaş pansiyon farkı çocuk tarifesinden. 13 yaş ve üzeri yetişkin. */
+      childAges: '0 – 12 yaş',
+      freeChildMaxAge: 6,
       /* Aynı gün giriş satılmıyor; en erken yarın. */
       leadDays: 1,
       checkInTime: '14:00',
@@ -638,12 +677,11 @@ const HOTELS = {
 
     /* slug taşıyan kayıt gerçek bir içerik sayfasına gider; taşımayan
        kayıt anasayfaya. Yeni otel sayfası yazıldıkça slug eklenir. */
-    similar: [
-      { key: 'kemerMarina',  title: 'Sealight Resort',    meta: 'Kemer, Antalya · Her şey dahil', score: '9,2', price: 2100 },
-      { key: 'termalYalova', title: 'Termal Vadi Resort', meta: 'Termal, Yalova · Termal havuz',  score: '8,7', price: 1590 },
-      { key: 'goreme',       title: 'Göreme Mağara Otel', meta: 'Göreme, Nevşehir · Butik',       score: '9,4', price: 2450 },
-      { key: 'kemeralti',    title: 'Kemeraltı Konak Otel', meta: 'Konak, İzmir · Tarihi konak',  score: '8,5', price: 1450 }
-    ],
+    /* Elle seçilmiş öneriler: yalnızca ürün KİMLİĞİ (aynı tipten slug,
+       başka tipten adres). Kart ürünün kendi kaydından üretiliyor;
+       kalan yeri kurala dayalı benzerler dolduruyor
+       (catalog.js/catalogBenzerMarkup). */
+    similar: [{ slug: 'sealight-resort' }, { slug: 'termal-vadi-resort' }, { slug: 'goreme-magara-otel' }],
 
     /* Sayfa etiketleri: sayfanın en altındaki çip bulutu.
        HEPSİ gerçek bir hedefe gidiyor — ya anasayfadaki şerit çapasına,
@@ -652,10 +690,10 @@ const HOTELS = {
        madde 4. href kök-göreli yazılır, '#' ile başlayanlar olduğu gibi
        kalır. */
     tags: [
-      { label: 'Oteller',            href: 'index.html#oteller' },
-      { label: 'Günübirlik turlar',  href: 'index.html#turlar' },
-      { label: 'Konaklamalı turlar', href: 'index.html#konaklamali-turlar' },
-      { label: 'Aktiviteler',        href: 'index.html#aktiviteler' },
+      { label: 'Oteller',            href: 'oteller/' },
+      { label: 'Günübirlik turlar',  href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Konaklamalı turlar', href: 'turlar/konaklamali-turlar/' },
+      { label: 'Aktiviteler',        href: 'aktiviteler/' },
       { label: 'Oda tipleri',        href: '#odalar' },
       { label: 'Otel olanakları',    href: '#olanaklar' },
       { label: 'Konum ve ulaşım',    href: '#konum' },
@@ -668,11 +706,6 @@ const HOTELS = {
 
 const DEFAULT_HOTEL_SLUG = 'kordon-butik-otel';
 
-function resolveHotel(slug) {
-  const anahtar = String(slug || '').trim().toLowerCase();
-  if (anahtar && Object.prototype.hasOwnProperty.call(HOTELS, anahtar)) return HOTELS[anahtar];
-  return HOTELS[DEFAULT_HOTEL_SLUG] || null;
-}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -686,13 +719,12 @@ if (typeof module !== 'undefined' && module.exports) {
     hotelBoard,
     clampStay,
     hotelAddonLines,
+    hotelPayingChildren,
     calcHotelTotal,
     hotelNightlyFrom,
     hotelNightlyListFrom,
     hotelScore,
     hotelScoreText,
-    roomsLeft,
-    hotelSlugFromPath,
-    resolveHotel
+    hotelSlugFromPath
   };
 }

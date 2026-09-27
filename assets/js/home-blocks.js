@@ -10,7 +10,7 @@
 const HOME_BLOCK_PLACEMENT = {
   'Yaklaşan Planlar': ['promo'],
   'Günübirlik Turlar': ['themes'],
-  'Aktiviteler': ['venues'],
+  'Aktiviteler': ['venues', 'sights'],
   'Oteller': ['collectionGrid', 'newsletter', 'support', 'seo']
 };
 
@@ -26,53 +26,82 @@ const UPCOMING_FILTERS = [
 /* Gun filtreleri: kayittaki dayKey bu anahtarlarla eslesir. */
 const UPCOMING_DAY_KEYS = ['cuma', 'cumartesi', 'pazar'];
 
-/* ---- Temalar: NE yapmak istediğin (aktivite türü) ----
-   Koleksiyonlarla karışmaması için burada yalnızca aktivite türleri
-   bulunur; kitle/bütçe başlıkları GRID_COLLECTIONS'a aittir. */
-const THEME_COLLECTIONS = [
-  { img:'iznik2',     title:'Doğa & Yayla',       count:'31 tur' },
-  { img:'efes',       title:'Kültür & Tarih',     count:'24 tur' },
-  { img:'cunda2',     title:'Deniz & Tekne',      count:'18 tur' },
-  { img:'uludag',     title:'Kış Sporları',       count:'12 tur' },
-  { img:'coffee1',    title:'Gastronomi',         count:'15 etkinlik' },
-  { img:'paraglide3', title:'Macera & Adrenalin', count:'9 aktivite' }
-];
+/* ---- Temalar ve koleksiyonlar ----
+   Liste taxonomy-data.js'ten (temalar NE yapmak istediğin, koleksiyonlar
+   KİMİNLE / nasıl bir kaçamak). Bu dosya ondan ÖNCE yüklendiği için
+   listeler çağrı anında okunuyor.
 
-/* ---- Koleksiyonlar: KİMİNLE / hangi bütçeyle (kaydırmasız ızgara) ----
-   Aktivite türü değil, kitle ve durum başlıkları. */
-const GRID_COLLECTIONS = [
-  { img:'abant2',     title:'Ailece',           text:'Çocuklu ailelere uygun' },
-  { img:'assos',      title:'Romantik',         text:'İki kişilik kaçamaklar' },
-  { img:'market1',    title:'Bütçe Dostu',      text:'500 TL altı seçenekler' },
-  { img:'dogu2',      title:'Tek Başına',       text:'Yalnız gezenler için' },
-  { img:'rafting3',   title:'Arkadaş Grubu',    text:'Kalabalık gruplara' },
-  { img:'sapanca2',   title:'Son Dakika',       text:'Bu hafta kalkanlar' },
-  { img:'kapadokya2', title:'Uzun Hafta Sonu',  text:'2-3 gecelik kaçışlar' },
-  { img:'balloon3',   title:'Yeni Başlayanlar', text:'İlk kez deneyenlere' }
-];
+   Tema kartındaki sayı temadaki ürünlerden HESAPLANIYOR
+   (MolaVeri.temaUrunleri). Önceki sürümde "31 tur", "15 etkinlik" gibi
+   sayılar elle yazılıydı ve hiçbir ürüne karşılık gelmiyordu. Ürünü
+   olmayan tema anasayfada GÖSTERİLMİYOR: "0 tur" yazan bir kart boş kutu. */
+const HB_NODE = (typeof require === 'function' && typeof module !== 'undefined' && module.exports);
+const HB_TAKSONOMI = HB_NODE ? require('./taxonomy-data.js') : null;
+const HB_KAPI = HB_NODE ? require('./data-gateway.js') : null;
 
-/* ---- Mekanlar ----
-   Diger seritlerden farkli olarak dikey liste: gorsel solda, bilgi sagda.
-   open:true olan mekan "Açık" rozetiyle isaretlenir. */
-/* ---- Mekanlar: Izmir ----
-   Her mekanin kendi fotografi var; gorseller Wikimedia Commons'tan,
-   dosya adi konuyu anlatacak sekilde secildi. Kaynak ve lisans listesi:
+function hbTaksonomi(ad) {
+  if (HB_TAKSONOMI && HB_TAKSONOMI[ad]) return HB_TAKSONOMI[ad];
+  if (ad === 'TAXONOMY_THEMES' && typeof TAXONOMY_THEMES !== 'undefined') return TAXONOMY_THEMES;
+  if (ad === 'TAXONOMY_COLLECTIONS' && typeof TAXONOMY_COLLECTIONS !== 'undefined') return TAXONOMY_COLLECTIONS;
+  return [];
+}
+function hbKapi() {
+  if (HB_KAPI && HB_KAPI.MolaVeri) return HB_KAPI.MolaVeri;
+  return (typeof MolaVeri !== 'undefined') ? MolaVeri : null;
+}
+
+const TEMA_BIRIMLERI = { tour: 'tur', hotel: 'otel', activity: 'aktivite', event: 'etkinlik', venue: 'mekan' };
+
+/* "12 tur", "4 etkinlik"; farklı tipler karışıksa "9 seçenek". Birim
+   ürünlerin kendisinden; karışık bir listeye "tur" demek yanlış olurdu. */
+function temaSayisiMetni(urunler, kapi) {
+  const tipler = new Set(urunler.map(u => kapi.icerikTipi(u)));
+  const birim = tipler.size === 1 ? TEMA_BIRIMLERI[[...tipler][0]] : 'seçenek';
+  return urunler.length + ' ' + birim;
+}
+
+function homeThemeCards(bugun) {
+  const kapi = hbKapi();
+  if (!kapi) return [];
+  return hbTaksonomi('TAXONOMY_THEMES').map(t => {
+    const urunler = kapi.temaUrunleri(t.slug, bugun);
+    return { slug: t.slug, img: t.img, title: t.name, adet: urunler.length,
+             count: urunler.length ? temaSayisiMetni(urunler, kapi) : '' };
+  }).filter(t => t.adet > 0);
+}
+
+function homeCollectionCards() {
+  return hbTaksonomi('TAXONOMY_COLLECTIONS').map(c => ({ slug: c.slug, img: c.img, title: c.name, text: c.text }));
+}
+
+/* ---- Gezilecek yerler: İzmir ----
+   Rezervasyonlu MEKÂN DEĞİLLER (ören yeri, çarşı, sahil): "Mekanlar"
+   bloğu yalnızca satılan mekânları gösteriyor, bunlar ayrı blokta.
+   Eskiden mekân kartlarının arasında elle yazılmış puan, yorum sayısı ve
+   "açık" durumuyla duruyorlardı; ölçülmüş bir veri olmadığı için
+   kaldırıldı. Her kart ilgili ürünlere gidiyor (hedef).
+   Görseller Wikimedia Commons'tan; kaynak ve lisans listesi:
    docs/gorsel-kaynaklari.md */
-const VENUES = [
-  { img:'efes',    type:'Ören Yeri',    title:'Efes Antik Kent',        area:'Selçuk, İzmir',   rating:'4.9', reviews:'12b+',  hours:'08:00 – 19:00', open:true },
-  { img:'kemeralti', type:'Çarşı',      title:'Kemeraltı Çarşısı',      area:'Konak, İzmir',    rating:'4.7', reviews:'6,4b+', hours:'09:00 – 20:00', open:true },
-  { img:'izmirKordon', type:'Sahil',    title:'Kordon Boyu',            area:'Alsancak, İzmir', rating:'4.8', reviews:'9,1b+', hours:'Her zaman açık', open:true },
-  { img:'alacati', type:'Gezi Noktası', title:'Alaçatı Yel Değirmenleri', area:'Çeşme, İzmir',    rating:'4.7', reviews:'3,2b+', hours:'Her zaman açık', open:true },
-  { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir', rating:'4.6', reviews:'5,8b+', hours:'Her zaman açık', open:true },
-  { img:'izmirMuze', type:'Müze',       title:'İzmir Arkeoloji Müzesi', area:'Konak, İzmir',    rating:'4.5', reviews:'740+',  hours:'08:30 – 17:30', open:false }
+const GEZI_NOKTALARI = [
+  { img:'efes',       type:'Ören Yeri',   title:'Efes Antik Kent',              area:'Selçuk, İzmir',   hours:'08:00 – 19:00',  hedef:'tur/efes-sirince/' },
+  { img:'kemeralti',  type:'Çarşı',       title:'Kemeraltı Çarşısı',            area:'Konak, İzmir',    hours:'09:00 – 20:00',  hedef:'arama/?q=izmir' },
+  { img:'izmirKordon', type:'Sahil',      title:'Kordon Boyu',                  area:'Alsancak, İzmir', hours:'Her zaman açık', hedef:'arama/?q=kordon' },
+  { img:'alacati',    type:'Gezi Noktası', title:'Alaçatı Yel Değirmenleri',    area:'Çeşme, İzmir',    hours:'Her zaman açık', hedef:'arama/?q=alacati' },
+  { img:'izmirKonak', type:'Tarihi Doku', title:'Saat Kulesi ve Konak Meydanı', area:'Konak, İzmir',    hours:'Her zaman açık', hedef:'turlar/izmir/' },
+  { img:'izmirMuze',  type:'Müze',        title:'İzmir Arkeoloji Müzesi',       area:'Konak, İzmir',    hours:'08:30 – 17:30',  hedef:'temalar/kultur-tarih/' }
 ];
 
 /* ---- Kampanyalar (yatay kaydirilabilir) ---- */
 const PROMO_BANDS = [
-  { img:'karadeniz2', badge:'Son 3 gün',         title:'Yayla ve doğa turlarında %40\'a varan indirim', text:'Eylül sonuna kadar seçili Karadeniz turlarında geçerli.', cta:'Fırsatları gör' },
-  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',           text:'30 gün öncesinden alan herkese, tüm kalkışlarda.',        cta:'Turları gör' },
-  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',              text:'Seçili termal ve şehir otellerinde geçerli.',             cta:'Otelleri gör' },
-  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',                 text:'Üye ol, indirim kodu e-postana gelsin.',                  cta:'Üye ol' }
+  /* path: bandın gittiği sayfa. kampanya: bandın vaadini taşıyan kural
+     (booking-engine.js, REZ_KAMPANYALAR); indirim ödeme adımında o
+     kuraldan uygulanıyor ve tests/rezervasyon.test.js bant metniyle
+     kuralın aynı şeyi söylediğini ölçüyor. Kuralı olmayan bant indirim
+     vaat etmiyor. Üyelik bandının sayfası yok (giriş penceresi). */
+  { img:'kapadokya',  badge:'Erken rezervasyon', title:'Kapadokya turlarında 500 TL indirim',     text:'Kalkışa 30 gün ve daha fazla varken, tüm kalkışlarda.',                 cta:'Turları gör',    path:'turlar/kapadokya-turlari', kampanya:'kapadokya-erken' },
+  { img:'hotel4',     badge:'Hafta sonu',        title:'Otellerde 2 gece kal, 1 gece öde',        text:'Cuma ve cumartesi gecesini kapsayan konaklamada; seçili termal ve şehir otellerinde.', cta:'Otelleri gör', path:'oteller', kampanya:'otel-hafta-sonu' },
+  { img:'karadeniz2', badge:'Fırsatlar',         title:'Liste fiyatının altındaki turlar ve oteller', text:'İndirimli bütün ürünler tek sayfada.',                                cta:'Fırsatları gör', path:'firsatlar' },
+  { img:'balloon3',   badge:'Yeni üyelere',      title:'İlk rezervasyonda %15 indirim',           text:'Üye ol, indirim kodu e-postana gelsin.',                              cta:'Üye ol',         path:null, kampanya:'yeni-uye' }
 ];
 
 /* ---- Bulten karti: kisa fayda listesi ---- */
@@ -84,6 +113,9 @@ const NEWSLETTER_PERKS = [
 
 /* ---- Iletisim bilgileri (tek yerden degistirilir) ---- */
 const CONTACT = {
+  /* YER TUTUCU: hat kurulunca gerçek numaralar yazılacak. İletişim
+     sayfası bunu söylüyor (yerTutucu). */
+  yerTutucu: true,
   phoneLabel: '0850 000 00 00',
   phoneHref: 'tel:+908500000000',
   /* Telefon hattinin saatleri. Yalnizca ekranda yaziyor, bir mantigi
@@ -174,11 +206,11 @@ function homeBlockImage(key) {
 /* ---------------- isaretleme ---------------- */
 /* Aciklama satiri yalnizca verildiginde eklenir; diger bolumlerin
    basligi oldugu gibi kalir. */
-function homeSectionHead(title, link, subtitle) {
+function homeSectionHead(title, link, subtitle, hedef) {
   const baslik = subtitle
     ? `<div class="section-head-text"><h2>${title}</h2><p class="section-subtitle">${subtitle}</p></div>`
     : `<h2>${title}</h2>`;
-  return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="#">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
+  return `<div class="section-head">${baslik}${link ? `<a class="see-all" href="${hedef || '#'}">${link} <span class="icon">${svg('chevRight')}</span></a>` : ''}</div>`;
 }
 
 /* =======================================================================
@@ -194,75 +226,79 @@ function homeSectionHead(title, link, subtitle) {
 
 /* Ic baglanti agi. Her grup bir sutun olur; tek tek satir silinerek
    veya eklenerek buyutulup kucultulebilir. */
+/* Her bağ gerçek bir sayfaya gidiyor: liste, şehir, tema, koleksiyon,
+   ürün veya arama sayfası (/arama/?q=). Hedefi olmayan bağ yazılamıyor
+   (tests/home-blocks.test.js yönlendiriciye soruyor). Ürünü olmayan
+   liste sayfası "yakında ürün yok" diyor ve dizine girmiyor. */
 const SEO_LINK_GROUPS = [
   {
     title: 'Şehre göre',
     links: [
-      { label: 'İstanbul etkinlikleri',      href: '#/istanbul-etkinlikleri' },
-      { label: 'Bursa etkinlikleri',         href: '#/bursa-etkinlikleri' },
-      { label: 'İzmir turları',              href: '#/izmir-turlari' },
-      { label: 'Ankara konserleri',          href: '#/ankara-konserleri' },
-      { label: 'Antalya otelleri',           href: '#/antalya-otelleri' },
-      { label: 'Muğla tekne turları',        href: '#/mugla-tekne-turlari' },
-      { label: 'Trabzon yayla turları',      href: '#/trabzon-yayla-turlari' },
-      { label: 'Rize yayla turları',         href: '#/rize-yayla-turlari' },
-      { label: 'Nevşehir balon turları',     href: '#/nevsehir-balon-turlari' },
-      { label: 'Çanakkale günübirlik turlar',href: '#/canakkale-gunubirlik-turlar' },
-      { label: 'Denizli termal otelleri',    href: '#/denizli-termal-otelleri' },
-      { label: 'Balıkesir bungalov evleri',  href: '#/balikesir-bungalov' }
+      { label: 'İstanbul etkinlikleri',      href: 'etkinlikler/istanbul/' },
+      { label: 'Bursa etkinlikleri',         href: 'etkinlikler/bursa/' },
+      { label: 'İzmir turları',              href: 'turlar/izmir/' },
+      { label: 'Ankara konserleri',          href: 'etkinlikler/konserler/?sehir=ankara' },
+      { label: 'Antalya otelleri',           href: 'oteller/antalya/' },
+      { label: 'Muğla tekne turları',        href: 'aktiviteler/tekne-turlari/?sehir=mugla' },
+      { label: 'Trabzon yayla turları',      href: 'turlar/trabzon/' },
+      { label: 'Rize yayla turları',         href: 'turlar/rize/' },
+      { label: 'Nevşehir balon turları',     href: 'aktiviteler/nevsehir/' },
+      { label: 'Çanakkale günübirlik turlar',href: 'turlar/canakkale/' },
+      { label: 'Denizli termal otelleri',    href: 'oteller/termal-oteller/?sehir=denizli' },
+      { label: 'Balıkesir bungalov evleri',  href: 'oteller/bungalovlar/?sehir=balikesir' }
     ]
   },
   {
     title: 'Kategoriye göre',
     links: [
-      { label: 'Konser biletleri',           href: '#/konser-biletleri' },
-      { label: 'Festival biletleri',         href: '#/festival-biletleri' },
-      { label: 'Tiyatro biletleri',          href: '#/tiyatro-biletleri' },
-      { label: 'Stand up biletleri',         href: '#/stand-up-biletleri' },
-      { label: 'Günübirlik turlar',          href: '#/gunubirlik-turlar' },
-      { label: 'Yurt içi turlar',            href: '#/yurt-ici-turlar' },
-      { label: 'Kültür turları',             href: '#/kultur-turlari' },
-      { label: 'Butik oteller',              href: '#/butik-oteller' },
-      { label: 'Termal oteller',             href: '#/termal-oteller' },
-      { label: 'Bungalov & doğa evleri',     href: '#/bungalov-doga-evleri' },
-      { label: 'Aktiviteler & atölyeler',    href: '#/aktiviteler' },
-      { label: 'Müze ve ören yerleri',       href: '#/muze-oren-yerleri' },
-      { label: 'İzmir gezilecek yerler',     href: '#/izmir-gezilecek-yerler' },
-      { label: 'Efes Antik Kent',            href: '#/efes-antik-kent' }
+      { label: 'Konser biletleri',           href: 'etkinlikler/konserler/' },
+      { label: 'Festival biletleri',         href: 'etkinlikler/festivaller/' },
+      { label: 'Tiyatro biletleri',          href: 'etkinlikler/tiyatro/' },
+      { label: 'Stand up biletleri',         href: 'etkinlikler/stand-up/' },
+      { label: 'Günübirlik turlar',          href: 'turlar/gunubirlik-turlar/' },
+      { label: 'Yurt içi turlar',            href: 'turlar/yurt-ici-turlar/' },
+      { label: 'Kültür turları',             href: 'turlar/kultur-turlari/' },
+      { label: 'Butik oteller',              href: 'oteller/butik-oteller/' },
+      { label: 'Termal oteller',             href: 'oteller/termal-oteller/' },
+      { label: 'Bungalov & doğa evleri',     href: 'oteller/bungalovlar/' },
+      { label: 'Aktiviteler & atölyeler',    href: 'aktiviteler/' },
+      { label: 'Müze ve ören yerleri',       href: 'arama/?q=antik' },
+      { label: 'İzmir gezilecek yerler',     href: 'arama/?q=izmir' },
+      { label: 'Efes Antik Kent',            href: 'tur/efes-sirince/' }
     ]
   },
   {
     title: 'Temaya göre',
     links: [
-      { label: 'Doğa & yayla turları',       href: '#/doga-yayla-turlari' },
-      { label: 'Kültür & tarih turları',     href: '#/kultur-tarih-turlari' },
-      { label: 'Deniz & tekne turları',      href: '#/deniz-tekne-turlari' },
-      { label: 'Kış sporları & kayak',       href: '#/kis-sporlari-kayak' },
-      { label: 'Gastronomi turları',         href: '#/gastronomi-turlari' },
-      { label: 'Macera & adrenalin',         href: '#/macera-adrenalin' },
-      { label: 'Yamaç paraşütü',             href: '#/yamac-parasutu' },
-      { label: 'Sıcak hava balonu',          href: '#/sicak-hava-balonu' },
-      { label: 'Rafting turları',            href: '#/rafting-turlari' },
-      { label: 'Dalış turları',              href: '#/dalis-turlari' },
-      { label: 'Fotoğraf turları',           href: '#/fotograf-turlari' },
-      { label: 'Kamp & karavan',             href: '#/kamp-karavan' }
+      { label: 'Doğa & yayla turları',       href: 'temalar/doga-yayla/' },
+      { label: 'Kültür & tarih turları',     href: 'temalar/kultur-tarih/' },
+      { label: 'Deniz & tekne turları',      href: 'temalar/deniz-tekne/' },
+      { label: 'Kış sporları & kayak',       href: 'temalar/kis-sporlari/' },
+      { label: 'Gastronomi turları',         href: 'temalar/gastronomi/' },
+      { label: 'Macera & adrenalin',         href: 'temalar/macera-adrenalin/' },
+      { label: 'Yamaç paraşütü',             href: 'arama/?q=yamac+parasutu' },
+      { label: 'Sıcak hava balonu',          href: 'aktivite/kapadokya-balon-turu/' },
+      { label: 'Rafting turları',            href: 'arama/?q=rafting' },
+      { label: 'Dalış turları',              href: 'aktiviteler/su-sporlari/' },
+      { label: 'Fotoğraf turları',           href: 'arama/?q=fotograf' },
+      { label: 'Kamp & karavan',             href: 'arama/?q=kamp' }
     ]
   },
   {
     title: 'Plana göre',
     links: [
-      { label: 'Bu hafta sonu ne var?',      href: '#/bu-hafta-sonu' },
-      { label: 'Bu Cuma',                    href: '#/bu-cuma' },
-      { label: 'Bu Cumartesi',               href: '#/bu-cumartesi' },
-      { label: 'Bu Pazar',                   href: '#/bu-pazar' },
-      { label: 'Son dakika fırsatları',      href: '#/son-dakika-firsatlari' },
-      { label: 'Uzun hafta sonu planları',   href: '#/uzun-hafta-sonu' },
-      { label: 'Ailece gezilecek yerler',    href: '#/ailece' },
-      { label: 'Romantik kaçamaklar',        href: '#/romantik-kacamaklar' },
-      { label: 'Bütçe dostu planlar',        href: '#/butce-dostu' },
-      { label: 'Tek başına seyahat',         href: '#/tek-basina-seyahat' },
-      { label: 'Arkadaş grubuyla',           href: '#/arkadas-grubu' },
-      { label: 'Yeni başlayanlar için',      href: '#/yeni-baslayanlar' }
+      { label: 'Bu hafta sonu ne var?',      href: 'turlar/hafta-sonu-turlari/' },
+      { label: 'Bu Cuma',                    href: 'bu-hafta/#cuma' },
+      { label: 'Bu Cumartesi',               href: 'bu-hafta/#cumartesi' },
+      { label: 'Bu Pazar',                   href: 'bu-hafta/#pazar' },
+      { label: 'Son dakika fırsatları',      href: 'koleksiyonlar/son-dakika/' },
+      { label: 'Uzun hafta sonu planları',   href: 'koleksiyonlar/uzun-hafta-sonu/' },
+      { label: 'Ailece gezilecek yerler',    href: 'koleksiyonlar/ailece/' },
+      { label: 'Romantik kaçamaklar',        href: 'koleksiyonlar/romantik/' },
+      { label: 'Bütçe dostu planlar',        href: 'koleksiyonlar/butce-dostu/' },
+      { label: 'Tek başına seyahat',         href: 'koleksiyonlar/tek-basina/' },
+      { label: 'Arkadaş grubuyla',           href: 'koleksiyonlar/arkadas-grubu/' },
+      { label: 'Yeni başlayanlar için',      href: 'koleksiyonlar/yeni-baslayanlar/' }
     ]
   }
 ];
@@ -270,30 +306,30 @@ const SEO_LINK_GROUPS = [
 /* Uzun kuyruk arama ifadeleri. Kullanicinin gercekte aradigi cumleler;
    her biri bir hub sayfasina baglanir. */
 const SEO_RELATED_SEARCHES = [
-  { label: 'kapadokya balon turu fiyatları',      href: '#/kapadokya-balon-turu-fiyatlari' },
-  { label: 'bursa hafta sonu kaçamağı',           href: '#/bursa-hafta-sonu-kacamagi' },
-  { label: 'istanbul yakınında günübirlik turlar',href: '#/istanbul-gunubirlik-turlar' },
-  { label: 'uludağ kayak paketi',                 href: '#/uludag-kayak-paketi' },
-  { label: 'ayder yaylası turu',                  href: '#/ayder-yaylasi-turu' },
-  { label: 'pamukkale termal tatili',             href: '#/pamukkale-termal-tatili' },
-  { label: 'bodrum tekne turu günübirlik',        href: '#/bodrum-tekne-turu' },
-  { label: 'efes antik kent turu',                href: '#/efes-antik-kent-turu' },
-  { label: 'fethiye yamaç paraşütü',              href: '#/fethiye-yamac-parasutu' },
-  { label: 'çeşme konser takvimi',                href: '#/cesme-konser-takvimi' },
-  { label: 'ucuz konser bileti',                  href: '#/ucuz-konser-bileti' },
-  { label: 'çocuklu aileler için gezi',           href: '#/cocuklu-aileler-icin-gezi' },
-  { label: 'sevgililer günü kaçamağı',            href: '#/sevgililer-gunu' },
-  { label: 'bayram tatili turları',               href: '#/bayram-tatili-turlari' },
-  { label: 'doğada bungalov tatili',              href: '#/bungalov-tatili' },
-  { label: 'İzmir çevresi gezilecek yerler',      href: '#/izmir-cevresi-gezilecek-yerler' },
-  { label: 'karadeniz yayla turu 3 gün',          href: '#/karadeniz-yayla-turu' },
-  { label: 'son dakika otel fırsatı',             href: '#/son-dakika-otel' },
-  { label: 'açık hava sineması etkinlikleri',     href: '#/acik-hava-sinemasi' },
-  { label: 'kahve ve gastronomi festivali',       href: '#/gastronomi-festivali' },
-  { label: 'izmir kemeraltı çarşısı',             href: '#/izmir-kemeralti' },
-  { label: 'alaçatı taş sokaklar',                href: '#/alacati-tas-sokaklar' },
-  { label: 'aspendos opera ve bale festivali',    href: '#/aspendos-festivali' },
-  { label: 'erciyes kayak paketi',                href: '#/erciyes-kayak-paketi' }
+  { label: 'kapadokya balon turu fiyatları',      href: 'arama/?q=kapadokya+balon' },
+  { label: 'bursa hafta sonu kaçamağı',           href: 'arama/?q=bursa' },
+  { label: 'istanbul yakınında günübirlik turlar',href: 'turlar/gunubirlik-turlar/?kalkis=istanbul' },
+  { label: 'uludağ kayak paketi',                 href: 'aktivite/uludag-kayak-paketi/' },
+  { label: 'ayder yaylası turu',                  href: 'tur/karadeniz-yaylalari/' },
+  { label: 'pamukkale termal tatili',             href: 'tur/pamukkale-hierapolis/' },
+  { label: 'bodrum tekne turu günübirlik',        href: 'aktivite/bodrum-tekne-turu/' },
+  { label: 'efes antik kent turu',                href: 'arama/?q=efes' },
+  { label: 'fethiye yamaç paraşütü',              href: 'aktivite/oludeniz-yamac-parasutu/' },
+  { label: 'çeşme konser takvimi',                href: 'etkinlikler/izmir/' },
+  { label: 'ucuz konser bileti',                  href: 'etkinlikler/konserler/?sirala=fiyat-artan' },
+  { label: 'çocuklu aileler için gezi',           href: 'etkinlikler/cocuk-etkinlikleri/' },
+  { label: 'sevgililer günü kaçamağı',            href: 'oteller/balayi-otelleri/' },
+  { label: 'bayram tatili turları',               href: 'turlar/konaklamali-turlar/' },
+  { label: 'doğada bungalov tatili',              href: 'arama/?q=bungalov' },
+  { label: 'İzmir çevresi gezilecek yerler',      href: 'turlar/?kalkis=izmir' },
+  { label: 'karadeniz yayla turu 3 gün',          href: 'turlar/karadeniz-turlari/' },
+  { label: 'son dakika otel fırsatı',             href: 'firsatlar/indirimli-oteller/' },
+  { label: 'açık hava sineması etkinlikleri',     href: 'arama/?q=acikhava' },
+  { label: 'kahve ve gastronomi festivali',       href: 'etkinlik/istanbul-kahve-festivali/' },
+  { label: 'izmir kemeraltı çarşısı',             href: 'mekanlar/izmir/' },
+  { label: 'alaçatı taş sokaklar',                href: 'arama/?q=alacati' },
+  { label: 'aspendos opera ve bale festivali',    href: 'etkinlik/aspendos-opera-bale-festivali/' },
+  { label: 'erciyes kayak paketi',                href: 'tur/erciyes-kayak-haftasi/' }
 ];
 
 /* Uzun tanitim metni.
@@ -409,50 +445,12 @@ const SEO_ARTICLE = [
   }
 ];
 
-/* SSS. Buradaki sorular index.html icindeki FAQPage yapisal verisiyle
-   birebir ayni olmalidir; testler bunu dogrular. */
-const SEO_FAQ = [
-  {
-    q: 'mola360 üzerinden bilet nasıl satın alınır?',
-    a: 'Aramak istediğiniz etkinliği, turu veya oteli arama kutusundan ya da kategori sayfalarından bulun, tarih ve kişi sayısını seçip sepete ekleyin. Ödeme adımında varsa kupon kodunuzu uygulayın ve 3D Secure ile ödemeyi tamamlayın. Onay ekranının ardından e-biletiniz oluşturulur.'
-  },
-  {
-    q: 'Satın aldığım bileti nereden görüntülerim?',
-    a: 'Tüm biletleriniz ve rezervasyonlarınız hesabınızdaki Biletlerim bölümünde karekodlu olarak durur. Aynı bilet satın alma sırasında verdiğiniz e-posta adresine de gönderilir. Etkinlik girişinde telefonunuzdaki karekodu göstermeniz yeterlidir.'
-  },
-  {
-    q: 'Rezervasyonumu iptal edebilir miyim, ücret iadesi nasıl işler?',
-    a: 'İptal ve iade koşulları her ürünün kendi sayfasında ayrıca belirtilir; tur, etkinlik ve konaklamada koşullar farklılık gösterebilir. Ürün sayfasındaki koşullar kapsamında iptal talebinizi Biletlerim bölümünden oluşturabilir, süreci aynı ekrandan takip edebilirsiniz.'
-  },
-  {
-    q: 'Günübirlik tur fiyatına neler dahil?',
-    a: 'Günübirlik turlarda ulaşım ve rehberlik hizmeti standart olarak fiyata dahildir. Öğle yemeği, müze ve ören yeri giriş ücretleri ile isteğe bağlı aktiviteler programdan programa değişir; her turun sayfasında "Fiyata dahil olanlar" ve "Dahil olmayanlar" başlıkları ayrı ayrı listelenir.'
-  },
-  {
-    q: 'Etkinlik iptal edilir veya ertelenirse ne oluyor?',
-    a: 'Etkinlik organizatör tarafından iptal edilirse ödemeniz ek bir işlem yapmanıza gerek kalmadan iade sürecine alınır ve bilgilendirme bildirimi gönderilir. Etkinlik ertelenirse biletiniz yeni tarih için geçerli olmaya devam eder; yeni tarih size uymuyorsa iade talebinde bulunabilirsiniz.'
-  },
-  {
-    q: 'Otel rezervasyonunda ödemeyi ne zaman yapıyorum?',
-    a: 'Tesise ve seçtiğiniz tarifeye göre iki seçenek sunulur: rezervasyon anında tam ödeme veya tesiste ödeme. Hangisinin geçerli olduğu fiyatın hemen yanında yazar; ödeme adımına geçmeden önce görebilirsiniz.'
-  },
-  {
-    q: 'Kupon kodunu nerede kullanabilirim?',
-    a: 'Kupon kodları ödeme adımındaki "Kupon kodu" alanına yazılır. Kod geçerliyse indirim tutarı toplam fiyatın altında anında güncellenir. Kuponlarınızı ve son kullanma tarihlerini hesabınızdaki Kuponlarım bölümünden görebilirsiniz.'
-  },
-  {
-    q: 'Grup veya kurumsal rezervasyon yapabilir miyim?',
-    a: 'Evet. Belirli bir kişi sayısının üzerindeki gruplar ve şirket organizasyonları için özel fiyatlandırma yapılabilir. Talebinizi WhatsApp canlı destek üzerinden veya Beni Ara formunu doldurarak iletebilirsiniz; ekibimiz size özel bir program hazırlar.'
-  },
-  {
-    q: 'Fiyatlara vergiler dahil mi?',
-    a: 'Listelerde ve ürün sayfalarında gördüğünüz fiyatlar vergiler dahil tutarlardır. Ödeme adımında sürpriz bir ek ücret eklenmez; varsa isteğe bağlı ek hizmetler ayrıca ve açıkça gösterilir.'
-  },
-  {
-    q: 'Müşteri hizmetlerine nasıl ulaşırım?',
-    a: 'Yukarıdaki Yardım bölümünden telefonla arayabilir, WhatsApp canlı destek hattından yazabilir veya Beni Ara formuna numaranızı bırakabilirsiniz. Çalışma saatleri içinde bıraktığınız numaralara kısa süre içinde dönüş yapılır.'
-  }
-];
+/* SSS: tek kaynak corporate-data.js (KRM_SSS); anasayfada yalnızca
+   anasayfa: true olanlar. index.html içindeki FAQPage yapısal verisi
+   bununla birebir aynı olmalı (tests/home-blocks.test.js). */
+const HB_KURUMSAL = HB_NODE ? require('./corporate-data.js') : null;
+const SEO_FAQ = ((HB_KURUMSAL ? HB_KURUMSAL.KRM_SSS : (typeof KRM_SSS !== 'undefined' ? KRM_SSS : [])) || [])
+  .filter(x => x.anasayfa).map(x => ({ q: x.soru, a: x.cevap }));
 
 /* Wikimedia Commons'tan alinan gorsellerin kaynaklari.
    CC lisanslari atif ister; asagidaki satir sayfada gorunur ve her
@@ -505,20 +503,18 @@ function seoFaqMarkup(item, index) {
 
 const HOME_BLOCK_MARKUP = {
   /* Mekanlar: yatay kaydirma yok; her mekan tam genislikte bir satir. */
-  /* Mekanlar blogu: icerik sayfasi OLAN mekanlar katalogdan geliyor ve
-     listenin basinda duruyor; sayfasi olmayan gezi noktalari (VENUES)
-     arkalarinda kaliyor. Katalog yuklenmemis bir sayfada (ornegin tur
-     sayfasi) kosul sessizce bos dizi veriyor.
+  /* Mekanlar blogu: yalnizca REZERVASYONLU mekanlar, katalogdan (kaydin
+     kendisinden). Gezi noktalari (GEZI_NOKTALARI) ayri blokta. Katalog
+     yuklenmemis bir sayfada kosul sessizce bos dizi veriyor.
 
      Bolumun id'si var cunku mekan sayfalarinin kirilma noktasi ve
      etiketleri index.html#mekanlar adresine gidiyor; capa olmadan o
      baglar sayfanin tepesine dusuyordu. */
   venues: () => `
     <section class="section home-venues" id="mekanlar">
-      ${homeSectionHead('Mekanlar', 'Tümünü Gör')}
+      ${homeSectionHead('Mekanlar', 'Tümünü Gör', '', 'mekanlar/')}
       <div class="venue-list">
-        ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : [])
-          .concat(VENUES).map(v => `
+        ${(typeof catalogCards === 'function' ? catalogCards('mekanlar') : []).map(v => `
           <a class="venue-card" href="${v.href || '#'}">
             <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
             <span class="venue-body">
@@ -537,6 +533,26 @@ const HOME_BLOCK_MARKUP = {
       </div>
     </section>`,
 
+  /* Gezilecek yerler: mekân kartının görünümü, rezervasyon bilgisi yok. */
+  sights: () => `
+    <section class="section home-venues home-sights">
+      ${homeSectionHead("İzmir'de Gezilecek Yerler", '', 'Rezervasyon gerekmeyen gezi noktaları ve onları içeren planlar')}
+      <div class="venue-list">
+        ${GEZI_NOKTALARI.map(v => `
+          <a class="venue-card" href="${v.hedef}">
+            <span class="venue-media"><img src="${homeBlockImage(v.img)}" alt="" loading="lazy"></span>
+            <span class="venue-body">
+              <span class="venue-top"><span class="venue-type">${v.type}</span></span>
+              <strong class="venue-title">${v.title}</strong>
+              <span class="venue-meta"><span class="icon">${svg('mapPin')}</span>${v.area}</span>
+              <span class="venue-foot">
+                <span class="venue-hours"><span class="icon">${svg('clock')}</span>${v.hours}</span>
+              </span>
+            </span>
+          </a>`).join('')}
+      </div>
+    </section>`,
+
   /* Kampanyalar: kart seritleri gibi yatay kaydirilir, kenar bosluklarinin
      uzerine tasar. */
   promo: () => `
@@ -544,7 +560,7 @@ const HOME_BLOCK_MARKUP = {
       <div class="hscroll-wrap">
       <div class="promo-scroll">
         ${PROMO_BANDS.map(p => `
-          <a class="home-promo" href="#">
+          <a class="home-promo" href="${p.path ? p.path + '/' : '#'}">
             <img src="${homeBlockImage(p.img)}" alt="" loading="lazy">
             <span class="home-promo-shade"></span>
             <span class="home-promo-content">
@@ -562,11 +578,11 @@ const HOME_BLOCK_MARKUP = {
 
   themes: () => `
     <section class="section home-themes">
-      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç')}
+      ${homeSectionHead('Temaya Göre Keşfet', 'Tümünü Gör', 'Ne yapmak istediğine göre seç', 'temalar/')}
       <div class="hscroll-wrap">
       <div class="theme-scroll">
-        ${THEME_COLLECTIONS.map(c => `
-          <a class="theme-card" href="#">
+        ${homeThemeCards().map(c => `
+          <a class="theme-card" href="temalar/${c.slug}/">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="theme-card-shade"></span>
             <span class="theme-card-text"><strong>${c.title}</strong><span>${c.count}</span></span>
@@ -579,10 +595,10 @@ const HOME_BLOCK_MARKUP = {
 
   collectionGrid: () => `
     <section class="section home-collections">
-      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre')}
+      ${homeSectionHead('Koleksiyonlar', 'Tümünü Gör', 'Kiminle ve nasıl bir kaçamak istediğine göre', 'koleksiyonlar/')}
       <div class="collection-grid">
-        ${GRID_COLLECTIONS.map(c => `
-          <a class="collection-tile" href="#">
+        ${homeCollectionCards().map(c => `
+          <a class="collection-tile" href="koleksiyonlar/${c.slug}/">
             <img src="${homeBlockImage(c.img)}" alt="" loading="lazy">
             <span class="collection-tile-shade"></span>
             <span class="collection-tile-text"><strong>${c.title}</strong><span>${c.text}</span></span>
@@ -648,7 +664,7 @@ const HOME_BLOCK_MARKUP = {
             <input type="tel" id="homeCallbackPhone" inputmode="tel" placeholder="05XX XXX XX XX" autocomplete="tel">
             <button class="btn-primary" type="submit">Gönder</button>
           </div>
-          <p class="home-callback-note" id="homeCallbackNote">Çalışma saatleri içinde 15 dakika içinde arıyoruz.</p>
+          <p class="home-callback-note" id="homeCallbackNote">Çalışma saatlerinde (${CONTACT.hours}) seni arıyoruz.</p>
         </form>
       </div>
     </section>`
@@ -715,9 +731,10 @@ if (typeof module !== 'undefined' && module.exports) {
     HOME_BLOCK_PLACEMENT,
     UPCOMING_FILTERS,
     UPCOMING_DAY_KEYS,
-    THEME_COLLECTIONS,
-    GRID_COLLECTIONS,
-    VENUES,
+    homeThemeCards,
+    homeCollectionCards,
+    temaSayisiMetni,
+    GEZI_NOKTALARI,
     PROMO_BANDS,
     NEWSLETTER_PERKS,
     CONTACT,

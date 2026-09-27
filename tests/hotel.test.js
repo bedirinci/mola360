@@ -13,6 +13,7 @@
    bazi testler ayni seyi iki sayfa icin ayri ayri dogruluyor; gerekce
    docs/otel-sayfasi.md icinde. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   HOTELS,
@@ -30,9 +31,7 @@ import {
   hotelNightlyListFrom,
   hotelScore,
   hotelScoreText,
-  roomsLeft,
   hotelSlugFromPath,
-  resolveHotel,
 } from '../assets/js/hotel-data.js';
 import { TOUR_ICONS, TOUR_IMAGE_FILES, commonsImageUrl, formatTRY } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, cardDateText } from '../assets/js/catalog.js';
@@ -251,25 +250,56 @@ describe('otel puani', () => {
   });
 });
 
-/* ---------------- kalan oda ---------------- */
-describe('kalan oda sayisi', () => {
-  it('ayni tarih ve oda her zaman ayni sayiyi verir', () => {
-    /* Rastgele sayi kullanilsaydi "son 2 oda" her yenilemede zipllar ve
-       inandiriciligini kaybederdi. */
-    expect(roomsLeft('2026-10-10', 'standart', 12)).toBe(roomsLeft('2026-10-10', 'standart', 12));
+/* ---------------- kontenjan ----------------
+   Kalan yer artık uydurulmuyor. Önceki roomsLeft() tarih metninin karma
+   değerinden bir "son N yer" sayısı üretiyordu; hiçbir satışla ilgisi
+   yoktu ve dolu durumu hiç oluşmuyordu. Kalan yer veri kapısının
+   kontenjan cevabından geliyor (MolaVeri.musaitlik). Cevabın kendisi ve
+   hesap tests/veri-kapisi.test.js'te; burada sayfanın onu kullandığı
+   ölçülüyor. */
+describe('kontenjan', () => {
+  const kontenjanFn = () => sayfaJs.match(/function syncSeats\(hesap\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('karma değerden kalan yer üreten fonksiyon yok', () => {
+    expect(veriJs).not.toMatch(/function \w*(seatsLeft|SeatsLeft|roomsLeft)\(/);
+    expect(sayfaJs).not.toMatch(/(seatsLeft|SeatsLeft|roomsLeft)\(/);
   });
 
-  it('ayni tarihte farkli oda tipleri ayrisir', () => {
-    const hepsi = otel.rooms.map(o => roomsLeft('2026-10-10', o.id, o.count));
-    expect(new Set(hepsi).size).toBeGreaterThan(1);
+  it('kayıt ve kalan yer veri kapısından', () => {
+    expect(sayfaJs).toMatch(/MolaVeri\.urun\('hotel',\s/);
+    expect(sayfaJs).not.toMatch(/resolveHotel\(/);
+    expect(sayfaJs).toContain("MolaVeri.musaitlik('hotel', ");
+    expect(kontenjanFn()).toContain('kontenjanDurumu(');
   });
 
-  it('sonuc oda mevcudunu asmaz', () => {
-    otel.rooms.forEach(o => {
-      const kalan = roomsLeft('2026-11-01', o.id, o.count);
-      expect(kalan).toBeGreaterThan(0);
-      expect(kalan).toBeLessThanOrEqual(o.count);
-    });
+  it('dolu tarih takvimde kalıyor ama seçilemiyor', () => {
+    const fn = sayfaJs.match(/function dateChipsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('tarihDoluMu(musaitlik, ');
+    expect(fn).toContain('is-dolu');
+    expect(fn).toContain('disabled');
+  });
+
+  it('dolu veya yetmeyen kontenjanda rezervasyon düğmeleri pasif', () => {
+    const fn = kontenjanFn();
+    expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
+    expect(fn).toContain('dugme.disabled = !!satisEngeli');
+    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+  });
+
+  it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
+    expect(kontenjanFn()).toContain("el.hidden = durum.durum === 'bilinmiyor'");
+    expect(readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8'))
+      .toContain('.tour-seats[hidden] { display: none; }');
+  });
+
+  it('her sayfa veri kapısını kendi betiğinden önce yüklüyor', () => {
+    for (const s of sayfalar) {
+      const yer = (ad) => s.html.indexOf('assets/js/' + ad + '"');
+      expect(yer('taxonomy-data.js'), s.slug).toBeGreaterThan(-1);
+      expect(yer('inventory-data.js'), s.slug).toBeGreaterThan(yer('taxonomy-data.js'));
+      expect(yer('data-gateway.js'), s.slug).toBeGreaterThan(yer('inventory-data.js'));
+      expect(yer('hotel-page.js'), s.slug).toBeGreaterThan(yer('data-gateway.js'));
+    }
   });
 });
 
@@ -286,10 +316,10 @@ describe('adres ve kayit cozumleme', () => {
     expect(hotelSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilan otele duser', () => {
-    expect(resolveHotel('yok-boyle-bir-otel').slug).toBe(DEFAULT_HOTEL_SLUG);
-    expect(resolveHotel('').slug).toBe(DEFAULT_HOTEL_SLUG);
-    expect(resolveHotel('KORDON-BUTIK-OTEL'.toLowerCase()).slug).toBe('kordon-butik-otel');
+  it('taninmayan slug varsayilan otele DUSMUYOR', () => {
+    expect(MolaVeri.urun('hotel', 'yok-boyle-bir-otel')).toBe(null);
+    expect(MolaVeri.urun('hotel', '')).toBe(null);
+    expect(MolaVeri.urun('hotel', 'KORDON-BUTIK-OTEL').slug).toBe(DEFAULT_HOTEL_SLUG);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -303,8 +333,7 @@ describe('gorseller ve ikonlar', () => {
     /* Kayitsiz anahtar bos src uretir; ui.js'in yer tutucusu bos src'yi
        yakalamaz, yani sessizce bos bir kutu kalir. */
     const kullanilan = new Set();
-    [otel.gallery, otel.similar].forEach(liste =>
-      liste.forEach(g => kullanilan.add(g.key)));
+    otel.gallery.forEach(g => kullanilan.add(g.key));
     otel.rooms.forEach(o => kullanilan.add(o.key));
     [...kullanilan].forEach(k =>
       expect(HOTEL_IMAGE_FILES[k], 'kayitsiz gorsel anahtari: ' + k).toBeTruthy());
@@ -388,7 +417,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(adlar, slug + ' kirilma noktasi farkli').toEqual(['Anasayfa', o.categoryPlural, o.title]);
       /* Orta adim anasayfadaki seridin gercek capasina gider. */
-      expect(ld.itemListElement[1].item).toContain('#' + o.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(o) + '/');
       expect(ld.itemListElement[2].item).toContain('/otel/' + slug + '/');
     });
   });
@@ -471,8 +500,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });
@@ -504,7 +533,7 @@ describe('anasayfa baglantisi', () => {
      kayitlarindan uretip "Oteller" seridine karistiriyor
      (docs/icerik-katalogu.md). Testler bu yuzden app.js metnine degil
      uretilen kartlara bakiyor. */
-  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href.startsWith('otel/'));
+  const otelKartlari = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('otel/'));
 
   it('her otel anasayfaya kendiliginden giriyor', () => {
     const baglar = otelKartlari.map(k => k.href);

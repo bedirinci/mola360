@@ -16,7 +16,9 @@
    paneli alıyor. */
 (function () {
 
-  const event = resolveEvent(eventSlugFromPath(window.location.pathname));
+  /* Kayıt veri kapısından (docs/veri-sozlesmesi.md); yayında olmayan veya
+     bilinmeyen etkinlik null. */
+  const event = MolaVeri.urun('event', eventSlugFromPath(window.location.pathname));
   if (!event) return;
 
   const KOK = (document.body && document.body.getAttribute('data-root')) || '';
@@ -59,6 +61,17 @@
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
     photo: 0
+  };
+
+  /* Kontenjan canlı sorgu (sözleşme bölüm 6): cevap gelene kadar null,
+     kalan koltuk satırları gizli, satış açık. Birim temsil × bilet
+     kategorisi: satırın anahtarı kategori id'si, temsil günü ve saati. */
+  let musaitlik = null;
+  let satisEngeli = null;
+  const temsilSaati = (tarih) => saatAnahtari((yaklasan.find(t => t.date === tarih) || {}).time);
+  const kategoriKalan = (katId) => {
+    const r = musaitlikKaydi(musaitlik, katId, state.date, temsilSaati(state.date));
+    return r ? r.remaining : null;
   };
 
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
@@ -312,9 +325,12 @@
       const kalanEl = document.querySelector('[data-cat-left="' + kat.id + '"]');
       if (kalanEl) {
         if (sezonBitti) { kalanEl.textContent = ''; return; }
-        const kalan = eventSeatsLeft(state.date, kat.id, Math.min(kat.seats, 40));
-        kalanEl.className = 'etk-kategori-kalan' + (kalan <= 3 ? ' is-low' : '');
-        kalanEl.innerHTML = ic('bolt') + 'Seçili temsilde <strong>' + kalan + ' koltuk</strong> kaldı';
+        const kalan = kategoriKalan(kat.id);
+        kalanEl.hidden = kalan === null;
+        kalanEl.className = 'etk-kategori-kalan' + (kalan !== null && kalan <= 3 ? ' is-low' : '');
+        kalanEl.innerHTML = kalan === null ? ''
+          : kalan === 0 ? ic('bolt') + 'Seçili temsilde <strong>bu blok tükendi</strong>'
+          : ic('bolt') + 'Seçili temsilde <strong>' + kalan + ' koltuk</strong> kaldı';
       }
     });
   }
@@ -478,23 +494,16 @@
       </div>`;
   }
 
+  /* Benzer şeridi: elle seçilmiş öneriler + kurala dayalı benzerler,
+     kartlar ürünlerin kendi kaydından (catalog.js/catalogBenzerMarkup).
+     Katalog yüklü değilse ya da benzer yoksa bölüm gizleniyor. */
   function similarMarkup() {
-    return `
-      <div class="tour-block-head"><h2>Benzer sahne programları</h2><p>Aynı sezonda, farklı şehirlerde.</p></div>
-      <div class="tour-similar-grid">
-        ${event.similar.map(s => `
-          <a class="tour-similar-card" href="${s.href ? KOK + s.href : KOK + 'index.html#etkinlikler'}">
-            <span class="tour-similar-media">
-              <img src="${eventImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
-              <span class="tour-similar-rating">${ic('star')}${s.rating}</span>
-            </span>
-            <span class="tour-similar-body">
-              <strong>${s.title}</strong>
-              <span class="tour-similar-meta">${s.meta}</span>
-              <span class="tour-similar-price">${formatTRY(s.price)}<span>${s.unit}</span></span>
-            </span>
-          </a>`).join('')}
-      </div>`;
+    if (typeof catalogBenzerMarkup !== 'function') return '';
+    return catalogBenzerMarkup(event, {
+      kok: KOK,
+      yildiz: ic('star'),
+      gorsel: (anahtar) => (typeof cardImages !== 'undefined' && cardImages[anahtar]) || ''
+    });
   }
 
   function tagHref(t) {
@@ -524,13 +533,15 @@
     return liste.map(t => {
       const parca = trDateParts(t.date);
       const on = t.date === state.date;
+      /* Bütün blokları satılmış temsil: çip duruyor, seçilemiyor. */
+      const dolu = tarihDoluMu(musaitlik, t.date);
       return `
-        <button class="tour-date-chip etk-date-chip${on ? ' active' : ''}" type="button"
-                data-date="${t.date}" aria-pressed="${on}"
-                aria-label="${formatTrDate(t.date)} · ${t.title}">
+        <button class="tour-date-chip etk-date-chip${on ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+                data-date="${t.date}" aria-pressed="${on}"${dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(t.date)} · ${t.title}${dolu ? ' — tükendi' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${parca.ay}</span>
+          <span class="tour-date-month">${dolu ? 'tükendi' : parca.ay}</span>
           <span class="etk-date-eser">${t.title}</span>
         </button>`;
     }).join('');
@@ -614,7 +625,7 @@
         <strong>Bu sezonun programı tamamlandı</strong>
         <p>${event.title} için yeni takvim açıklandığında biletler burada satışa açılacak.
           Favorilere eklerseniz yeni tarihler ilan edildiğinde haber veriyoruz.</p>
-        <a class="tour-cta ghost" href="${KOK}index.html#etkinlikler">
+        <a class="tour-cta ghost" href="${KOK}etkinlikler/">
           ${ic('chevLeft')}Diğer etkinliklere bak</a>
       </div>
       <div class="tour-booking-contact">
@@ -686,18 +697,31 @@
       </div>`;
   }
 
+  /* Kalan koltuk: kontenjan cevabından, seçili temsil ve blok için.
+     İstenen: bilet adedi (tam + öğrenci). Önceki sürüm kapasiteyi 40'ta
+     kesiyordu, çünkü karma değerden üretilen sayı zaten 9'u geçmiyordu;
+     artık bloğun gerçek koltuk sayısı. */
   function syncSeats(hesap) {
+    const kat = hesap.category || event.categories[0];
+    const durum = kontenjanDurumu(kategoriKalan(kat.id), hesap.tickets, 10);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const kat = hesap.category || event.categories[0];
-    const kapasite = Math.min(Number(kat.seats) || 40, 40);
-    const kalan = eventSeatsLeft(state.date, kat.id, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 3);
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
+    const kapasite = Math.max(1, Number(kat.seats) || 1);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: 'Bu temsilde <strong>' + kat.name + ' tükendi</strong> · başka bir blok veya temsil seçin',
+      yetersiz: 'Bu temsilde bu blokta en fazla <strong>' + durum.kalan + ' koltuk</strong> var'
+    }[durum.durum] || 'Bu temsilde <strong>' + durum.kalan + ' koltuk</strong> kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic('users')}Bu temsilde
-        <strong>${kalan} koltuk</strong> kaldı</span>`;
+      <span class="tour-seats-text">${ic('users')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -756,6 +780,11 @@
       const on = btn.getAttribute('data-category') === state.category;
       btn.classList.toggle('active', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      /* Seçili temsilde tükenen blok seçilemiyor; temsil değişince
+         yeniden bakılıyor. */
+      const tukendi = kategoriKalan(btn.getAttribute('data-category')) === 0;
+      btn.classList.toggle('is-dolu', tukendi);
+      btn.disabled = tukendi;
     });
 
     event.addons.forEach(a => {
@@ -786,7 +815,7 @@
         <div class="tour-sticky-info">
           <span class="tour-sticky-date">Bu sezonun programı tamamlandı</span>
         </div>
-        <a class="tour-cta small" href="${KOK}index.html#etkinlikler">Etkinlikler</a>`;
+        <a class="tour-cta small" href="${KOK}etkinlikler/">Etkinlikler</a>`;
       return;
     }
     const toplam = hesap || calcEventTotal(event, state);
@@ -799,7 +828,7 @@
         </span>
         <span class="tour-sticky-date">${temsil ? formatTrDateRangeShort(temsil.date, '') : ''}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">Bileti al</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Bileti al</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -914,6 +943,12 @@
     const temsil = secimTemsil();
     const satir = (label, value) => `<li><span>${label}</span><strong>${value}</strong></li>`;
 
+    /* Ödeme ekranı: seçim adres satırıyla taşınıyor (booking-engine.js,
+       rezSecimYaz). Kapı ya da motor yoksa eski davranış: destek hattı. */
+    const odemeYolu = (typeof MolaVeri !== 'undefined' && MolaVeri.odemeYolu) ? MolaVeri.odemeYolu('event', event.slug, state) : '';
+    const odemeAdresi = odemeYolu ? KOK + odemeYolu.replace(/&/g, '&amp;') : '';
+    const ODEME_NOTU = 'Sonraki adımda bilet sahibinin bilgilerini girip ödemeyi tamamlarsınız. Taksit seçenekleri ödeme adımında.';
+
     sheet.innerHTML = `
       <div class="tour-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="tourSheetTitle">
         <div class="tour-sheet-head">
@@ -932,13 +967,14 @@
           ${satir('Hizmet bedeli', formatTRY(hesap.serviceTotal))}
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
-        <p class="tour-sheet-note">${ic('info')}<span>Ödeme adımı henüz bağlı değil.
-          Yukarıdaki özet, ödeme ekranına taşınacak bilgilerin tamamıdır.</span></p>
+        <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
         <div class="tour-sheet-actions">
           <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
           <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
              target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
-          <button class="tour-cta" type="button" data-sheet="close">Anladım</button>
+          ${odemeAdresi
+            ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
+            : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
         </div>
       </div>`;
 
@@ -1274,11 +1310,17 @@
     const favBtn = document.getElementById('tourGalleryFav');
     if (favBtn) {
       favBtn.addEventListener('click', () => {
-        state.favorite = !state.favorite;
-        syncFav();
-        toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        /* Favori veri kapısında (hesapta; misafirde bu tarayıcıda). */
+        const bitti = (v) => {
+          state.favorite = v;
+          syncFav();
+          toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        };
+        if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriDegistir) MolaVeri.favoriDegistir('event', event.slug).then(bitti);
+        else bitti(!state.favorite);
       });
     }
+    if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriMi) state.favorite = MolaVeri.favoriMi('event', event.slug);
     syncFav();
 
     function paylas() {
@@ -1375,7 +1417,9 @@
   fill('bilgiler', infoMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('tourSimilar', similarMarkup());
+  const benzerIcerik = similarMarkup();
+  fill('tourSimilar', benzerIcerik);
+  if (!benzerIcerik && document.getElementById('tourSimilar')) document.getElementById('tourSimilar').hidden = true;
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
@@ -1391,5 +1435,27 @@
   initSectionNav();
   initGalleryCounter();
   initStickyBar();
+
+  /* Kontenjan: yaklaşan bütün temsiller için tek sorgu. Varsayılan
+     temsil tamamen tükenmişse ilk müsait temsile, seçili blok o temsilde
+     tükenmişse müsait ilk bloğa geçiliyor. */
+  if (!sezonBitti) {
+    MolaVeri.musaitlik('event', event.slug, { from: yaklasan[0].date, to: yaklasan[yaklasan.length - 1].date })
+      .then(cevap => {
+        musaitlik = cevap;
+        if (tarihDoluMu(musaitlik, state.date)) {
+          const ilk = yaklasan.find(t => !tarihDoluMu(musaitlik, t.date));
+          if (ilk) state.date = ilk.date;
+        }
+        if (kategoriKalan(state.category) === 0) {
+          const blok = event.categories.find(k => kategoriKalan(k.id) !== 0);
+          if (blok) state.category = blok.id;
+        }
+        const kap = document.getElementById('tourDateChips');
+        if (kap) kap.innerHTML = dateChipsMarkup();
+        syncBooking();
+      })
+      .catch(() => { /* Kontenjan bilinmiyor: satırlar gizli, satış açık. */ });
+  }
 
 })();

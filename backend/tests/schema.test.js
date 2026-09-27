@@ -258,6 +258,69 @@ describe('içerik bütünlüğü', () => {
   });
 });
 
+/* 019: sınıflandırma. Buradaki kurallar ön yüzün veri sözleşmesinde
+   (docs/veri-sozlesmesi.md bölüm 5) yazılı; veritabanı da aynı şeyi
+   zorluyor ki panel ya da bir betik onları delemesin. */
+describe('sınıflandırma kısıtları', () => {
+  async function kategori(tip, slug) {
+    const { rows } = await sorgu(
+      `INSERT INTO categories (content_type, slug, name) VALUES ($1,$2,'K') RETURNING id`, [tip, slug]);
+    return rows[0].id;
+  }
+
+  it('ürün başka tipin kategorisine bağlanamıyor', async () => {
+    const otel = await icerikOlustur('hotel', 'bir-otel');
+    const turKategorisi = await kategori('tour', 'karadeniz-turlari');
+    await expect(sorgu(
+      'INSERT INTO content_categories (content_id, category_id) VALUES ($1,$2)', [otel, turKategorisi]))
+      .rejects.toThrow(/tipiyle uyuşmuyor/);
+    const otelKategorisi = await kategori('hotel', 'butik-oteller');
+    await sorgu('INSERT INTO content_categories (content_id, category_id) VALUES ($1,$2)',
+      [otel, otelKategorisi]);
+  });
+
+  it('kurala göre koleksiyona elle ürün yazılamıyor', async () => {
+    const id = await icerikOlustur();
+    const { rows: kural } = await sorgu(
+      `INSERT INTO collections (slug, name, mode, rule) VALUES ('butce-dostu','B','rule','{"maxPrice":500}')
+       RETURNING id`);
+    await expect(sorgu(
+      'INSERT INTO content_collections (content_id, collection_id) VALUES ($1,$2)', [id, kural[0].id]))
+      .rejects.toThrow(/elle ürün eklenemez/);
+    const { rows: elle } = await sorgu(
+      `INSERT INTO collections (slug, name, mode) VALUES ('ailece','A','manual') RETURNING id`);
+    await sorgu('INSERT INTO content_collections (content_id, collection_id) VALUES ($1,$2)',
+      [id, elle[0].id]);
+  });
+
+  it('koleksiyonun kuralı moduyla tutarlı', async () => {
+    await expect(sorgu(
+      `INSERT INTO collections (slug, name, mode, rule) VALUES ('x','X','manual','{"maxPrice":1}')`))
+      .rejects.toThrow(/collections_rule_matches_mode/);
+    await expect(sorgu(`INSERT INTO collections (slug, name, mode) VALUES ('y','Y','rule')`))
+      .rejects.toThrow(/collections_rule_matches_mode/);
+  });
+
+  it('liste sayfası ile kategori aynı adreste olamıyor (iki yönde)', async () => {
+    await kategori('tour', 'karadeniz-turlari');
+    await expect(sorgu(
+      `INSERT INTO listing_pages (base, slug, name) VALUES ('turlar','karadeniz-turlari','L')`))
+      .rejects.toThrow(/Adres çakışması/);
+
+    await sorgu(`INSERT INTO listing_pages (base, slug, name) VALUES ('turlar','otobuslu-turlar','L')`);
+    await expect(kategori('tour', 'otobuslu-turlar')).rejects.toThrow(/Adres çakışması/);
+    /* Başka tipin aynı slug'ı çakışma değil: /oteller/otobuslu-turlar ayrı adres. */
+    await kategori('hotel', 'otobuslu-turlar');
+  });
+
+  it('para birimi bilinen biri olmak zorunda', async () => {
+    const id = await icerikOlustur();
+    await sorgu(`UPDATE content SET currency = 'EUR' WHERE id = $1`, [id]);
+    await expect(sorgu(`UPDATE content SET currency = 'XYZ' WHERE id = $1`, [id]))
+      .rejects.toThrow(/content_currency_known/);
+  });
+});
+
 describe('updated_at tetikleyicisi', () => {
   it('güncellemede kendiliğinden ilerliyor', async () => {
     const id = await icerikOlustur();

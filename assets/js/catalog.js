@@ -32,6 +32,16 @@ const KATALOG_ETKINLIK_VERI = (typeof require === 'function' && typeof module !=
   ? require('./event-data.js') : null;
 const KATALOG_MEKAN_VERI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
   ? require('./venue-data.js') : null;
+const KATALOG_KAPI = (typeof require === 'function' && typeof module !== 'undefined' && module.exports)
+  ? require('./data-gateway.js') : null;
+
+/* Veri kapısı: Node'da modülden, tarayıcıda üst kapsamdan. Kapıyı
+   yüklemeyen bir sayfada null; o zaman yalnızca sayfası olan kayıtlar
+   (KATALOG_KAYNAKLARI) kart üretir, örnek kayıtlar atlanır. */
+function katalogKapi() {
+  if (KATALOG_KAPI && KATALOG_KAPI.MolaVeri) return KATALOG_KAPI.MolaVeri;
+  return (typeof MolaVeri !== 'undefined') ? MolaVeri : null;
+}
 
 /* Yardımcılar Node'da require'dan, tarayıcıda genel kapsamdan gelir.
 
@@ -120,6 +130,42 @@ function formatReviewCount(n) {
   return String(sayi);
 }
 
+/* ---------------- puan ----------------
+   Sayfası olan kayıtta puan yorum dağılımından (ratingBreakdown) türetiliyor.
+   Örnek özet kayıtta dağılım yok; özetin kendisi (rating: {average,
+   count}) duruyor. Otelde ölçek 10, diğerlerinde 5. Sayı bilinmiyorsa
+   (count: null) yorum sayısı boş. */
+function katalogPuan(kayit, oteldeOnluk) {
+  if (kayit && kayit.rating && !kayit.ratingBreakdown) {
+    const r = kayit.rating;
+    return {
+      rating: r.average === undefined || r.average === null ? '' : String(r.average),
+      reviews: r.count === undefined || r.count === null ? '' : formatReviewCount(r.count)
+    };
+  }
+  const ozet = kRatingOzet(kayit && kayit.ratingBreakdown);
+  const skor = oteldeOnluk
+    ? katalogYardimci('hotelScore', KATALOG_OTEL_VERI, typeof hotelScore !== 'undefined' ? hotelScore : null)
+    : null;
+  /* Otel puanı onluk; otel veri dosyası yüklü değilse beşlik ortalamayı
+     onluk diye göstermek yanlış olurdu, puan boş kalıyor. */
+  if (oteldeOnluk && !skor) return { rating: '', reviews: formatReviewCount(ozet.total) };
+  /* Hiç yorumu olmayan üründe puan YOK; "0" yazmak ürünü en kötü puanlı
+     gösterirdi. Kart rozeti boş puanda hiç çizilmiyor (app.js). */
+  if (!ozet.total) return { rating: '', reviews: '' };
+  return {
+    rating: String(skor ? skor(kayit.ratingBreakdown) : ozet.average),
+    reviews: formatReviewCount(ozet.total)
+  };
+}
+
+/* Kartın bağı: ürünün adresi. Dosyası olan ürün kendi sayfasına, dosyası
+   olmayan (örnek özet kayıt) yönlendiriciye düşer ve özet sayfası açılır
+   (404.html, detail-shell.js). Her kart tıklanabilir. */
+function katalogBag(yol, kayit) {
+  return kayit ? yol + '/' + kayit.slug + '/' : null;
+}
+
 /* ---------------- tarih metni ----------------
    Kartın "En yakın / Müsait" satırı. Yakın günler gün adıyla, uzak
    günler tarihle yazılıyor — "Bu Cumartesi" 34 gün sonrası için anlamsız,
@@ -156,26 +202,30 @@ function cardDayKey(iso, bugun) {
 /* ---------------- tur kartı ---------------- */
 function tourCatalogCard(tur, bugun) {
   const kart = tur.card || {};
-  const puan = kRatingOzet(tur.ratingBreakdown);
+  const puan = katalogPuan(tur, false);
   const p = tur.pricing || {};
   /* Kalkış takvimi kayıttan: kartta yazan tarih, tur sayfasındaki
      takvimin ilk seçilebilir günüyle aynı gün. */
   const kalkis = kSonrakiKalkis(bugun || new Date(), p.departureDays, 1, p.leadDays)[0] || '';
   return {
     img: kart.img,
-    href: 'tur/' + tur.slug + '/',
+    href: katalogBag('tur', tur),
+    /* Örnek özet kayıt: sayfası özet (detail-shell.js). */
+    ornek: !!tur.sample,
     /* Arama sonucundaki tur etiketi: serit basligindan tahmin
        edilmesin diye kayittan geliyor. */
     type: 'Tur',
     title: kart.title || tur.title,
     badges: kart.badges || [tur.categoryShort],
-    rating: String(puan.average),
-    reviews: formatReviewCount(puan.total),
+    rating: puan.rating,
+    reviews: puan.reviews,
     meta1: kart.meta1 || (tur.area + ' · ' + tur.durationLabel),
     meta2: cardDateText(kalkis, bugun),
     priceMain: String(kBasePrice(tur)),
+    currency: tur.currency || 'TRY',
     inDays: cardDaysUntil(kalkis, bugun),
-    dayKey: cardDayKey(kalkis, bugun)
+    dayKey: cardDayKey(kalkis, bugun),
+    sponsored: !!kart.sponsored
   };
 }
 
@@ -187,24 +237,32 @@ function tourCatalogCard(tur, bugun) {
    satılmadığı için en erken giriş yarın. Kart elle yazılıyken orada
    "Bugün" yazıyordu ve otel sayfasındaki takvimle çelişiyordu. */
 function hotelCatalogCard(otel, bugun) {
+  /* Fiyat otelin kendi fonksiyonundan; otel veri dosyasını yüklemeyen
+     sayfada kart üretilmiyor (patlamak yerine atlanıyor). */
+  const fiyatFn = katalogYardimci('hotelNightlyFrom', KATALOG_OTEL_VERI,
+    typeof hotelNightlyFrom !== 'undefined' ? hotelNightlyFrom : null);
+  if (!fiyatFn) return null;
   const kart = otel.card || {};
-  const puan = kRatingOzet(otel.ratingBreakdown);
+  const puan = katalogPuan(otel, true);
   const p = otel.pricing || {};
   const bas = kAsDate(bugun) || new Date();
   const ilkGiris = kToISODate(new Date(bas.getFullYear(), bas.getMonth(),
     bas.getDate() + Math.max(0, Math.round(Number(p.leadDays) || 0))));
   return {
     img: kart.img,
-    href: 'otel/' + otel.slug + '/',
+    href: katalogBag('otel', otel),
+    ornek: !!otel.sample,
     type: 'Otel',
     title: kart.title || otel.title,
     badges: kart.badges || [otel.categoryShort],
-    rating: String(katalogYardimci('hotelScore', KATALOG_OTEL_VERI, typeof hotelScore !== 'undefined' ? hotelScore : null)(otel.ratingBreakdown)),
-    reviews: formatReviewCount(puan.total),
+    rating: puan.rating,
+    reviews: puan.reviews,
     meta1: kart.meta1 || (otel.area + ' · ' + otel.distanceLabel),
     meta2: cardDateText(ilkGiris, bugun),
-    priceMain: String(katalogYardimci('hotelNightlyFrom', KATALOG_OTEL_VERI, typeof hotelNightlyFrom !== 'undefined' ? hotelNightlyFrom : null)(otel)),
-    unit: '/gece'
+    priceMain: String(fiyatFn(otel)),
+    currency: otel.currency || 'TRY',
+    unit: '/gece',
+    sponsored: !!kart.sponsored
   };
 }
 
@@ -216,23 +274,28 @@ function hotelCatalogCard(otel, bugun) {
    sponsored, kaydın card alanından geçiyor: sponsorluk ticari bir
    anlaşma, türetilecek bir şey değil. */
 function activityCatalogCard(aktivite, bugun) {
+  const fiyatFn = katalogYardimci('activityPriceFrom', KATALOG_AKTIVITE_VERI,
+    typeof activityPriceFrom !== 'undefined' ? activityPriceFrom : null);
+  if (!fiyatFn) return null;
   const kart = aktivite.card || {};
-  const puan = kRatingOzet(aktivite.ratingBreakdown);
+  const puan = katalogPuan(aktivite, false);
   const p = aktivite.pricing || {};
   const bas = kAsDate(bugun) || new Date();
   const ilkGun = kToISODate(new Date(bas.getFullYear(), bas.getMonth(),
     bas.getDate() + Math.max(0, Math.round(Number(p.leadDays) || 0))));
   return {
     img: kart.img,
-    href: 'aktivite/' + aktivite.slug + '/',
+    href: katalogBag('aktivite', aktivite),
+    ornek: !!aktivite.sample,
     type: 'Aktivite',
     title: kart.title || aktivite.title,
     badges: kart.badges || [aktivite.categoryShort],
-    rating: String(puan.average),
-    reviews: formatReviewCount(puan.total),
+    rating: puan.rating,
+    reviews: puan.reviews,
     meta1: kart.meta1 || (aktivite.area + ' · ' + aktivite.durationLabel),
     meta2: cardDateText(ilkGun, bugun),
-    priceMain: String(katalogYardimci('activityPriceFrom', KATALOG_AKTIVITE_VERI, typeof activityPriceFrom !== 'undefined' ? activityPriceFrom : null)(aktivite)),
+    priceMain: String(fiyatFn(aktivite)),
+    currency: aktivite.currency || 'TRY',
     sponsored: !!kart.sponsored
   };
 }
@@ -245,22 +308,29 @@ function activityCatalogCard(aktivite, bugun) {
    festivali "yaklaşan" diye anasayfada tutmak, elle yazılmış kartların
    düştüğü tuzağın ta kendisi olurdu. catalogCards null kartı atlıyor. */
 function eventCatalogCard(etkinlik, bugun) {
-  const sonraki = katalogYardimci('nextPerformance', KATALOG_ETKINLIK_VERI, typeof nextPerformance !== 'undefined' ? nextPerformance : null)(etkinlik, bugun);
+  const sonrakiFn = katalogYardimci('nextPerformance', KATALOG_ETKINLIK_VERI,
+    typeof nextPerformance !== 'undefined' ? nextPerformance : null);
+  const fiyatFn = katalogYardimci('eventPriceFrom', KATALOG_ETKINLIK_VERI,
+    typeof eventPriceFrom !== 'undefined' ? eventPriceFrom : null);
+  if (!sonrakiFn || !fiyatFn) return null;
+  const sonraki = sonrakiFn(etkinlik, bugun);
   if (!sonraki) return null;
 
   const kart = etkinlik.card || {};
-  const puan = kRatingOzet(etkinlik.ratingBreakdown);
+  const puan = katalogPuan(etkinlik, false);
   return {
     img: kart.img,
-    href: 'etkinlik/' + etkinlik.slug + '/',
+    href: katalogBag('etkinlik', etkinlik),
+    ornek: !!etkinlik.sample,
     type: 'Etkinlik',
     title: kart.title || etkinlik.title,
     badges: kart.badges || [etkinlik.categoryShort],
-    rating: String(puan.average),
-    reviews: formatReviewCount(puan.total),
+    rating: puan.rating,
+    reviews: puan.reviews,
     meta1: kart.meta1 || (etkinlik.venueName + ' · ' + etkinlik.area),
     meta2: cardDateText(sonraki.date, bugun),
-    priceMain: String(katalogYardimci('eventPriceFrom', KATALOG_ETKINLIK_VERI, typeof eventPriceFrom !== 'undefined' ? eventPriceFrom : null)(etkinlik)),
+    priceMain: String(fiyatFn(etkinlik)),
+    currency: etkinlik.currency || 'TRY',
     inDays: cardDaysUntil(sonraki.date, bugun),
     dayKey: cardDayKey(sonraki.date, bugun),
     sponsored: !!kart.sponsored
@@ -278,7 +348,7 @@ function eventCatalogCard(etkinlik, bugun) {
    onu kullanıyor. */
 function venueCatalogCard(mekan, bugun) {
   const kart = mekan.card || {};
-  const puan = kRatingOzet(mekan.ratingBreakdown);
+  const puan = katalogPuan(mekan, false);
   const durumFn = katalogYardimci('venueOpenNow', KATALOG_MEKAN_VERI,
     typeof venueOpenNow !== 'undefined' ? venueOpenNow : null);
   const fiyatFn = katalogYardimci('venuePriceFrom', KATALOG_MEKAN_VERI,
@@ -290,15 +360,17 @@ function venueCatalogCard(mekan, bugun) {
 
   return {
     img: kart.img,
-    href: 'mekan/' + mekan.slug + '/',
+    href: katalogBag('mekan', mekan),
+    ornek: !!mekan.sample,
     type: 'Mekan',
     title: kart.title || mekan.title,
     badges: kart.badges || [mekan.categoryShort],
-    rating: String(puan.average),
-    reviews: formatReviewCount(puan.total),
+    rating: puan.rating,
+    reviews: puan.reviews,
     meta1: kart.meta1 || (mekan.area + ' · ' + mekan.kindLabel),
     meta2: durum.open ? 'Şu an açık' : (durum.text || 'Şu an kapalı'),
     priceMain: String(fiyatFn ? fiyatFn(mekan) : 0),
+    currency: mekan.currency || 'TRY',
     /* "Mekanlar" bloğunun kendi kart alanları. */
     venueType: mekan.kindLabel,
     area: mekan.area,
@@ -391,18 +463,117 @@ function catalogCards(anchor, bugun) {
   return out;
 }
 
-/* Türetilmiş kartların tamamı: arama ve testler için. */
+/* İçerik tipinden kart üreticisi. */
+const KATALOG_KART = {
+  tour: tourCatalogCard, hotel: hotelCatalogCard, activity: activityCatalogCard,
+  event: eventCatalogCard, venue: venueCatalogCard
+};
+
+/* Kartın kimliği: sayfası olan kayıtta adresi, örnek kayıtta tip + slug. */
+function katalogKartAnahtari(kart) {
+  return kart.href || ('ornek:' + (kart.type || '') + '/' + katalogBaslikAnahtari(kart.title));
+}
+
+/* Şeridin elle seçilmiş ürünü: "tour/sile-agva" gibi bir ref (içerik tipi
+   + slug). Kart kaydın kendisinden, kapı üzerinden üretiliyor; kapı
+   yoksa veya kayıt bulunmazsa null. */
+function catalogRefCard(ref, bugun) {
+  const kapi = katalogKapi();
+  if (!kapi) return null;
+  const parca = String(ref || '').split('/');
+  const kayit = kapi.urun(parca[0], parca[1]);
+  const uret = KATALOG_KART[parca[0]];
+  return kayit && uret ? uret(kayit, bugun) : null;
+}
+
+/* Türetilmiş kartların tamamı: arama ve testler için. Sayfası olan
+   kayıtlar + kapıdaki örnek özet kayıtlar; arama, anasayfada şeridi
+   olmayan bir ürünü de bulabilmeli. */
 function catalogAllCards(bugun) {
   const gorulen = new Set();
   const out = [];
-  KATALOG_KAYNAKLARI.forEach(kaynak => {
-    catalogCards(kaynak.anchor, bugun).forEach(kart => {
-      if (gorulen.has(kart.href)) return;
-      gorulen.add(kart.href);
-      out.push(kart);
+  const ekle = (kart) => {
+    if (!kart) return;
+    const a = katalogKartAnahtari(kart);
+    if (gorulen.has(a)) return;
+    gorulen.add(a);
+    out.push(kart);
+  };
+  KATALOG_KAYNAKLARI.forEach(kaynak => catalogCards(kaynak.anchor, bugun).forEach(ekle));
+  const kapi = katalogKapi();
+  if (kapi) {
+    kapi.urunler().filter(k => k.sample).forEach(k => {
+      const uret = KATALOG_KART[kapi.icerikTipi(k)];
+      if (uret) ekle(uret(k, bugun));
     });
+  }
+  return out;
+}
+
+/* ---------------- detay sayfasında "Benzer" şeridi ----------------
+   Önce kaydın ELLE seçilmiş önerileri (similar: [{ slug }] aynı tipten ya
+   da [{ href }] başka tipten; yalnızca kimlik), kalan yer kurala dayalı
+   benzerlerle (MolaVeri.benzerler: ortak kategori, tema, bölge) doluyor.
+   Kart her zaman ürünün kendi kaydından: eskiden şeritteki başlık, puan
+   ve fiyat kayda elle kopyalanmıştı ve gerçek ürünle ayrışıyordu; bir
+   kısmı var olmayan ürünlere işaret ediyordu. */
+function catalogBenzerKartlari(kayit, bugun, adet) {
+  const kapi = katalogKapi();
+  if (!kapi || !kayit) return [];
+  const tip = kapi.icerikTipi(kayit);
+  const n = Math.max(1, Number(adet) || 4);
+  const secilen = (kayit.similar || []).map(s => {
+    if (s && s.slug) return kapi.urun(tip, s.slug);
+    if (s && s.href) {
+      const a = kapi.adres(s.href);
+      return a && a.kind === 'product' ? kapi.urun(a.type, a.slug) : null;
+    }
+    return null;
+  }).filter(Boolean);
+  const gorulen = new Set([tip + '/' + kayit.slug]);
+  const out = [];
+  secilen.concat(kapi.benzerler(kayit, bugun, n + secilen.length)).forEach(k => {
+    if (out.length >= n) return;
+    const t = kapi.icerikTipi(k);
+    if (gorulen.has(t + '/' + k.slug)) return;
+    gorulen.add(t + '/' + k.slug);
+    const kart = KATALOG_KART[t] ? KATALOG_KART[t](k, bugun) : null;
+    if (kart) out.push(Object.assign({ tip: t }, kart));
   });
   return out;
+}
+
+/* Şeridin işaretlemesi: beş detay sayfası aynı kalıbı kullanıyor.
+   kok: sayfa köküne göre önek ("../../"); gorsel: kartın görsel
+   anahtarından adres (anasayfanın görsel tablosu); yildiz: yıldız ikonu.
+   Şeritte kart yoksa boş metin: sayfa bölümü gizliyor. */
+function catalogBenzerMarkup(kayit, secenek) {
+  const o = secenek || {};
+  const kartlar = catalogBenzerKartlari(kayit, o.bugun, o.adet || 4);
+  if (!kartlar.length) return '';
+  const tipler = new Set(kartlar.map(k => k.tip));
+  const baslik = tipler.size === 1
+    ? ({ tour: 'Benzer turlar', hotel: 'Benzer oteller', activity: 'Benzer aktiviteler',
+         event: 'Benzer etkinlikler', venue: 'Benzer mekânlar' })[[...tipler][0]]
+    : 'Bunlar da ilgini çekebilir';
+  const para = (k) => ({ TRY: 'TL', EUR: 'EUR', USD: 'USD' })[k.currency || 'TRY'] || k.currency;
+  const gorsel = typeof o.gorsel === 'function' ? o.gorsel : (() => '');
+  return `
+      <div class="tour-block-head"><h2>${baslik}</h2><p>Aynı kategoride, temada ya da bölgede.</p></div>
+      <div class="tour-similar-grid">
+        ${kartlar.map(k => `
+          <a class="tour-similar-card" href="${(o.kok || '') + k.href}">
+            <span class="tour-similar-media">
+              <img src="${gorsel(k.img)}" alt="${k.title}" loading="lazy">
+              ${k.rating ? `<span class="tour-similar-rating">${k.tip === 'hotel' ? '' : (o.yildiz || '')}${String(k.rating).replace('.', ',')}</span>` : ''}
+            </span>
+            <span class="tour-similar-body">
+              <strong>${k.title}</strong>
+              <span class="tour-similar-meta">${k.meta1 || ''}</span>
+              <span class="tour-similar-price">${k.priceMain} ${para(k)}<span>${k.unit || ''}</span></span>
+            </span>
+          </a>`).join('')}
+      </div>`;
 }
 
 function katalogBaslikAnahtari(metin) {
@@ -418,9 +589,22 @@ function katalogBaslikAnahtari(metin) {
    yazılmış satırın silinmesini beklemek yerine, kopya burada eleniyor. */
 function mergeCatalogCards(sections, bugun) {
   (Array.isArray(sections) ? sections : []).forEach(sec => {
-    const turetilen = catalogCards(sec.anchor, bugun);
+    /* Önce şeride kendiliğinden girenler (sayfası olan kayıtlar), sonra
+       şeridin elle seçtiği ürünler (picks). İkisi aynı ürünü getirirse
+       bir kez. */
+    const turetilen = [];
+    const gorulen = new Set();
+    catalogCards(sec.anchor, bugun)
+      .concat((sec.picks || []).map(r => catalogRefCard(r, bugun)))
+      .forEach(kart => {
+        if (!kart) return;
+        const a = katalogKartAnahtari(kart);
+        if (gorulen.has(a)) return;
+        gorulen.add(a);
+        turetilen.push(kart);
+      });
     if (!turetilen.length) return;
-    const adresler = new Set(turetilen.map(k => k.href));
+    const adresler = new Set(turetilen.map(k => k.href).filter(Boolean));
     const basliklar = new Set(turetilen.map(k => katalogBaslikAnahtari(k.title)));
     const elle = (sec.items || []).filter(it =>
       !adresler.has(it.href) && !basliklar.has(katalogBaslikAnahtari(it.title)));
@@ -444,6 +628,10 @@ if (typeof module !== 'undefined' && module.exports) {
     venueCatalogCard,
     catalogCards,
     catalogAllCards,
+    catalogRefCard,
+    catalogBenzerKartlari,
+    catalogBenzerMarkup,
+    katalogPuan,
     mergeCatalogCards
   };
 }

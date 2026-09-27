@@ -179,6 +179,8 @@
   color: var(--text-muted);
 }
 .akt-paket-kalan strong { color: var(--text); font-weight: 700; }
+/* Kontenjan cevabı gelmeden satır görünmüyor (display:flex [hidden]'ı ezmesin). */
+.akt-paket-kalan[hidden] { display: none; }
 .akt-paket-kalan .icon { width: 15px; height: 15px; color: var(--text-faint); }
 .akt-paket-kalan.is-low { color: #C2410C; }
 .akt-paket-kalan.is-low strong { color: #C2410C; }

@@ -18,8 +18,10 @@
    (program/buluşma yerine odalar/olanaklar/konum/kurallar). */
 (function () {
 
-  /* Sayfa /otel/<slug>/ adresinde duruyor, slug adresten okunuyor. */
-  const hotel = resolveHotel(hotelSlugFromPath(window.location.pathname));
+  /* Sayfa /otel/<slug>/ adresinde duruyor, slug adresten okunuyor. Kayıt
+     veri kapısından geliyor (docs/veri-sozlesmesi.md); yayında olmayan
+     veya bilinmeyen otel null. */
+  const hotel = MolaVeri.urun('hotel', hotelSlugFromPath(window.location.pathname));
   if (!hotel) return;
 
   /* Sayfa kökü: /otel/<slug>/index.html iki dizin içeride olduğu için
@@ -71,6 +73,17 @@
     reviewsShown: REVIEWS_STEP,
     photo: 0
   };
+
+  /* Kontenjan canlı sorgu (sözleşme bölüm 6): cevap gelene kadar null,
+     kalan oda satırları gizli, satış açık. satisEngeli: seçili
+     konaklamada satışı durduran sebep ('doldu' | 'yetersiz') veya null. */
+  let musaitlik = null;
+  let satisEngeli = null;
+
+  /* Seçili konaklamada bir oda tipinden kalan: HER GECENİN en küçüğü.
+     Yalnızca giriş gecesine bakmak, üçüncü gecesi dolu odayı satardı. */
+  const odaKalan = (odaId) =>
+    konaklamaKalan(musaitlik, odaId, state.checkIn, hotelCheckout(state.checkIn, state.nights));
 
   const $$ = (sel) => Array.prototype.slice.call(document.querySelectorAll(sel));
   const ic = (name) => '<span class="icon">' + tourSvg(name) + '</span>';
@@ -273,9 +286,12 @@
 
       const kalanEl = document.querySelector('[data-room-left="' + o.id + '"]');
       if (kalanEl) {
-        const kalan = roomsLeft(state.checkIn, o.id, o.count);
-        kalanEl.className = 'otel-oda-kalan' + (kalan <= 3 ? ' is-low' : '');
-        kalanEl.innerHTML = ic('bolt') + 'Seçili tarihte <strong>' + kalan + ' oda</strong> kaldı';
+        const kalan = odaKalan(o.id);
+        kalanEl.hidden = kalan === null;
+        kalanEl.className = 'otel-oda-kalan' + (kalan !== null && kalan <= 3 ? ' is-low' : '');
+        kalanEl.innerHTML = kalan === null ? ''
+          : kalan === 0 ? ic('bolt') + 'Seçili tarihlerde <strong>bu oda dolu</strong>'
+          : ic('bolt') + 'Seçili tarihlerde <strong>' + kalan + ' oda</strong> kaldı';
       }
     });
   }
@@ -448,23 +464,16 @@
       </div>`;
   }
 
+  /* Benzer şeridi: elle seçilmiş öneriler + kurala dayalı benzerler,
+     kartlar ürünlerin kendi kaydından (catalog.js/catalogBenzerMarkup).
+     Katalog yüklü değilse ya da benzer yoksa bölüm gizleniyor. */
   function similarMarkup() {
-    return `
-      <div class="tour-block-head"><h2>Benzer oteller</h2><p>Aynı fiyat aralığında, farklı şehirlerde.</p></div>
-      <div class="tour-similar-grid">
-        ${hotel.similar.map(s => `
-          <a class="tour-similar-card" href="${s.slug ? KOK + 'otel/' + s.slug + '/' : KOK + 'index.html#oteller'}">
-            <span class="tour-similar-media">
-              <img src="${hotelImage(s.key, GALLERY_WIDTHS.thumb)}" alt="${s.title}" loading="lazy">
-              <span class="tour-similar-rating">${s.score}</span>
-            </span>
-            <span class="tour-similar-body">
-              <strong>${s.title}</strong>
-              <span class="tour-similar-meta">${s.meta}</span>
-              <span class="tour-similar-price">${formatTRY(s.price)}<span>${p.unitNote}</span></span>
-            </span>
-          </a>`).join('')}
-      </div>`;
+    if (typeof catalogBenzerMarkup !== 'function') return '';
+    return catalogBenzerMarkup(hotel, {
+      kok: KOK,
+      yildiz: ic('star'),
+      gorsel: (anahtar) => (typeof cardImages !== 'undefined' && cardImages[anahtar]) || ''
+    });
   }
 
   /* ---------------- sayfa etiketleri ----------------
@@ -505,13 +514,15 @@
     return liste.map(iso => {
       const parca = trDateParts(iso);
       const on = iso === state.checkIn;
+      /* O gece hiçbir oda tipinde yer yoksa o gün giriş yapılamaz. */
+      const dolu = tarihDoluMu(musaitlik, iso);
       return `
-        <button class="tour-date-chip${on ? ' active' : ''}" type="button"
-                data-date="${iso}" aria-pressed="${on}"
-                aria-label="${formatTrDate(iso)} girişli">
+        <button class="tour-date-chip${on ? ' active' : ''}${dolu ? ' is-dolu' : ''}" type="button"
+                data-date="${iso}" aria-pressed="${on}"${dolu ? ' disabled' : ''}
+                aria-label="${formatTrDate(iso)} girişli${dolu ? ' — dolu' : ''}">
           <span class="tour-date-day">${parca.hafta}</span>
           <strong>${parca.gun}</strong>
-          <span class="tour-date-month">${parca.ay}</span>
+          <span class="tour-date-month">${dolu ? 'dolu' : parca.ay}</span>
         </button>`;
     }).join('');
   }
@@ -678,20 +689,29 @@
       </div>`;
   }
 
-  /* Kalan oda çubuğu: sayı tarihten ve oda tipinden türetiliyor
-     (hotel-data.js/roomsLeft), böylece sayfa yenilendiğinde zıplamıyor. */
+  /* Kalan oda çubuğu: kontenjan cevabından, seçili konaklamanın her
+     gecesinin en küçüğü. İstenen: oda sayısı. */
   function syncSeats(hesap) {
+    const oda = hesap.room || hotel.rooms[0];
+    const durum = kontenjanDurumu(odaKalan(oda.id), hesap.rooms, 3);
+    satisEngeli = (durum.durum === 'doldu' || durum.durum === 'yetersiz') ? durum.durum : null;
+    const dugme = document.getElementById('tourReserve');
+    if (dugme) dugme.disabled = !!satisEngeli;
+
     const el = document.getElementById('tourSeats');
     if (!el) return;
-    const oda = hesap.room || hotel.rooms[0];
+    el.hidden = durum.durum === 'bilinmiyor';
+    if (el.hidden) { el.innerHTML = ''; return; }
     const kapasite = Math.max(1, Number(oda.count) || 1);
-    const kalan = roomsLeft(state.checkIn, oda.id, kapasite);
-    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - kalan) / kapasite) * 100)));
-    el.classList.toggle('is-low', kalan <= 3);
+    const dolu = Math.max(0, Math.min(100, Math.round(((kapasite - durum.kalan) / kapasite) * 100)));
+    el.classList.toggle('is-low', durum.durum !== 'var');
+    const metin = {
+      doldu: 'Seçili tarihlerde <strong>' + oda.name + '</strong> dolu · başka bir oda veya tarih seçin',
+      yetersiz: 'Seçili tarihlerde en fazla <strong>' + durum.kalan + ' ' + oda.name + '</strong> var'
+    }[durum.durum] || 'Bu tarihlerde <strong>' + durum.kalan + ' ' + oda.name + '</strong> kaldı';
     el.innerHTML = `
       <span class="tour-seats-bar"><span class="tour-seats-fill" style="width:${dolu}%"></span></span>
-      <span class="tour-seats-text">${ic('home')}Bu tarihte
-        <strong>${kalan} ${oda.name}</strong> kaldı</span>`;
+      <span class="tour-seats-text">${ic('home')}<span>${metin}</span></span>`;
   }
 
   function syncBooking() {
@@ -793,7 +813,7 @@
         </span>
         <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Rezervasyon yap</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -913,6 +933,11 @@
   function openSheet() {
     const sheet = document.getElementById('tourSheet');
     if (!sheet) return;
+    /* Ödeme ekranı: seçim adres satırıyla taşınıyor (booking-engine.js,
+       rezSecimYaz). Kapı ya da motor yoksa eski davranış: destek hattı. */
+    const odemeYolu = (typeof MolaVeri !== 'undefined' && MolaVeri.odemeYolu) ? MolaVeri.odemeYolu('hotel', hotel.slug, state) : '';
+    const odemeAdresi = odemeYolu ? KOK + odemeYolu.replace(/&/g, '&amp;') : '';
+    const ODEME_NOTU = 'Sonraki adımda misafir bilgilerini ve çocuk yaşlarını girersiniz; ' + (Number.isFinite(Number(p.freeChildMaxAge)) ? '0 – ' + p.freeChildMaxAge + ' yaş çocuklar pansiyon farkı ödemez. ' : '') + 'Taksit seçenekleri ödeme adımında.';
     const hesap = calcHotelTotal(hotel, state);
     const satir = (label, value) => `<li><span>${label}</span><strong>${value}</strong></li>`;
 
@@ -933,13 +958,14 @@
           ${satir('Konaklama vergisi', formatTRY(hesap.tax))}
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
-        <p class="tour-sheet-note">${ic('info')}<span>Ödeme adımı henüz bağlı değil.
-          Yukarıdaki özet, ödeme ekranına taşınacak bilgilerin tamamıdır.</span></p>
+        <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
         <div class="tour-sheet-actions">
           <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
           <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
              target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
-          <button class="tour-cta" type="button" data-sheet="close">Anladım</button>
+          ${odemeAdresi
+            ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
+            : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
         </div>
       </div>`;
 
@@ -1280,11 +1306,17 @@
     const favBtn = document.getElementById('tourGalleryFav');
     if (favBtn) {
       favBtn.addEventListener('click', () => {
-        state.favorite = !state.favorite;
-        syncFav();
-        toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        /* Favori veri kapısında (hesapta; misafirde bu tarayıcıda). */
+        const bitti = (v) => {
+          state.favorite = v;
+          syncFav();
+          toast(state.favorite ? 'Favorilerine eklendi' : 'Favorilerden çıkarıldı');
+        };
+        if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriDegistir) MolaVeri.favoriDegistir('hotel', hotel.slug).then(bitti);
+        else bitti(!state.favorite);
       });
     }
+    if (typeof MolaVeri !== 'undefined' && MolaVeri.favoriMi) state.favorite = MolaVeri.favoriMi('hotel', hotel.slug);
     syncFav();
 
     function paylas() {
@@ -1393,7 +1425,9 @@
   fill('politikalar', policiesMarkup());
   fill('yorumlar', reviewsMarkup());
   fill('sss', faqMarkup());
-  fill('tourSimilar', similarMarkup());
+  const benzerIcerik = similarMarkup();
+  fill('tourSimilar', benzerIcerik);
+  if (!benzerIcerik && document.getElementById('tourSimilar')) document.getElementById('tourSimilar').hidden = true;
   fill('tourTags', tagsMarkup());
 
   bookingEl.innerHTML = bookingMarkup();
@@ -1409,5 +1443,22 @@
   initSectionNav();
   initGalleryCounter();
   initStickyBar();
+
+  /* Kontenjan: seçilebilecek her giriş günü ve en uzun konaklamanın son
+     gecesine kadar tek sorgu. Varsayılan giriş günü tamamen doluysa ilk
+     müsait güne geçiliyor. */
+  const sonGece = hotelCheckout(tarihler[tarihler.length - 1], Math.max(1, Number(p.maxNights) || 1));
+  MolaVeri.musaitlik('hotel', hotel.slug, { from: tarihler[0], to: sonGece })
+    .then(cevap => {
+      musaitlik = cevap;
+      if (tarihDoluMu(musaitlik, state.checkIn)) {
+        const ilk = tarihler.find(iso => !tarihDoluMu(musaitlik, iso));
+        if (ilk) state.checkIn = ilk;
+      }
+      const kap = document.getElementById('tourDateChips');
+      if (kap) kap.innerHTML = dateChipsMarkup();
+      syncBooking();
+    })
+    .catch(() => { /* Kontenjan bilinmiyor: satırlar gizli, satış açık. */ });
 
 })();

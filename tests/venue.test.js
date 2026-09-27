@@ -12,6 +12,7 @@
    calisma saatleri, minimum harcamanin odenecek tutara GIRMEMESI ve
    hizmet tanimi geregi sabit kisi sayisi. */
 import { describe, it, expect } from 'vitest';
+import { MolaVeri, KAPI_SITE_ADRESI } from '../assets/js/data-gateway.js';
 import { readFileSync, existsSync } from 'node:fs';
 import {
   PLACES,
@@ -29,9 +30,7 @@ import {
   calcVenueBooking,
   venuePriceFrom,
   venuePriceUnit,
-  venueSeatsLeft,
   venueSlugFromPath,
-  resolveVenue,
 } from '../assets/js/venue-data.js';
 import { TOUR_ICONS, ratingSummary } from '../assets/js/tour-data.js';
 import { catalogCards, catalogAllCards, venueCatalogCard } from '../assets/js/catalog.js';
@@ -287,26 +286,56 @@ describe('karttaki fiyat', () => {
   });
 });
 
-/* ---------------- kalan yer ---------------- */
-describe('kalan yer', () => {
-  it('ayni secim her zaman ayni sayiyi veriyor', () => {
-    expect(venueSeatsLeft('2026-09-26', '13:00', 'sedir', 24))
-      .toBe(venueSeatsLeft('2026-09-26', '13:00', 'sedir', 24));
+/* ---------------- kontenjan ----------------
+   Kalan yer artık uydurulmuyor. Önceki venueSeatsLeft() tarih metninin karma
+   değerinden bir "son N yer" sayısı üretiyordu; hiçbir satışla ilgisi
+   yoktu ve dolu durumu hiç oluşmuyordu. Kalan yer veri kapısının
+   kontenjan cevabından geliyor (MolaVeri.musaitlik). Cevabın kendisi ve
+   hesap tests/veri-kapisi.test.js'te; burada sayfanın onu kullandığı
+   ölçülüyor. */
+describe('kontenjan', () => {
+  const kontenjanFn = () => sayfaJs.match(/function syncSeats\(hesap\) \{([\s\S]*?)\n  \}/)[1];
+
+  it('karma değerden kalan yer üreten fonksiyon yok', () => {
+    expect(veriJs).not.toMatch(/function \w*(seatsLeft|SeatsLeft|roomsLeft)\(/);
+    expect(sayfaJs).not.toMatch(/(seatsLeft|SeatsLeft|roomsLeft)\(/);
   });
 
-  it('ayni gunun iki saati ayrisiyor', () => {
-    expect(venueSeatsLeft('2026-09-26', '13:00', 'sedir', 24))
-      .not.toBe(venueSeatsLeft('2026-09-26', '18:00', 'sedir', 24));
+  it('kayıt ve kalan yer veri kapısından', () => {
+    expect(sayfaJs).toMatch(/MolaVeri\.urun\('venue',\s/);
+    expect(sayfaJs).not.toMatch(/resolveVenue\(/);
+    expect(sayfaJs).toContain("MolaVeri.musaitlik('venue', ");
+    expect(kontenjanFn()).toContain('kontenjanDurumu(');
   });
 
-  it('sonuc kapasiteyi asmiyor', () => {
-    Object.values(PLACES).forEach(m => {
-      venueOptions(m).forEach(o => {
-        const kalan = venueSeatsLeft('2026-10-02', '13:00', o.id, o.count);
-        expect(kalan).toBeGreaterThan(0);
-        expect(kalan).toBeLessThanOrEqual(o.count);
-      });
-    });
+  it('dolu tarih takvimde kalıyor ama seçilemiyor', () => {
+    const fn = sayfaJs.match(/function dateChipsMarkup\(\) \{([\s\S]*?)\n  \}/)[1];
+    expect(fn).toContain('tarihDoluMu(musaitlik, ');
+    expect(fn).toContain('is-dolu');
+    expect(fn).toContain('disabled');
+  });
+
+  it('dolu veya yetmeyen kontenjanda rezervasyon düğmeleri pasif', () => {
+    const fn = kontenjanFn();
+    expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
+    expect(fn).toContain('dugme.disabled = !!satisEngeli');
+    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+  });
+
+  it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
+    expect(kontenjanFn()).toContain("el.hidden = durum.durum === 'bilinmiyor'");
+    expect(readFileSync(new URL('../assets/css/tour.css', import.meta.url), 'utf8'))
+      .toContain('.tour-seats[hidden] { display: none; }');
+  });
+
+  it('her sayfa veri kapısını kendi betiğinden önce yüklüyor', () => {
+    for (const s of sayfalar) {
+      const yer = (ad) => s.html.indexOf('assets/js/' + ad + '"');
+      expect(yer('taxonomy-data.js'), s.slug).toBeGreaterThan(-1);
+      expect(yer('inventory-data.js'), s.slug).toBeGreaterThan(yer('taxonomy-data.js'));
+      expect(yer('data-gateway.js'), s.slug).toBeGreaterThan(yer('inventory-data.js'));
+      expect(yer('venue-page.js'), s.slug).toBeGreaterThan(yer('data-gateway.js'));
+    }
   });
 });
 
@@ -323,8 +352,8 @@ describe('adres ve kayit cozumleme', () => {
     expect(venueSlugFromPath('')).toBe('');
   });
 
-  it('taninmayan slug varsayilana duser', () => {
-    expect(resolveVenue('yok').slug).toBe(DEFAULT_VENUE_SLUG);
+  it('taninmayan slug varsayilana DUSMUYOR', () => {
+    expect(MolaVeri.urun('venue', 'yok')).toBe(null);
   });
 
   it('her kaydin anahtari kendi slug alaniyla ayni', () => {
@@ -334,15 +363,14 @@ describe('adres ve kayit cozumleme', () => {
 
 /* ---------------- ad cakismasi ---------------- */
 describe('genel kapsam adlari', () => {
-  it('kayit adi VENUES degil', () => {
-    /* home-blocks.js zaten `const VENUES` tanimliyor ve anasayfada iki
-       dosya da yukleniyor. Klasik <script> etiketleri ust kapsami
-       paylasir; ayni adi ikinci kez tanimlamak butun sayfayi oldururdu.
-       (Tum betiklerin tek kapsamda calistigi test
-       tests/katalog.test.js icinde.) */
+  it('kayit adi ile anasayfanin gezi noktalari cakismiyor', () => {
+    /* Klasik <script> etiketleri ust kapsami paylasir; ayni adi ikinci
+       kez tanimlamak butun sayfayi oldururdu. Mekan kayitlari PLACES,
+       anasayfanin gezi noktalari GEZI_NOKTALARI. (Tum betiklerin tek
+       kapsamda calistigi test tests/katalog.test.js icinde.) */
     expect(veriJs).toContain('const PLACES');
-    expect(veriJs).not.toMatch(/^const VENUES\b/m);
-    expect(bloklar).toMatch(/^const VENUES\b/m);
+    expect(veriJs).not.toMatch(/^const (VENUES|GEZI_NOKTALARI)\b/m);
+    expect(bloklar).toMatch(/^const GEZI_NOKTALARI\b/m);
   });
 });
 
@@ -352,7 +380,6 @@ describe('gorseller ve ikonlar', () => {
     Object.values(PLACES).forEach(m => {
       const kullanilan = new Set();
       m.gallery.forEach(g => kullanilan.add(g.key));
-      m.similar.forEach(s => kullanilan.add(s.key));
       venueOptions(m).forEach(o => kullanilan.add(o.key));
       [...kullanilan].forEach(k =>
         expect(VENUE_IMAGE_FILES[k], m.slug + ' kayitsiz gorsel: ' + k).toBeTruthy());
@@ -424,7 +451,7 @@ describe('sayfa ve kayit tutarliligi', () => {
       const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
       expect(ld['@type']).toBe('BreadcrumbList');
       expect(ld.itemListElement.map(i => i.name)).toEqual(['Anasayfa', mekan.categoryPlural, mekan.title]);
-      expect(ld.itemListElement[1].item).toContain('#' + mekan.categoryAnchor);
+      expect(ld.itemListElement[1].item).toBe(KAPI_SITE_ADRESI + MolaVeri.listeYolu(mekan) + '/');
       expect(ld.itemListElement[2].item).toContain('/mekan/' + slug + '/');
     });
   });
@@ -505,8 +532,8 @@ describe('sayfa etiketleri', () => {
         }
         const dosya = t.href.split('#')[0];
         const yol = dosya.endsWith('/') ? dosya + 'index.html' : dosya;
-        expect(existsSync(new URL('../' + yol, import.meta.url)),
-          slug + ' -> ' + t.href + ' diskte yok').toBe(true);
+        expect(existsSync(new URL('../' + yol, import.meta.url)) || !!MolaVeri.adres(dosya),
+          slug + ' -> ' + t.href + ' hedefsiz (dosya da yönlendirici sayfası da değil)').toBe(true);
       });
     });
   });
@@ -517,18 +544,18 @@ describe('sayfa etiketleri', () => {
     expect(bloklar).toContain('id="mekanlar"');
   });
 
-  it('benzer kartlarin adresi diskte var', () => {
+  it('benzer kartlarin adresi gercek bir urun', () => {
     Object.values(PLACES).forEach(m =>
       m.similar.filter(s => s.href).forEach(s => {
-        const yol = s.href.endsWith('/') ? s.href + 'index.html' : s.href;
-        expect(existsSync(new URL('../' + yol, import.meta.url)), s.href + ' diskte yok').toBe(true);
+        const a = MolaVeri.adres(s.href);
+        expect(a && a.kind, s.href + ' urun degil').toBe('product');
       }));
   });
 });
 
 /* ---------------- anasayfa baglantisi ---------------- */
 describe('anasayfa baglantisi', () => {
-  const kartlar = catalogAllCards(BUGUN).filter(k => k.href.startsWith('mekan/'));
+  const kartlar = catalogAllCards(BUGUN).filter(k => k.href && !k.ornek && k.href.startsWith('mekan/'));
 
   it('her mekan anasayfaya kendiliginden giriyor', () => {
     const baglar = kartlar.map(k => k.href);
