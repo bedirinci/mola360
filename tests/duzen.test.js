@@ -182,3 +182,15 @@ describe('anasayfa bölüm başlıklarının açıklaması', () => {
     expect(anasayfa).toMatch(/<h2>Günün En Çok Satanları<\/h2><p class="section-subtitle">[^<]+<\/p>/);
   });
 });
+
+describe('sayfa ilk çizilirken (JS öncesi)', () => {
+  it('bildirim rozetinde sabit sayı yok; sayıyı JS yazıyor', () => {
+    const cerceve = oku('assets/js/site-chrome.js');
+    expect(cerceve).toContain('<span class="notif-badge is-hidden" aria-hidden="true"></span>');
+    expect(cerceve).not.toMatch(/class="notif-badge[^"]*">\d+</);
+  });
+
+  it('mobilde kaydırma okları hiç yok (stilsiz ikon ekranı kaplamasın)', () => {
+    expect(oku('assets/css/style.css')).toMatch(/@media \(max-width: 680px\) \{\s*\.hscroll-arrow, \.hscroll-arrow\.is-visible \{ display: none; \}/);
+  });
+});
