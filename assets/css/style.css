@@ -4429,6 +4429,12 @@ ul {
 /* P2 utility states: no direct presentation mutation from feature code. */
 .hscroll-arrow.is-hidden { display: none; }
 .hscroll-arrow.is-visible { display: flex; }
+/* Mobilde (dokunarak kaydırılıyor) oklar hiç yok. Stilleri yalnızca
+   681px ve üstünde tanımlı; JS gizleyene kadar geçen ilk karede
+   boyutsuz ikon ekranı kaplıyordu. */
+@media (max-width: 680px) {
+  .hscroll-arrow, .hscroll-arrow.is-visible { display: none; }
+}
 .h-scroll.is-overflow-visible { overflow-x: visible; }
 .profile-panel-inner.is-mobile-positioned { margin-top: var(--profile-mobile-top, 0px); }
 .search-overlay-body.has-keyboard-inset { padding-bottom: var(--keyboard-inset-padding); }
