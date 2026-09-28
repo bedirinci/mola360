@@ -2381,11 +2381,10 @@ const filterDefaults = {
   siralama: 'Sırala'
 };
 
+/* Her süzgeç değişikliği buradan geçiyor: sonuçları aynı sayfada çiz.
+   Şeridin sonundaki "Filtreleri temizle" kalktı; temizleme sonuçların
+   başlığında ve çiplerin çarpısında. */
 function updateClearAllVisibility() {
-  const hasActive = Object.values(filterState).some(Boolean);
-  const clearBtn = document.getElementById('clearAllFilters');
-  if (clearBtn) clearBtn.classList.toggle('visible', hasActive);
-  /* Her süzgeç değişikliği buradan geçiyor: sonuçları aynı sayfada çiz. */
   anasayfaSonuclariniCiz(false);
 }
 
@@ -2620,11 +2619,16 @@ function openFilterDropdown(wrap) {
 
   closeAllFilterDropdowns(wrap);
 
-  /* Mobilde "İptal et" için açılış anındaki seçimi sakla.
-     Seçenekler panel açıkken anlık olarak chip'e yansıyabilir; iptal edilirse
-     bu değer geri yüklenir. */
-  if (wrap.dataset.dropdown !== 'tarih') {
-    wrap._filterDraftValue = filterState[wrap.dataset.dropdown];
+  /* Çekmece her açılışta uygulanmış seçimle başlar: "Uygula"ya basılmadan
+     kapatılan (İptal, karartma, aşağı çekme) taslak atılır. */
+  if (wrap.dataset.dropdown === 'tarih') {
+    takvimTaslaginiYukle();
+  } else {
+    delete wrap._filterTaslak;
+    panel.querySelectorAll('button[data-value]').forEach(button => {
+      button.classList.toggle('selected', button.dataset.value === filterState[wrap.dataset.dropdown]);
+    });
+    filtreTemizleDurumu(panel);
   }
 
   /* The panel is portalled once and stays under <body>. It never becomes a
@@ -2769,6 +2773,21 @@ document.querySelectorAll('.filter-dropdown-wrap').forEach(wrap => {
     const value = option.dataset.value;
     const neutral = key === 'tarih' && value === 'Tüm Tarihler';
 
+    /* Mobilde jenerik filtreler (Sırala, Süre, Bölge, Tema, Maks. Tutar)
+       alt çekmece: dokunulan seçenek yalnızca çekmecede işaretlenir; çip
+       ve sonuçlar "Uygula"ya basınca değişir. Seçili seçeneğe yeniden
+       dokunmak seçimi kaldırır. Masaüstünde "Uygula" yok: seçince
+       uygulanır ve panel kapanır. */
+    if (isMobileViewport() && panel.classList.contains('generic-filter-panel')) {
+      const secili = option.classList.contains('selected');
+      panel.querySelectorAll('button[data-value]')
+        .forEach(button => button.classList.remove('selected'));
+      if (!secili) option.classList.add('selected');
+      wrap._filterTaslak = secili ? null : value;
+      filtreTemizleDurumu(panel);
+      return;
+    }
+
     panel.querySelectorAll('button[data-value]')
       .forEach(button => button.classList.remove('selected'));
 
@@ -2781,15 +2800,7 @@ document.querySelectorAll('.filter-dropdown-wrap').forEach(wrap => {
       setChipActive(key, true, value);
     }
 
-    /* Mobilde jenerik filtreler (Sırala, Süre, Bölge, Tema, Maks. Tutar)
-       alt sayfa (bottom sheet) olarak açılır ve seçenek dokununca hemen
-       kapanmaz; kullanıcı seçimini görüp "Uygula" ile (veya karartılmış
-       alanı/tutamacı kullanarak) kendisi kapatır. Masaüstünde ve tarih
-       panelinde önceki davranış (seçince anında kapanma) korunur. */
-    const isGenericMobileSheet = isMobileViewport() && panel.classList.contains('generic-filter-panel');
-    if (!isGenericMobileSheet) {
-      closeFilterDropdown(wrap);
-    }
+    closeFilterDropdown(wrap);
     updateClearAllVisibility();
   });
 });
@@ -2804,31 +2815,28 @@ document.querySelectorAll('[data-generic-close]').forEach(button => {
   });
 });
 
-/* Jenerik filtrelerde seçim panel açıkken hazırlanır. "İptal et"
-   açılıştaki değere döner; "Uygula" ise mevcut seçimi kabul eder. */
-document.querySelectorAll('[data-generic-cancel]').forEach(button => {
-  const key = button.dataset.genericCancel;
+/* Jenerik filtrelerde seçim çekmece açıkken taslak (wrap._filterTaslak).
+   "Temizle" yalnızca taslaktaki seçimi kaldırır (seçim yokken pasif);
+   "Uygula" taslağı uygular: çip, sonuçlar ve sayı ancak o zaman değişir.
+   Uygula'ya basmadan kapatmak (karartma, aşağı çekme) taslağı atar. */
+function filtreTemizleDurumu(panel) {
+  const temizle = panel && panel.querySelector('[data-generic-temizle]');
+  if (temizle) temizle.disabled = !panel.querySelector('button[data-value].selected');
+}
+
+document.querySelectorAll('[data-generic-temizle]').forEach(button => {
+  const key = button.dataset.genericTemizle;
   button.addEventListener('click', event => {
     event.preventDefault();
     event.stopPropagation();
 
     const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
-    if (!wrap) return;
-
-    const originalValue = wrap._filterDraftValue ?? null;
-    filterState[key] = originalValue;
-
-    const panel = getFilterPanel(wrap);
-    if (panel) {
-      panel.querySelectorAll('button[data-value]').forEach(option => {
-        option.classList.toggle('selected', option.dataset.value === originalValue);
-      });
-    }
-
-    setChipActive(key, Boolean(originalValue), originalValue);
-    updateClearAllVisibility();
-    closeFilterDropdown(wrap);
-    delete wrap._filterDraftValue;
+    const panel = wrap && getFilterPanel(wrap);
+    if (!panel) return;
+    panel.querySelectorAll('button[data-value]')
+      .forEach(option => option.classList.remove('selected'));
+    wrap._filterTaslak = null;
+    filtreTemizleDurumu(panel);
   });
 });
 
@@ -2838,8 +2846,14 @@ document.querySelectorAll('[data-generic-apply]').forEach(button => {
     event.preventDefault();
     event.stopPropagation();
     const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
+    if (wrap && Object.prototype.hasOwnProperty.call(wrap, '_filterTaslak')) {
+      const deger = wrap._filterTaslak;
+      delete wrap._filterTaslak;
+      filterState[key] = deger;
+      setChipActive(key, Boolean(deger), deger);
+      updateClearAllVisibility();
+    }
     closeFilterDropdown(wrap);
-    if (wrap) delete wrap._filterDraftValue;
   });
 });
 
@@ -2885,14 +2899,6 @@ anaSuzgecSecenekleriniKur();
 onId('homeResultsMore', 'click', () => anasayfaSonuclariniCiz(true));
 document.addEventListener('click', (e) => { if (e.target.closest('[data-home-results-clear]')) clearAllFilters(); });
 
-const clearAllBtn = document.getElementById('clearAllFilters');
-if (clearAllBtn) {
-  clearAllBtn.addEventListener('click', event => {
-    event.preventDefault();
-    event.stopPropagation();
-    clearAllFilters();
-  });
-}
 
 // Dropdown body'ye taşındığı için klasik "panel dışı" kontrolü
 // artık panelin wrapper içinde olup olmamasına bakmadan çalışır.
@@ -3024,9 +3030,13 @@ function renderDateCalendar() {
   updateDateCalFooter();
 }
 
+/* Takvimdeki seçim taslak: çip ve sonuçlar "Uygula"ya basınca değişir.
+   Temizle yalnızca taslağı siler (seçim yokken pasif); seçim boşken
+   Uygula, uygulanmış tarih filtresini kaldırır. */
 function updateDateCalFooter() {
   const label = document.getElementById('dateCalRangeLabel');
   const applyBtn = document.getElementById('dateCalApply');
+  const clearBtn = document.getElementById('dateCalClear');
   if (!label || !applyBtn) return;
 
   if (dateCalRangeStart && dateCalRangeEnd) {
@@ -3037,8 +3047,20 @@ function updateDateCalFooter() {
     applyBtn.disabled = true;
   } else {
     label.textContent = 'Tarih aralığı seçin';
-    applyBtn.disabled = true;
+    applyBtn.disabled = !filterState.tarih;
   }
+  if (clearBtn) clearBtn.disabled = !dateCalRangeStart;
+}
+
+/* Takvim açılırken uygulanmış seçimle başlar. */
+function takvimTaslaginiYukle() {
+  const t = filterState.tarih;
+  const gun = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  dateCalRangeStart = t ? gun(t.start) : null;
+  dateCalRangeEnd = t ? gun(t.end) : null;
+  const ay = dateCalRangeStart || dateCalToday;
+  dateCalViewYear = ay.getFullYear();
+  dateCalViewMonth = ay.getMonth();
 }
 
 function resetDateRange() {
@@ -3083,12 +3105,15 @@ onId('dateCalGrid', 'click', event => {
 onId('dateCalClear', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
-  resetDateRange();
+  dateCalRangeStart = null;
+  dateCalRangeEnd = null;
+  renderDateCalendar();
 });
 
 onId('dateCalApply', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
+  if (!dateCalRangeStart && filterState.tarih) { clearFilter('tarih'); return; }
   if (!dateCalRangeStart || !dateCalRangeEnd) return;
 
   const label = dateCalFormat(dateCalRangeStart) + ' – ' + dateCalFormat(dateCalRangeEnd);

@@ -274,7 +274,7 @@
             </button>
           </div>
           <div class="generic-filter-options"></div>
-          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="siralama">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="siralama">Uygula</button></div></div>
+          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="siralama" disabled>Temizle</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="siralama">Uygula</button></div></div>
         </div>
       </div>
 
@@ -301,7 +301,7 @@
           <div class="date-cal-footer">
             <div class="date-cal-range-label" id="dateCalRangeLabel">Tarih aralığı seçin</div>
             <div class="date-cal-actions">
-              <button type="button" class="date-cal-btn date-cal-btn-ghost" id="dateCalClear">Temizle</button>
+              <button type="button" class="date-cal-btn date-cal-btn-ghost" id="dateCalClear" disabled>Temizle</button>
               <button type="button" class="date-cal-btn date-cal-btn-primary" id="dateCalApply">Uygula</button>
             </div>
           </div>
@@ -320,7 +320,7 @@
             </button>
           </div>
           <div class="generic-filter-options"></div>
-          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="sure">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="sure">Uygula</button></div></div>
+          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="sure" disabled>Temizle</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="sure">Uygula</button></div></div>
         </div>
       </div>
 
@@ -335,7 +335,7 @@
             </button>
           </div>
           <div class="generic-filter-options"></div>
-          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="bolge">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="bolge">Uygula</button></div></div>
+          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="bolge" disabled>Temizle</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="bolge">Uygula</button></div></div>
         </div>
       </div>
 
@@ -350,7 +350,7 @@
             </button>
           </div>
           <div class="generic-filter-options"></div>
-          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="tema">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tema">Uygula</button></div></div>
+          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="tema" disabled>Temizle</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tema">Uygula</button></div></div>
         </div>
       </div>
 
@@ -365,11 +365,10 @@
             </button>
           </div>
           <div class="generic-filter-options"></div>
-          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="tutar">İptal et</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tutar">Uygula</button></div></div>
+          <div class="generic-filter-footer"><div class="generic-filter-actions"><button type="button" class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="tutar" disabled>Temizle</button><button type="button" class="generic-filter-apply date-cal-btn date-cal-btn-primary" data-generic-apply="tutar">Uygula</button></div></div>
         </div>
       </div>
 
-      <button class="filter-clear-all" id="clearAllFilters" type="button">Filtreleri temizle</button>
     </div>
     <!-- Süzgeç seçiliyken gerçek sonuç sayısı (app.js); boşken gizli. -->
     <span class="filter-result-count" id="homeResultCount" aria-live="polite" hidden></span>
@@ -378,16 +377,16 @@
   <!-- Anasayfa süzgeçlerinin sonuçları: aynı sayfada, süzgeç çubuğunun
        hemen altında. Süzgeç seçiliyken şeritlerin yerini alıyor; liste
        sayfalarıyla aynı liste motoru ve kart (MolaVeri.liste, poiCardMarkup). -->
-  <section class="home-results" id="homeResults" aria-label="Süzgeç sonuçları" hidden>
+  <section class="home-results" id="homeResults" aria-label="Filtre sonuçları" hidden>
     <div class="home-results-head">
       <strong id="homeResultsSummary"></strong>
-      <button type="button" class="home-results-clear" data-home-results-clear>Süzgeçleri temizle</button>
+      <button type="button" class="home-results-clear" data-home-results-clear>Filtreleri temizle</button>
     </div>
     <div class="home-results-grid" id="homeResultsGrid"></div>
     <div class="home-results-empty" id="homeResultsEmpty" hidden>
       <strong>Bu seçimlere uyan sonuç yok</strong>
-      <p>Bir süzgeci kaldırmayı ya da tarih aralığını genişletmeyi dene.</p>
-      <button type="button" class="btn-primary" data-home-results-clear>Süzgeçleri temizle</button>
+      <p>Bir filtreyi kaldırmayı ya da tarih aralığını genişletmeyi dene.</p>
+      <button type="button" class="btn-primary" data-home-results-clear>Filtreleri temizle</button>
     </div>
     <button type="button" class="home-results-more" id="homeResultsMore" hidden>Daha fazla göster</button>
   </section>

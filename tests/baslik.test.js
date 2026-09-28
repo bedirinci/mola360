@@ -489,3 +489,73 @@ describe('"Ne zaman, kaç kişi?" takvimi', () => {
     expect(css).toMatch(/\.lst-plan-grup \{[^}]*min-width: 0;/);
   });
 });
+
+describe('anasayfa filtreleri: seçim "Uygula" ile', () => {
+  const sayfa = oku('index.html');
+  const fonk = (ad) => app.match(new RegExp('function ' + ad + '\\([^)]*\\) \\{[\\s\\S]*?\\n\\}'))[0];
+  const dinleyici = (bas, son = '\n});') => { const i = app.indexOf(bas); return app.slice(i, app.indexOf(son, i)); };
+
+  it('şeridin sonundaki "Filtreleri temizle" yok; sonuçlardaki düğmenin adı "Filtreleri temizle"', () => {
+    expect(sayfa).not.toContain('clearAllFilters');
+    expect(app).not.toContain("getElementById('clearAllFilters')");
+    expect(stil).not.toContain('.filter-clear-all');
+    expect(sayfa.replace(/<!--[\s\S]*?-->/g, '')).not.toMatch(/süzgeç/i);
+    expect(sayfa.match(/data-home-results-clear>Filtreleri temizle</g)).toHaveLength(2);
+  });
+
+  it('mobil çekmecede dokunulan seçenek taslak; filtre ve çip değişmiyor', () => {
+    const secim = dinleyici("    if (isMobileViewport() && panel.classList.contains('generic-filter-panel')) {", '\n    }\n');
+    expect(secim).toContain('wrap._filterTaslak = secili ? null : value;');
+    expect(secim).toContain('return;');
+    expect(secim).not.toContain('filterState');
+    expect(secim).not.toContain('setChipActive');
+  });
+
+  it('"Uygula" taslağı uyguluyor; çekmece her açılışta uygulanmış seçimle başlıyor', () => {
+    const uygula = dinleyici("document.querySelectorAll('[data-generic-apply]')");
+    expect(uygula).toContain('filterState[key] = deger;');
+    expect(uygula).toContain('setChipActive(key, Boolean(deger), deger);');
+    const ac = fonk('openFilterDropdown');
+    expect(ac).toContain('delete wrap._filterTaslak;');
+    expect(ac).toContain("button.dataset.value === filterState[wrap.dataset.dropdown]");
+    expect(ac).toContain('takvimTaslaginiYukle();');
+  });
+
+  it('jenerik çekmecelerde "İptal et" yerine Temizle: yalnızca taslağı siliyor', () => {
+    expect(sayfa).not.toContain('İptal et');
+    expect(sayfa.match(/class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="[a-z]+" disabled>Temizle</g)).toHaveLength(5);
+    const temizle = dinleyici("document.querySelectorAll('[data-generic-temizle]')");
+    expect(temizle).toContain('wrap._filterTaslak = null;');
+    expect(temizle).not.toContain('filterState');
+    expect(temizle).not.toContain('closeFilterDropdown');
+  });
+
+  it('takvimde Temizle yalnızca taslağı siliyor; seçim boşken Uygula tarih filtresini kaldırıyor', () => {
+    const temizle = dinleyici("onId('dateCalClear'");
+    expect(temizle).not.toContain('filterState');
+    expect(temizle).not.toContain('resetDateRange');
+    expect(dinleyici("onId('dateCalApply'")).toContain("if (!dateCalRangeStart && filterState.tarih) { clearFilter('tarih'); return; }");
+  });
+
+  it('takvim altı: Temizle seçim yokken pasif; Uygula tam aralıkta ya da uygulanmış filtre kaldırılırken etkin', () => {
+    const calistir = (bas, bit, tarih) => {
+      const el = { dateCalRangeLabel: { textContent: '' }, dateCalApply: { disabled: null }, dateCalClear: { disabled: null } };
+      new Function('document', 'filterState', 'dateCalRangeStart', 'dateCalRangeEnd', 'dateCalFormat',
+        fonk('updateDateCalFooter') + '; updateDateCalFooter();')(
+        { getElementById: (id) => el[id] }, { tarih }, bas, bit, (d) => d.getDate() + ' Eki');
+      return { temizle: el.dateCalClear.disabled, uygula: el.dateCalApply.disabled, etiket: el.dateCalRangeLabel.textContent };
+    };
+    const gun = (d) => new Date(2026, 9, d);
+    expect(calistir(null, null, null)).toEqual({ temizle: true, uygula: true, etiket: 'Tarih aralığı seçin' });
+    expect(calistir(gun(3), null, null)).toEqual({ temizle: false, uygula: true, etiket: '3 Eki – bitiş tarihi seçin' });
+    expect(calistir(gun(3), gun(6), null)).toEqual({ temizle: false, uygula: false, etiket: '3 Eki – 6 Eki' });
+    expect(calistir(null, null, { start: '2026-10-03', end: '2026-10-06' })).toEqual({ temizle: true, uygula: false, etiket: 'Tarih aralığı seçin' });
+  });
+
+  it('Temizle düğmeleri süzgeç çekmecesindeki gibi: beyaz, lacivert çerçeve, boşken grimsi', () => {
+    const css = yorumsuz(stil);
+    expect(css).toMatch(/\.date-cal-btn-ghost \{[^}]*background: #fff;[^}]*border: 1\.5px solid var\(--navy-deep\);/);
+    expect(css).toMatch(/\.date-cal-btn-ghost:disabled \{[^}]*background: #F6F7FA;[^}]*color: #A3A9BA;/);
+    expect(sayfa).toContain('id="dateCalClear" disabled>Temizle<');
+  });
+});

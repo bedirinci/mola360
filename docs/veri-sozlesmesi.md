@@ -483,7 +483,13 @@ yerlerini gerçek ürünler alacak.
   çubuğunun altında. Elle yazılmış "248 sonuç" kaldırıldı; sayı yalnızca
   süzgeç seçiliyken ve gerçek. Tarih aralığı sabit tarihli ürünü
   (tur kalkışı, etkinlik temsili) eliyor; her gün satılan ürün her
-  aralığa uyuyor.
+  aralığa uyuyor. Mobil çekmecede seçim taslak: çip, sonuçlar ve sayı
+  yalnızca "Uygula" ile değişiyor; Temizle yalnızca taslağı siliyor
+  (seçim yokken grimsi), Uygula'sız kapatmak taslağı atıyor, çekmece
+  her açılışta uygulanmış seçimle başlıyor. Masaüstünde seçenek
+  dokununca uygulanıyor (panelde Uygula yok); tarih her yerde Uygula
+  ile. Temizlemek: çipin çarpısı ya da sonuçların başlığındaki
+  "Filtreleri temizle" (şeridin sonundaki düğme kaldırıldı).
 - **Paket tur sözleşmesi:** konaklamalı turlarda (`rezPaketTurMu`)
   ödeme adımında üçüncü belge olarak, rezervasyonun bilgileriyle.
 - **Açılış ekranı** yalnızca ilk girişte (`mola360.acilisGoruldu`).

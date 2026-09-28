@@ -2361,11 +2361,6 @@ ul {
 .filter-chip.filter-chip-active .filter-chip-chevron { display: none; }
 .filter-chip:hover { border-color: #C9CEDA; }
 .filter-chip.filter-chip-active:hover { background: var(--navy-2); border-color: var(--navy-2); }
-.filter-clear-all {
-  display: none; align-items: center; flex-shrink: 0; padding: 9px 4px;
-  font-size: 13px; font-weight: 600; color: var(--green-dark); white-space: nowrap;
-}
-.filter-clear-all.visible { display: inline-flex; }
 .filter-dropdown-wrap {
   position: relative;
   flex-shrink: 0;
@@ -2470,16 +2465,8 @@ ul {
   padding: 9px 0;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
-}
-.generic-filter-actions .date-cal-btn-ghost {
-  color: var(--navy);
-  font-weight: 500;
-  border: 1px solid var(--border);
-}
-.generic-filter-actions .date-cal-btn-ghost:hover {
-  background: var(--bg);
 }
 .generic-filter-actions .date-cal-btn-primary {
   background: var(--green);
@@ -2689,12 +2676,24 @@ ul {
   font-weight: 600;
   text-align: center;
 }
+/* Temizle: filtre çekmecesindeki gibi yanındaki "Uygula"nın kalıbında,
+   beyaz ve lacivert çerçeveli; temizlenecek bir şey yokken grimsi. */
 .date-cal-btn-ghost {
-  color: var(--text-muted);
-  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--navy-deep);
+  border: 1.5px solid var(--navy-deep);
+  font-weight: 600;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
 }
-.date-cal-btn-ghost:hover {
-  background: var(--bg);
+.date-cal-btn-ghost:not(:disabled):hover,
+.date-cal-btn-ghost:not(:disabled):active {
+  background: #F1F3F8;
+}
+.date-cal-btn-ghost:disabled {
+  border-color: var(--border);
+  background: #F6F7FA;
+  color: #A3A9BA;
+  cursor: not-allowed;
 }
 .date-cal-btn-primary {
   background: var(--green);
@@ -4673,11 +4672,6 @@ ul {
     font-size: 13px !important;
     line-height: 1.35 !important;
     font-weight: 500 !important;
-  }
-
-  .generic-filter-actions .generic-filter-cancel.date-cal-btn-ghost {
-    color: var(--navy) !important;
-    font-weight: 600 !important;
   }
 
   /* Çekmecenin sürüklenmesi sırasında parmak hareketini JS yönetir.
