@@ -2628,7 +2628,6 @@ function openFilterDropdown(wrap) {
     panel.querySelectorAll('button[data-value]').forEach(button => {
       button.classList.toggle('selected', button.dataset.value === filterState[wrap.dataset.dropdown]);
     });
-    filtreTemizleDurumu(panel);
   }
 
   /* The panel is portalled once and stays under <body>. It never becomes a
@@ -2784,7 +2783,6 @@ document.querySelectorAll('.filter-dropdown-wrap').forEach(wrap => {
         .forEach(button => button.classList.remove('selected'));
       if (!secili) option.classList.add('selected');
       wrap._filterTaslak = secili ? null : value;
-      filtreTemizleDurumu(panel);
       return;
     }
 
@@ -2816,27 +2814,19 @@ document.querySelectorAll('[data-generic-close]').forEach(button => {
 });
 
 /* Jenerik filtrelerde seçim çekmece açıkken taslak (wrap._filterTaslak).
-   "Temizle" yalnızca taslaktaki seçimi kaldırır (seçim yokken pasif);
-   "Uygula" taslağı uygular: çip, sonuçlar ve sayı ancak o zaman değişir.
-   Uygula'ya basmadan kapatmak (karartma, aşağı çekme) taslağı atar. */
-function filtreTemizleDurumu(panel) {
-  const temizle = panel && panel.querySelector('[data-generic-temizle]');
-  if (temizle) temizle.disabled = !panel.querySelector('button[data-value].selected');
-}
-
-document.querySelectorAll('[data-generic-temizle]').forEach(button => {
-  const key = button.dataset.genericTemizle;
+   "İptal et" taslağı atar, hiçbir şey değişmez; "Uygula" taslağı uygular:
+   çip, sonuçlar ve sayı ancak o zaman değişir. Uygula'ya basmadan
+   kapatmak (karartma, aşağı çekme) da taslağı atar. */
+document.querySelectorAll('[data-generic-cancel]').forEach(button => {
+  const key = button.dataset.genericCancel;
   button.addEventListener('click', event => {
     event.preventDefault();
     event.stopPropagation();
 
     const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
-    const panel = wrap && getFilterPanel(wrap);
-    if (!panel) return;
-    panel.querySelectorAll('button[data-value]')
-      .forEach(option => option.classList.remove('selected'));
-    wrap._filterTaslak = null;
-    filtreTemizleDurumu(panel);
+    if (!wrap) return;
+    delete wrap._filterTaslak;
+    closeFilterDropdown(wrap);
   });
 });
 

@@ -521,13 +521,13 @@ describe('anasayfa filtreleri: seçim "Uygula" ile', () => {
     expect(ac).toContain('takvimTaslaginiYukle();');
   });
 
-  it('jenerik çekmecelerde "İptal et" yerine Temizle: yalnızca taslağı siliyor', () => {
-    expect(sayfa).not.toContain('İptal et');
-    expect(sayfa.match(/class="generic-filter-clear date-cal-btn date-cal-btn-ghost" data-generic-temizle="[a-z]+" disabled>Temizle</g)).toHaveLength(5);
-    const temizle = dinleyici("document.querySelectorAll('[data-generic-temizle]')");
-    expect(temizle).toContain('wrap._filterTaslak = null;');
-    expect(temizle).not.toContain('filterState');
-    expect(temizle).not.toContain('closeFilterDropdown');
+  it('jenerik çekmecelerde "İptal et" taslağı atıp kapatıyor; filtre değişmiyor', () => {
+    expect(sayfa.match(/class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="[a-z]+">İptal et</g)).toHaveLength(5);
+    const iptal = dinleyici("document.querySelectorAll('[data-generic-cancel]')");
+    expect(iptal).toContain('delete wrap._filterTaslak;');
+    expect(iptal).toContain('closeFilterDropdown(wrap);');
+    expect(iptal).not.toContain('filterState');
+    expect(iptal).not.toContain('setChipActive');
   });
 
   it('takvimde Temizle yalnızca taslağı siliyor; seçim boşken Uygula tarih filtresini kaldırıyor', () => {
@@ -552,7 +552,7 @@ describe('anasayfa filtreleri: seçim "Uygula" ile', () => {
     expect(calistir(null, null, { start: '2026-10-03', end: '2026-10-06' })).toEqual({ temizle: true, uygula: false, etiket: 'Tarih aralığı seçin' });
   });
 
-  it('Temizle düğmeleri süzgeç çekmecesindeki gibi: beyaz, lacivert çerçeve, boşken grimsi', () => {
+  it('takvimdeki Temizle süzgeç çekmecesindeki gibi: beyaz, lacivert çerçeve, boşken grimsi', () => {
     const css = yorumsuz(stil);
     expect(css).toMatch(/\.date-cal-btn-ghost \{[^}]*background: #fff;[^}]*border: 1\.5px solid var\(--navy-deep\);/);
     expect(css).toMatch(/\.date-cal-btn-ghost:disabled \{[^}]*background: #F6F7FA;[^}]*color: #A3A9BA;/);

@@ -484,9 +484,9 @@ yerlerini gerçek ürünler alacak.
   süzgeç seçiliyken ve gerçek. Tarih aralığı sabit tarihli ürünü
   (tur kalkışı, etkinlik temsili) eliyor; her gün satılan ürün her
   aralığa uyuyor. Mobil çekmecede seçim taslak: çip, sonuçlar ve sayı
-  yalnızca "Uygula" ile değişiyor; Temizle yalnızca taslağı siliyor
-  (seçim yokken grimsi), Uygula'sız kapatmak taslağı atıyor, çekmece
-  her açılışta uygulanmış seçimle başlıyor. Masaüstünde seçenek
+  yalnızca "Uygula" ile değişiyor; "İptal et" ve Uygula'sız kapatmak
+  taslağı atıyor, çekmece her açılışta uygulanmış seçimle başlıyor.
+  Takvimde Temizle yalnızca taslağı siliyor (seçim yokken grimsi). Masaüstünde seçenek
   dokununca uygulanıyor (panelde Uygula yok); tarih her yerde Uygula
   ile. Temizlemek: çipin çarpısı ya da sonuçların başlığındaki
   "Filtreleri temizle" (şeridin sonundaki düğme kaldırıldı).
