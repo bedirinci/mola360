@@ -3832,7 +3832,7 @@ ul {
     position:relative; display:flex; align-items:center; gap:10px;
     min-height:46px; padding:9px 10px;
     border-radius:12px; color:var(--text);
-    font-size:12px; font-weight:700;
+    font-size:13px; font-weight:700;
     background:#fff; border:1px solid var(--border);
     transition:background .15s ease,color .15s ease,transform .15s ease;
   }
@@ -3909,7 +3909,7 @@ ul {
   .desktop-sidebar .sidebar-link .icon { width:15px; height:15px; padding:5px; box-sizing:content-box; border-radius:8px; flex-shrink:0; color:var(--green-dark); background:rgba(140,198,63,.15); }
   .desktop-sidebar .sidebar-more-item { display:none !important; }
   .desktop-sidebar .sidebar-section.is-expanded .sidebar-more-item { display:flex !important; }
-  .desktop-sidebar .sidebar-more-toggle { width:100%; display:flex; align-items:center; justify-content:center; gap:5px; margin-top:5px; padding:6px; color:var(--text-faint); border-radius:9px; font-size:10.5px; font-weight:700; }
+  .desktop-sidebar .sidebar-more-toggle { width:100%; display:flex; align-items:center; justify-content:center; gap:5px; margin-top:5px; padding:6px; color:var(--text-faint); border-radius:9px; font-size:11.5px; font-weight:700; }
   .desktop-sidebar .sidebar-more-toggle:hover { color:var(--green-dark); background:#F5F6FA; }
   .desktop-sidebar .sidebar-more-toggle .icon { width:12px; height:12px; transition:transform .2s ease; }
   .desktop-sidebar .sidebar-section.is-expanded .sidebar-more-toggle .icon { transform:rotate(180deg); }
@@ -3922,8 +3922,8 @@ ul {
   .desktop-sidebar .sidebar-route-thumb-star { color:var(--green-dark); background:rgba(140,198,63,.16); }
   .desktop-sidebar .sidebar-route-thumb-star .icon { width:19px; height:19px; }
   .desktop-sidebar .sidebar-route-info { display:flex; flex-direction:column; min-width:0; }
-  .desktop-sidebar .sidebar-route-info strong { color:var(--text); font-size:12px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .desktop-sidebar .sidebar-route-info span { color:var(--text-muted); font-size:10px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .desktop-sidebar .sidebar-route-info strong { color:var(--text); font-size:13px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .desktop-sidebar .sidebar-route-info span { color:var(--text-muted); font-size:11px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   .desktop-sidebar .sidebar-recent-list { display:flex; flex-direction:column; gap:7px; }
   .desktop-sidebar .sidebar-recent-card { display:flex; gap:8px; align-items:stretch; padding:7px; border:1px solid var(--border); border-radius:12px; background:#fff; }
@@ -3941,7 +3941,7 @@ ul {
 
   .desktop-sidebar .sidebar-section-help { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .desktop-sidebar .sidebar-section-help h4 { grid-column:1/-1; margin-bottom:1px; }
-  .desktop-sidebar .sidebar-section-help .sidebar-link { min-height:38px; display:flex; align-items:center; gap:7px; padding:6px 7px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:11px; font-weight:700; }
+  .desktop-sidebar .sidebar-section-help .sidebar-link { min-height:38px; display:flex; align-items:center; gap:7px; padding:6px 7px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:12px; font-weight:700; }
   .desktop-sidebar .sidebar-section-help .sidebar-link:hover { background:#F8F9FC; }
 
   .desktop-sidebar .drawer-social-footer { padding:2px 2px 4px; text-align:center; }
@@ -4061,7 +4061,7 @@ ul {
     min-height: 48px;
     padding: 9px 10px;
     border-radius: 12px;
-    font-size: 13px;
+    font-size: 14px;
     background: #fff;
     border: 1px solid var(--border);
   }
@@ -4098,7 +4098,9 @@ ul {
   .mobile-drawer .sidebar-route-list { gap: 6px; }
   .mobile-drawer .sidebar-route-list.sidebar-route-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, …): uzun rota adı sütunu genişletmesin, "…" ile kısalsın
+       (dar ekranda menü yatay taşıyordu). */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px 8px;
   }
   .mobile-drawer .sidebar-route-grid .sidebar-route {
@@ -4116,14 +4118,14 @@ ul {
     min-width: 0;
   }
   .mobile-drawer .sidebar-route-grid .sidebar-route-info strong {
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
   }
   .mobile-drawer .sidebar-route-grid .sidebar-route-info span {
-    font-size: 9.5px;
+    font-size: 10.5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4142,8 +4144,8 @@ ul {
     height: 46px;
     border-radius: 9px;
   }
-  .mobile-drawer .sidebar-route-info strong { font-size: 12px; }
-  .mobile-drawer .sidebar-route-info span { font-size: 10.5px; }
+  .mobile-drawer .sidebar-route-info strong { font-size: 13px; }
+  .mobile-drawer .sidebar-route-info span { font-size: 11.5px; }
 
   /* Son Görüntülenenler: poi-card'ın yatay/ince versiyonu */
   .mobile-drawer .sidebar-recent-list { display:flex; flex-direction:column; gap:8px; }
@@ -4236,7 +4238,7 @@ ul {
   .mobile-drawer .sidebar-more-toggle {
     margin-top: 5px;
     padding: 7px;
-    font-size: 10.5px;
+    font-size: 11.5px;
   }
 
   /* Yardım / destek: iki kolonlu düzen */
@@ -4253,7 +4255,7 @@ ul {
     border: 1px solid #e7e9f1;
     background: #fff;
     border-radius: 11px;
-    font-size: 11.5px;
+    font-size: 12.5px;
   }
   .mobile-drawer .sidebar-section-help h4 {
     grid-column: 1 / -1;
@@ -4390,7 +4392,10 @@ ul {
     overflow-y: auto;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    /* "none": en üstte (ve en altta) aşağı çekince iOS'un esnemesi
+       yok; menü başlığın altından ayrılıp arada boş şerit bırakmıyor.
+       "contain" yalnızca sayfaya taşmayı engelliyordu, esnemeyi değil. */
+    overscroll-behavior: none;
   }
 
   /* Overlay de header'ın altında başlar; ana header'ı kesinlikle örtmez. */
@@ -5868,7 +5873,7 @@ ul {
   border-radius: 12px;
   background: #fff;
   color: var(--text);
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 800;
   text-decoration: none;
   list-style: none;
@@ -5907,13 +5912,13 @@ ul {
 }
 .smt-level-1 > summary {
   display: flex; align-items: center;
-  padding: 8px 6px; font-size: 13px; font-weight: 700; color: var(--text);
+  padding: 8px 6px; font-size: 14px; font-weight: 700; color: var(--text);
 }
 .smt-level-1 .smt-body { margin-left: 6px; }
 .smt-link {
   padding: 8px 6px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: none;
   border-radius: 8px;
 }
@@ -5921,9 +5926,9 @@ ul {
 .smt-link[aria-current="page"] { color: var(--green-dark); font-weight: 700; }
 .smt-all { color: var(--green-dark); font-weight: 700; }
 .desktop-sidebar .site-menu-tree { gap: 6px; }
-.desktop-sidebar .smt-top { min-height: 42px; padding: 7px 8px; gap: 7px; border-color: var(--border); border-radius: 11px; font-size: 12px; }
+.desktop-sidebar .smt-top { min-height: 42px; padding: 7px 8px; gap: 7px; border-color: var(--border); border-radius: 11px; font-size: 13px; }
 .desktop-sidebar .smt-top .icon { width: 15px; height: 15px; }
-.desktop-sidebar .smt-link, .desktop-sidebar .smt-level-1 > summary { font-size: 12px; padding: 7px 6px; }
+.desktop-sidebar .smt-link, .desktop-sidebar .smt-level-1 > summary { font-size: 13px; padding: 7px 6px; }
 
 /* Yardım & Destek: taksonomiden gelen satırlar (Blog360, Kurumsal)
    bölümün ızgarasına doğrudan katılıyor. Dil/para düğmesi bağlarla aynı. */
@@ -5932,8 +5937,8 @@ ul {
   width: 100%; font: inherit; text-align: left; cursor: pointer;
   -webkit-appearance: none; appearance: none;
 }
-.mobile-drawer .sidebar-section-help button.sidebar-link { font-size: 13px; font-weight: 700; }
-.desktop-sidebar .sidebar-section-help button.sidebar-link { font-size: 11px; font-weight: 700; }
+.mobile-drawer .sidebar-section-help button.sidebar-link { font-size: 12.5px; font-weight: 700; }
+.desktop-sidebar .sidebar-section-help button.sidebar-link { font-size: 12px; font-weight: 700; }
 .sidebar-link[aria-current="page"] { border-color: rgba(140,198,63,.55) !important; }
 
 /* Alt satır: giriş (misafir) / çıkış (üye) + WhatsApp, Facebook, Instagram. */

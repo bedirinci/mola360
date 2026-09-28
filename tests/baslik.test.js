@@ -327,3 +327,22 @@ describe('kart: kampanya satırı', () => {
     expect(app).toContain('${it.campaign ? `<p class="poi-campaign"><span class="icon">${svg(\'percent\')}</span>${it.campaign}</p>` : \'\'}');
   });
 });
+
+describe('mobil menü', () => {
+  const css = yorumsuz(stil);
+
+  it('en üstte aşağı çekince esnemiyor (iOS)', () => {
+    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll \{[^}]*overscroll-behavior: none;/);
+  });
+
+  it('dil/para düğmesi yanındaki yardım bağlarıyla aynı boyda', () => {
+    const mobilBag = css.match(/\.mobile-drawer \.sidebar-section-help \.sidebar-link \{[^}]*font-size: ([\d.]+px)/)[1];
+    expect(css).toContain('.mobile-drawer .sidebar-section-help button.sidebar-link { font-size: ' + mobilBag + ';');
+    const masaBag = css.match(/\.desktop-sidebar \.sidebar-section-help \.sidebar-link \{[^}]*font-size:([\d.]+px)/)[1];
+    expect(css).toContain('.desktop-sidebar .sidebar-section-help button.sidebar-link { font-size: ' + masaBag + ';');
+  });
+
+  it('uzun rota adı ızgarayı taşırmıyor', () => {
+    expect(css).toMatch(/\.mobile-drawer \.sidebar-route-list\.sidebar-route-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+  });
+});
