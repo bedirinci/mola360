@@ -58,24 +58,49 @@ describe('masaüstü başlık', () => {
     expect(blok).toContain('supportOnline(');
   });
 
-  it('misafirde yalnızca giriş düğmesi; profil ve zil üyede', () => {
+  it('masaüstünde misafirde yalnızca giriş düğmesi; profil üyede, zil bildirim varsa', () => {
     const css = yorumsuz(stil);
     expect(css).toMatch(/body:not\(\.is-uye\) \.header-profile-btn \{ display: none; \}/);
-    expect(css).toMatch(/body:not\(\.is-uye\) \.header-notif-btn:not\(\.has-notif\) \{ display: none; \}/);
+    expect(css).toContain('@media (min-width: 681px) {\n  body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }\n}');
     expect(css).toContain('body.is-uye #headerRegisterBtn { display: none; }');
-    /* Misafirde zil, gösterecek bildirimi varsa görünüyor. */
+    /* Masaüstünde misafirde zil, gösterecek bildirimi varsa görünüyor. */
     expect(app).toContain("zil.classList.toggle('has-notif', notifications.length > 0)");
     /* Giriş düğmesi dar ekranda kısalıyor: "/ Üye Ol" ayrı parçada. */
     expect(baslik).toContain('Giriş Yap<span class="header-register-long"> / Üye Ol</span>');
-    expect(css).toContain('@media (max-width: 680px) {\n  .header-right { gap: 6px; }\n  .header-register-long { display: none; }');
+  });
+
+  it('mobil başlıkta giriş düğmesi yok; yerinde zil (misafirde de)', () => {
+    const css = yorumsuz(stil);
+    expect(css).toContain('@media (max-width: 680px) {\n  .header-right { gap: 6px; }\n  .header-actions { display: none; }');
+    /* Zili misafirde gizleyen kural yalnızca masaüstünde. */
+    expect(css.match(/body:not\(\.is-uye\) \.header-notif-btn:not\(\.has-notif\)/g)).toHaveLength(1);
+  });
+
+  it('misafirin boş bildirim sayfasında giriş çağrısı; sayfa kapanıp giriş açılıyor', () => {
+    const bos = app.match(/function notifEmptyMarkup\(\)\{[\s\S]*?\n\}/)[0];
+    const markup = (bildirimler, uye) => new Function('notifications', 'notifFilter', 'document', 'notifIconSvg',
+      bos + '; return notifEmptyMarkup();')(bildirimler, 'all', { body: { classList: { contains: () => uye } } }, () => '');
+    expect(markup([], false)).toContain('Giriş yapınca rezervasyon, bilet ve kampanya bildirimlerin burada görünür.');
+    expect(markup([], false)).toContain('class="btn-primary notif-empty-giris"');
+    expect(markup([], true)).not.toContain('notif-empty-giris');
+    expect(markup([{ id: 1 }], false)).not.toContain('notif-empty-giris');
+    const liste = app.slice(app.indexOf("notifListEl.addEventListener('click'"), app.indexOf("const dismissBtn = e.target.closest('[data-notif-dismiss]');"));
+    expect(liste).toContain('closeNotifPanel();');
+    expect(liste).toContain("openAuthModal('login');");
   });
 
   it('bozuk mobil düğme seçicisi düzeltildi', () => {
     expect(stil).not.toContain('.header-actions  .header-actions .btn-primary');
   });
 
-  it('mobil anasayfa başlığında WhatsApp düğmesi', () => {
+  it('mobil anasayfa başlığında WhatsApp: arka plansız, yeşil balon ve beyaz ahize', () => {
     expect(baslik).toMatch(/class="header-wa-btn" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek"/);
+    const wa = baslik.match(/<a href="#" class="header-wa-btn"[\s\S]*?<\/a>/)[0];
+    expect(wa).toContain('<path fill="#25D366"');
+    expect(wa).toContain('<path fill="#fff"');
+    const kural = yorumsuz(stil).match(/@media \(max-width: 680px\) \{\n  \.header-right[\s\S]*?\n\}/)[0];
+    expect(kural).toMatch(/\.header-wa-btn \{[^}]*width: 36px; height: 36px;\s*\}/);
+    expect(kural).not.toMatch(/\.header-wa-btn \{[^}]*background/);
   });
 });
 

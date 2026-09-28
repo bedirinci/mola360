@@ -829,6 +829,7 @@ ul {
   line-height: 1.45;
   color: var(--text-muted);
 }
+.notif-empty-giris { margin-top: 10px; padding: 11px 20px; }
 /* ---- masaüstü/tablet: header'a bitişik açılır panel ---- */
 @media (min-width: 681px) {
   .notif-panel {
@@ -6165,11 +6166,14 @@ body.is-uye #headerRegisterBtn { display: none; }
    Masaüstü: [menü][logo] [arama] [TR · ₺][Yardım][♡][zil][Giriş | avatar]
    Misafirde yalnızca giriş düğmesi; profil (avatar) ve zil üyede. Zil
    misafirde yalnızca gösterecek bildirim varsa (.has-notif, app.js).
-   Mobil anasayfa: [logo] … [WhatsApp][Giriş | zil][menü]. Dil/para ve
-   Yardım mobilde menünün içinde.
+   Mobil anasayfa: [logo] … [WhatsApp][zil][menü]; zil misafirde de var,
+   giriş düğmesi başlıkta yok (menüdeki kartta ve menünün altında).
+   Dil/para ve Yardım mobilde menünün içinde.
    ===================================================== */
 .header-pref-btn, .header-help, .header-wa-btn { display: none; }
-body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
+@media (min-width: 681px) {
+  body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
+}
 @media (min-width: 681px) {
   .header-right { gap: 6px; }
   .header-pref-btn, .header-help-btn {
@@ -6236,14 +6240,12 @@ body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
 }
 @media (max-width: 680px) {
   .header-right { gap: 6px; }
-  .header-register-long { display: none; }
-  .header-actions .btn-primary { padding: 8px 15px; font-size: 13px; }
+  .header-actions { display: none; }
   .header-wa-btn {
     display: flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%;
-    color: #25D366; background: rgba(255,255,255,.1);
+    width: 36px; height: 36px;
   }
-  .header-wa-btn svg { width: 21px; height: 21px; }
+  .header-wa-btn svg { width: 27px; height: 27px; }
 }
 
 /* ---- mobil sayfa çubuğu (anasayfa dışı) ----

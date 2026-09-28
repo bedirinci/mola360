@@ -1905,14 +1905,20 @@ function notifItemMarkup(item){
   </div>`;
 }
 
+/* Hiç bildirimi olmayan misafire (mobilde zil artık her zaman başlıkta)
+   filtre önerisi yerine giriş çağrısı. */
 function notifEmptyMarkup(){
-  const text = notifFilter === 'unread'
-    ? 'Okunmamış bildirimin kalmadı. Yeni bir şey olduğunda burada göreceksin.'
-    : 'Bu filtrede gösterilecek bildirim yok. Başka bir filtre deneyebilirsin.';
+  const misafirBos = !notifications.length && !document.body.classList.contains('is-uye');
+  const text = misafirBos
+    ? 'Giriş yapınca rezervasyon, bilet ve kampanya bildirimlerin burada görünür.'
+    : notifFilter === 'unread'
+      ? 'Okunmamış bildirimin kalmadı. Yeni bir şey olduğunda burada göreceksin.'
+      : 'Bu filtrede gösterilecek bildirim yok. Başka bir filtre deneyebilirsin.';
   return `<div class="notif-empty">
     <span class="notif-empty-icon">${notifIconSvg('<path d="M18 8a6 6 0 0 0-9.3-5"></path><path d="M6.2 6.3A6 6 0 0 0 6 8c0 7-3 9-3 9h13"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path><line x1="3" y1="3" x2="21" y2="21"></line>')}</span>
     <p class="notif-empty-title">Bildirim yok</p>
     <p class="notif-empty-text">${text}</p>
+    ${misafirBos ? '<button type="button" class="btn-primary notif-empty-giris">Giriş yap / Üye ol</button>' : ''}
   </div>`;
 }
 
@@ -2053,6 +2059,13 @@ notifFiltersEl.addEventListener('click', (e)=>{
   notifListEl.scrollTop = 0;
 });
 notifListEl.addEventListener('click', (e)=>{
+  /* Misafirin boş bildirim sayfasındaki giriş çağrısı (panel tıklamaları
+     document'a iletmiyor): sayfa kapanıp giriş penceresi açılıyor. */
+  if (e.target.closest('.notif-empty-giris')) {
+    closeNotifPanel();
+    if (typeof openAuthModal === 'function') openAuthModal('login');
+    return;
+  }
   const dismissBtn = e.target.closest('[data-notif-dismiss]');
   if (dismissBtn){
     e.stopPropagation();

@@ -404,8 +404,10 @@ yerlerini gerçek ürünler alacak.
   (favorideki ürünün indirimi) görünüyor. Yardım menüsü: WhatsApp canlı
   destek (saatleri ve şu anki durumu `CONTACT`'tan), Yardım Merkezi, SSS,
   İptal ve İade, Bize Ulaşın. Dar ekranda önce yazılar kısalıyor.
-- **Mobil anasayfa başlığı:** WhatsApp düğmesi; giriş düğmesi küçüldü
-  (bozuk bir seçici yüzünden mobil ölçüsü hiç uygulanmıyordu).
+- **Mobil anasayfa başlığı:** `[logo] … [WhatsApp][zil][menü]`. WhatsApp
+  arka plansız (yeşil balon, beyaz ahize). Başlıkta giriş düğmesi yok;
+  zil misafirde de var, hiç bildirimi olmayan misafire boş sayfada giriş
+  çağrısı. Giriş menüdeki kartta ve menünün altında.
 - **Mobil sayfa çubuğu** (anasayfa dışı, `[data-sayfa-cubugu]`):
   `[geri] [logo → başlık] [ara] [menü]`. Menü artık her sayfadan
   açılıyor. Başta logo; sayfanın büyük başlığı çubuğun altına kayınca
