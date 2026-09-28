@@ -15,10 +15,7 @@
 
   const scroll = document.createElement('div');
   scroll.className = 'desktop-sidebar-scroll';
-  /* Çekmecede profil kartı kaydırılan alanın dışında (başlığa yapışık
-     sabit); kenar çubuğunda kaydırılan alanın başında. */
-  const profilKarti = drawer.querySelector(':scope > .mobile-profile-card');
-  scroll.innerHTML = (profilKarti ? profilKarti.outerHTML : '') + sourceScroll.innerHTML;
+  scroll.innerHTML = sourceScroll.innerHTML;
 
   // Mobil drawer'a ait ID'leri kopyada bırakma; tekil masaüstü kimlikleri kullan.
   scroll.querySelectorAll('[id]').forEach(el => {
@@ -2142,12 +2139,25 @@ function uyelikDavetiniCiz(){
     ? MolaVeri.kampanyalar(new Date()).find(x => x.uyeOzel && x.ilkRezervasyon) : null;
   if (!k) return;
   const enFazla = k.indirim && k.indirim.enFazla;
-  document.querySelectorAll('[data-uyelik-etiket]').forEach(el => { el.textContent = k.etiket || ''; el.hidden = !k.etiket; });
+  const alt = [k.etiket, enFazla ? 'en fazla ' + enFazla.toLocaleString('tr-TR') + ' TL' : ''].filter(Boolean).join(' · ');
   document.querySelectorAll('[data-uyelik-baslik]').forEach(el => { el.textContent = k.ad; });
-  document.querySelectorAll('[data-uyelik-alt]').forEach(el => {
-    el.textContent = (enFazla ? 'En fazla ' + enFazla.toLocaleString('tr-TR') + ' TL · ' : '') + 'kişiye özel kodun e-postana gelir';
-  });
+  document.querySelectorAll('[data-uyelik-alt]').forEach(el => { el.textContent = alt; });
 }
+
+/* Çekmecedeki profil kartı menüyle birlikte kayıyor. En üstte aşağı
+   çekilince iOS kaydırılan alanı esnetiyor (scrollTop eksiye iniyor):
+   kart o kadar yukarı itiliyor, yani yerinde kalıyor ve esneme kartın
+   altından başlıyor; başlıkla kart arasında boşluk açılmıyor. */
+function cekmeceKartiEsnemesi(kaydirici, kart){
+  const y = Math.min(0, kaydirici.scrollTop);
+  kart.style.transform = y ? 'translateY(' + y + 'px)' : '';
+}
+(function(){
+  const kaydirici = document.querySelector('#mobileDrawer .drawer-sidebar-scroll');
+  const kart = kaydirici && kaydirici.querySelector('.mobile-profile-card');
+  if (!kart) return;
+  kaydirici.addEventListener('scroll', () => cekmeceKartiEsnemesi(kaydirici, kart), { passive: true });
+})();
 ['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
 document.addEventListener('click', (e) => {
   if (typeof openAuthModal !== 'function') return;

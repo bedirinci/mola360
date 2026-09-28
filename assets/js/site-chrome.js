@@ -23,57 +23,50 @@
        düğmesiyle açılan sol panel olarak görünüyor. -->
   <div class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></div>
   <aside class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Ana menü">
-    <!-- Mobil profil kartı: profil ekranındaki üst bölümle aynı görsel dil.
-         Kaydırılan alanın DIŞINDA: menü kayarken ve en üstte aşağı
-         çekilip esnerken kart başlığa yapışık yerinde kalıyor; esneme
-         kartın altından başlıyor. Masaüstü kenar çubuğu onu kaydırılan
-         alanın başına kopyalıyor (app.js). -->
-    <!-- Profil kartları hesaptan dolduruluyor (app.js, MolaVeri.hesapPaneli):
-         sayılar, puan ve seviye gerçek; misafirde üyelik daveti (başlığı
-         yeni üye kampanyasından). Burada elle yazılmış sayı ya da indirim yok. -->
-    <div class="mobile-profile-card" id="drawerProfileCard">
-      <div class="mobile-profile-hero">
-        <div class="mobile-profile-davet" data-hesap-misafir>
-          <span class="mobile-profile-davet-etiket" data-uyelik-etiket hidden></span>
-          <strong class="mobile-profile-davet-baslik" data-uyelik-baslik>Ücretsiz üyelikle daha fazlası</strong>
-          <span class="mobile-profile-davet-alt" data-uyelik-alt>Rezervasyonların, biletlerin ve Molapuanın tek yerde.</span>
-          <ul class="mobile-profile-davet-artilar" aria-label="Üyelikle">
-            <li><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span>Molapuan kazan</li>
-            <li><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM21 14v.01M14 21h.01M17.5 21H21v-3.5"></path></svg></span>Karekodlu bilet</li>
-            <li><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span>Özel kuponlar</li>
-          </ul>
-          <div class="mobile-profile-davet-dugmeler">
-            <button type="button" class="mobile-profile-davet-ol" data-hesap-uye-ol>Ücretsiz üye ol</button>
+    <div class="sidebar-scroll drawer-sidebar-scroll">
+
+      <!-- Mobil profil kartı: profil ekranındaki üst bölümle aynı görsel dil.
+           Menüyle birlikte kayıyor; en üstte aşağı çekilince (iOS esnemesi)
+           yerinde kalıyor, esneme kartın altından başlıyor (app.js,
+           cekmeceKartiEsnemesi). -->
+      <!-- Profil kartları hesaptan dolduruluyor (app.js, MolaVeri.hesapPaneli):
+           sayılar, puan ve seviye gerçek; misafirde üyelik daveti (başlığı
+           yeni üye kampanyasından). Burada elle yazılmış sayı ya da indirim yok. -->
+      <div class="mobile-profile-card" id="drawerProfileCard">
+        <div class="mobile-profile-hero">
+          <div class="mobile-profile-davet" data-hesap-misafir>
+            <div class="mobile-profile-davet-metin">
+              <strong class="mobile-profile-davet-baslik" data-uyelik-baslik>Ücretsiz üye ol</strong>
+              <span class="mobile-profile-davet-alt" data-uyelik-alt>Rezervasyon, bilet ve Molapuan tek yerde</span>
+            </div>
+            <button type="button" class="mobile-profile-davet-ol" data-hesap-uye-ol>Üye ol</button>
           </div>
-        </div>
-        <div class="mobile-profile-top" data-hesap-uye hidden>
-          <div class="mobile-profile-avatar" id="drawerProfileAvatar" data-hesap-avatar></div>
-          <div class="mobile-profile-main">
-            <strong id="drawerProfileName"><span data-hesap-ad>Misafir</span></strong>
-            <div class="mobile-profile-badges">
-              <span class="mobile-profile-badge gold" data-hesap-seviye-rozet hidden><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span><span data-hesap-seviye-adi></span></span>
+          <div class="mobile-profile-top" data-hesap-uye hidden>
+            <div class="mobile-profile-avatar" id="drawerProfileAvatar" data-hesap-avatar></div>
+            <div class="mobile-profile-main">
+              <strong id="drawerProfileName"><span data-hesap-ad>Misafir</span></strong>
+              <div class="mobile-profile-badges">
+                <span class="mobile-profile-badge gold" data-hesap-seviye-rozet hidden><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3"></polygon></svg></span><span data-hesap-seviye-adi></span></span>
+              </div>
+            </div>
+            <div class="mobile-profile-actions" data-hesap-uye hidden>
+              <a class="mobile-profile-edit" href="hesabim/?bolum=bilgilerim" aria-label="Kişisel bilgilerim"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></span></a>
+              <a class="mobile-profile-edit" href="hesabim/?bolum=ayarlar" aria-label="Ayarlar"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></span></a>
             </div>
           </div>
-          <div class="mobile-profile-actions" data-hesap-uye hidden>
-            <a class="mobile-profile-edit" href="hesabim/?bolum=bilgilerim" aria-label="Kişisel bilgilerim"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg></span></a>
-            <a class="mobile-profile-edit" href="hesabim/?bolum=ayarlar" aria-label="Ayarlar"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></span></a>
-          </div>
         </div>
+        <div class="mobile-profile-stats" data-hesap-uye hidden>
+          <a href="hesabim/?bolum=rezervasyonlarim"><strong data-hesap-sayi="rezervasyon">0</strong><span>Rezervasyon</span></a>
+          <a href="hesabim/?bolum=biletlerim"><strong data-hesap-sayi="yaklasan">0</strong><span>Yaklaşan</span></a>
+          <a href="hesabim/?bolum=favorilerim"><strong data-hesap-sayi="favori">0</strong><span>Favorilerim</span></a>
+          <a href="hesabim/?bolum=kuponlarim"><strong data-hesap-sayi="kupon">0</strong><span>Kuponlarım</span></a>
+        </div>
+        <a class="mobile-profile-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
+          <div class="mobile-profile-loyalty-head"><strong data-hesap-seviye-metni></strong><span data-hesap-sonraki></span></div>
+          <div class="mobile-profile-progress"><span data-hesap-ilerleme></span></div>
+          <div class="mobile-profile-loyalty-foot"><strong data-hesap-puan>0</strong><span>Molapuan</span><span class="reward" data-hesap-bekleyen></span></div>
+        </a>
       </div>
-      <div class="mobile-profile-stats" data-hesap-uye hidden>
-        <a href="hesabim/?bolum=rezervasyonlarim"><strong data-hesap-sayi="rezervasyon">0</strong><span>Rezervasyon</span></a>
-        <a href="hesabim/?bolum=biletlerim"><strong data-hesap-sayi="yaklasan">0</strong><span>Yaklaşan</span></a>
-        <a href="hesabim/?bolum=favorilerim"><strong data-hesap-sayi="favori">0</strong><span>Favorilerim</span></a>
-        <a href="hesabim/?bolum=kuponlarim"><strong data-hesap-sayi="kupon">0</strong><span>Kuponlarım</span></a>
-      </div>
-      <a class="mobile-profile-loyalty" href="hesabim/?bolum=puanlarim" data-hesap-uye hidden>
-        <div class="mobile-profile-loyalty-head"><strong data-hesap-seviye-metni></strong><span data-hesap-sonraki></span></div>
-        <div class="mobile-profile-progress"><span data-hesap-ilerleme></span></div>
-        <div class="mobile-profile-loyalty-foot"><strong data-hesap-puan>0</strong><span>Molapuan</span><span class="reward" data-hesap-bekleyen></span></div>
-      </a>
-    </div>
-
-    <div class="sidebar-scroll drawer-sidebar-scroll">
 
       <div class="sidebar-user" id="drawerUserCard">
         <div class="sidebar-user-top">

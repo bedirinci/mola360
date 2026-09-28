@@ -4391,25 +4391,14 @@ ul {
     overflow-y: auto;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
-    /* Profil kartı bu alanın dışında ve üstünde (aşağıda): üstteki 20 px
-       kartın yuvarlak alt köşelerinin altında kalıyor, menü o köşelerin
-       altından geçiyor. */
-    padding-top: 32px;
-    /* "contain": iOS'un esnemesi var ama sayfaya taşmıyor. Esneyen
-       yalnızca bu alan; kart yerinde kaldığı için esneme kartın altından
-       başlıyor, başlıkla kart arasında boşluk açılmıyor. */
+    /* "contain": iOS'un esnemesi var ama sayfaya taşmıyor. Profil kartı
+       menüyle kayıyor; en üstteki esnemede yerinde kalıyor (app.js,
+       cekmeceKartiEsnemesi), esneme kartın altından başlıyor. */
     overscroll-behavior-y: contain;
   }
-
-  /* Profil kartı başlığa yapışık ve sabit: menüyle kaymıyor, esnemiyor. */
-  .mobile-drawer > .mobile-profile-card {
-    flex: 0 0 auto;
-    position: relative;
-    z-index: 2;
-    margin: 0 0 -20px;
-  }
+  .mobile-drawer .mobile-profile-card { position: relative; z-index: 2; }
   /* İç sayfalarda kartın üstü çubuğun yuvarlak köşelerinin altında. */
-  .mobile-drawer > .mobile-profile-card .mobile-profile-hero {
+  .mobile-drawer .mobile-profile-card .mobile-profile-hero {
     padding-top: calc(14px + var(--m360-cekmece-kose, 0px));
   }
 
@@ -6050,43 +6039,28 @@ a.mobile-profile-loyalty { display: block; color: inherit; }
 .auth-social-btn:disabled { opacity: .55; cursor: not-allowed; }
 .auth-social-soon { margin-top: -4px; font-size: 12px; color: var(--text-faint); text-align: center; }
 
-/* Misafirde profil kartı: üyelik daveti. Başlık ve alt satır yeni üye
-   kampanyasından (app.js, uyelikDavetiniCiz); avatar ve "Misafir" yok,
-   üyede kartın kendisi (ad, sayılar, puan) geliyor. */
-body:not(.is-uye) .mobile-profile-hero { padding-bottom: 16px; }
-.mobile-profile-davet { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; }
-.mobile-profile-davet-etiket {
-  display: inline-flex; align-items: center; margin-bottom: 8px; padding: 3px 9px;
-  border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .1px;
-  color: var(--navy-deep); background: var(--green);
-}
-.mobile-profile-davet-etiket[hidden] { display: none; }
+/* Misafirde profil kartı: tek satırlık üyelik daveti (kampanya başlığı,
+   altında etiket ve üst sınır; sağda "Üye ol"). Başlık ve alt satır yeni
+   üye kampanyasından (app.js, uyelikDavetiniCiz). Avatar ve "Misafir"
+   yok; üyede kartın kendisi (ad, sayılar, puan) geliyor. */
+body:not(.is-uye) .mobile-profile-hero { padding-bottom: 14px; }
+.mobile-profile-davet { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+.mobile-profile-davet-metin { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .mobile-profile-davet-baslik {
-  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; line-height: 1.2;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; line-height: 1.25;
   font-weight: 800; letter-spacing: -.2px; color: #fff;
 }
-.mobile-profile-davet-alt { margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: rgba(255,255,255,.75); }
-.mobile-profile-davet-artilar {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
-  width: 100%; margin: 12px 0 0; padding: 0; list-style: none;
-}
-.mobile-profile-davet-artilar li {
-  display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 4px 8px;
-  border-radius: 12px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08);
-  font-size: 11.5px; font-weight: 700; line-height: 1.2; color: #fff; text-align: center;
-}
-.mobile-profile-davet-artilar .icon { width: 18px; height: 18px; color: var(--green); }
-.mobile-profile-davet-dugmeler { display: flex; gap: 8px; width: 100%; margin-top: 14px; }
+.mobile-profile-davet-alt { font-size: 12px; line-height: 1.3; color: rgba(255,255,255,.75); }
 .mobile-profile-davet-ol {
-  flex: 1; min-height: 44px; border-radius: 12px; font-size: 15px; font-weight: 800;
-  white-space: nowrap; cursor: pointer; color: var(--navy-deep); background: var(--green);
+  flex: 0 0 auto; min-height: 40px; padding: 0 18px; border-radius: 12px;
+  font-size: 14px; font-weight: 800; white-space: nowrap; cursor: pointer;
+  color: var(--navy-deep); background: var(--green);
 }
 .mobile-profile-davet-ol:active { background: var(--green-dark); color: #fff; }
-.desktop-sidebar .mobile-profile-davet-baslik { font-size: 16.5px; }
-.desktop-sidebar .mobile-profile-davet-alt { font-size: 11.5px; }
-.desktop-sidebar .mobile-profile-davet-artilar li { font-size: 10.5px; padding: 8px 3px 7px; }
-.desktop-sidebar .mobile-profile-davet-artilar .icon { width: 16px; height: 16px; }
-.desktop-sidebar .mobile-profile-davet-ol { min-height: 40px; font-size: 13.5px; }
+.desktop-sidebar .mobile-profile-davet { flex-direction: column; align-items: stretch; gap: 10px; }
+.desktop-sidebar .mobile-profile-davet-baslik { font-size: 14.5px; }
+.desktop-sidebar .mobile-profile-davet-alt { font-size: 11px; }
+.desktop-sidebar .mobile-profile-davet-ol { min-height: 36px; font-size: 13px; }
 .sidebar-user-login {
   align-self: flex-start;
   padding: 0;
