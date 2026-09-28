@@ -6063,8 +6063,7 @@ body.is-uye #headerRegisterBtn { display: none; }
   .header-search input,
   .mobile-search-bar .header-search input,
   .search-overlay-input-wrap input,
-  .lst-search input[name="q"],
-  .lst-sort #lstSort { font-size: 16px; }
+  .lst-search input[name="q"] { font-size: 16px; }
 }
 
 /* =============== ANASAYFA SÜZGEÇ SONUÇLARI ===============
@@ -6375,6 +6374,7 @@ body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
 }
 .lst-sheet-overlay.m360-overlay-closing,
 .lst-plan-katman.m360-overlay-closing,
+.lst-sort-katman.m360-overlay-closing,
 .tercih-katman.m360-overlay-closing,
 .tour-sheet.m360-overlay-closing {
   opacity: 0 !important;

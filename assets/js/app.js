@@ -1321,7 +1321,8 @@ function cubukDurumunuYaz(cubuk) {
     cubukDurumunuYaz(cubuk);
     if (!cubuk.hasAttribute('data-cubuk-gizlenir')) return;
     /* Kilitliyken (menü, arama, süzgeç açık) çubuk yerinde kalıyor. */
-    if (document.body.classList.contains('m360-scroll-locked') || document.body.classList.contains('lst-sheet-open')) return;
+    const govde = document.body.classList;
+    if (govde.contains('m360-scroll-locked') || govde.contains('lst-sheet-open') || govde.contains('lst-sort-open') || govde.contains('lst-plan-open')) return;
     const y = Math.max(0, window.scrollY || 0);
     if (y < cubuk.offsetHeight * 2) { cubukGoster(cubuk); sonY = y; return; }
     if (Math.abs(y - sonY) < 10) return;

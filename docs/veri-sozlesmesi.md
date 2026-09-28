@@ -349,7 +349,7 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `temaUrunleri(slug)`, `koleksiyonUrunleri(slug)` | senkron | Ürün dizisi | Liste uç noktası |
 | `adres(yol)` | senkron | Adresin karşılığı: `{ kind: 'product' \| 'type-list' \| 'category' \| 'listing' \| 'city' \| 'theme' \| 'collection' \| 'theme-index' \| 'collection-index' \| 'search' \| 'new' \| 'week' \| 'checkout' \| 'confirmation' \| 'campaigns' \| 'account' \| 'corporate' \| 'static' \| 'home', … }` veya `null` (bulunamadı) | Sunucunun yönlendiricisi |
 | `sayfaModeli(adres, bugun)` | senkron | Liste sayfasının başlığı, temel süzgeci, kırıntısı ve alt sayfa çipleri | Sayfaya gömülü |
-| `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex` | Sunucu `<head>`'e yazar |
+| `listeSeo(model, bugun)` | senkron | Başlık, açıklama (sayı ve en düşük fiyattan), kanonik adres, `noindex`; `avantajlar`: başlığın altındaki güven çipleri `[{ kod, metin, ipucu }]` (kapora, ücretsiz iptal, taksit, kampanya; ürünlerin kurallarından) | Sunucu `<head>`'e yazar |
 | `yuzeyTanimlari(bugun)` | senkron | Süzgeç alanları ve seçenekleri (bölüm 12) | Önbellekli uç nokta |
 | `listeSatiri(kayit, bugun)` | senkron | Ürünün süzülen/sıralanan nitelikleri (arama dizininin satırı) | Arama dizini |
 | `liste({ temel, durum, bugun, tarihAraligi? })` | **Promise** | `{ toplam, satirlar, dahaVar, yuzeyler, etiketler }`; `tarihAraligi { start, end }` sabit tarihli ürünü o aralıkta tarihi olana indirir (anasayfa süzgeci) | `GET /api/liste?…` |
@@ -437,6 +437,18 @@ yerlerini gerçek ürünler alacak.
   alanı). Koşul (tarih, gece) rezervasyonda denetleniyor.
 - **Üyelik bandı:** misafire liste arasında (dördüncü karttan sonra)
   üyeye özel ilk rezervasyon kampanyası; giriş yapılınca kalkıyor.
+- **Liste başlığı:** başlığın altındaki "N ürün · en düşük X TL" satırı
+  kalktı (sayı araç çubuğunda; en düşük fiyat yalnızca arama motoru
+  açıklamasında). Yerine listedeki ürünlerin kurallarından güven çipleri
+  (`listeSeo().avantajlar`): kapora (tur varsa, `REZ_KAPORA`), ücretsiz
+  iptal (bir üründe tam iade kademesi varsa), vade farksız taksit (bütün
+  kart ailelerinde ortak en yüksek sayı, `REZ_TAKSIT`), kampanya.
+- **Sıralama:** açılır liste yerine "Filtrele" ile aynı düğme; mobilde ve
+  tablette alt çekmece, masaüstünde küçük panel; seçince uygulanıyor.
+- **Alt çekmeceler:** anasayfa ve liste süzgeçleri, sıralama, "Ne zaman,
+  kaç kişi?", dil/para ve rezervasyon özeti aynı açılıyor (alttan 0,28
+  sn, tutamaç, karartma) ve aşağı çekince kapanıyor (`ui.js`, ortak kod).
+  Süzgeç çekmecesinin altında sabit Temizle (seçim yokken pasif).
 
 ### 7. adım: arayüz düzeni
 

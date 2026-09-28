@@ -394,3 +394,44 @@ describe('süzgeç çekmecesinde Temizle', () => {
     expect(js).toContain("planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;");
   });
 });
+
+describe('liste başlığı ve sıralama', () => {
+  const js = oku('assets/js/listing-page.js');
+  const ui = oku('assets/js/ui.js');
+  const BUGUN_T = new Date('2026-09-28T10:00:00');
+  const avantaj = (yol) => MolaVeri.listeSeo(MolaVeri.sayfaModeli(MolaVeri.adres(yol), BUGUN_T), BUGUN_T).avantajlar;
+
+  it('başlığın altında ürün sayısı ve en düşük fiyat yok; güven çipleri var', () => {
+    expect(js).not.toContain("' · en düşük ' + seo.enDusuk");
+    expect(js).toContain('lspAvantajMarkup(seo.avantajlar)');
+    const m = L.lspAvantajMarkup([{ kod: 'kapora', metin: '%20 kaporayla yer ayırt', ipucu: 'x' }]);
+    expect(m).toContain('<li class="lst-avantaj" data-avantaj="kapora" title="x">');
+    expect(L.lspAvantajMarkup([])).toBe('');
+  });
+
+  it('çipler listedeki ürünlerin kurallarından', () => {
+    expect(avantaj('turlar/karadeniz-turlari').map(a => a.kod)).toEqual(['kapora', 'taksit']);
+    expect(avantaj('turlar').map(a => a.kod)).toEqual(['kapora', 'iptal', 'taksit', 'kampanya']);
+    /* Kapora yalnızca turda; otelde yok. */
+    expect(avantaj('oteller').map(a => a.kod)).not.toContain('kapora');
+    const tur = avantaj('turlar');
+    expect(tur.find(a => a.kod === 'kapora').metin).toBe('%' + Math.round(R.REZ_KAPORA.oran * 100) + ' kaporayla yer ayırt');
+    /* Taksit: bütün kart ailelerinde vade farksız olan en yüksek sayı. */
+    const ortak = Math.min(...R.REZ_TAKSIT.aileler.map(a => Math.max(1, ...Object.keys(a.oranlar).filter(n => a.oranlar[n] === 0).map(Number))));
+    expect(tur.find(a => a.kod === 'taksit').metin).toBe(ortak + ' taksit, vade farksız');
+    expect(tur.find(a => a.kod === 'kampanya').metin).toBe('30 gün önceden 500 TL indirim');
+  });
+
+  it('sıralama "Filtrele" ile aynı düğme ve çekmece olarak açılıyor', () => {
+    expect(js).toContain('<button class="lst-tool-btn lst-sort-btn" type="button" id="lstSortBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstSortPanel">');
+    expect(js).not.toContain('<select id="lstSort">');
+    const secenekler = L.lspSiralamaMarkup([{ slug: 'onerilen', name: 'Önerilen' }, { slug: 'fiyat-artan', name: 'Fiyat: Artan' }], 'fiyat-artan');
+    expect(secenekler).toContain('data-sirala="onerilen" aria-checked="false">Önerilen</button>');
+    expect(secenekler).toContain('data-sirala="fiyat-artan" aria-checked="true">Fiyat: Artan</button>');
+    /* Dar ekranda alt çekmece; aşağı çekince kapanıyor. */
+    expect(yorumsuz(listeStil)).toMatch(/@media \(max-width: 1024px\) \{\s*\.lst-sort-panel \{[^}]*animation: m360SheetUp \.28s ease-out;/);
+    expect(ui).toContain("secici: '.lst-sort-panel'");
+    /* Yapışkan araç çubuğunun katmanında kalmasın diye <body>'ye taşınıyor. */
+    expect(js).toContain("window.matchMedia('(max-width: 1024px)').matches ? document.body : siralaKutu");
+  });
+});

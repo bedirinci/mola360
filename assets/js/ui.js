@@ -570,8 +570,9 @@ window.m360AutoHideThumb = function (thumb, options) {
 })();
 
 /* ===== alt çekmeceler: aşağı çekince kapanma (ortak) =====
-   Sitedeki bütün alt çekmeceler (anasayfa süzgeçleri, liste süzgeçleri,
-   "Ne zaman, kaç kişi?", dil/para, rezervasyon özeti) aynı davranıyor:
+   Sitedeki bütün alt çekmeceler (anasayfa süzgeçleri, liste süzgeçleri
+   ve sıralaması, "Ne zaman, kaç kişi?", dil/para, rezervasyon özeti)
+   aynı davranıyor:
    tutamaçtan, başlıktan ya da en üstteki listeden aşağı çekilince parmağı
    izliyor; yeterince çekilince (ya da hızlı savrulunca) aşağı kayıp
    kapanıyor, çekilmezse yerine oturuyor.
@@ -617,6 +618,11 @@ window.m360AutoHideThumb = function (thumb, options) {
       kaydirici: 'self',
       katman: () => document.getElementById('lstPlanKatman'),
       kapat: dugmeyeBas('[data-plan-kapat]') },
+    { secici: '.lst-sort-panel', genislik: 1024, sinif: true,
+      acik: (p) => !p.hidden,
+      kaydirici: 'self',
+      katman: () => document.getElementById('lstSortKatman'),
+      kapat: dugmeyeBas('[data-sirala-kapat]') },
     { secici: '.tercih-cekmece', genislik: null, sinif: true,
       acik: (p) => p.classList.contains('open'),
       kaydirici: 'self',

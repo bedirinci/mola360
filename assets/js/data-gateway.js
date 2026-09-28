@@ -1012,6 +1012,45 @@ function kapiListeSorgusu(sorgu) {
 /* Sayfa yükü: liste sayfasının SEO alanları ve sayım özeti. Açıklama
    sayıdan ve en düşük TL fiyattan türetiliyor; ürün eklenince kendisi
    güncelleniyor. */
+/* Liste sayfasının başlığı altındaki güven çipleri: listedeki ürünlerin
+   kendi kurallarından türetiliyor, elle yazılmıyor. Sıra: kapora, ücretsiz
+   iptal, taksit, kampanya. Kural tutmayan çip yok.
+     kapora    listede kaporayla satılan tip varsa (REZ_KAPORA.tipler)
+     iptal     bir üründe tam iade kademesi varsa (cancellation.tiers)
+     taksit    kart ailelerinin ortak vade farksız taksit sayısı (REZ_TAKSIT)
+     kampanya  bir ürüne kendiliğinden uygulanan kampanya varsa */
+function kapiListeAvantajlari(urunler, bugun) {
+  const liste = urunler || [];
+  if (!liste.length) return [];
+  const out = [];
+  const kapora = kapiRezDeger('REZ_KAPORA');
+  if (kapora && liste.some(k => (kapora.tipler || []).indexOf(kapiIcerikTipi(k)) !== -1)) {
+    out.push({ kod: 'kapora', metin: '%' + Math.round((Number(kapora.oran) || 0) * 100) + ' kaporayla yer ayırt',
+      ipucu: 'Kalan tutar tur öncesinde ödenir.' });
+  }
+  if (liste.some(k => (((k.cancellation || {}).tiers) || []).some(t => Number(t.rate) >= 1))) {
+    out.push({ kod: 'iptal', metin: 'Ücretsiz iptal seçeneği', ipucu: 'Koşullar ürün sayfasında.' });
+  }
+  const taksit = kapiRezDeger('REZ_TAKSIT');
+  const aileler = (taksit && taksit.aileler) || [];
+  if (aileler.length) {
+    /* Bütün ailelerde vade farksız olan en yüksek taksit sayısı. */
+    const ortak = Math.min.apply(null, aileler.map(a => Math.max.apply(null,
+      [1].concat(Object.keys(a.oranlar || {}).filter(n => Number(a.oranlar[n]) === 0).map(Number)))));
+    if (ortak > 1) {
+      out.push({ kod: 'taksit', metin: ortak + ' taksit, vade farksız',
+        ipucu: 'Kredi kartıyla' + (taksit.altSinir ? ' ' + kapiFiyatMetni(taksit.altSinir, 'TRY') + ' ve üzeri' : '') + ' ödemelerde.' });
+    }
+  }
+  const kampanyaBul = kapiRezFn('rezUrunKampanyasi');
+  if (kampanyaBul) {
+    const gun = kapiISO(bugun || new Date());
+    const k = liste.map(u => kampanyaBul(kapiIcerikTipi(u), u, gun)).find(Boolean);
+    if (k) out.push({ kod: 'kampanya', metin: k.kisa, ipucu: k.etiket });
+  }
+  return out;
+}
+
 function kapiListeSeo(model, bugun) {
   if (!model) return null;
   const urunler = model.temel ? kapiListele(model.temel, bugun) : [];
@@ -1041,7 +1080,8 @@ function kapiListeSeo(model, bugun) {
     /* Ürünü olmayan liste ince içeriktir; dizine girmesin. */
     noindex: !!model.temel && adet === 0,
     adet,
-    enDusuk: fiyatMetni
+    enDusuk: fiyatMetni,
+    avantajlar: kapiListeAvantajlari(urunler, bugun)
   };
 }
 

@@ -63,6 +63,8 @@ const LSP_IKON = {
   asagi: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>',
   takvim: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><line x1="3" y1="9.5" x2="21" y2="9.5"></line><line x1="8" y1="2.5" x2="8" y2="6.5"></line><line x1="16" y1="2.5" x2="16" y2="6.5"></line></svg>',
   kisiler: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"></path><path d="M18 14.3c2.2.7 3.5 2.8 3.5 5.7"></path></svg>',
+  sirala: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"></path><polyline points="3 8 7 4 11 8"></polyline><path d="M17 20V4"></path><polyline points="13 16 17 20 21 16"></polyline></svg>',
+  tik: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7"></polyline></svg>',
   menu: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>',
   kilit: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>',
   whatsapp: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/></svg>'
@@ -152,9 +154,22 @@ function lspEtiketMarkup(etiketler) {
     + '<button class="lst-pill-clear" type="button" data-temizle>Tümünü temizle</button>';
 }
 
+/* Sıralama seçenekleri: çekmecedeki radyo satırları (anasayfa süzgeç
+   çekmecesinin seçenekleriyle aynı görünüm). */
 function lspSiralamaMarkup(siralamalar, secili) {
-  return (siralamalar || []).map(s => '<option value="' + lspKacis(s.slug) + '"' + (s.slug === secili ? ' selected' : '') + '>'
-    + lspKacis(s.name) + '</option>').join('');
+  return (siralamalar || []).map(s => '<button class="lst-sort-secenek" type="button" role="radio" data-sirala="' + lspKacis(s.slug) + '"'
+    + ' aria-checked="' + (s.slug === secili ? 'true' : 'false') + '">' + lspKacis(s.name) + '</button>').join('');
+}
+
+/* Başlığın altındaki güven çipleri (MolaVeri.listeSeo → avantajlar):
+   ürünlerin kendi kurallarından. Ürün sayısı araç çubuğunda yazıyor,
+   burada tekrarlanmıyor. */
+function lspAvantajMarkup(avantajlar) {
+  if (!avantajlar || !avantajlar.length) return '';
+  return '<ul class="lst-avantajlar" aria-label="Bu listede">'
+    + avantajlar.map(a => '<li class="lst-avantaj" data-avantaj="' + lspKacis(a.kod) + '"' + (a.ipucu ? ' title="' + lspKacis(a.ipucu) + '"' : '') + '>'
+      + '<span class="icon">' + LSP_IKON.tik + '</span>' + lspKacis(a.metin) + '</li>').join('')
+    + '</ul>';
 }
 
 /* Satırdan kart: anasayfanın kart üreticisi (catalog.js) ve kart
@@ -486,8 +501,7 @@ function lspListeIskeleti(model, seo, plan) {
     + lspKirintiMarkup(model.kirinti)
     + (model.kind === 'search' ? lspAramaFormu(model.q) : '')
     + '<header class="lst-head"><h1>' + lspKacis(model.baslik) + '</h1>'
-    + '<p class="lst-summary">' + lspKacis(lspSayimMetni(seo.adet, model.birim)
-      + (seo.enDusuk ? ' · en düşük ' + seo.enDusuk : '')) + '</p></header>'
+    + lspAvantajMarkup(seo.avantajlar) + '</header>'
     + lspPlanKutusuMarkup(plan, lspKonaklamaMi(model))
     + lspCiplerMarkup(model.altlar)
     + '<div class="lst-layout">'
@@ -506,8 +520,15 @@ function lspListeIskeleti(model, seo, plan) {
     + '<div class="lst-toolbar-actions">'
     + '<button class="lst-tool-btn lst-filter-btn" type="button" id="lstFilterBtn" aria-controls="lstFilters" aria-expanded="false">'
     + '<span class="icon">' + LSP_IKON.suzgec + '</span>Filtrele<span class="lst-badge" id="lstBadge" hidden></span></button>'
-    + '<label class="lst-tool-btn lst-sort"><span class="lst-visually-hidden">Sırala</span>'
-    + '<select id="lstSort"></select><span class="icon lst-sort-chev">' + LSP_IKON.asagi + '</span></label>'
+    + '<div class="lst-sort">'
+    + '<button class="lst-tool-btn lst-sort-btn" type="button" id="lstSortBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstSortPanel">'
+    + '<span class="icon">' + LSP_IKON.sirala + '</span><span class="lst-visually-hidden">Sıralama: </span><span id="lstSortLabel"></span></button>'
+    + '<div class="lst-sort-katman" id="lstSortKatman" hidden></div>'
+    + '<div class="lst-sort-panel" id="lstSortPanel" role="dialog" aria-modal="true" aria-labelledby="lstSortBaslik" tabindex="-1" hidden>'
+    + '<div class="lst-sort-bas"><h2 id="lstSortBaslik">Sırala</h2>'
+    + '<button class="lst-sheet-close lst-sort-kapat" type="button" data-sirala-kapat aria-label="Kapat">' + LSP_IKON.kapat + '</button></div>'
+    + '<div class="lst-sort-liste" id="lstSortListe" role="radiogroup" aria-labelledby="lstSortBaslik"></div>'
+    + '</div></div>'
     + '</div></div>'
     + '<div class="lst-active" id="lstActive"></div>'
     + '<div class="lst-grid" id="lstGrid"></div>'
@@ -541,7 +562,13 @@ function lspListeKur(kok, model, seo, bugun) {
   kok.innerHTML = lspMobilBaslikMarkup(model.baslik, lspSayimMetni(seo.adet, model.birim), lspGeriYolu(model.kirinti))
     + lspListeIskeleti(model, seo, plan);
   const $ = (id) => document.getElementById(id);
-  $('lstSort').innerHTML = lspSiralamaMarkup(siralamalar, durum.siralama);
+  /* Sıralama düğmesinin yazısı ve çekmecedeki seçili satır. */
+  const siralamaYaz = () => {
+    const secili = siralamalar.find(x => x.slug === durum.siralama) || siralamalar[0];
+    $('lstSortLabel').textContent = secili ? secili.name : 'Sırala';
+    $('lstSortListe').innerHTML = lspSiralamaMarkup(siralamalar, secili ? secili.slug : '');
+  };
+  siralamaYaz();
 
   /* Adres: motorun parametreleri yeniden yazılıyor, diğerleri (utm_*)
      korunuyor. Geçmişe yeni kayıt eklenmiyor: geri tuşu önceki SAYFAYA
@@ -634,10 +661,6 @@ function lspListeKur(kok, model, seo, bugun) {
     if (kutu) {
       const alan = alanlar.find(a => a.key === kutu.getAttribute('data-alan'));
       if (alan) uygula(degistir(durum, alan, kutu.value));
-      return;
-    }
-    if (e.target.id === 'lstSort') {
-      uygula({ secim: durum.secim, siralama: e.target.value, sayfa: 1 });
     }
   });
 
@@ -793,6 +816,44 @@ function lspListeKur(kok, model, seo, bugun) {
   bitisKutusu.addEventListener('change', basiliYaz);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !planPanel.hidden) panelAc(false);
+  });
+
+  /* ---- sıralama ----
+     "Filtrele" ile aynı düğme. Mobilde ve tablette süzgeç çekmecesiyle
+     aynı dilde alt çekmece, masaüstünde düğmenin altında küçük panel.
+     Seçince hemen uygulanıyor. Dar ekranda araç çubuğu yapışkan (kendi
+     katmanı) olduğu için çekmece açılırken <body>'ye taşınıyor; yoksa alt
+     menünün ve üst çubuğun altında kalırdı. */
+  const siralaKutu = document.querySelector('.lst-sort');
+  const siralaPanel = $('lstSortPanel');
+  const siralaKatman = $('lstSortKatman');
+  const siralaBtn = $('lstSortBtn');
+  const siralaAc = (ac) => {
+    if (ac) {
+      const hedef = window.matchMedia('(max-width: 1024px)').matches ? document.body : siralaKutu;
+      if (siralaPanel.parentElement !== hedef) { hedef.appendChild(siralaKatman); hedef.appendChild(siralaPanel); }
+    }
+    siralaPanel.hidden = !ac;
+    siralaKatman.hidden = !ac;
+    siralaBtn.setAttribute('aria-expanded', String(ac));
+    document.body.classList.toggle('lst-sort-open', ac);
+    if (ac) (siralaPanel.querySelector('[aria-checked="true"]') || siralaPanel).focus();
+    else siralaBtn.focus();
+  };
+  siralaBtn.addEventListener('click', () => siralaAc(siralaPanel.hidden));
+  siralaKatman.addEventListener('click', () => siralaAc(false));
+  siralaPanel.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sirala-kapat]')) { siralaAc(false); return; }
+    const secenek = e.target.closest('[data-sirala]');
+    if (!secenek) return;
+    const slug = secenek.getAttribute('data-sirala');
+    siralaAc(false);
+    if (slug === durum.siralama) return;
+    uygula({ secim: durum.secim, siralama: slug, sayfa: 1 });
+    siralamaYaz();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !siralaPanel.hidden) siralaAc(false);
   });
 
   /* Üründen geri dönünce liste kaldığı yerden: kartlar sorgudan sonra
@@ -1123,6 +1184,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lspSuzgecMarkup,
     lspEtiketMarkup,
     lspSiralamaMarkup,
+    lspAvantajMarkup,
     lspKartlarMarkup,
     lspMobilBaslikMarkup,
     lspPlanEtiketi,
