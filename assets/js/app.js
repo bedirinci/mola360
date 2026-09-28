@@ -1321,7 +1321,8 @@ function cubukDurumunuYaz(cubuk) {
     cubukDurumunuYaz(cubuk);
     if (!cubuk.hasAttribute('data-cubuk-gizlenir')) return;
     /* Kilitliyken (menü, arama, süzgeç açık) çubuk yerinde kalıyor. */
-    if (document.body.classList.contains('m360-scroll-locked') || document.body.classList.contains('lst-sheet-open')) return;
+    const govde = document.body.classList;
+    if (govde.contains('m360-scroll-locked') || govde.contains('lst-sheet-open') || govde.contains('lst-sort-open') || govde.contains('lst-plan-open')) return;
     const y = Math.max(0, window.scrollY || 0);
     if (y < cubuk.offsetHeight * 2) { cubukGoster(cubuk); sonY = y; return; }
     if (Math.abs(y - sonY) < 10) return;
@@ -2380,11 +2381,10 @@ const filterDefaults = {
   siralama: 'Sırala'
 };
 
+/* Her süzgeç değişikliği buradan geçiyor: sonuçları aynı sayfada çiz.
+   Şeridin sonundaki "Filtreleri temizle" kalktı; temizleme sonuçların
+   başlığında ve çiplerin çarpısında. */
 function updateClearAllVisibility() {
-  const hasActive = Object.values(filterState).some(Boolean);
-  const clearBtn = document.getElementById('clearAllFilters');
-  if (clearBtn) clearBtn.classList.toggle('visible', hasActive);
-  /* Her süzgeç değişikliği buradan geçiyor: sonuçları aynı sayfada çiz. */
   anasayfaSonuclariniCiz(false);
 }
 
@@ -2619,11 +2619,15 @@ function openFilterDropdown(wrap) {
 
   closeAllFilterDropdowns(wrap);
 
-  /* Mobilde "İptal et" için açılış anındaki seçimi sakla.
-     Seçenekler panel açıkken anlık olarak chip'e yansıyabilir; iptal edilirse
-     bu değer geri yüklenir. */
-  if (wrap.dataset.dropdown !== 'tarih') {
-    wrap._filterDraftValue = filterState[wrap.dataset.dropdown];
+  /* Çekmece her açılışta uygulanmış seçimle başlar: "Uygula"ya basılmadan
+     kapatılan (İptal, karartma, aşağı çekme) taslak atılır. */
+  if (wrap.dataset.dropdown === 'tarih') {
+    takvimTaslaginiYukle();
+  } else {
+    delete wrap._filterTaslak;
+    panel.querySelectorAll('button[data-value]').forEach(button => {
+      button.classList.toggle('selected', button.dataset.value === filterState[wrap.dataset.dropdown]);
+    });
   }
 
   /* The panel is portalled once and stays under <body>. It never becomes a
@@ -2768,6 +2772,20 @@ document.querySelectorAll('.filter-dropdown-wrap').forEach(wrap => {
     const value = option.dataset.value;
     const neutral = key === 'tarih' && value === 'Tüm Tarihler';
 
+    /* Mobilde jenerik filtreler (Sırala, Süre, Bölge, Tema, Maks. Tutar)
+       alt çekmece: dokunulan seçenek yalnızca çekmecede işaretlenir; çip
+       ve sonuçlar "Uygula"ya basınca değişir. Seçili seçeneğe yeniden
+       dokunmak seçimi kaldırır. Masaüstünde "Uygula" yok: seçince
+       uygulanır ve panel kapanır. */
+    if (isMobileViewport() && panel.classList.contains('generic-filter-panel')) {
+      const secili = option.classList.contains('selected');
+      panel.querySelectorAll('button[data-value]')
+        .forEach(button => button.classList.remove('selected'));
+      if (!secili) option.classList.add('selected');
+      wrap._filterTaslak = secili ? null : value;
+      return;
+    }
+
     panel.querySelectorAll('button[data-value]')
       .forEach(button => button.classList.remove('selected'));
 
@@ -2780,15 +2798,7 @@ document.querySelectorAll('.filter-dropdown-wrap').forEach(wrap => {
       setChipActive(key, true, value);
     }
 
-    /* Mobilde jenerik filtreler (Sırala, Süre, Bölge, Tema, Maks. Tutar)
-       alt sayfa (bottom sheet) olarak açılır ve seçenek dokununca hemen
-       kapanmaz; kullanıcı seçimini görüp "Uygula" ile (veya karartılmış
-       alanı/tutamacı kullanarak) kendisi kapatır. Masaüstünde ve tarih
-       panelinde önceki davranış (seçince anında kapanma) korunur. */
-    const isGenericMobileSheet = isMobileViewport() && panel.classList.contains('generic-filter-panel');
-    if (!isGenericMobileSheet) {
-      closeFilterDropdown(wrap);
-    }
+    closeFilterDropdown(wrap);
     updateClearAllVisibility();
   });
 });
@@ -2803,8 +2813,10 @@ document.querySelectorAll('[data-generic-close]').forEach(button => {
   });
 });
 
-/* Jenerik filtrelerde seçim panel açıkken hazırlanır. "İptal et"
-   açılıştaki değere döner; "Uygula" ise mevcut seçimi kabul eder. */
+/* Jenerik filtrelerde seçim çekmece açıkken taslak (wrap._filterTaslak).
+   "İptal et" taslağı atar, hiçbir şey değişmez; "Uygula" taslağı uygular:
+   çip, sonuçlar ve sayı ancak o zaman değişir. Uygula'ya basmadan
+   kapatmak (karartma, aşağı çekme) da taslağı atar. */
 document.querySelectorAll('[data-generic-cancel]').forEach(button => {
   const key = button.dataset.genericCancel;
   button.addEventListener('click', event => {
@@ -2813,21 +2825,8 @@ document.querySelectorAll('[data-generic-cancel]').forEach(button => {
 
     const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
     if (!wrap) return;
-
-    const originalValue = wrap._filterDraftValue ?? null;
-    filterState[key] = originalValue;
-
-    const panel = getFilterPanel(wrap);
-    if (panel) {
-      panel.querySelectorAll('button[data-value]').forEach(option => {
-        option.classList.toggle('selected', option.dataset.value === originalValue);
-      });
-    }
-
-    setChipActive(key, Boolean(originalValue), originalValue);
-    updateClearAllVisibility();
+    delete wrap._filterTaslak;
     closeFilterDropdown(wrap);
-    delete wrap._filterDraftValue;
   });
 });
 
@@ -2837,8 +2836,14 @@ document.querySelectorAll('[data-generic-apply]').forEach(button => {
     event.preventDefault();
     event.stopPropagation();
     const wrap = document.querySelector(`.filter-dropdown-wrap[data-dropdown="${key}"]`);
+    if (wrap && Object.prototype.hasOwnProperty.call(wrap, '_filterTaslak')) {
+      const deger = wrap._filterTaslak;
+      delete wrap._filterTaslak;
+      filterState[key] = deger;
+      setChipActive(key, Boolean(deger), deger);
+      updateClearAllVisibility();
+    }
     closeFilterDropdown(wrap);
-    if (wrap) delete wrap._filterDraftValue;
   });
 });
 
@@ -2884,14 +2889,6 @@ anaSuzgecSecenekleriniKur();
 onId('homeResultsMore', 'click', () => anasayfaSonuclariniCiz(true));
 document.addEventListener('click', (e) => { if (e.target.closest('[data-home-results-clear]')) clearAllFilters(); });
 
-const clearAllBtn = document.getElementById('clearAllFilters');
-if (clearAllBtn) {
-  clearAllBtn.addEventListener('click', event => {
-    event.preventDefault();
-    event.stopPropagation();
-    clearAllFilters();
-  });
-}
 
 // Dropdown body'ye taşındığı için klasik "panel dışı" kontrolü
 // artık panelin wrapper içinde olup olmamasına bakmadan çalışır.
@@ -2944,27 +2941,25 @@ function dateCalFormat(d) {
   return new Intl.DateTimeFormat('tr-TR', { day:'numeric', month:'short', year:'numeric' }).format(d);
 }
 
-function renderDateCalendar() {
-  const grid = document.getElementById('dateCalGrid');
-  const title = document.getElementById('dateCalTitle');
-  if (!grid || !title) return;
-
-  title.textContent = dateCalMonthsTR[dateCalViewMonth] + ' ' + dateCalViewYear;
-
-  const firstDay = new Date(dateCalViewYear, dateCalViewMonth, 1);
+/* Takvim ızgarası: anasayfa tarih süzgeci ve liste sayfasındaki "Ne zaman,
+   kaç kişi?" paneli (listing-page.js) aynı ızgarayı kullanıyor.
+   Pazartesi başlangıçlı ay görünümü; komşu ayların günleri soluk ama
+   seçilebilir (gerçek tarih); bugünden önceki günler kapalı.
+   yil/ay: görünen ay (ay 0-11); bugun, bas, bit: gün başı Date ya da null. */
+function takvimGunleriMarkup(yil, ay, bugun, bas, bit) {
+  const firstDay = new Date(yil, ay, 1);
   // Pazartesi başlangıçlı hafta indexi (0=Pt ... 6=Pz)
   const startOffset = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = new Date(dateCalViewYear, dateCalViewMonth + 1, 0).getDate();
+  const daysInMonth = new Date(yil, ay + 1, 0).getDate();
 
   // Önceki ayın son günleri — griden gösterilir ama tıklanabilir (gerçek tarih).
-  const prevMonthDate = new Date(dateCalViewYear, dateCalViewMonth, 0);
-  const prevMonthDays = prevMonthDate.getDate();
-  const prevMonthIndex = dateCalViewMonth === 0 ? 11 : dateCalViewMonth - 1;
-  const prevMonthYear = dateCalViewMonth === 0 ? dateCalViewYear - 1 : dateCalViewYear;
+  const prevMonthDays = new Date(yil, ay, 0).getDate();
+  const prevMonthIndex = ay === 0 ? 11 : ay - 1;
+  const prevMonthYear = ay === 0 ? yil - 1 : yil;
 
   // Sonraki ayın ilk günleri.
-  const nextMonthIndex = dateCalViewMonth === 11 ? 0 : dateCalViewMonth + 1;
-  const nextMonthYear = dateCalViewMonth === 11 ? dateCalViewYear + 1 : dateCalViewYear;
+  const nextMonthIndex = ay === 11 ? 0 : ay + 1;
+  const nextMonthYear = ay === 11 ? yil + 1 : yil;
 
   const filledCells = startOffset + daysInMonth;
   const trailingCells = (7 - (filledCells % 7)) % 7;
@@ -2973,16 +2968,16 @@ function renderDateCalendar() {
     const classes = ['date-cal-day'];
     if (adjacent) classes.push('date-cal-day-adjacent');
 
-    const isPast = d < dateCalToday;
-    const isToday = d.getTime() === dateCalToday.getTime();
-    const isStart = dateCalRangeStart && d.getTime() === dateCalRangeStart.getTime();
-    const isEnd = dateCalRangeEnd && d.getTime() === dateCalRangeEnd.getTime();
+    const isPast = d < bugun;
+    const isToday = d.getTime() === bugun.getTime();
+    const isStart = bas && d.getTime() === bas.getTime();
+    const isEnd = bit && d.getTime() === bit.getTime();
 
     if (isPast) classes.push('date-cal-day-disabled');
     if (isToday) classes.push('date-cal-day-today');
     if (isStart) classes.push('date-cal-day-selected', 'date-cal-day-range-start');
     if (isEnd) classes.push('date-cal-day-selected', 'date-cal-day-range-end');
-    if (dateCalRangeStart && dateCalRangeEnd && d > dateCalRangeStart && d < dateCalRangeEnd) {
+    if (bas && bit && d > bas && d < bit) {
       classes.push('date-cal-day-in-range');
     }
 
@@ -2993,27 +2988,45 @@ function renderDateCalendar() {
 
   for (let i = startOffset; i > 0; i--) {
     const day = prevMonthDays - i + 1;
-    const d = new Date(prevMonthYear, prevMonthIndex, day);
-    html += renderDay(d, day, true);
+    html += renderDay(new Date(prevMonthYear, prevMonthIndex, day), day, true);
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const d = new Date(dateCalViewYear, dateCalViewMonth, day);
-    html += renderDay(d, day, false);
+    html += renderDay(new Date(yil, ay, day), day, false);
   }
 
   for (let day = 1; day <= trailingCells; day++) {
-    const d = new Date(nextMonthYear, nextMonthIndex, day);
-    html += renderDay(d, day, true);
+    html += renderDay(new Date(nextMonthYear, nextMonthIndex, day), day, true);
   }
 
-  grid.innerHTML = html;
+  return html;
+}
+
+/* Takvimde bir güne dokununca seçim: ilk dokunuş başlangıç, sonraki
+   bitiş; başlangıçtan önceki bir güne dokunulursa başlangıç değişir;
+   seçim tamamsa yeni seçim başlar. */
+function takvimSecimi(bas, bit, gun) {
+  if (!bas || bit || gun < bas) return { bas: gun, bit: null };
+  return { bas, bit: gun };
+}
+
+function renderDateCalendar() {
+  const grid = document.getElementById('dateCalGrid');
+  const title = document.getElementById('dateCalTitle');
+  if (!grid || !title) return;
+
+  title.textContent = dateCalMonthsTR[dateCalViewMonth] + ' ' + dateCalViewYear;
+  grid.innerHTML = takvimGunleriMarkup(dateCalViewYear, dateCalViewMonth, dateCalToday, dateCalRangeStart, dateCalRangeEnd);
   updateDateCalFooter();
 }
 
+/* Takvimdeki seçim taslak: çip ve sonuçlar "Uygula"ya basınca değişir.
+   Temizle yalnızca taslağı siler (seçim yokken pasif); seçim boşken
+   Uygula, uygulanmış tarih filtresini kaldırır. */
 function updateDateCalFooter() {
   const label = document.getElementById('dateCalRangeLabel');
   const applyBtn = document.getElementById('dateCalApply');
+  const clearBtn = document.getElementById('dateCalClear');
   if (!label || !applyBtn) return;
 
   if (dateCalRangeStart && dateCalRangeEnd) {
@@ -3024,8 +3037,20 @@ function updateDateCalFooter() {
     applyBtn.disabled = true;
   } else {
     label.textContent = 'Tarih aralığı seçin';
-    applyBtn.disabled = true;
+    applyBtn.disabled = !filterState.tarih;
   }
+  if (clearBtn) clearBtn.disabled = !dateCalRangeStart;
+}
+
+/* Takvim açılırken uygulanmış seçimle başlar. */
+function takvimTaslaginiYukle() {
+  const t = filterState.tarih;
+  const gun = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  dateCalRangeStart = t ? gun(t.start) : null;
+  dateCalRangeEnd = t ? gun(t.end) : null;
+  const ay = dateCalRangeStart || dateCalToday;
+  dateCalViewYear = ay.getFullYear();
+  dateCalViewMonth = ay.getMonth();
 }
 
 function resetDateRange() {
@@ -3054,18 +3079,9 @@ onId('dateCalGrid', 'click', event => {
   if (!btn || btn.disabled) return;
 
   const [y,m,d] = btn.dataset.date.split('-').map(Number);
-  const clicked = new Date(y, m-1, d);
-
-  if (!dateCalRangeStart || (dateCalRangeStart && dateCalRangeEnd)) {
-    // Yeni seçim başlat.
-    dateCalRangeStart = clicked;
-    dateCalRangeEnd = null;
-  } else if (clicked < dateCalRangeStart) {
-    // Başlangıçtan önceki bir tarihe tıklandıysa başlangıcı değiştir.
-    dateCalRangeStart = clicked;
-  } else {
-    dateCalRangeEnd = clicked;
-  }
+  const secim = takvimSecimi(dateCalRangeStart, dateCalRangeEnd, new Date(y, m-1, d));
+  dateCalRangeStart = secim.bas;
+  dateCalRangeEnd = secim.bit;
 
   // Komşu ay günü seçildiyse takvim görünümünü o aya kaydır.
   if (btn.classList.contains('date-cal-day-adjacent')) {
@@ -3079,12 +3095,15 @@ onId('dateCalGrid', 'click', event => {
 onId('dateCalClear', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
-  resetDateRange();
+  dateCalRangeStart = null;
+  dateCalRangeEnd = null;
+  renderDateCalendar();
 });
 
 onId('dateCalApply', 'click', event => {
   event.preventDefault();
   event.stopPropagation();
+  if (!dateCalRangeStart && filterState.tarih) { clearFilter('tarih'); return; }
   if (!dateCalRangeStart || !dateCalRangeEnd) return;
 
   const label = dateCalFormat(dateCalRangeStart) + ' – ' + dateCalFormat(dateCalRangeEnd);

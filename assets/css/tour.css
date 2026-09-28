@@ -2063,7 +2063,7 @@
   display: none;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(11,18,48,.5);
+  background: rgba(11,18,48,.55);
   backdrop-filter: blur(3px);
 }
 .tour-sheet.open { display: flex; }
@@ -2080,6 +2080,26 @@
 @media (min-width: 681px) {
   .tour-sheet { align-items: center; }
   .tour-sheet-panel { border-radius: 20px; }
+}
+/* Mobilde alt çekmece: anasayfa süzgeç çekmecesi gibi alttan açılıyor,
+   tutamacı var ve aşağı çekince kapanıyor (ui.js). */
+@media (max-width: 680px) {
+  .tour-sheet.open .tour-sheet-panel { animation: m360SheetUp .28s ease-out; }
+  .tour-sheet-panel { position: relative; padding-top: 26px; }
+  .tour-sheet-panel::before {
+    content: '';
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-sheet.open .tour-sheet-panel { animation: none; }
 }
 .tour-sheet-head {
   display: flex;

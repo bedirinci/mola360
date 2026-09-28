@@ -569,42 +569,103 @@ window.m360AutoHideThumb = function (thumb, options) {
   window.addEventListener('load', taramaYap);
 })();
 
-/* ===== filter-sheet-drag ===== */
+/* ===== alt çekmeceler: aşağı çekince kapanma (ortak) =====
+   Sitedeki bütün alt çekmeceler (anasayfa süzgeçleri, liste süzgeçleri
+   ve sıralaması, "Ne zaman, kaç kişi?", dil/para, rezervasyon özeti)
+   aynı davranıyor:
+   tutamaçtan, başlıktan ya da en üstteki listeden aşağı çekilince parmağı
+   izliyor; yeterince çekilince (ya da hızlı savrulunca) aşağı kayıp
+   kapanıyor, çekilmezse yerine oturuyor.
+
+   Her çekmece CEKMECELER'de bir satır: hangi öğe, ne zaman açık, içindeki
+   kayan liste, karartma katmanı ve nasıl kapanacağı. Kapatma çekmecenin
+   KENDİ kapatma düğmesiyle yapılıyor; odak, adres ve kilit gibi işleri
+   sahibi yürütüyor, burada tekrar yazılmıyor.
+
+   Çekmeceler sayfa kurulurken ya da açılırken sonradan çizilebildiği
+   için dinleyiciler ilk dokunuşta bağlanıyor. */
 (function () {
-  const MOBILE_MAX = 680;
-  /* Kapanma esigi: bu kadar asagi cekilirse ya da hizli bir savurma
-     yapilirsa cekmece kapanir. */
+  /* Kapanma eşiği: bu kadar aşağı çekilirse ya da hızlı bir savurma
+     yapılırsa çekmece kapanır. */
   const CLOSE_DISTANCE = 110;
   const CLOSE_VELOCITY = 0.55;      /* px / ms */
-  const START_THRESHOLD = 5;        /* yon anlasilana kadar beklenen mesafe */
+  const START_THRESHOLD = 5;        /* yön anlaşılana kadar beklenen mesafe */
   const SNAP_MS = 240;
-  /* Cekmecenin icindeki tek kayan katman (CSS ile ayni). */
-  const SCROLLER_SELECTOR = '.generic-filter-options, .date-cal-grid';
 
-  function isMobile() {
-    return window.matchMedia('(max-width: ' + MOBILE_MAX + 'px)').matches;
+  const dugmeyeBas = (secici) => (panel) => {
+    const dugme = panel.querySelector(secici) || document.querySelector(secici);
+    if (dugme) dugme.click();
+  };
+
+  /* sinif: true → ortak sürükleme stili (style.css, .m360-cekmece).
+     Anasayfa süzgeç panelinin kendi stili var (transform). */
+  const CEKMECELER = [
+    { secici: '.filter-dropdown-panel', genislik: 680, sinif: false,
+      acik: (p) => p.classList.contains('is-open'),
+      kaydirici: '.generic-filter-options, .date-cal-grid',
+      katman: (p) => {
+        const wrap = p._m360FilterWrap;
+        return wrap ? (wrap._dropdownOverlay || wrap.querySelector('.filter-generic-overlay, .date-cal-overlay')) : null;
+      },
+      kapat: (p) => { if (p._m360FilterWrap && typeof closeFilterDropdown === 'function') closeFilterDropdown(p._m360FilterWrap); } },
+    { secici: '.lst-filters', genislik: 1024, sinif: true,
+      acik: (p) => p.classList.contains('is-open'),
+      kaydirici: '.lst-filters-body',
+      katman: () => document.getElementById('lstSheetOverlay'),
+      kapat: dugmeyeBas('#lstSheetClose') },
+    { secici: '.lst-plan-panel', genislik: 680, sinif: true,
+      acik: (p) => !p.hidden,
+      kaydirici: 'self',
+      katman: () => document.getElementById('lstPlanKatman'),
+      kapat: dugmeyeBas('[data-plan-kapat]') },
+    { secici: '.lst-sort-panel', genislik: 1024, sinif: true,
+      acik: (p) => !p.hidden,
+      kaydirici: 'self',
+      katman: () => document.getElementById('lstSortKatman'),
+      kapat: dugmeyeBas('[data-sirala-kapat]') },
+    { secici: '.tercih-cekmece', genislik: null, sinif: true,
+      acik: (p) => p.classList.contains('open'),
+      kaydirici: 'self',
+      katman: () => document.getElementById('tercihKatman'),
+      kapat: dugmeyeBas('[data-tercih-kapat]') },
+    { secici: '.tour-sheet-panel', genislik: 680, sinif: true,
+      acik: (p) => !!p.closest('.tour-sheet.open'),
+      kaydirici: 'self',
+      katman: (p) => p.closest('.tour-sheet'),
+      kapat: dugmeyeBas('[data-sheet="close"]') }
+  ];
+
+  const durumlar = new WeakMap();
+
+  function genislikUygun(ayar) {
+    return !ayar.genislik || window.matchMedia('(max-width: ' + ayar.genislik + 'px)').matches;
   }
 
-  function getOverlay(panel) {
-    const wrap = panel._m360FilterWrap;
-    return wrap ? (wrap._dropdownOverlay ||
-      wrap.querySelector('.filter-generic-overlay, .date-cal-overlay')) : null;
+  function bul(hedef) {
+    if (!hedef || !hedef.closest) return null;
+    for (const ayar of CEKMECELER) {
+      const panel = hedef.closest(ayar.secici);
+      if (panel && ayar.acik(panel) && genislikUygun(ayar)) return { panel, ayar };
+    }
+    return null;
   }
 
-  function resetSheet(panel) {
+  function resetSheet(panel, ayar) {
     panel.classList.remove('m360-sheet-dragging', 'm360-sheet-snapping');
     panel.style.removeProperty('--m360-sheet-drag');
     panel.style.removeProperty('touch-action');
-    const overlay = getOverlay(panel);
-    if (overlay) overlay.classList.remove('m360-overlay-closing');
+    const katman = ayar.katman(panel);
+    if (katman) katman.classList.remove('m360-overlay-closing');
   }
 
-  document.querySelectorAll('.filter-dropdown-panel').forEach(panel => {
-    /* Tek bir surukleme durumu: touch ve pointer olaylari ayni state'i
-       paylasir, boylede iki yol ayni anda tetiklenip catismaz. */
-    const st = {
-      id: null,          /* aktif parmak/pointer kimligi */
-      armed: false,      /* dokunuldu, yon henuz belli degil */
+  function durumu(panel, ayar) {
+    let st = durumlar.get(panel);
+    if (st) return st;
+    /* Tek bir sürükleme durumu: touch ve pointer olayları aynı durumu
+       paylaşır, böylece iki yol aynı anda tetiklenip çatışmaz. */
+    st = {
+      id: null,          /* aktif parmak/pointer kimliği */
+      armed: false,      /* dokunuldu, yön henüz belli değil */
       dragging: false,
       startY: 0,
       lastY: 0,
@@ -614,166 +675,171 @@ window.m360AutoHideThumb = function (thumb, options) {
       scroller: null,
       blockClickUntil: 0
     };
-
-    function begin(id, clientY, target) {
-      if (!isMobile() || !panel.classList.contains('is-open')) return;
-      if (st.id !== null) return;
-
-      st.id = id;
-      st.armed = true;
-      st.dragging = false;
-      st.startY = clientY;
-      st.lastY = clientY;
-      st.lastT = Date.now();
-      st.velocity = 0;
-      st.dragY = 0;
-      /* Parmak kayan listenin uzerindeyse, surukleme yalnizca liste
-         en ustteyken (scrollTop 0) devreye girer; aksi halde normal
-         liste kaydirmasi calisir. Liste disindan (tutamac, baslik,
-         footer) her zaman suruklenebilir. */
-      st.scroller = target && target.closest
-        ? target.closest(SCROLLER_SELECTOR)
-        : null;
-      if (st.scroller && !panel.contains(st.scroller)) st.scroller = null;
-    }
-
-    /* @return true -> olayin varsayilan davranisi engellenmeli */
-    function move(id, clientY) {
-      if (st.id !== id) return false;
-
-      const dy = clientY - st.startY;
-      const now = Date.now();
-      const dt = now - st.lastT;
-      if (dt > 0) st.velocity = (clientY - st.lastY) / dt;
-      st.lastY = clientY;
-      st.lastT = now;
-
-      if (st.armed && !st.dragging) {
-        /* Yukari hareket ya da liste ortasindan baslayan hareket:
-           surukleme degil, normal kaydirma. */
-        if (dy < 0 || (st.scroller && st.scroller.scrollTop > 0)) {
-          st.armed = false;
-          st.id = null;
-          return false;
-        }
-        if (Math.abs(dy) < START_THRESHOLD) {
-          /* Yon asagi ve liste en ustte: esik dolana kadar tarayicinin
-             kendi lastik efektini bastir, aksi halde iOS kaydirmayi
-             baslatinca surukleme hic devreye giremiyor. */
-          return dy > 0;
-        }
-        st.armed = false;
-        st.dragging = true;
-        panel.style.touchAction = 'none';
-        panel.classList.add('m360-sheet-dragging');
-      }
-
-      if (!st.dragging) return false;
-
-      st.dragY = Math.max(0, dy);
-      panel.style.setProperty('--m360-sheet-drag', st.dragY + 'px');
-      return true;
-    }
-
-    function end(id) {
-      if (st.id !== id) return;
-      const wasDragging = st.dragging;
-      const dragY = st.dragY;
-      const velocity = st.velocity;
-
-      st.id = null;
-      st.armed = false;
-      st.dragging = false;
-      st.dragY = 0;
-
-      if (!wasDragging) return;
-
-      /* Surukleme bittiyse hemen ardindan gelen "click" yutulur ki
-         parmagin bittigi yerdeki secenek yanlislikla secilmesin. */
-      st.blockClickUntil = Date.now() + 400;
-
-      const wrap = panel._m360FilterWrap;
-      const shouldClose = dragY >= CLOSE_DISTANCE || velocity >= CLOSE_VELOCITY;
-
-      panel.classList.remove('m360-sheet-dragging');
-      panel.classList.add('m360-sheet-snapping');
-      panel.style.removeProperty('touch-action');
-
-      if (shouldClose && wrap && typeof closeFilterDropdown === 'function') {
-        /* Tam panel yuksekligi kadar asagi kaydir: ekranin altindan
-           temizce cikar, karartma da ayni surede soner. */
-        const height = panel.getBoundingClientRect().height || window.innerHeight;
-        const overlay = getOverlay(panel);
-        if (overlay) overlay.classList.add('m360-overlay-closing');
-        panel.style.setProperty('--m360-sheet-drag', (height + 40) + 'px');
-        window.setTimeout(function () {
-          closeFilterDropdown(wrap);
-          resetSheet(panel);
-        }, SNAP_MS);
-      } else {
-        /* Esik asilmadi: cekmece yerine geri otursun. */
-        panel.style.setProperty('--m360-sheet-drag', '0px');
-        window.setTimeout(function () { resetSheet(panel); }, SNAP_MS);
-      }
-    }
-
-    panel.addEventListener('touchstart', function (event) {
-      if (!event.touches || event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      begin('t' + touch.identifier, touch.clientY, event.target);
-    }, { passive: true });
+    durumlar.set(panel, st);
+    if (ayar.sinif) panel.classList.add('m360-cekmece');
 
     panel.addEventListener('touchmove', function (event) {
       if (!event.touches || !event.touches.length) return;
       const touch = event.touches[0];
-      if (move('t' + touch.identifier, touch.clientY)) event.preventDefault();
+      if (move(panel, st, 't' + touch.identifier, touch.clientY)) event.preventDefault();
     }, { passive: false });
-
-    panel.addEventListener('touchend', function (event) {
+    const touchBitti = function (event) {
       const touch = (event.changedTouches && event.changedTouches[0]) || null;
-      end(touch ? 't' + touch.identifier : st.id);
-    }, { passive: true });
-
-    panel.addEventListener('touchcancel', function (event) {
-      const touch = (event.changedTouches && event.changedTouches[0]) || null;
-      end(touch ? 't' + touch.identifier : st.id);
-    }, { passive: true });
-
-    /* Touch olaylari olmayan dokunmatik cihazlar (bazi Windows/Android
-       tarayicilari) icin ayni mantik pointer olaylariyla. */
-    const hasTouch = 'ontouchstart' in window;
-
-    panel.addEventListener('pointerdown', function (event) {
-      if (hasTouch || event.pointerType === 'mouse') return;
-      begin('p' + event.pointerId, event.clientY, event.target);
-      if (panel.setPointerCapture) {
-        try { panel.setPointerCapture(event.pointerId); } catch (e) {}
-      }
-    });
+      end(panel, ayar, st, touch ? 't' + touch.identifier : st.id);
+    };
+    panel.addEventListener('touchend', touchBitti, { passive: true });
+    panel.addEventListener('touchcancel', touchBitti, { passive: true });
 
     panel.addEventListener('pointermove', function (event) {
       if (hasTouch || event.pointerType === 'mouse') return;
-      if (move('p' + event.pointerId, event.clientY)) event.preventDefault();
+      if (move(panel, st, 'p' + event.pointerId, event.clientY)) event.preventDefault();
     });
-
-    function pointerFinish(event) {
+    const pointerBitti = function (event) {
       if (hasTouch || event.pointerType === 'mouse') return;
-      end('p' + event.pointerId);
-    }
+      end(panel, ayar, st, 'p' + event.pointerId);
+    };
+    panel.addEventListener('pointerup', pointerBitti);
+    panel.addEventListener('pointercancel', pointerBitti);
 
-    panel.addEventListener('pointerup', pointerFinish);
-    panel.addEventListener('pointercancel', pointerFinish);
-
+    /* Sürükleme bittiyse hemen ardından gelen "click" yutulur ki parmağın
+       bittiği yerdeki seçenek yanlışlıkla seçilmesin. */
     panel.addEventListener('click', function (event) {
       if (Date.now() < st.blockClickUntil) {
         event.preventDefault();
         event.stopPropagation();
       }
     }, true);
-  });
+    return st;
+  }
 
+  function begin(panel, ayar, st, id, clientY, target) {
+    if (st.id !== null) return;
+    st.id = id;
+    st.armed = true;
+    st.dragging = false;
+    st.startY = clientY;
+    st.lastY = clientY;
+    st.lastT = Date.now();
+    st.velocity = 0;
+    st.dragY = 0;
+    /* Parmak kayan listenin üzerindeyse sürükleme yalnızca liste en
+       üstteyken (scrollTop 0) devreye girer; aksi halde normal liste
+       kaydırması çalışır. Liste dışından (tutamaç, başlık, alt çubuk)
+       her zaman sürüklenebilir. Çekmecenin tamamı kayıyorsa ("self")
+       çekmecenin kendisi liste sayılır. */
+    if (ayar.kaydirici === 'self') st.scroller = panel;
+    else {
+      const liste = ayar.kaydirici && target && target.closest ? target.closest(ayar.kaydirici) : null;
+      st.scroller = liste && panel.contains(liste) ? liste : null;
+    }
+  }
+
+  /* @return true -> olayın varsayılan davranışı engellenmeli */
+  function move(panel, st, id, clientY) {
+    if (st.id !== id) return false;
+
+    const dy = clientY - st.startY;
+    const now = Date.now();
+    const dt = now - st.lastT;
+    if (dt > 0) st.velocity = (clientY - st.lastY) / dt;
+    st.lastY = clientY;
+    st.lastT = now;
+
+    if (st.armed && !st.dragging) {
+      /* Yukarı hareket ya da liste ortasından başlayan hareket:
+         sürükleme değil, normal kaydırma. */
+      if (dy < 0 || (st.scroller && st.scroller.scrollTop > 0)) {
+        st.armed = false;
+        st.id = null;
+        return false;
+      }
+      if (Math.abs(dy) < START_THRESHOLD) {
+        /* Yön aşağı ve liste en üstte: eşik dolana kadar tarayıcının
+           kendi lastik efektini bastır, aksi halde iOS kaydırmayı
+           başlatınca sürükleme hiç devreye giremiyor. */
+        return dy > 0;
+      }
+      st.armed = false;
+      st.dragging = true;
+      panel.style.touchAction = 'none';
+      panel.classList.add('m360-sheet-dragging');
+    }
+
+    if (!st.dragging) return false;
+
+    st.dragY = Math.max(0, dy);
+    panel.style.setProperty('--m360-sheet-drag', st.dragY + 'px');
+    return true;
+  }
+
+  function end(panel, ayar, st, id) {
+    if (st.id !== id) return;
+    const wasDragging = st.dragging;
+    const dragY = st.dragY;
+    const velocity = st.velocity;
+
+    st.id = null;
+    st.armed = false;
+    st.dragging = false;
+    st.dragY = 0;
+
+    if (!wasDragging) return;
+
+    st.blockClickUntil = Date.now() + 400;
+    const shouldClose = dragY >= CLOSE_DISTANCE || velocity >= CLOSE_VELOCITY;
+
+    panel.classList.remove('m360-sheet-dragging');
+    panel.classList.add('m360-sheet-snapping');
+    panel.style.removeProperty('touch-action');
+
+    if (shouldClose) {
+      /* Tam çekmece yüksekliği kadar aşağı kaydır: ekranın altından
+         temizce çıkar, karartma da aynı sürede söner. */
+      const height = panel.getBoundingClientRect().height || window.innerHeight;
+      const katman = ayar.katman(panel);
+      if (katman) katman.classList.add('m360-overlay-closing');
+      panel.style.setProperty('--m360-sheet-drag', (height + 40) + 'px');
+      window.setTimeout(function () {
+        /* Kapatma çekmecenin kendi düğmesine basarak yapılıyor; o
+           tıklamayı yukarıdaki "hayalet tık" koruması yutmasın. */
+        st.blockClickUntil = 0;
+        ayar.kapat(panel);
+        resetSheet(panel, ayar);
+      }, SNAP_MS);
+    } else {
+      /* Eşik aşılmadı: çekmece yerine geri otursun. */
+      panel.style.setProperty('--m360-sheet-drag', '0px');
+      window.setTimeout(function () { resetSheet(panel, ayar); }, SNAP_MS);
+    }
+  }
+
+  /* Touch olayları olmayan dokunmatik cihazlar (bazı Windows/Android
+     tarayıcıları) için aynı mantık pointer olaylarıyla. */
+  const hasTouch = 'ontouchstart' in window;
+
+  document.addEventListener('touchstart', function (event) {
+    if (!event.touches || event.touches.length !== 1) return;
+    const bulunan = bul(event.target);
+    if (!bulunan) return;
+    const st = durumu(bulunan.panel, bulunan.ayar);
+    const touch = event.touches[0];
+    begin(bulunan.panel, bulunan.ayar, st, 't' + touch.identifier, touch.clientY, event.target);
+  }, { passive: true, capture: true });
+
+  document.addEventListener('pointerdown', function (event) {
+    if (hasTouch || event.pointerType === 'mouse') return;
+    const bulunan = bul(event.target);
+    if (!bulunan) return;
+    const st = durumu(bulunan.panel, bulunan.ayar);
+    begin(bulunan.panel, bulunan.ayar, st, 'p' + event.pointerId, event.clientY, event.target);
+    if (bulunan.panel.setPointerCapture) {
+      try { bulunan.panel.setPointerCapture(event.pointerId); } catch (e) {}
+    }
+  }, true);
+
+  /* Anasayfa süzgeç paneli kapandıktan sonra sürükleme izi kalmasın. */
   document.addEventListener('click', function () {
-    document.querySelectorAll('.filter-dropdown-panel:not(.is-open)').forEach(resetSheet);
+    document.querySelectorAll('.filter-dropdown-panel:not(.is-open)').forEach(p => resetSheet(p, CEKMECELER[0]));
   }, true);
 })();
 /* ===== cift dokunusla yakinlastirma ===== */

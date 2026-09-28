@@ -63,6 +63,8 @@ const LSP_IKON = {
   asagi: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>',
   takvim: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><line x1="3" y1="9.5" x2="21" y2="9.5"></line><line x1="8" y1="2.5" x2="8" y2="6.5"></line><line x1="16" y1="2.5" x2="16" y2="6.5"></line></svg>',
   kisiler: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"></path><path d="M18 14.3c2.2.7 3.5 2.8 3.5 5.7"></path></svg>',
+  sirala: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"></path><polyline points="3 8 7 4 11 8"></polyline><path d="M17 20V4"></path><polyline points="13 16 17 20 21 16"></polyline></svg>',
+  tik: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7"></polyline></svg>',
   menu: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>',
   kilit: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>',
   whatsapp: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/></svg>'
@@ -152,9 +154,22 @@ function lspEtiketMarkup(etiketler) {
     + '<button class="lst-pill-clear" type="button" data-temizle>Tümünü temizle</button>';
 }
 
+/* Sıralama seçenekleri: çekmecedeki radyo satırları (anasayfa süzgeç
+   çekmecesinin seçenekleriyle aynı görünüm). */
 function lspSiralamaMarkup(siralamalar, secili) {
-  return (siralamalar || []).map(s => '<option value="' + lspKacis(s.slug) + '"' + (s.slug === secili ? ' selected' : '') + '>'
-    + lspKacis(s.name) + '</option>').join('');
+  return (siralamalar || []).map(s => '<button class="lst-sort-secenek" type="button" role="radio" data-sirala="' + lspKacis(s.slug) + '"'
+    + ' aria-checked="' + (s.slug === secili ? 'true' : 'false') + '">' + lspKacis(s.name) + '</button>').join('');
+}
+
+/* Başlığın altındaki güven çipleri (MolaVeri.listeSeo → avantajlar):
+   ürünlerin kendi kurallarından. Ürün sayısı araç çubuğunda yazıyor,
+   burada tekrarlanmıyor. */
+function lspAvantajMarkup(avantajlar) {
+  if (!avantajlar || !avantajlar.length) return '';
+  return '<ul class="lst-avantajlar" aria-label="Bu listede">'
+    + avantajlar.map(a => '<li class="lst-avantaj" data-avantaj="' + lspKacis(a.kod) + '"' + (a.ipucu ? ' title="' + lspKacis(a.ipucu) + '"' : '') + '>'
+      + '<span class="icon">' + LSP_IKON.tik + '</span>' + lspKacis(a.metin) + '</li>').join('')
+    + '</ul>';
 }
 
 /* Satırdan kart: anasayfanın kart üreticisi (catalog.js) ve kart
@@ -391,6 +406,19 @@ function lspGunEkle(iso, gun) {
   const [y, a, g] = iso.split('-').map(Number);
   return lspISO(new Date(y, a - 1, g + gun));
 }
+const LSP_GUN_KISA = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+const LSP_AY_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+/* "3 Eki Cmt" */
+function lspTarihGunlu(iso) {
+  const [y, a, g] = iso.split('-').map(Number);
+  return g + ' ' + LSP_AY_KISA[a - 1] + ' ' + LSP_GUN_KISA[new Date(y, a - 1, g).getDay()];
+}
+/* Takvimin altındaki satır: seçilen gün/aralık ya da ne seçileceği. */
+function lspPlanSecimMetni(bas, bit, konaklama) {
+  if (!bas) return konaklama ? 'Giriş gününü seç' : 'Bir gün ya da tarih aralığı seç';
+  if (!bit) return lspTarihGunlu(bas) + (konaklama ? ' · çıkış gününü seç' : ' · bitiş için bir gün daha seçebilirsin');
+  return lspTarihGunlu(bas) + ' – ' + lspTarihGunlu(bit) + (konaklama ? ' · ' + lspGeceSayisi(bas, bit) + ' gece' : '');
+}
 function lspTarihKisa(iso) {
   const [, a, g] = iso.split('-').map(Number);
   return g + ' ' + LSP_AY_KISA[a - 1];
@@ -457,9 +485,16 @@ function lspPlanPaneliMarkup(konaklama) {
     + '<button class="lst-plan-kapat" type="button" data-plan-kapat aria-label="Kapat"><span class="icon">' + LSP_IKON.kapat + '</span></button></div>'
     + '<fieldset class="lst-plan-grup"><legend>' + (konaklama ? 'Giriş – çıkış' : 'Tarih') + '</legend>'
     + '<div class="lst-plan-hizli" id="lstPlanHizli"></div>'
-    + '<div class="lst-plan-aralik">'
-    + '<label><span>' + (konaklama ? 'Giriş' : 'Başlangıç') + '</span><input type="date" id="lstPlanTarih"></label>'
-    + '<label><span>' + (konaklama ? 'Çıkış' : 'Bitiş (isteğe bağlı)') + '</span><input type="date" id="lstPlanBitis"></label>'
+    /* Anasayfa tarih süzgecinin takvimi (app.js, takvimGunleriMarkup). */
+    + '<div class="lst-plan-takvim">'
+    + '<div class="date-cal-header">'
+    + '<button type="button" class="date-cal-nav" data-takvim-ay="-1" aria-label="Önceki ay"><span class="icon">' + LSP_IKON.geri + '</span></button>'
+    + '<div class="date-cal-title" id="lstPlanAy" aria-live="polite"></div>'
+    + '<button type="button" class="date-cal-nav" data-takvim-ay="1" aria-label="Sonraki ay"><span class="icon lst-plan-ileri">' + LSP_IKON.geri + '</span></button>'
+    + '</div>'
+    + '<div class="date-cal-weekdays" aria-hidden="true"><span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span></div>'
+    + '<div class="date-cal-grid" id="lstPlanGunler"></div>'
+    + '<p class="lst-plan-secim" id="lstPlanSecim" aria-live="polite"></p>'
     + '</div></fieldset>'
     + '<fieldset class="lst-plan-grup"><legend>Kişi sayısı</legend>'
     + '<div class="lst-plan-sayac">'
@@ -468,7 +503,7 @@ function lspPlanPaneliMarkup(konaklama) {
     + '<button type="button" data-plan-kisi="1" aria-label="Bir kişi artır">+</button></div>'
     + '<p class="lst-plan-not">Seçimin ürün sayfasındaki rezervasyon kutusuna taşınır; çocuk ve oda sayısını orada seçersin.</p>'
     + '</fieldset>'
-    + '<div class="lst-plan-alt"><button class="lst-link" type="button" data-plan-temizle>Temizle</button>'
+    + '<div class="lst-plan-alt"><button class="lst-clear-btn" type="button" data-plan-temizle>Temizle</button>'
     + '<button class="btn-primary" type="button" data-plan-uygula>Uygula</button></div>'
     + '</div>';
 }
@@ -486,8 +521,7 @@ function lspListeIskeleti(model, seo, plan) {
     + lspKirintiMarkup(model.kirinti)
     + (model.kind === 'search' ? lspAramaFormu(model.q) : '')
     + '<header class="lst-head"><h1>' + lspKacis(model.baslik) + '</h1>'
-    + '<p class="lst-summary">' + lspKacis(lspSayimMetni(seo.adet, model.birim)
-      + (seo.enDusuk ? ' · en düşük ' + seo.enDusuk : '')) + '</p></header>'
+    + lspAvantajMarkup(seo.avantajlar) + '</header>'
     + lspPlanKutusuMarkup(plan, lspKonaklamaMi(model))
     + lspCiplerMarkup(model.altlar)
     + '<div class="lst-layout">'
@@ -497,7 +531,7 @@ function lspListeIskeleti(model, seo, plan) {
     + '<button class="lst-link" type="button" data-temizle id="lstClearTop">Temizle</button>'
     + '<button class="lst-sheet-close" type="button" id="lstSheetClose" aria-label="Kapat">' + LSP_IKON.kapat + '</button></div>'
     + '<div class="lst-filters-body" id="lstFilterBody"></div>'
-    + '<div class="lst-filters-foot"><button class="lst-link" type="button" data-temizle>Temizle</button>'
+    + '<div class="lst-filters-foot"><button class="lst-clear-btn" type="button" data-temizle data-temizle-sabit disabled>Temizle</button>'
     + '<button class="btn-primary lst-apply" type="button" id="lstApply">Sonuçları gör</button></div>'
     + '</aside>'
     + '<section class="lst-results" aria-label="Sonuçlar">'
@@ -506,8 +540,15 @@ function lspListeIskeleti(model, seo, plan) {
     + '<div class="lst-toolbar-actions">'
     + '<button class="lst-tool-btn lst-filter-btn" type="button" id="lstFilterBtn" aria-controls="lstFilters" aria-expanded="false">'
     + '<span class="icon">' + LSP_IKON.suzgec + '</span>Filtrele<span class="lst-badge" id="lstBadge" hidden></span></button>'
-    + '<label class="lst-tool-btn lst-sort"><span class="lst-visually-hidden">Sırala</span>'
-    + '<select id="lstSort"></select><span class="icon lst-sort-chev">' + LSP_IKON.asagi + '</span></label>'
+    + '<div class="lst-sort">'
+    + '<button class="lst-tool-btn lst-sort-btn" type="button" id="lstSortBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstSortPanel">'
+    + '<span class="icon">' + LSP_IKON.sirala + '</span><span class="lst-visually-hidden">Sıralama: </span><span id="lstSortLabel"></span></button>'
+    + '<div class="lst-sort-katman" id="lstSortKatman" hidden></div>'
+    + '<div class="lst-sort-panel" id="lstSortPanel" role="dialog" aria-modal="true" aria-labelledby="lstSortBaslik" tabindex="-1" hidden>'
+    + '<div class="lst-sort-bas"><h2 id="lstSortBaslik">Sırala</h2>'
+    + '<button class="lst-sheet-close lst-sort-kapat" type="button" data-sirala-kapat aria-label="Kapat">' + LSP_IKON.kapat + '</button></div>'
+    + '<div class="lst-sort-liste" id="lstSortListe" role="radiogroup" aria-labelledby="lstSortBaslik"></div>'
+    + '</div></div>'
     + '</div></div>'
     + '<div class="lst-active" id="lstActive"></div>'
     + '<div class="lst-grid" id="lstGrid"></div>'
@@ -541,7 +582,13 @@ function lspListeKur(kok, model, seo, bugun) {
   kok.innerHTML = lspMobilBaslikMarkup(model.baslik, lspSayimMetni(seo.adet, model.birim), lspGeriYolu(model.kirinti))
     + lspListeIskeleti(model, seo, plan);
   const $ = (id) => document.getElementById(id);
-  $('lstSort').innerHTML = lspSiralamaMarkup(siralamalar, durum.siralama);
+  /* Sıralama düğmesinin yazısı ve çekmecedeki seçili satır. */
+  const siralamaYaz = () => {
+    const secili = siralamalar.find(x => x.slug === durum.siralama) || siralamalar[0];
+    $('lstSortLabel').textContent = secili ? secili.name : 'Sırala';
+    $('lstSortListe').innerHTML = lspSiralamaMarkup(siralamalar, secili ? secili.slug : '');
+  };
+  siralamaYaz();
 
   /* Adres: motorun parametreleri yeniden yazılıyor, diğerleri (utm_*)
      korunuyor. Geçmişe yeni kayıt eklenmiyor: geri tuşu önceki SAYFAYA
@@ -578,7 +625,12 @@ function lspListeKur(kok, model, seo, bugun) {
     $('lstBadge').hidden = !secimSayisi;
     $('lstBadge').textContent = String(secimSayisi);
     $('lstApply').textContent = sonuc.toplam ? sonuc.toplam + ' sonucu gör' : 'Sonuç yok';
-    document.querySelectorAll('[data-temizle]').forEach(b => { b.hidden = !secimSayisi; });
+    /* Çekmecenin altındaki Temizle hep yerinde: seçim yoksa pasif (gri),
+       varsa etkin. Diğer Temizle bağları seçim yokken gizli. */
+    document.querySelectorAll('[data-temizle]').forEach(b => {
+      if (b.hasAttribute('data-temizle-sabit')) b.disabled = !secimSayisi;
+      else b.hidden = !secimSayisi;
+    });
 
     $('lstGrid').innerHTML = lspKartlarMarkup(sonuc.satirlar, bugun, plan, uyelikBandi());
     $('lstMore').hidden = !sonuc.dahaVar;
@@ -629,10 +681,6 @@ function lspListeKur(kok, model, seo, bugun) {
     if (kutu) {
       const alan = alanlar.find(a => a.key === kutu.getAttribute('data-alan'));
       if (alan) uygula(degistir(durum, alan, kutu.value));
-      return;
-    }
-    if (e.target.id === 'lstSort') {
-      uygula({ secim: durum.secim, siralama: e.target.value, sayfa: 1 });
     }
   });
 
@@ -686,11 +734,22 @@ function lspListeKur(kok, model, seo, bugun) {
   const planPanel = $('lstPlanPanel');
   const planKatman = $('lstPlanKatman');
   const planBtn = $('lstPlanBtn');
-  const tarihKutusu = $('lstPlanTarih');
-  const bitisKutusu = $('lstPlanBitis');
   let taslakKisi = LSP_VARSAYILAN_KISI;
-  tarihKutusu.min = bugunISO;
-  bitisKutusu.min = bugunISO;
+  /* Paneldeki seçim (Uygula'ya kadar taslak) ve takvimin görünen ayı. */
+  let taslak = { bas: null, bit: null };
+  let gorunum = { yil: bugun.getFullYear(), ay: bugun.getMonth() };
+  const gunDate = (iso) => { if (!iso) return null; const [y, a, g] = iso.split('-').map(Number); return new Date(y, a - 1, g); };
+  const takvimCiz = () => {
+    const ayKutu = $('lstPlanAy');
+    ayKutu.textContent = LSP_AY_UZUN[gorunum.ay] + ' ' + gorunum.yil;
+    /* Tek gün seçiliyken o gün tam yuvarlak görünsün: bitiş = başlangıç. */
+    $('lstPlanGunler').innerHTML = (typeof takvimGunleriMarkup === 'function')
+      ? takvimGunleriMarkup(gorunum.yil, gorunum.ay, gunDate(bugunISO), gunDate(taslak.bas), gunDate(taslak.bit || taslak.bas))
+      : '';
+    planPanel.querySelector('[data-takvim-ay="-1"]').disabled = gorunum.yil === bugun.getFullYear() && gorunum.ay === bugun.getMonth();
+    $('lstPlanSecim').textContent = lspPlanSecimMetni(taslak.bas, taslak.bit, konaklama);
+  };
+  const aya = (iso) => { if (iso) { const d = gunDate(iso); gorunum = { yil: d.getFullYear(), ay: d.getMonth() }; } };
   $('lstPlanHizli').innerHTML = [{ slug: '', name: konaklama ? 'Tarih yok' : 'Tüm tarihler' }].concat(onAyarlar)
     .map(o => '<button class="lst-plan-cip" type="button" data-plan-hizli="' + o.slug + '" aria-pressed="false">' + lspKacis(o.name) + '</button>').join('');
 
@@ -702,24 +761,33 @@ function lspListeKur(kok, model, seo, bugun) {
     history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   };
   const basiliYaz = () => {
-    const t = tarihKutusu.value || null;
-    const b = bitisKutusu.value || null;
+    const t = taslak.bas;
+    const b = taslak.bit;
     planPanel.querySelectorAll('[data-plan-hizli]').forEach(dugme => {
       const o = onAyarlar.find(x => x.slug === dugme.getAttribute('data-plan-hizli'));
       const uyuyor = o ? (o.tarih === t && (o.bitis || null) === b) : (!t && !b);
       dugme.setAttribute('aria-pressed', String(uyuyor));
     });
-    bitisKutusu.min = t ? lspGunEkle(t, konaklama ? 1 : 0) : bugunISO;
+    takvimCiz();
+    temizleYaz();
+  };
+  /* Temizle: uygulanmış bir seçim ya da paneldeki taslakta bir değer
+     varsa etkin, yoksa pasif. */
+  const temizleYaz = () => {
+    const dolu = !!(plan.tarih || plan.kisi || taslak.bas || taslakKisi !== LSP_VARSAYILAN_KISI);
+    planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;
   };
   const kisiYaz = () => {
     $('lstPlanKisi').textContent = String(taslakKisi);
     planPanel.querySelector('[data-plan-kisi="-1"]').disabled = taslakKisi <= 1;
     planPanel.querySelector('[data-plan-kisi="1"]').disabled = taslakKisi >= kisiSiniri;
+    temizleYaz();
   };
   const panelAc = (ac) => {
     if (ac) {
-      tarihKutusu.value = plan.tarih || '';
-      bitisKutusu.value = plan.bitis || '';
+      taslak = { bas: plan.tarih || null, bit: plan.bitis || null };
+      gorunum = { yil: bugun.getFullYear(), ay: bugun.getMonth() };
+      aya(plan.tarih);
       taslakKisi = plan.kisi || LSP_VARSAYILAN_KISI;
       basiliYaz();
       kisiYaz();
@@ -749,8 +817,25 @@ function lspListeKur(kok, model, seo, bugun) {
     const hizli = e.target.closest('[data-plan-hizli]');
     if (hizli) {
       const o = onAyarlar.find(x => x.slug === hizli.getAttribute('data-plan-hizli'));
-      tarihKutusu.value = o ? o.tarih : '';
-      bitisKutusu.value = o && o.bitis ? o.bitis : '';
+      taslak = { bas: o ? o.tarih : null, bit: o && o.bitis ? o.bitis : null };
+      aya(taslak.bas);
+      basiliYaz();
+      return;
+    }
+    const ayOk = e.target.closest('[data-takvim-ay]');
+    if (ayOk && !ayOk.disabled) {
+      const yeni = new Date(gorunum.yil, gorunum.ay + Number(ayOk.getAttribute('data-takvim-ay')), 1);
+      gorunum = { yil: yeni.getFullYear(), ay: yeni.getMonth() };
+      takvimCiz();
+      return;
+    }
+    const gun = e.target.closest('.date-cal-day[data-date]');
+    if (gun && !gun.disabled && typeof takvimSecimi === 'function') {
+      const secim = takvimSecimi(gunDate(taslak.bas), gunDate(taslak.bit), gunDate(gun.getAttribute('data-date')));
+      taslak = { bas: lspISO(secim.bas), bit: secim.bit ? lspISO(secim.bit) : null };
+      /* Aynı güne ikinci dokunuş: tek gün (otelde çıkış girişle aynı olamaz). */
+      if (taslak.bit === taslak.bas) taslak.bit = null;
+      if (gun.classList.contains('date-cal-day-adjacent')) aya(gun.getAttribute('data-date'));
       basiliYaz();
       return;
     }
@@ -762,24 +847,55 @@ function lspListeKur(kok, model, seo, bugun) {
     }
     if (e.target.closest('[data-plan-temizle]')) { planUygula({ tarih: null, bitis: null, kisi: null }); return; }
     if (e.target.closest('[data-plan-uygula]')) {
-      let t = tarihKutusu.value || null;
-      let b = bitisKutusu.value || null;
-      if (!t && b) { t = b; b = null; }
+      let t = taslak.bas;
+      let b = taslak.bit;
       if (t && t < bugunISO) t = bugunISO;
-      if (t && b && b < t) { const x = t; t = b; b = x; }
-      if (t && b && b === t) b = null;
+      if (t && b && b <= t) b = null;
       /* Otelde çıkış günü yoksa bir gece. */
       if (konaklama && t && !b) b = lspGunEkle(t, 1);
       planUygula({ tarih: t, bitis: b, kisi: taslakKisi !== LSP_VARSAYILAN_KISI ? taslakKisi : null });
     }
   });
-  tarihKutusu.addEventListener('change', () => {
-    if (bitisKutusu.value && bitisKutusu.value < tarihKutusu.value) bitisKutusu.value = '';
-    basiliYaz();
-  });
-  bitisKutusu.addEventListener('change', basiliYaz);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !planPanel.hidden) panelAc(false);
+  });
+
+  /* ---- sıralama ----
+     "Filtrele" ile aynı düğme. Mobilde ve tablette süzgeç çekmecesiyle
+     aynı dilde alt çekmece, masaüstünde düğmenin altında küçük panel.
+     Seçince hemen uygulanıyor. Dar ekranda araç çubuğu yapışkan (kendi
+     katmanı) olduğu için çekmece açılırken <body>'ye taşınıyor; yoksa alt
+     menünün ve üst çubuğun altında kalırdı. */
+  const siralaKutu = document.querySelector('.lst-sort');
+  const siralaPanel = $('lstSortPanel');
+  const siralaKatman = $('lstSortKatman');
+  const siralaBtn = $('lstSortBtn');
+  const siralaAc = (ac) => {
+    if (ac) {
+      const hedef = window.matchMedia('(max-width: 1024px)').matches ? document.body : siralaKutu;
+      if (siralaPanel.parentElement !== hedef) { hedef.appendChild(siralaKatman); hedef.appendChild(siralaPanel); }
+    }
+    siralaPanel.hidden = !ac;
+    siralaKatman.hidden = !ac;
+    siralaBtn.setAttribute('aria-expanded', String(ac));
+    document.body.classList.toggle('lst-sort-open', ac);
+    if (ac) (siralaPanel.querySelector('[aria-checked="true"]') || siralaPanel).focus();
+    else siralaBtn.focus();
+  };
+  siralaBtn.addEventListener('click', () => siralaAc(siralaPanel.hidden));
+  siralaKatman.addEventListener('click', () => siralaAc(false));
+  siralaPanel.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sirala-kapat]')) { siralaAc(false); return; }
+    const secenek = e.target.closest('[data-sirala]');
+    if (!secenek) return;
+    const slug = secenek.getAttribute('data-sirala');
+    siralaAc(false);
+    if (slug === durum.siralama) return;
+    uygula({ secim: durum.secim, siralama: slug, sayfa: 1 });
+    siralamaYaz();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !siralaPanel.hidden) siralaAc(false);
   });
 
   /* Üründen geri dönünce liste kaldığı yerden: kartlar sorgudan sonra
@@ -1110,9 +1226,11 @@ if (typeof module !== 'undefined' && module.exports) {
     lspSuzgecMarkup,
     lspEtiketMarkup,
     lspSiralamaMarkup,
+    lspAvantajMarkup,
     lspKartlarMarkup,
     lspMobilBaslikMarkup,
     lspPlanEtiketi,
+    lspPlanSecimMetni,
     lspPlanOnAyarlari,
     lspPlanKutusuMarkup,
     lspUyelikBandiMarkup,

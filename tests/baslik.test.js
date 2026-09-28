@@ -327,3 +327,235 @@ describe('kart: kampanya satırı', () => {
     expect(app).toContain('${it.campaign ? `<p class="poi-campaign"><span class="icon">${svg(\'percent\')}</span>${it.campaign}</p>` : \'\'}');
   });
 });
+
+describe('mobil menü', () => {
+  const css = yorumsuz(stil);
+
+  it('en üstte aşağı çekince esnemiyor (iOS)', () => {
+    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll \{[^}]*overscroll-behavior: none;/);
+  });
+
+  it('dil/para düğmesi yanındaki yardım bağlarıyla aynı boyda', () => {
+    const mobilBag = css.match(/\.mobile-drawer \.sidebar-section-help \.sidebar-link \{[^}]*font-size: ([\d.]+px)/)[1];
+    expect(css).toContain('.mobile-drawer .sidebar-section-help button.sidebar-link { font-size: ' + mobilBag + ';');
+    const masaBag = css.match(/\.desktop-sidebar \.sidebar-section-help \.sidebar-link \{[^}]*font-size:([\d.]+px)/)[1];
+    expect(css).toContain('.desktop-sidebar .sidebar-section-help button.sidebar-link { font-size: ' + masaBag + ';');
+  });
+
+  it('uzun rota adı ızgarayı taşırmıyor', () => {
+    expect(css).toMatch(/\.mobile-drawer \.sidebar-route-list\.sidebar-route-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+  });
+});
+
+describe('alt çekmeceler', () => {
+  const ui = oku('assets/js/ui.js');
+  const turStil = oku('assets/css/tour.css');
+
+  it('bütün alt çekmeceler aşağı çekince kapanıyor (tek ortak kod)', () => {
+    ['.filter-dropdown-panel', '.lst-filters', '.lst-plan-panel', '.tercih-cekmece', '.tour-sheet-panel']
+      .forEach(sec => expect(ui, sec).toContain("secici: '" + sec + "'"));
+    /* Anasayfaya özel eski kopya kalmadı. */
+    expect(ui).not.toContain('filter-sheet-drag');
+    /* Kapatma çekmecenin kendi düğmesiyle; hayalet tık koruması onu yutmuyor. */
+    expect(ui).toContain("dugmeyeBas('#lstSheetClose')");
+    expect(ui).toContain("dugmeyeBas('[data-tercih-kapat]')");
+    expect(ui).toMatch(/st\.blockClickUntil = 0;\s*ayar\.kapat\(panel\);/);
+  });
+
+  it('sürükleme translate ile; yerine oturunca açılış animasyonu yeniden oynamıyor', () => {
+    const css = yorumsuz(stil);
+    expect(css).toMatch(/\.m360-cekmece\.m360-sheet-dragging \{[^}]*translate: 0 var\(--m360-sheet-drag, 0px\);/);
+    expect(css).not.toMatch(/m360-sheet-(dragging|snapping) \{[^}]*animation: none/);
+  });
+
+  it('açılış anasayfa süzgeç çekmecesiyle aynı: alttan 0,28 sn, tutamaç', () => {
+    const liste = yorumsuz(listeStil);
+    expect(liste).toContain('transition: transform .28s ease-out, visibility 0s linear .28s;');
+    expect(liste).toMatch(/\.lst-filters::before \{[^}]*width: 40px;/);
+    expect(liste).toMatch(/\.lst-plan-panel \{[^}]*animation: m360SheetUp \.28s ease-out;/);
+    expect(yorumsuz(turStil)).toContain('.tour-sheet.open .tour-sheet-panel { animation: m360SheetUp .28s ease-out; }');
+    expect(yorumsuz(stil)).toMatch(/\.tercih-cekmece \{[^}]*transition: transform \.28s ease-out;/);
+  });
+});
+
+describe('süzgeç çekmecesinde Temizle', () => {
+  const js = oku('assets/js/listing-page.js');
+
+  it('hep yerinde; seçim yokken pasif, varken etkin', () => {
+    expect(js).toContain('<button class="lst-clear-btn" type="button" data-temizle data-temizle-sabit disabled>Temizle</button>');
+    expect(js).toContain("if (b.hasAttribute('data-temizle-sabit')) b.disabled = !secimSayisi;");
+    const css = yorumsuz(listeStil);
+    expect(css).toMatch(/\.lst-clear-btn \{[^}]*background: #fff;/);
+    expect(css).toMatch(/\.lst-clear-btn:disabled \{[^}]*color: #A3A9BA;/);
+  });
+
+  it('"Ne zaman, kaç kişi?" panelinde de aynı düğme', () => {
+    expect(js).toContain('<button class="lst-clear-btn" type="button" data-plan-temizle>Temizle</button>');
+    expect(js).toContain("planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;");
+  });
+});
+
+describe('liste başlığı ve sıralama', () => {
+  const js = oku('assets/js/listing-page.js');
+  const ui = oku('assets/js/ui.js');
+  const BUGUN_T = new Date('2026-09-28T10:00:00');
+  const avantaj = (yol) => MolaVeri.listeSeo(MolaVeri.sayfaModeli(MolaVeri.adres(yol), BUGUN_T), BUGUN_T).avantajlar;
+
+  it('başlığın altında ürün sayısı ve en düşük fiyat yok; güven çipleri var', () => {
+    expect(js).not.toContain("' · en düşük ' + seo.enDusuk");
+    expect(js).toContain('lspAvantajMarkup(seo.avantajlar)');
+    const m = L.lspAvantajMarkup([{ kod: 'kapora', metin: '%20 kaporayla yer ayırt', ipucu: 'x' }]);
+    expect(m).toContain('<li class="lst-avantaj" data-avantaj="kapora" title="x">');
+    expect(L.lspAvantajMarkup([])).toBe('');
+  });
+
+  it('çipler listedeki ürünlerin kurallarından', () => {
+    expect(avantaj('turlar/karadeniz-turlari').map(a => a.kod)).toEqual(['kapora', 'taksit']);
+    expect(avantaj('turlar').map(a => a.kod)).toEqual(['kapora', 'iptal', 'taksit', 'kampanya']);
+    /* Kapora yalnızca turda; otelde yok. */
+    expect(avantaj('oteller').map(a => a.kod)).not.toContain('kapora');
+    const tur = avantaj('turlar');
+    expect(tur.find(a => a.kod === 'kapora').metin).toBe('%' + Math.round(R.REZ_KAPORA.oran * 100) + ' kaporayla yer ayırt');
+    /* Taksit: bütün kart ailelerinde vade farksız olan en yüksek sayı. */
+    const ortak = Math.min(...R.REZ_TAKSIT.aileler.map(a => Math.max(1, ...Object.keys(a.oranlar).filter(n => a.oranlar[n] === 0).map(Number))));
+    expect(tur.find(a => a.kod === 'taksit').metin).toBe(ortak + ' taksit, vade farksız');
+    expect(tur.find(a => a.kod === 'kampanya').metin).toBe('30 gün önceden 500 TL indirim');
+  });
+
+  it('sıralama "Filtrele" ile aynı düğme ve çekmece olarak açılıyor', () => {
+    expect(js).toContain('<button class="lst-tool-btn lst-sort-btn" type="button" id="lstSortBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstSortPanel">');
+    expect(js).not.toContain('<select id="lstSort">');
+    const secenekler = L.lspSiralamaMarkup([{ slug: 'onerilen', name: 'Önerilen' }, { slug: 'fiyat-artan', name: 'Fiyat: Artan' }], 'fiyat-artan');
+    expect(secenekler).toContain('data-sirala="onerilen" aria-checked="false">Önerilen</button>');
+    expect(secenekler).toContain('data-sirala="fiyat-artan" aria-checked="true">Fiyat: Artan</button>');
+    /* Dar ekranda alt çekmece; aşağı çekince kapanıyor. */
+    expect(yorumsuz(listeStil)).toMatch(/@media \(max-width: 1024px\) \{\s*\.lst-sort-panel \{[^}]*animation: m360SheetUp \.28s ease-out;/);
+    expect(ui).toContain("secici: '.lst-sort-panel'");
+    /* Yapışkan araç çubuğunun katmanında kalmasın diye <body>'ye taşınıyor. */
+    expect(js).toContain("window.matchMedia('(max-width: 1024px)').matches ? document.body : siralaKutu");
+  });
+});
+
+describe('"Ne zaman, kaç kişi?" takvimi', () => {
+  const js = oku('assets/js/listing-page.js');
+  /* app.js tarayıcı betiği; saf fonksiyonlar kaynaktan alınıp çalıştırılıyor. */
+  const fonk = (ad) => app.match(new RegExp('function ' + ad + '\\([^)]*\\) \\{[\\s\\S]*?\\n\\}'))[0];
+  const takvimSecimi = new Function(fonk('takvimSecimi') + '; return takvimSecimi;')();
+  const takvimGunleriMarkup = new Function(
+    'function dateCalKey(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }\n'
+    + fonk('takvimGunleriMarkup') + '; return takvimGunleriMarkup;')();
+  const g = (iso) => { const [y, a, d] = iso.split('-').map(Number); return new Date(y, a - 1, d); };
+
+  it('panelde tarih kutuları yok; anasayfa takviminin ızgarası var', () => {
+    const panel = L.lspPlanKutusuMarkup({}, false);
+    expect(panel).not.toContain('type="date"');
+    expect(panel).toContain('class="date-cal-grid" id="lstPlanGunler"');
+    expect(panel).toContain('data-takvim-ay="-1"');
+    expect(js).toContain('takvimGunleriMarkup(gorunum.yil, gorunum.ay');
+    /* Anasayfa da aynı ızgarayı ve seçim kuralını kullanıyor. */
+    expect(fonk('renderDateCalendar')).toContain('takvimGunleriMarkup(dateCalViewYear, dateCalViewMonth');
+    expect(app).toContain('takvimSecimi(dateCalRangeStart, dateCalRangeEnd');
+  });
+
+  it('seçim kuralı: ilk dokunuş başlangıç, sonraki bitiş, önceye dokunuş yeni başlangıç', () => {
+    expect(takvimSecimi(null, null, g('2026-10-10'))).toEqual({ bas: g('2026-10-10'), bit: null });
+    expect(takvimSecimi(g('2026-10-10'), null, g('2026-10-14'))).toEqual({ bas: g('2026-10-10'), bit: g('2026-10-14') });
+    expect(takvimSecimi(g('2026-10-10'), null, g('2026-10-05'))).toEqual({ bas: g('2026-10-05'), bit: null });
+    expect(takvimSecimi(g('2026-10-10'), g('2026-10-14'), g('2026-10-20'))).toEqual({ bas: g('2026-10-20'), bit: null });
+  });
+
+  it('ızgara: Pazartesi başlangıçlı, geçmiş günler kapalı, aralık işaretli', () => {
+    const m = takvimGunleriMarkup(2026, 9, g('2026-10-05'), g('2026-10-10'), g('2026-10-12'));
+    const gunler = [...m.matchAll(/data-date="([^"]+)"/g)].map(x => x[1]);
+    expect(gunler[0]).toBe('2026-09-28');          // 1 Ekim 2026 Perşembe; hafta Pazartesi başlıyor
+    expect(gunler.length % 7).toBe(0);
+    expect(m).toMatch(/date-cal-day-disabled" data-date="2026-10-04" disabled/);
+    expect(m).toMatch(/date-cal-day-selected date-cal-day-range-start" data-date="2026-10-10"/);
+    expect(m).toMatch(/date-cal-day-in-range" data-date="2026-10-11"/);
+    expect(m).toMatch(/date-cal-day-selected date-cal-day-range-end" data-date="2026-10-12"/);
+  });
+
+  it('takvimin altındaki satır', () => {
+    expect(L.lspPlanSecimMetni(null, null, false)).toBe('Bir gün ya da tarih aralığı seç');
+    expect(L.lspPlanSecimMetni('2026-10-03', null, true)).toBe('3 Eki Cmt · çıkış gününü seç');
+    expect(L.lspPlanSecimMetni('2026-10-02', '2026-10-04', true)).toBe('2 Eki Cum – 4 Eki Paz · 2 gece');
+  });
+
+  it('hızlı seçimler tek satırda yana kayıyor', () => {
+    const css = yorumsuz(listeStil);
+    expect(css).toMatch(/\.lst-plan-hizli \{[^}]*overflow-x: auto;/);
+    expect(css).toMatch(/\.lst-plan-cip \{[^}]*flex-shrink: 0;[^}]*white-space: nowrap;/);
+    /* fieldset içeriğiyle genişleyip paneli taşırmasın. */
+    expect(css).toMatch(/\.lst-plan-grup \{[^}]*min-width: 0;/);
+  });
+});
+
+describe('anasayfa filtreleri: seçim "Uygula" ile', () => {
+  const sayfa = oku('index.html');
+  const fonk = (ad) => app.match(new RegExp('function ' + ad + '\\([^)]*\\) \\{[\\s\\S]*?\\n\\}'))[0];
+  const dinleyici = (bas, son = '\n});') => { const i = app.indexOf(bas); return app.slice(i, app.indexOf(son, i)); };
+
+  it('şeridin sonundaki "Filtreleri temizle" yok; sonuçlardaki düğmenin adı "Filtreleri temizle"', () => {
+    expect(sayfa).not.toContain('clearAllFilters');
+    expect(app).not.toContain("getElementById('clearAllFilters')");
+    expect(stil).not.toContain('.filter-clear-all');
+    expect(sayfa.replace(/<!--[\s\S]*?-->/g, '')).not.toMatch(/süzgeç/i);
+    expect(sayfa.match(/data-home-results-clear>Filtreleri temizle</g)).toHaveLength(2);
+  });
+
+  it('mobil çekmecede dokunulan seçenek taslak; filtre ve çip değişmiyor', () => {
+    const secim = dinleyici("    if (isMobileViewport() && panel.classList.contains('generic-filter-panel')) {", '\n    }\n');
+    expect(secim).toContain('wrap._filterTaslak = secili ? null : value;');
+    expect(secim).toContain('return;');
+    expect(secim).not.toContain('filterState');
+    expect(secim).not.toContain('setChipActive');
+  });
+
+  it('"Uygula" taslağı uyguluyor; çekmece her açılışta uygulanmış seçimle başlıyor', () => {
+    const uygula = dinleyici("document.querySelectorAll('[data-generic-apply]')");
+    expect(uygula).toContain('filterState[key] = deger;');
+    expect(uygula).toContain('setChipActive(key, Boolean(deger), deger);');
+    const ac = fonk('openFilterDropdown');
+    expect(ac).toContain('delete wrap._filterTaslak;');
+    expect(ac).toContain("button.dataset.value === filterState[wrap.dataset.dropdown]");
+    expect(ac).toContain('takvimTaslaginiYukle();');
+  });
+
+  it('jenerik çekmecelerde "İptal et" taslağı atıp kapatıyor; filtre değişmiyor', () => {
+    expect(sayfa.match(/class="generic-filter-cancel date-cal-btn date-cal-btn-ghost" data-generic-cancel="[a-z]+">İptal et</g)).toHaveLength(5);
+    const iptal = dinleyici("document.querySelectorAll('[data-generic-cancel]')");
+    expect(iptal).toContain('delete wrap._filterTaslak;');
+    expect(iptal).toContain('closeFilterDropdown(wrap);');
+    expect(iptal).not.toContain('filterState');
+    expect(iptal).not.toContain('setChipActive');
+  });
+
+  it('takvimde Temizle yalnızca taslağı siliyor; seçim boşken Uygula tarih filtresini kaldırıyor', () => {
+    const temizle = dinleyici("onId('dateCalClear'");
+    expect(temizle).not.toContain('filterState');
+    expect(temizle).not.toContain('resetDateRange');
+    expect(dinleyici("onId('dateCalApply'")).toContain("if (!dateCalRangeStart && filterState.tarih) { clearFilter('tarih'); return; }");
+  });
+
+  it('takvim altı: Temizle seçim yokken pasif; Uygula tam aralıkta ya da uygulanmış filtre kaldırılırken etkin', () => {
+    const calistir = (bas, bit, tarih) => {
+      const el = { dateCalRangeLabel: { textContent: '' }, dateCalApply: { disabled: null }, dateCalClear: { disabled: null } };
+      new Function('document', 'filterState', 'dateCalRangeStart', 'dateCalRangeEnd', 'dateCalFormat',
+        fonk('updateDateCalFooter') + '; updateDateCalFooter();')(
+        { getElementById: (id) => el[id] }, { tarih }, bas, bit, (d) => d.getDate() + ' Eki');
+      return { temizle: el.dateCalClear.disabled, uygula: el.dateCalApply.disabled, etiket: el.dateCalRangeLabel.textContent };
+    };
+    const gun = (d) => new Date(2026, 9, d);
+    expect(calistir(null, null, null)).toEqual({ temizle: true, uygula: true, etiket: 'Tarih aralığı seçin' });
+    expect(calistir(gun(3), null, null)).toEqual({ temizle: false, uygula: true, etiket: '3 Eki – bitiş tarihi seçin' });
+    expect(calistir(gun(3), gun(6), null)).toEqual({ temizle: false, uygula: false, etiket: '3 Eki – 6 Eki' });
+    expect(calistir(null, null, { start: '2026-10-03', end: '2026-10-06' })).toEqual({ temizle: true, uygula: false, etiket: 'Tarih aralığı seçin' });
+  });
+
+  it('takvimdeki Temizle süzgeç çekmecesindeki gibi: beyaz, lacivert çerçeve, boşken grimsi', () => {
+    const css = yorumsuz(stil);
+    expect(css).toMatch(/\.date-cal-btn-ghost \{[^}]*background: #fff;[^}]*border: 1\.5px solid var\(--navy-deep\);/);
+    expect(css).toMatch(/\.date-cal-btn-ghost:disabled \{[^}]*background: #F6F7FA;[^}]*color: #A3A9BA;/);
+    expect(sayfa).toContain('id="dateCalClear" disabled>Temizle<');
+  });
+});
