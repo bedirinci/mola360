@@ -671,16 +671,25 @@ describe.each(sayfalar)('$slug sayfası', ({ slug, tur: t, html }) => {
     expect(html).toContain('<span class="tour-mobile-subtitle">' + t.categoryShort + ' · ' + t.area + '</span>');
   });
 
-  it('mobil başlıkta geri oku var, sağda eylem yok', () => {
-    const blok = html.match(/<div class="tour-mobile-header">[\s\S]*?\n<\/div>/);
+  it('mobil başlık: akıllı geri oku, sağda yalnızca arama ve menü', () => {
+    const blok = html.match(/<div class="tour-mobile-header" data-sayfa-cubugu>[\s\S]*?\n<\/div>/);
     expect(blok, 'mobil başlık bloğu bulunamadı').toBeTruthy();
     const metin = blok[0];
     expect(metin).toContain('class="tour-mobile-back"');
-    expect(metin).toContain('href="../../index.html"');
-    /* Paylaş banner'a, favorinin sağına taşındı; başlıkta düğme yok. */
+    /* Geri oku site içinden gelindiyse önceki sayfaya (app.js), değilse
+       ürünün liste sayfasına; anasayfaya değil. Bağ kırıntının orta
+       halkasıyla aynı. */
+    const orta = html.match(/<nav class="tour-crumbs"[\s\S]*?<\/nav>/)[0].match(/href="([^"]+)"/g)[1];
+    expect(metin).toContain(orta + ' data-akilli-geri');
+    expect(metin).not.toContain('href="../../index.html"');
+    /* Her iç sayfadaki çubukla aynı: arama ve menü. Favori ve paylaş
+       banner'da kalıyor; başlıkta ikinci bir kopyaları yok. */
+    expect((metin.match(/<button/g) || []).length).toBe(2);
+    expect(metin).toContain('data-ara-ac');
+    expect(metin).toContain('data-menu-ac');
     expect(metin).not.toContain('tourHeaderShare');
     expect(metin).not.toContain('tour-mobile-action');
-    expect((metin.match(/<button/g) || []).length).toBe(0);
+    expect(metin).not.toContain('tourGalleryFav');
   });
 
   it('rezervasyon kartının iki yuvası da sayfada', () => {

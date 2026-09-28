@@ -363,6 +363,7 @@ alınan rezervasyona "48 saat öncesine kadar tamamı iade" yazılmaz).
 | `benzerler(kayit, bugun, adet)` | senkron | Kurala dayalı benzer ürünler (ortak kategori, tema, bölge) | Satış/görüntülenme verisiyle sunucuda |
 | `musaitlik(type, slug, { from, to })` | **Promise** | Bölüm 6 | `GET /api/…/musaitlik` |
 | `kampanyalar(bugun)` | senkron | Yürürlükteki kampanyalar (+ `kalanGun`) | Kampanya tablosu |
+| `urunKampanyasi(kayit, bugun)` | senkron | Kartın kampanya satırı: ürüne kendiliğinden uygulanabilen yürürlükteki ilk kampanya `{ kod, etiket, kisa, sayfa }` veya `null` | Kampanya tablosu |
 | `kartAileleri()`, `taksitTablosu(tutar)` | senkron | Kart aileleri; bütün ailelerin taksit tablosu | Ödeme sağlayıcısının BIN/taksit sorgusu |
 | `odemeYolu(type, slug, secim)`, `odemeAdresiOku(sorgu)` | senkron | Ödeme ekranının adresi (`rezervasyon/?urun=tur/efes-sirince&tarih=…`) ve tersi | — |
 | `fiyatTeklifi(type, slug, secim, secenek, bugun)` | **Promise** | Teklif (bölüm 13) + `kontenjanDurumu` | `POST /api/teklif` |
@@ -394,6 +395,48 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 8. adım: sayfa başlıkları ve liste sayfası
+
+- **Masaüstü başlık:** `[menü][logo] [arama] [TR · ₺][Yardım][♡][zil]
+  [Giriş | avatar]`. Misafirde yalnızca "Giriş Yap / Üye Ol"; profil
+  (avatar) ve zil üyede. Misafirde zil, gösterecek bildirimi varsa
+  (favorideki ürünün indirimi) görünüyor. Yardım menüsü: WhatsApp canlı
+  destek (saatleri ve şu anki durumu `CONTACT`'tan), Yardım Merkezi, SSS,
+  İptal ve İade, Bize Ulaşın. Dar ekranda önce yazılar kısalıyor.
+- **Mobil anasayfa başlığı:** WhatsApp düğmesi; giriş düğmesi küçüldü
+  (bozuk bir seçici yüzünden mobil ölçüsü hiç uygulanmıyordu).
+- **Mobil sayfa çubuğu** (anasayfa dışı, `[data-sayfa-cubugu]`):
+  `[geri] [logo → başlık] [ara] [menü]`. Menü artık her sayfadan
+  açılıyor. Başta logo; sayfanın büyük başlığı çubuğun altına kayınca
+  logonun yerine sayfanın adı geliyor (aynı başlık iki kez görünmüyor).
+  Aşağı kaydırınca çubuk gizleniyor, yukarı kaydırınca geliyor; yapışkan
+  süzgeç çubuğu en üste çıkıyor.
+- **Geri oku** site içinden gelindiyse tarayıcı geçmişine dönüyor
+  (`data-akilli-geri`); dışarıdan gelindiyse bir üst sayfaya. Ürün
+  sayfasında artık anasayfaya değil ürünün liste sayfasına. Liste
+  sayfası geri dönüldüğünde kaldığı yerden açılıyor: kaydırma konumu
+  geçmiş kaydında (`history.state.mola360Kaydirma`), depoya bir şey
+  yazılmıyor.
+- **Ürün sayfası çubuğu:** arama ve menü eklendi; başlık her kaydırma
+  konumunda aynı (daha önceki karar), favori ve paylaş fotoğrafın
+  üstünde.
+- **Ödeme adımı odak başlığı** (`body[data-rota="checkout"]`): arama,
+  menü, dil/para, favori, bildirim, hesap ve mobil alt menü yok; logo,
+  "Güvenli ödeme" ve Yardım (mobilde WhatsApp) var. Onay ekranı normal
+  başlıkla açılıyor.
+- **"Ne zaman, kaç kişi?"** (liste ve arama sayfaları): seçim adreste
+  (bölüm 12: `tarih`, `bitis`, `kisi`); tarih listeyi o aralıkta satışı
+  olanlarla sınırlıyor (`liste({ tarihAraligi })`), seçim kart
+  bağlarıyla ürün sayfasına geçiyor ve rezervasyon kutusu o tarih ve kişi
+  sayısıyla açılıyor (`catalog.js/katalogPlan*`). Otel listesinde tarih
+  giriş, bitiş çıkış günü; gece sayısı otelin sınırları içindeyse
+  aktarılıyor.
+- **Kartta kampanya satırı:** ürüne kendiliğinden uygulanabilen
+  yürürlükteki kampanya (`MolaVeri.urunKampanyasi`, kampanyanın `kisa`
+  alanı). Koşul (tarih, gece) rezervasyonda denetleniyor.
+- **Üyelik bandı:** misafire liste arasında (dördüncü karttan sonra)
+  üyeye özel ilk rezervasyon kampanyası; giriş yapılınca kalkıyor.
 
 ### 7. adım: arayüz düzeni
 
@@ -650,6 +693,8 @@ olduğu için süzülmüş kombinasyonlar ayrı sayfa olarak dizine girmez.
 | `sirala` | `onerilen` (varsayılan), `fiyat-artan`, `fiyat-azalan`, `tarih`, `yeni`, `puan`; arama sayfasında `alaka` (orada varsayılan) | `sirala=fiyat-artan` |
 | `q` | Metin araması (yalnızca `/arama/`) | `q=kapadokya+balon` |
 | `sayfa` | Açılan sayfa sayısı (24'er) | `sayfa=2` |
+| `tarih`, `bitis` | "Ne zaman?": aralıkta satış tarihi olan ürünler (her gün satılan ürün her aralığa uyar). Otel listesinde giriş ve çıkış günü. Kart bağlarına ve ürün sayfasına geçer | `tarih=2026-10-03&bitis=2026-10-04` |
+| `kisi` | "Kaç kişi?" (1–20; yoksa 2). Listeyi süzmez; ürün sayfasındaki rezervasyon kutusuna geçer | `kisi=4` |
 
 **Kurallar:** alan içindeki seçenekler VEYA, alanlar arası VE. Seçeneğin
 yanındaki sayı, o alan hariç diğer seçimler geçerliyken o seçeneğin
@@ -744,7 +789,8 @@ sorgusundan gelecek.
 | `mola100` | kupon | `MOLA100`: 1.000 TL ve üzeri rezervasyonda 100 TL (**örnek kod**, mekân hariç) |
 
 Otomatik kampanyalardan en avantajlısı uygulanır; kupon onun üstüne
-eklenir. İndirim toplamı aşmaz. `/kampanyalar/` sayfası, ana sayfa
+eklenir. Otomatik kampanyanın `kisa` alanı kapsadığı ürünlerin kartında
+tek satır olarak görünür (`rezUrunKampanyasi`). İndirim toplamı aşmaz. `/kampanyalar/` sayfası, ana sayfa
 bantları (`PROMO_BANDS.kampanya`) ve "Erken Rezervasyon" listesi aynı
 kayıttan okuyor; bant metninin kuralla aynı şeyi söylediği
 `tests/rezervasyon.test.js`'te ölçülüyor.

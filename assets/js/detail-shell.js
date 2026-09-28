@@ -68,6 +68,12 @@ function dtyKacis(metin) {
 }
 
 const DTY_GERI_IKON = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+/* Mobil çubuğun sağı: arama ve menü (app.js, data-ara-ac / data-menu-ac).
+   Statik ürün kabuklarında aynı işaretleme elle duruyor; iki yer
+   tests/detay-sablonu.test.js ile karşılaştırılıyor. Geri oku site
+   içinden gelindiyse önceki sayfaya, değilse ürünün liste sayfasına. */
+const DTY_CUBUK_DUGMELERI = '<button class="cubuk-dugme" type="button" data-ara-ac aria-label="Ara"><span class="icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span></button>'
+  + '<button class="cubuk-dugme cubuk-menu" type="button" data-menu-ac aria-expanded="false" aria-label="Menüyü aç"><span class="icon" data-menu-ikon><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button>';
 
 /* Tam kaydın iskeleti: statik sayfa kabuğunun <body> içeriği (başlık ve
    alt bilgi hariç; onlar yönlendirici sayfada zaten var).
@@ -78,12 +84,12 @@ function dtyIskelet(tip, kayit, kok, listeYolu, listeAdi) {
   if (!ayar || !kayit) return '';
   const k = kok || '';
   const isim = ayar.isim;
-  return '<div class="tour-mobile-header">'
-    + '<a class="tour-mobile-back" href="' + k + 'index.html" aria-label="Anasayfaya don"><span class="icon">' + DTY_GERI_IKON + '</span></a>'
+  return '<div class="tour-mobile-header" data-sayfa-cubugu>'
+    + '<a class="tour-mobile-back" href="' + k + listeYolu + '/" data-akilli-geri aria-label="Geri"><span class="icon">' + DTY_GERI_IKON + '</span></a>'
     + '<div class="tour-mobile-heading">'
     + '<span class="tour-mobile-title">' + dtyKacis(kayit.title) + '</span>'
     + '<span class="tour-mobile-subtitle">' + dtyKacis(kayit.categoryShort + ' · ' + kayit.area) + '</span>'
-    + '</div></div>'
+    + '</div>' + DTY_CUBUK_DUGMELERI + '</div>'
     + '<main class="tour-page">'
     + '<nav class="tour-crumbs" aria-label="Sayfa yolu"><ol>'
     + '<li><a href="' + k + 'index.html">Anasayfa</a></li>'

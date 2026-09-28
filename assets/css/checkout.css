@@ -478,3 +478,11 @@
 .odm-docs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .odm-doc summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--navy); padding: 4px 0; }
 .odm-doc[open] summary { margin-bottom: 6px; }
+/* Ödeme adımında alt menü gizli (style.css, odak başlığı): çubuk ekranın
+   en altına iniyor. */
+@media (max-width: 680px) {
+  body[data-rota="checkout"] .odm-bar:not([hidden]) {
+    bottom: 0;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}

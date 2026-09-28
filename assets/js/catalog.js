@@ -212,6 +212,10 @@ function katalogIndirimEkle(kayit, kart) {
     kart.listPrice = String(liste);
     kart.discountPct = Math.round(((liste - guncel) / liste) * 100);
   }
+  /* Kampanya satırı: ürüne kendiliğinden uygulanabilen yürürlükteki
+     kampanya (booking-engine.js, REZ_KAMPANYALAR). */
+  const kampanya = kapi && kapi.urunKampanyasi ? kapi.urunKampanyasi(kayit) : null;
+  if (kampanya) kart.campaign = kampanya.kisa;
   return kart;
 }
 
@@ -635,9 +639,83 @@ function mergeCatalogCards(sections, bugun) {
   return sections;
 }
 
+/* ---------------- ne zaman, kaç kişi (liste → ürün) ----------------
+   Liste ve arama sayfalarındaki "Ne zaman, kaç kişi?" kutusunun seçimi
+   adreste duruyor (?tarih=2026-10-10&bitis=2026-10-12&kisi=3) ve kart
+   bağlarıyla ürün sayfasına geçiyor; ürün sayfası rezervasyon kutusunu
+   bu seçimle açıyor. Depoya bir şey yazılmıyor: adres paylaşılınca seçim
+   de onunla gidiyor. Konaklamada tarih giriş, bitiş çıkış günü; diğer
+   türlerde aranan tarih aralığı. */
+const KATALOG_KISI_SINIRI = 20;
+
+function katalogISOGecerli(metin) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(metin || ''));
+  if (!m) return '';
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return d.getMonth() === Number(m[2]) - 1 && d.getDate() === Number(m[3]) ? m[0] : '';
+}
+
+function katalogPlanOku(arama) {
+  const q = String(arama || '').replace(/^\?/, '');
+  const al = (ad) => {
+    const m = q.match(new RegExp('(?:^|&)' + ad + '=([^&#]*)'));
+    if (!m) return '';
+    try { return decodeURIComponent(m[1]); } catch (_) { return ''; }
+  };
+  const tarih = katalogISOGecerli(al('tarih'));
+  let bitis = tarih ? katalogISOGecerli(al('bitis')) : '';
+  if (bitis && bitis < tarih) bitis = '';
+  const k = Number(al('kisi'));
+  const kisi = Number.isInteger(k) && k >= 1 && k <= KATALOG_KISI_SINIRI ? k : null;
+  return { tarih: tarih || null, bitis: bitis && bitis !== tarih ? bitis : null, kisi };
+}
+
+/* Seçimin adres parçası ("tarih=…&kisi=…"); seçim yoksa boş. */
+function katalogPlanSorgusu(plan) {
+  const p = plan || {};
+  const parca = [];
+  if (p.tarih) {
+    parca.push('tarih=' + p.tarih);
+    if (p.bitis && p.bitis !== p.tarih) parca.push('bitis=' + p.bitis);
+  }
+  if (p.kisi) parca.push('kisi=' + p.kisi);
+  return parca.join('&');
+}
+
+/* Bağa seçimi ekler (varsa kendi sorgusunun sonuna). */
+function katalogPlanBagi(href, plan) {
+  const ek = katalogPlanSorgusu(plan);
+  if (!ek || !href) return href;
+  const [yol, kare] = String(href).split('#');
+  return yol + (yol.indexOf('?') === -1 ? '?' : '&') + ek + (kare !== undefined ? '#' + kare : '');
+}
+
+/* Ürünün satış tarihleri (sıralı ISO) içinden seçime uyan ilk tarih;
+   uyan yoksa ya da seçim yoksa null. */
+function katalogPlanTarihi(tarihler, plan) {
+  if (!plan || !plan.tarih) return null;
+  const son = plan.bitis || plan.tarih;
+  return (tarihler || []).find(d => d >= plan.tarih && d <= son) || null;
+}
+
+/* Konaklamada seçimin gece sayısı (giriş–çıkış); yoksa null. */
+function katalogPlanGecesi(plan) {
+  if (!plan || !plan.tarih || !plan.bitis) return null;
+  const a = new Date(plan.tarih + 'T00:00:00Z');
+  const b = new Date(plan.bitis + 'T00:00:00Z');
+  const gece = Math.round((b - a) / 86400000);
+  return gece > 0 ? gece : null;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     KATALOG_KAYNAKLARI,
+    KATALOG_KISI_SINIRI,
+    katalogPlanOku,
+    katalogPlanSorgusu,
+    katalogPlanBagi,
+    katalogPlanTarihi,
+    katalogPlanGecesi,
     katalogYardimci,
     formatReviewCount,
     cardDateText,
