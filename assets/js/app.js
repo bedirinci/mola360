@@ -15,7 +15,10 @@
 
   const scroll = document.createElement('div');
   scroll.className = 'desktop-sidebar-scroll';
-  scroll.innerHTML = sourceScroll.innerHTML;
+  /* Çekmecede profil kartı kaydırılan alanın dışında (başlığa yapışık
+     sabit); kenar çubuğunda kaydırılan alanın başında. */
+  const profilKarti = drawer.querySelector(':scope > .mobile-profile-card');
+  scroll.innerHTML = (profilKarti ? profilKarti.outerHTML : '') + sourceScroll.innerHTML;
 
   // Mobil drawer'a ait ID'leri kopyada bırakma; tekil masaüstü kimlikleri kullan.
   scroll.querySelectorAll('[id]').forEach(el => {
@@ -1213,10 +1216,20 @@ const siteHeader = document.querySelector('.site-header');
    (transform) ölçüyü değiştirmiyor. Burada çubuk gösterilmiyor: mobil
    tarayıcı kaydırırken adres çubuğunu küçültünce de "resize" geliyor. */
 function syncMobileDrawerPosition() {
-  const ust = mola360SayfaCubugu() || siteHeader;
+  const cubuk = mola360SayfaCubugu();
+  const ust = cubuk || siteHeader;
   if (!ust) return;
   const headerHeight = ust.getBoundingClientRect().height;
-  setCssVars(document.documentElement, { '--mobile-header-height': `${headerHeight}px` });
+  /* İç sayfa çubuğunun alt köşeleri yuvarlak: çekmece o köşelerin altına
+     giriyor (çubuk üstte), profil kartı çubuğa bitişik görünüyor; arada
+     sayfanın göründüğü şerit kalmıyor. Kart üst boşluğunu köşe kadar
+     büyütüyor. Anasayfa başlığı düz: çekmece 10 px aşağıda. */
+  const kose = cubuk ? parseFloat(getComputedStyle(cubuk).borderBottomLeftRadius) || 0 : 0;
+  setCssVars(document.documentElement, {
+    '--mobile-header-height': `${headerHeight}px`,
+    '--m360-cekmece-aralik': `${cubuk ? -kose : 10}px`,
+    '--m360-cekmece-kose': `${kose}px`
+  });
 }
 
 function syncMobileMenuButton(isOpen) {
@@ -2121,10 +2134,27 @@ function hesapCercevesiniCiz(){
     });
   });
 }
+/* Misafirin profil kartı üyelik daveti: başlık ve alt satır yürürlükteki
+   yeni üye kampanyasından (REZ_KAMPANYALAR, üyeye özel ilk rezervasyon);
+   kampanya yoksa kartın genel çağrısı kalıyor. Elle yazılmış indirim yok. */
+function uyelikDavetiniCiz(){
+  const k = typeof MolaVeri !== 'undefined' && MolaVeri.kampanyalar
+    ? MolaVeri.kampanyalar(new Date()).find(x => x.uyeOzel && x.ilkRezervasyon) : null;
+  if (!k) return;
+  const enFazla = k.indirim && k.indirim.enFazla;
+  document.querySelectorAll('[data-uyelik-etiket]').forEach(el => { el.textContent = k.etiket || ''; el.hidden = !k.etiket; });
+  document.querySelectorAll('[data-uyelik-baslik]').forEach(el => { el.textContent = k.ad; });
+  document.querySelectorAll('[data-uyelik-alt]').forEach(el => {
+    el.textContent = (enFazla ? 'En fazla ' + enFazla.toLocaleString('tr-TR') + ' TL · ' : '') + 'kişiye özel kodun e-postana gelir';
+  });
+}
 ['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
 document.addEventListener('click', (e) => {
-  if (e.target.closest('[data-hesap-giris]') && typeof openAuthModal === 'function') openAuthModal('login');
+  if (typeof openAuthModal !== 'function') return;
+  if (e.target.closest('[data-hesap-giris]')) openAuthModal('login');
+  else if (e.target.closest('[data-hesap-uye-ol]')) openAuthModal('register');
 });
+uyelikDavetiniCiz();
 hesapCercevesiniCiz();
 
 const profileBtn = document.getElementById('profileBtn');

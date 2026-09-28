@@ -437,6 +437,13 @@ yerlerini gerçek ürünler alacak.
   alanı). Koşul (tarih, gece) rezervasyonda denetleniyor.
 - **Üyelik bandı:** misafire liste arasında (dördüncü karttan sonra)
   üyeye özel ilk rezervasyon kampanyası; giriş yapılınca kalkıyor.
+- **Menüdeki profil kartı:** misafirde üyelik daveti; başlık ve alt
+  satır aynı kampanyadan (`app.js/uyelikDavetiniCiz`: etiket, ad,
+  `indirim.enFazla`), kampanya yoksa genel çağrı. Kart kaydırılan alanın
+  dışında, başlığa (iç sayfalarda çubuğun yuvarlak köşelerinin altına)
+  yapışık; menü kayarken ve en üstte esnerken yerinde kalıyor, esneme
+  kartın altından başlıyor. Masaüstü kenar çubuğunda kaydırılan alanın
+  başında.
 - **Liste başlığı:** başlığın altındaki "N ürün · en düşük X TL" satırı
   kalktı (sayı araç çubuğunda; en düşük fiyat yalnızca arama motoru
   açıklamasında). Yerine listedeki ürünlerin kurallarından güven çipleri
