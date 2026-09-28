@@ -2945,27 +2945,25 @@ function dateCalFormat(d) {
   return new Intl.DateTimeFormat('tr-TR', { day:'numeric', month:'short', year:'numeric' }).format(d);
 }
 
-function renderDateCalendar() {
-  const grid = document.getElementById('dateCalGrid');
-  const title = document.getElementById('dateCalTitle');
-  if (!grid || !title) return;
-
-  title.textContent = dateCalMonthsTR[dateCalViewMonth] + ' ' + dateCalViewYear;
-
-  const firstDay = new Date(dateCalViewYear, dateCalViewMonth, 1);
+/* Takvim ızgarası: anasayfa tarih süzgeci ve liste sayfasındaki "Ne zaman,
+   kaç kişi?" paneli (listing-page.js) aynı ızgarayı kullanıyor.
+   Pazartesi başlangıçlı ay görünümü; komşu ayların günleri soluk ama
+   seçilebilir (gerçek tarih); bugünden önceki günler kapalı.
+   yil/ay: görünen ay (ay 0-11); bugun, bas, bit: gün başı Date ya da null. */
+function takvimGunleriMarkup(yil, ay, bugun, bas, bit) {
+  const firstDay = new Date(yil, ay, 1);
   // Pazartesi başlangıçlı hafta indexi (0=Pt ... 6=Pz)
   const startOffset = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = new Date(dateCalViewYear, dateCalViewMonth + 1, 0).getDate();
+  const daysInMonth = new Date(yil, ay + 1, 0).getDate();
 
   // Önceki ayın son günleri — griden gösterilir ama tıklanabilir (gerçek tarih).
-  const prevMonthDate = new Date(dateCalViewYear, dateCalViewMonth, 0);
-  const prevMonthDays = prevMonthDate.getDate();
-  const prevMonthIndex = dateCalViewMonth === 0 ? 11 : dateCalViewMonth - 1;
-  const prevMonthYear = dateCalViewMonth === 0 ? dateCalViewYear - 1 : dateCalViewYear;
+  const prevMonthDays = new Date(yil, ay, 0).getDate();
+  const prevMonthIndex = ay === 0 ? 11 : ay - 1;
+  const prevMonthYear = ay === 0 ? yil - 1 : yil;
 
   // Sonraki ayın ilk günleri.
-  const nextMonthIndex = dateCalViewMonth === 11 ? 0 : dateCalViewMonth + 1;
-  const nextMonthYear = dateCalViewMonth === 11 ? dateCalViewYear + 1 : dateCalViewYear;
+  const nextMonthIndex = ay === 11 ? 0 : ay + 1;
+  const nextMonthYear = ay === 11 ? yil + 1 : yil;
 
   const filledCells = startOffset + daysInMonth;
   const trailingCells = (7 - (filledCells % 7)) % 7;
@@ -2974,16 +2972,16 @@ function renderDateCalendar() {
     const classes = ['date-cal-day'];
     if (adjacent) classes.push('date-cal-day-adjacent');
 
-    const isPast = d < dateCalToday;
-    const isToday = d.getTime() === dateCalToday.getTime();
-    const isStart = dateCalRangeStart && d.getTime() === dateCalRangeStart.getTime();
-    const isEnd = dateCalRangeEnd && d.getTime() === dateCalRangeEnd.getTime();
+    const isPast = d < bugun;
+    const isToday = d.getTime() === bugun.getTime();
+    const isStart = bas && d.getTime() === bas.getTime();
+    const isEnd = bit && d.getTime() === bit.getTime();
 
     if (isPast) classes.push('date-cal-day-disabled');
     if (isToday) classes.push('date-cal-day-today');
     if (isStart) classes.push('date-cal-day-selected', 'date-cal-day-range-start');
     if (isEnd) classes.push('date-cal-day-selected', 'date-cal-day-range-end');
-    if (dateCalRangeStart && dateCalRangeEnd && d > dateCalRangeStart && d < dateCalRangeEnd) {
+    if (bas && bit && d > bas && d < bit) {
       classes.push('date-cal-day-in-range');
     }
 
@@ -2994,21 +2992,35 @@ function renderDateCalendar() {
 
   for (let i = startOffset; i > 0; i--) {
     const day = prevMonthDays - i + 1;
-    const d = new Date(prevMonthYear, prevMonthIndex, day);
-    html += renderDay(d, day, true);
+    html += renderDay(new Date(prevMonthYear, prevMonthIndex, day), day, true);
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const d = new Date(dateCalViewYear, dateCalViewMonth, day);
-    html += renderDay(d, day, false);
+    html += renderDay(new Date(yil, ay, day), day, false);
   }
 
   for (let day = 1; day <= trailingCells; day++) {
-    const d = new Date(nextMonthYear, nextMonthIndex, day);
-    html += renderDay(d, day, true);
+    html += renderDay(new Date(nextMonthYear, nextMonthIndex, day), day, true);
   }
 
-  grid.innerHTML = html;
+  return html;
+}
+
+/* Takvimde bir güne dokununca seçim: ilk dokunuş başlangıç, sonraki
+   bitiş; başlangıçtan önceki bir güne dokunulursa başlangıç değişir;
+   seçim tamamsa yeni seçim başlar. */
+function takvimSecimi(bas, bit, gun) {
+  if (!bas || bit || gun < bas) return { bas: gun, bit: null };
+  return { bas, bit: gun };
+}
+
+function renderDateCalendar() {
+  const grid = document.getElementById('dateCalGrid');
+  const title = document.getElementById('dateCalTitle');
+  if (!grid || !title) return;
+
+  title.textContent = dateCalMonthsTR[dateCalViewMonth] + ' ' + dateCalViewYear;
+  grid.innerHTML = takvimGunleriMarkup(dateCalViewYear, dateCalViewMonth, dateCalToday, dateCalRangeStart, dateCalRangeEnd);
   updateDateCalFooter();
 }
 
@@ -3055,18 +3067,9 @@ onId('dateCalGrid', 'click', event => {
   if (!btn || btn.disabled) return;
 
   const [y,m,d] = btn.dataset.date.split('-').map(Number);
-  const clicked = new Date(y, m-1, d);
-
-  if (!dateCalRangeStart || (dateCalRangeStart && dateCalRangeEnd)) {
-    // Yeni seçim başlat.
-    dateCalRangeStart = clicked;
-    dateCalRangeEnd = null;
-  } else if (clicked < dateCalRangeStart) {
-    // Başlangıçtan önceki bir tarihe tıklandıysa başlangıcı değiştir.
-    dateCalRangeStart = clicked;
-  } else {
-    dateCalRangeEnd = clicked;
-  }
+  const secim = takvimSecimi(dateCalRangeStart, dateCalRangeEnd, new Date(y, m-1, d));
+  dateCalRangeStart = secim.bas;
+  dateCalRangeEnd = secim.bit;
 
   // Komşu ay günü seçildiyse takvim görünümünü o aya kaydır.
   if (btn.classList.contains('date-cal-day-adjacent')) {

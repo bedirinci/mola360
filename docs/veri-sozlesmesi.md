@@ -449,6 +449,10 @@ yerlerini gerçek ürünler alacak.
   kaç kişi?", dil/para ve rezervasyon özeti aynı açılıyor (alttan 0,28
   sn, tutamaç, karartma) ve aşağı çekince kapanıyor (`ui.js`, ortak kod).
   Süzgeç çekmecesinin altında sabit Temizle (seçim yokken pasif).
+- **"Ne zaman, kaç kişi?" takvimi:** tarih kutuları yerine anasayfa tarih
+  süzgecinin takvimi (`app.js`: `takvimGunleriMarkup`, `takvimSecimi`;
+  iki ekran aynı ızgarayı ve seçim kuralını kullanıyor). Hızlı seçimler
+  tek satırda yana kayıyor.
 
 ### 7. adım: arayüz düzeni
 

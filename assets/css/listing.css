@@ -1157,7 +1157,7 @@
   border-radius: 50%; background: var(--bg); color: var(--text);
 }
 .lst-plan-kapat svg { width: 18px; height: 18px; }
-.lst-plan-grup { border: 0; padding: 0; margin: 14px 0 0; }
+.lst-plan-grup { border: 0; padding: 0; margin: 14px 0 0; min-width: 0; }
 .lst-plan-grup legend {
   margin-bottom: 10px;
   font-size: 12px;
@@ -1166,8 +1166,19 @@
   text-transform: uppercase;
   color: var(--text-faint);
 }
-.lst-plan-hizli { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Hızlı seçimler tek satırda, yana kayıyor; panelin kenarına kadar. */
+.lst-plan-hizli {
+  display: flex;
+  gap: 8px;
+  margin: 0 -18px;
+  padding: 0 18px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.lst-plan-hizli::-webkit-scrollbar { display: none; }
 .lst-plan-cip {
+  flex-shrink: 0;
   padding: 8px 13px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -1175,23 +1186,22 @@
   color: var(--navy-deep);
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 .lst-plan-cip[aria-pressed="true"] { border-color: var(--green-dark); background: #F3F9EA; color: #2F5310; }
-.lst-plan-aralik { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-.lst-plan-aralik label { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.lst-plan-aralik span { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
-.lst-plan-aralik input {
-  width: 100%;
-  min-height: 46px;
-  padding: 0 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
+/* Takvim: anasayfa tarih süzgecinin ızgarası ve stilleri (style.css,
+   .date-cal-*). */
+.lst-plan-takvim { margin-top: 14px; }
+.lst-plan-takvim .date-cal-nav:disabled { opacity: .35; cursor: default; }
+.lst-plan-takvim .date-cal-nav:disabled:hover { background: none; }
+.lst-plan-ileri { transform: rotate(180deg); }
+.lst-plan-secim {
+  margin-top: 10px;
+  min-height: 18px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--navy-deep);
-  font: inherit;
-  font-size: 15px;
 }
-.lst-plan-aralik input:focus { outline: 2px solid rgba(140,198,63,.55); outline-offset: 1px; border-color: var(--green-dark); }
 .lst-plan-sayac { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 14px; }
 .lst-plan-sayac button {
   width: 42px; height: 42px;
@@ -1239,6 +1249,7 @@
   .lst-plan-alan > .icon { width: 20px; height: 20px; }
   .lst-plan-metin strong { font-size: 14px; }
   .lst-plan-ara { width: 42px; height: 42px; border-radius: 13px; }
+  .lst-plan-takvim .date-cal-day { height: 40px; font-size: 14px; }
   .lst-plan-panel {
     position: fixed;
     top: auto;

@@ -406,6 +406,19 @@ function lspGunEkle(iso, gun) {
   const [y, a, g] = iso.split('-').map(Number);
   return lspISO(new Date(y, a - 1, g + gun));
 }
+const LSP_GUN_KISA = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+const LSP_AY_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+/* "3 Eki Cmt" */
+function lspTarihGunlu(iso) {
+  const [y, a, g] = iso.split('-').map(Number);
+  return g + ' ' + LSP_AY_KISA[a - 1] + ' ' + LSP_GUN_KISA[new Date(y, a - 1, g).getDay()];
+}
+/* Takvimin altındaki satır: seçilen gün/aralık ya da ne seçileceği. */
+function lspPlanSecimMetni(bas, bit, konaklama) {
+  if (!bas) return konaklama ? 'Giriş gününü seç' : 'Bir gün ya da tarih aralığı seç';
+  if (!bit) return lspTarihGunlu(bas) + (konaklama ? ' · çıkış gününü seç' : ' · bitiş için bir gün daha seçebilirsin');
+  return lspTarihGunlu(bas) + ' – ' + lspTarihGunlu(bit) + (konaklama ? ' · ' + lspGeceSayisi(bas, bit) + ' gece' : '');
+}
 function lspTarihKisa(iso) {
   const [, a, g] = iso.split('-').map(Number);
   return g + ' ' + LSP_AY_KISA[a - 1];
@@ -472,9 +485,16 @@ function lspPlanPaneliMarkup(konaklama) {
     + '<button class="lst-plan-kapat" type="button" data-plan-kapat aria-label="Kapat"><span class="icon">' + LSP_IKON.kapat + '</span></button></div>'
     + '<fieldset class="lst-plan-grup"><legend>' + (konaklama ? 'Giriş – çıkış' : 'Tarih') + '</legend>'
     + '<div class="lst-plan-hizli" id="lstPlanHizli"></div>'
-    + '<div class="lst-plan-aralik">'
-    + '<label><span>' + (konaklama ? 'Giriş' : 'Başlangıç') + '</span><input type="date" id="lstPlanTarih"></label>'
-    + '<label><span>' + (konaklama ? 'Çıkış' : 'Bitiş (isteğe bağlı)') + '</span><input type="date" id="lstPlanBitis"></label>'
+    /* Anasayfa tarih süzgecinin takvimi (app.js, takvimGunleriMarkup). */
+    + '<div class="lst-plan-takvim">'
+    + '<div class="date-cal-header">'
+    + '<button type="button" class="date-cal-nav" data-takvim-ay="-1" aria-label="Önceki ay"><span class="icon">' + LSP_IKON.geri + '</span></button>'
+    + '<div class="date-cal-title" id="lstPlanAy" aria-live="polite"></div>'
+    + '<button type="button" class="date-cal-nav" data-takvim-ay="1" aria-label="Sonraki ay"><span class="icon lst-plan-ileri">' + LSP_IKON.geri + '</span></button>'
+    + '</div>'
+    + '<div class="date-cal-weekdays" aria-hidden="true"><span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span></div>'
+    + '<div class="date-cal-grid" id="lstPlanGunler"></div>'
+    + '<p class="lst-plan-secim" id="lstPlanSecim" aria-live="polite"></p>'
     + '</div></fieldset>'
     + '<fieldset class="lst-plan-grup"><legend>Kişi sayısı</legend>'
     + '<div class="lst-plan-sayac">'
@@ -714,11 +734,22 @@ function lspListeKur(kok, model, seo, bugun) {
   const planPanel = $('lstPlanPanel');
   const planKatman = $('lstPlanKatman');
   const planBtn = $('lstPlanBtn');
-  const tarihKutusu = $('lstPlanTarih');
-  const bitisKutusu = $('lstPlanBitis');
   let taslakKisi = LSP_VARSAYILAN_KISI;
-  tarihKutusu.min = bugunISO;
-  bitisKutusu.min = bugunISO;
+  /* Paneldeki seçim (Uygula'ya kadar taslak) ve takvimin görünen ayı. */
+  let taslak = { bas: null, bit: null };
+  let gorunum = { yil: bugun.getFullYear(), ay: bugun.getMonth() };
+  const gunDate = (iso) => { if (!iso) return null; const [y, a, g] = iso.split('-').map(Number); return new Date(y, a - 1, g); };
+  const takvimCiz = () => {
+    const ayKutu = $('lstPlanAy');
+    ayKutu.textContent = LSP_AY_UZUN[gorunum.ay] + ' ' + gorunum.yil;
+    /* Tek gün seçiliyken o gün tam yuvarlak görünsün: bitiş = başlangıç. */
+    $('lstPlanGunler').innerHTML = (typeof takvimGunleriMarkup === 'function')
+      ? takvimGunleriMarkup(gorunum.yil, gorunum.ay, gunDate(bugunISO), gunDate(taslak.bas), gunDate(taslak.bit || taslak.bas))
+      : '';
+    planPanel.querySelector('[data-takvim-ay="-1"]').disabled = gorunum.yil === bugun.getFullYear() && gorunum.ay === bugun.getMonth();
+    $('lstPlanSecim').textContent = lspPlanSecimMetni(taslak.bas, taslak.bit, konaklama);
+  };
+  const aya = (iso) => { if (iso) { const d = gunDate(iso); gorunum = { yil: d.getFullYear(), ay: d.getMonth() }; } };
   $('lstPlanHizli').innerHTML = [{ slug: '', name: konaklama ? 'Tarih yok' : 'Tüm tarihler' }].concat(onAyarlar)
     .map(o => '<button class="lst-plan-cip" type="button" data-plan-hizli="' + o.slug + '" aria-pressed="false">' + lspKacis(o.name) + '</button>').join('');
 
@@ -730,20 +761,20 @@ function lspListeKur(kok, model, seo, bugun) {
     history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   };
   const basiliYaz = () => {
-    const t = tarihKutusu.value || null;
-    const b = bitisKutusu.value || null;
+    const t = taslak.bas;
+    const b = taslak.bit;
     planPanel.querySelectorAll('[data-plan-hizli]').forEach(dugme => {
       const o = onAyarlar.find(x => x.slug === dugme.getAttribute('data-plan-hizli'));
       const uyuyor = o ? (o.tarih === t && (o.bitis || null) === b) : (!t && !b);
       dugme.setAttribute('aria-pressed', String(uyuyor));
     });
-    bitisKutusu.min = t ? lspGunEkle(t, konaklama ? 1 : 0) : bugunISO;
+    takvimCiz();
     temizleYaz();
   };
   /* Temizle: uygulanmış bir seçim ya da paneldeki taslakta bir değer
      varsa etkin, yoksa pasif. */
   const temizleYaz = () => {
-    const dolu = !!(plan.tarih || plan.kisi || tarihKutusu.value || bitisKutusu.value || taslakKisi !== LSP_VARSAYILAN_KISI);
+    const dolu = !!(plan.tarih || plan.kisi || taslak.bas || taslakKisi !== LSP_VARSAYILAN_KISI);
     planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;
   };
   const kisiYaz = () => {
@@ -754,8 +785,9 @@ function lspListeKur(kok, model, seo, bugun) {
   };
   const panelAc = (ac) => {
     if (ac) {
-      tarihKutusu.value = plan.tarih || '';
-      bitisKutusu.value = plan.bitis || '';
+      taslak = { bas: plan.tarih || null, bit: plan.bitis || null };
+      gorunum = { yil: bugun.getFullYear(), ay: bugun.getMonth() };
+      aya(plan.tarih);
       taslakKisi = plan.kisi || LSP_VARSAYILAN_KISI;
       basiliYaz();
       kisiYaz();
@@ -785,8 +817,25 @@ function lspListeKur(kok, model, seo, bugun) {
     const hizli = e.target.closest('[data-plan-hizli]');
     if (hizli) {
       const o = onAyarlar.find(x => x.slug === hizli.getAttribute('data-plan-hizli'));
-      tarihKutusu.value = o ? o.tarih : '';
-      bitisKutusu.value = o && o.bitis ? o.bitis : '';
+      taslak = { bas: o ? o.tarih : null, bit: o && o.bitis ? o.bitis : null };
+      aya(taslak.bas);
+      basiliYaz();
+      return;
+    }
+    const ayOk = e.target.closest('[data-takvim-ay]');
+    if (ayOk && !ayOk.disabled) {
+      const yeni = new Date(gorunum.yil, gorunum.ay + Number(ayOk.getAttribute('data-takvim-ay')), 1);
+      gorunum = { yil: yeni.getFullYear(), ay: yeni.getMonth() };
+      takvimCiz();
+      return;
+    }
+    const gun = e.target.closest('.date-cal-day[data-date]');
+    if (gun && !gun.disabled && typeof takvimSecimi === 'function') {
+      const secim = takvimSecimi(gunDate(taslak.bas), gunDate(taslak.bit), gunDate(gun.getAttribute('data-date')));
+      taslak = { bas: lspISO(secim.bas), bit: secim.bit ? lspISO(secim.bit) : null };
+      /* Aynı güne ikinci dokunuş: tek gün (otelde çıkış girişle aynı olamaz). */
+      if (taslak.bit === taslak.bas) taslak.bit = null;
+      if (gun.classList.contains('date-cal-day-adjacent')) aya(gun.getAttribute('data-date'));
       basiliYaz();
       return;
     }
@@ -798,22 +847,15 @@ function lspListeKur(kok, model, seo, bugun) {
     }
     if (e.target.closest('[data-plan-temizle]')) { planUygula({ tarih: null, bitis: null, kisi: null }); return; }
     if (e.target.closest('[data-plan-uygula]')) {
-      let t = tarihKutusu.value || null;
-      let b = bitisKutusu.value || null;
-      if (!t && b) { t = b; b = null; }
+      let t = taslak.bas;
+      let b = taslak.bit;
       if (t && t < bugunISO) t = bugunISO;
-      if (t && b && b < t) { const x = t; t = b; b = x; }
-      if (t && b && b === t) b = null;
+      if (t && b && b <= t) b = null;
       /* Otelde çıkış günü yoksa bir gece. */
       if (konaklama && t && !b) b = lspGunEkle(t, 1);
       planUygula({ tarih: t, bitis: b, kisi: taslakKisi !== LSP_VARSAYILAN_KISI ? taslakKisi : null });
     }
   });
-  tarihKutusu.addEventListener('change', () => {
-    if (bitisKutusu.value && bitisKutusu.value < tarihKutusu.value) bitisKutusu.value = '';
-    basiliYaz();
-  });
-  bitisKutusu.addEventListener('change', basiliYaz);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !planPanel.hidden) panelAc(false);
   });
@@ -1188,6 +1230,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lspKartlarMarkup,
     lspMobilBaslikMarkup,
     lspPlanEtiketi,
+    lspPlanSecimMetni,
     lspPlanOnAyarlari,
     lspPlanKutusuMarkup,
     lspUyelikBandiMarkup,

@@ -435,3 +435,57 @@ describe('liste başlığı ve sıralama', () => {
     expect(js).toContain("window.matchMedia('(max-width: 1024px)').matches ? document.body : siralaKutu");
   });
 });
+
+describe('"Ne zaman, kaç kişi?" takvimi', () => {
+  const js = oku('assets/js/listing-page.js');
+  /* app.js tarayıcı betiği; saf fonksiyonlar kaynaktan alınıp çalıştırılıyor. */
+  const fonk = (ad) => app.match(new RegExp('function ' + ad + '\\([^)]*\\) \\{[\\s\\S]*?\\n\\}'))[0];
+  const takvimSecimi = new Function(fonk('takvimSecimi') + '; return takvimSecimi;')();
+  const takvimGunleriMarkup = new Function(
+    'function dateCalKey(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }\n'
+    + fonk('takvimGunleriMarkup') + '; return takvimGunleriMarkup;')();
+  const g = (iso) => { const [y, a, d] = iso.split('-').map(Number); return new Date(y, a - 1, d); };
+
+  it('panelde tarih kutuları yok; anasayfa takviminin ızgarası var', () => {
+    const panel = L.lspPlanKutusuMarkup({}, false);
+    expect(panel).not.toContain('type="date"');
+    expect(panel).toContain('class="date-cal-grid" id="lstPlanGunler"');
+    expect(panel).toContain('data-takvim-ay="-1"');
+    expect(js).toContain('takvimGunleriMarkup(gorunum.yil, gorunum.ay');
+    /* Anasayfa da aynı ızgarayı ve seçim kuralını kullanıyor. */
+    expect(fonk('renderDateCalendar')).toContain('takvimGunleriMarkup(dateCalViewYear, dateCalViewMonth');
+    expect(app).toContain('takvimSecimi(dateCalRangeStart, dateCalRangeEnd');
+  });
+
+  it('seçim kuralı: ilk dokunuş başlangıç, sonraki bitiş, önceye dokunuş yeni başlangıç', () => {
+    expect(takvimSecimi(null, null, g('2026-10-10'))).toEqual({ bas: g('2026-10-10'), bit: null });
+    expect(takvimSecimi(g('2026-10-10'), null, g('2026-10-14'))).toEqual({ bas: g('2026-10-10'), bit: g('2026-10-14') });
+    expect(takvimSecimi(g('2026-10-10'), null, g('2026-10-05'))).toEqual({ bas: g('2026-10-05'), bit: null });
+    expect(takvimSecimi(g('2026-10-10'), g('2026-10-14'), g('2026-10-20'))).toEqual({ bas: g('2026-10-20'), bit: null });
+  });
+
+  it('ızgara: Pazartesi başlangıçlı, geçmiş günler kapalı, aralık işaretli', () => {
+    const m = takvimGunleriMarkup(2026, 9, g('2026-10-05'), g('2026-10-10'), g('2026-10-12'));
+    const gunler = [...m.matchAll(/data-date="([^"]+)"/g)].map(x => x[1]);
+    expect(gunler[0]).toBe('2026-09-28');          // 1 Ekim 2026 Perşembe; hafta Pazartesi başlıyor
+    expect(gunler.length % 7).toBe(0);
+    expect(m).toMatch(/date-cal-day-disabled" data-date="2026-10-04" disabled/);
+    expect(m).toMatch(/date-cal-day-selected date-cal-day-range-start" data-date="2026-10-10"/);
+    expect(m).toMatch(/date-cal-day-in-range" data-date="2026-10-11"/);
+    expect(m).toMatch(/date-cal-day-selected date-cal-day-range-end" data-date="2026-10-12"/);
+  });
+
+  it('takvimin altındaki satır', () => {
+    expect(L.lspPlanSecimMetni(null, null, false)).toBe('Bir gün ya da tarih aralığı seç');
+    expect(L.lspPlanSecimMetni('2026-10-03', null, true)).toBe('3 Eki Cmt · çıkış gününü seç');
+    expect(L.lspPlanSecimMetni('2026-10-02', '2026-10-04', true)).toBe('2 Eki Cum – 4 Eki Paz · 2 gece');
+  });
+
+  it('hızlı seçimler tek satırda yana kayıyor', () => {
+    const css = yorumsuz(listeStil);
+    expect(css).toMatch(/\.lst-plan-hizli \{[^}]*overflow-x: auto;/);
+    expect(css).toMatch(/\.lst-plan-cip \{[^}]*flex-shrink: 0;[^}]*white-space: nowrap;/);
+    /* fieldset içeriğiyle genişleyip paneli taşırmasın. */
+    expect(css).toMatch(/\.lst-plan-grup \{[^}]*min-width: 0;/);
+  });
+});
