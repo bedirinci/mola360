@@ -346,3 +346,51 @@ describe('mobil menü', () => {
     expect(css).toMatch(/\.mobile-drawer \.sidebar-route-list\.sidebar-route-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
   });
 });
+
+describe('alt çekmeceler', () => {
+  const ui = oku('assets/js/ui.js');
+  const turStil = oku('assets/css/tour.css');
+
+  it('bütün alt çekmeceler aşağı çekince kapanıyor (tek ortak kod)', () => {
+    ['.filter-dropdown-panel', '.lst-filters', '.lst-plan-panel', '.tercih-cekmece', '.tour-sheet-panel']
+      .forEach(sec => expect(ui, sec).toContain("secici: '" + sec + "'"));
+    /* Anasayfaya özel eski kopya kalmadı. */
+    expect(ui).not.toContain('filter-sheet-drag');
+    /* Kapatma çekmecenin kendi düğmesiyle; hayalet tık koruması onu yutmuyor. */
+    expect(ui).toContain("dugmeyeBas('#lstSheetClose')");
+    expect(ui).toContain("dugmeyeBas('[data-tercih-kapat]')");
+    expect(ui).toMatch(/st\.blockClickUntil = 0;\s*ayar\.kapat\(panel\);/);
+  });
+
+  it('sürükleme translate ile; yerine oturunca açılış animasyonu yeniden oynamıyor', () => {
+    const css = yorumsuz(stil);
+    expect(css).toMatch(/\.m360-cekmece\.m360-sheet-dragging \{[^}]*translate: 0 var\(--m360-sheet-drag, 0px\);/);
+    expect(css).not.toMatch(/m360-sheet-(dragging|snapping) \{[^}]*animation: none/);
+  });
+
+  it('açılış anasayfa süzgeç çekmecesiyle aynı: alttan 0,28 sn, tutamaç', () => {
+    const liste = yorumsuz(listeStil);
+    expect(liste).toContain('transition: transform .28s ease-out, visibility 0s linear .28s;');
+    expect(liste).toMatch(/\.lst-filters::before \{[^}]*width: 40px;/);
+    expect(liste).toMatch(/\.lst-plan-panel \{[^}]*animation: m360SheetUp \.28s ease-out;/);
+    expect(yorumsuz(turStil)).toContain('.tour-sheet.open .tour-sheet-panel { animation: m360SheetUp .28s ease-out; }');
+    expect(yorumsuz(stil)).toMatch(/\.tercih-cekmece \{[^}]*transition: transform \.28s ease-out;/);
+  });
+});
+
+describe('süzgeç çekmecesinde Temizle', () => {
+  const js = oku('assets/js/listing-page.js');
+
+  it('hep yerinde; seçim yokken pasif, varken etkin', () => {
+    expect(js).toContain('<button class="lst-clear-btn" type="button" data-temizle data-temizle-sabit disabled>Temizle</button>');
+    expect(js).toContain("if (b.hasAttribute('data-temizle-sabit')) b.disabled = !secimSayisi;");
+    const css = yorumsuz(listeStil);
+    expect(css).toMatch(/\.lst-clear-btn \{[^}]*background: #fff;/);
+    expect(css).toMatch(/\.lst-clear-btn:disabled \{[^}]*color: #A3A9BA;/);
+  });
+
+  it('"Ne zaman, kaç kişi?" panelinde de aynı düğme', () => {
+    expect(js).toContain('<button class="lst-clear-btn" type="button" data-plan-temizle>Temizle</button>');
+    expect(js).toContain("planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;");
+  });
+});

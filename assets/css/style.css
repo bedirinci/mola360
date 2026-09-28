@@ -4680,17 +4680,19 @@ ul {
     font-weight: 600 !important;
   }
 
-  /* Çekmecenin sürüklenmesi sırasında parmak hareketini JS yönetir. */
+  /* Çekmecenin sürüklenmesi sırasında parmak hareketini JS yönetir.
+     "animation: none" YOK: sınıf kalkınca açılış animasyonu baştan
+     oynuyor, yerine oturan çekmece bir an aşağıdan yeniden kayıyordu.
+     Açılış animasyonu o sırada bitmiş oluyor; !important transform onu
+     zaten eziyor. */
   .filter-dropdown-panel.m360-sheet-dragging {
     transition: none !important;
-    animation: none !important;
     transform: translateY(var(--m360-sheet-drag, 0px)) !important;
   }
 
   /* Bırakınca çekmece yerine otururken kısa ve temiz geçiş. */
   .filter-dropdown-panel.m360-sheet-snapping {
     transition: transform .24s cubic-bezier(.32,.72,0,1) !important;
-    animation: none !important;
   }
 
   /* Çekmece aşağı kayarken karartma da aynı sürede sönsün. */
@@ -6099,7 +6101,7 @@ body.is-uye #headerRegisterBtn { display: none; }
 /* =============== DİL VE PARA BİRİMİ (alt çekmece) =============== */
 .tercih-katman {
   position: fixed; inset: 0; z-index: 5000;
-  background: rgba(11,18,48,.45); opacity: 0; transition: opacity .25s ease;
+  background: rgba(11,18,48,.55); opacity: 0; transition: opacity .28s ease;
 }
 .tercih-katman.open { opacity: 1; }
 .tercih-cekmece {
@@ -6108,7 +6110,7 @@ body.is-uye #headerRegisterBtn { display: none; }
   padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
   background: var(--card); border-radius: 22px 22px 0 0;
   box-shadow: 0 -10px 34px rgba(21,32,72,.18);
-  transform: translate(-50%, 100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
+  transform: translate(-50%, 100%); transition: transform .28s ease-out;
 }
 .tercih-cekmece.open { transform: translate(-50%, 0); }
 .tercih-katman[hidden], .tercih-cekmece[hidden] { display: none; }
@@ -6353,3 +6355,31 @@ body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
 .poi-campaign .icon { width: 14px; height: 14px; flex-shrink: 0; }
 .lst-grid .poi-card, .home-results-grid .poi-card { display: flex; flex-direction: column; }
 .lst-grid .poi-body, .home-results-grid .poi-body { flex: 1; }
+
+/* =====================================================
+   ALT ÇEKMECELER (ortak)
+   Bütün alt çekmeceler anasayfa süzgeç çekmecesi gibi: alttan 0,28 sn'de
+   kayarak açılıyor, tepede tutamaç, arkada aynı karartma. Aşağı çekince
+   parmağı izliyor ve kapanıyor (ui.js, "alt çekmeceler"). Sürüklemede
+   "translate" kullanılıyor: çekmecenin kendi transform'u (ortalama,
+   açılış geçişi) bozulmuyor. Anasayfa süzgeç panelinin kendi kuralı var
+   (MOLA360 FILTER PORTAL).
+   ===================================================== */
+.m360-cekmece.m360-sheet-dragging {
+  transition: none !important;
+  translate: 0 var(--m360-sheet-drag, 0px);
+}
+.m360-cekmece.m360-sheet-snapping {
+  transition: translate .24s cubic-bezier(.32,.72,0,1) !important;
+  translate: 0 var(--m360-sheet-drag, 0px);
+}
+.lst-sheet-overlay.m360-overlay-closing,
+.lst-plan-katman.m360-overlay-closing,
+.tercih-katman.m360-overlay-closing,
+.tour-sheet.m360-overlay-closing {
+  opacity: 0 !important;
+  transition: opacity .24s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m360-cekmece.m360-sheet-snapping { transition: none !important; }
+}

@@ -468,7 +468,7 @@ function lspPlanPaneliMarkup(konaklama) {
     + '<button type="button" data-plan-kisi="1" aria-label="Bir kişi artır">+</button></div>'
     + '<p class="lst-plan-not">Seçimin ürün sayfasındaki rezervasyon kutusuna taşınır; çocuk ve oda sayısını orada seçersin.</p>'
     + '</fieldset>'
-    + '<div class="lst-plan-alt"><button class="lst-link" type="button" data-plan-temizle>Temizle</button>'
+    + '<div class="lst-plan-alt"><button class="lst-clear-btn" type="button" data-plan-temizle>Temizle</button>'
     + '<button class="btn-primary" type="button" data-plan-uygula>Uygula</button></div>'
     + '</div>';
 }
@@ -497,7 +497,7 @@ function lspListeIskeleti(model, seo, plan) {
     + '<button class="lst-link" type="button" data-temizle id="lstClearTop">Temizle</button>'
     + '<button class="lst-sheet-close" type="button" id="lstSheetClose" aria-label="Kapat">' + LSP_IKON.kapat + '</button></div>'
     + '<div class="lst-filters-body" id="lstFilterBody"></div>'
-    + '<div class="lst-filters-foot"><button class="lst-link" type="button" data-temizle>Temizle</button>'
+    + '<div class="lst-filters-foot"><button class="lst-clear-btn" type="button" data-temizle data-temizle-sabit disabled>Temizle</button>'
     + '<button class="btn-primary lst-apply" type="button" id="lstApply">Sonuçları gör</button></div>'
     + '</aside>'
     + '<section class="lst-results" aria-label="Sonuçlar">'
@@ -578,7 +578,12 @@ function lspListeKur(kok, model, seo, bugun) {
     $('lstBadge').hidden = !secimSayisi;
     $('lstBadge').textContent = String(secimSayisi);
     $('lstApply').textContent = sonuc.toplam ? sonuc.toplam + ' sonucu gör' : 'Sonuç yok';
-    document.querySelectorAll('[data-temizle]').forEach(b => { b.hidden = !secimSayisi; });
+    /* Çekmecenin altındaki Temizle hep yerinde: seçim yoksa pasif (gri),
+       varsa etkin. Diğer Temizle bağları seçim yokken gizli. */
+    document.querySelectorAll('[data-temizle]').forEach(b => {
+      if (b.hasAttribute('data-temizle-sabit')) b.disabled = !secimSayisi;
+      else b.hidden = !secimSayisi;
+    });
 
     $('lstGrid').innerHTML = lspKartlarMarkup(sonuc.satirlar, bugun, plan, uyelikBandi());
     $('lstMore').hidden = !sonuc.dahaVar;
@@ -710,11 +715,19 @@ function lspListeKur(kok, model, seo, bugun) {
       dugme.setAttribute('aria-pressed', String(uyuyor));
     });
     bitisKutusu.min = t ? lspGunEkle(t, konaklama ? 1 : 0) : bugunISO;
+    temizleYaz();
+  };
+  /* Temizle: uygulanmış bir seçim ya da paneldeki taslakta bir değer
+     varsa etkin, yoksa pasif. */
+  const temizleYaz = () => {
+    const dolu = !!(plan.tarih || plan.kisi || tarihKutusu.value || bitisKutusu.value || taslakKisi !== LSP_VARSAYILAN_KISI);
+    planPanel.querySelector('[data-plan-temizle]').disabled = !dolu;
   };
   const kisiYaz = () => {
     $('lstPlanKisi').textContent = String(taslakKisi);
     planPanel.querySelector('[data-plan-kisi="-1"]').disabled = taslakKisi <= 1;
     planPanel.querySelector('[data-plan-kisi="1"]').disabled = taslakKisi >= kisiSiniri;
+    temizleYaz();
   };
   const panelAc = (ac) => {
     if (ac) {
