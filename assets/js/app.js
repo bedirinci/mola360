@@ -199,6 +199,28 @@
   window.addEventListener('resize', () => { if (acik() && window.matchMedia('(max-width: 680px)').matches) ayarla(false); });
 })();
 
+/* ---------------- başlıktaki Yardım menüsü (masaüstü) ----------------
+   Düğmenin altında açılan küçük panel: WhatsApp canlı destek ve yardım
+   sayfaları. Dışarı tıklayınca, Escape'le ya da bir bağa gidince
+   kapanıyor. */
+(function initYardimMenusu(){
+  const btn = document.getElementById('headerHelpBtn');
+  const panel = document.getElementById('headerHelpPanel');
+  if (!btn || !panel) return;
+  const ayarla = (ac) => {
+    panel.hidden = !ac;
+    btn.setAttribute('aria-expanded', String(ac));
+  };
+  btn.addEventListener('click', () => ayarla(panel.hidden));
+  document.addEventListener('click', (e) => {
+    if (panel.hidden || btn.contains(e.target)) return;
+    if (!panel.contains(e.target) || e.target.closest('a[href]')) ayarla(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) { ayarla(false); btn.focus(); }
+  });
+})();
+
 /* ---------------- sayfa scroll kilidi (giriş yap popup / yan menü) ----------------
    NOT: <html> elementinde overflow-y:scroll sabit tanımlı olduğu için body'ye
    overflow:hidden vermek tek başına sayfa kaydırmasını durdurmuyor (viewport
@@ -316,7 +338,8 @@ function __shouldLockScroll() {
    (CSS tarafındaki "body.m360-scroll-locked ..." kuralıyla eşleşir.) */
 const M360_STICKY_FREEZE_TARGETS = [
   ['.mobile-search-bar', '--m360-sticky-freeze'],
-  ['.filter-bar',        '--m360-filterbar-freeze']
+  ['.filter-bar',        '--m360-filterbar-freeze'],
+  ['.lst-mobile-header', '--m360-cubuk-freeze']
 ];
 
 function refreshScrollLock() {
@@ -835,6 +858,7 @@ function poiCardMarkup(sec, it){
             <h3 class="poi-title">${baslik}</h3>
             <p class="poi-meta-row"><span class="icon">${svg(sec.meta1Icon)}</span><span class="poi-meta-text">${it.meta1}</span></p>
             <p class="poi-meta-row"><span class="icon">${svg('calendar')}</span><strong>${sec.meta2Label}</strong><span class="poi-meta-text">${it.meta2}</span></p>
+            ${it.campaign ? `<p class="poi-campaign"><span class="icon">${svg('percent')}</span>${it.campaign}</p>` : ''}
           </div>
           <div class="poi-price-bar${it.listPrice ? ' has-old' : ''}">
             <span class="poi-price">
@@ -1183,18 +1207,31 @@ const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const mobileMenuIcon = document.getElementById('ic-menu');
 const siteHeader = document.querySelector('.site-header');
 
-/* Drawer'ın başlangıç çizgisi ana header'ın gerçek alt sınırına bağlanır. */
+/* Drawer'ın başlangıç çizgisi üstteki çubuğun alt sınırına bağlanır:
+   anasayfada site başlığı, diğer sayfalarda mobil sayfa çubuğu (site
+   başlığı orada gizli). Yükseklik ölçülüyor; çubuğun gizli olup olmadığı
+   (transform) ölçüyü değiştirmiyor. Burada çubuk gösterilmiyor: mobil
+   tarayıcı kaydırırken adres çubuğunu küçültünce de "resize" geliyor. */
 function syncMobileDrawerPosition() {
-  if (!siteHeader) return;
-  const headerHeight = siteHeader.getBoundingClientRect().height;
+  const ust = mola360SayfaCubugu() || siteHeader;
+  if (!ust) return;
+  const headerHeight = ust.getBoundingClientRect().height;
   setCssVars(document.documentElement, { '--mobile-header-height': `${headerHeight}px` });
 }
 
 function syncMobileMenuButton(isOpen) {
-  if (!mobileMenuBtn || !mobileMenuIcon) return;
-  mobileMenuIcon.innerHTML = svg(isOpen ? 'close' : 'menu');
-  mobileMenuBtn.setAttribute('aria-label', isOpen ? 'Menüyü kapat' : 'Menüyü aç');
-  mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+  const etiket = isOpen ? 'Menüyü kapat' : 'Menüyü aç';
+  if (mobileMenuBtn && mobileMenuIcon) {
+    mobileMenuIcon.innerHTML = svg(isOpen ? 'close' : 'menu');
+    mobileMenuBtn.setAttribute('aria-label', etiket);
+    mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+  }
+  document.querySelectorAll('[data-menu-ac]').forEach(btn => {
+    const ikon = btn.querySelector('[data-menu-ikon]');
+    if (ikon) ikon.innerHTML = svg(isOpen ? 'close' : 'menu');
+    btn.setAttribute('aria-label', etiket);
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
 }
 
 function toggleDrawer() {
@@ -1204,6 +1241,9 @@ function toggleDrawer() {
   if (isOpen) {
     closeDrawer();
   } else {
+    /* Kaydırınca gizlenmiş sayfa çubuğu menüyle birlikte geri geliyor. */
+    const cubuk = mola360SayfaCubugu();
+    if (cubuk) cubukGoster(cubuk);
     syncMobileDrawerPosition();
     drawer.classList.add('open');
     overlay.classList.add('open');
@@ -1232,6 +1272,98 @@ onViewportResize(syncMobileDrawerPosition);
 
 if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleDrawer);
 if (overlay) overlay.addEventListener('click', toggleDrawer);
+/* Sayfa çubuklarındaki menü düğmesi (yönlendirici ekranı sonradan
+   çizdiği için delege). */
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-menu-ac]')) toggleDrawer();
+  else if (e.target.closest('[data-ara-ac]') && typeof openSearchOverlay === 'function') openSearchOverlay();
+});
+
+/* ---------------- mobil sayfa çubuğu ----------------
+   Anasayfa dışındaki sayfaların mobil üst çubuğu ([data-sayfa-cubugu]:
+   liste, arama, hesap, kurumsal ve ödeme ekranları listing-page.js'ten,
+   ürün sayfaları detail-shell.js'ten ve statik kabuklarından).
+     .is-baslikli  sayfanın büyük başlığı (h1) çubuğun altına kaydı:
+                   logonun yerinde sayfanın adı (ürün sayfasının çubuğu
+                   başlığı hep taşıyor; orada sınıfın etkisi yok)
+     .is-gizli     aşağı kaydırırken çubuk yukarı çekiliyor, yukarı
+                   kaydırınca geri geliyor (data-cubuk-gizlenir); body'de
+                   .cubuk-gizli, yapışkan araç çubuğu en üste çıkıyor.
+   Masaüstünde çubuk gizli (display: none); o zaman hiçbir şey yapılmıyor. */
+function mola360SayfaCubugu() {
+  const cubuk = document.querySelector('[data-sayfa-cubugu]');
+  if (!cubuk || getComputedStyle(cubuk).display === 'none') return null;
+  return cubuk;
+}
+function cubukGizle(cubuk) {
+  if (cubuk.classList.contains('is-gizli')) return;
+  cubuk.classList.add('is-gizli');
+  document.body.classList.add('cubuk-gizli');
+}
+function cubukGoster(cubuk) {
+  if (!cubuk.classList.contains('is-gizli')) return;
+  cubuk.classList.remove('is-gizli');
+  document.body.classList.remove('cubuk-gizli');
+}
+function cubukDurumunuYaz(cubuk) {
+  const boy = cubuk.offsetHeight;
+  const baslik = Array.prototype.find.call(document.querySelectorAll('h1'),
+    h => !cubuk.contains(h) && h.getClientRects().length > 0);
+  cubuk.classList.toggle('is-baslikli', !baslik || baslik.getBoundingClientRect().bottom < boy);
+}
+(function sayfaCubugunuKur(){
+  let sonY = window.scrollY || 0;
+  let bekliyor = false;
+  const guncelle = () => {
+    bekliyor = false;
+    const cubuk = mola360SayfaCubugu();
+    if (!cubuk) return;
+    cubukDurumunuYaz(cubuk);
+    if (!cubuk.hasAttribute('data-cubuk-gizlenir')) return;
+    /* Kilitliyken (menü, arama, süzgeç açık) çubuk yerinde kalıyor. */
+    if (document.body.classList.contains('m360-scroll-locked') || document.body.classList.contains('lst-sheet-open')) return;
+    const y = Math.max(0, window.scrollY || 0);
+    if (y < cubuk.offsetHeight * 2) { cubukGoster(cubuk); sonY = y; return; }
+    if (Math.abs(y - sonY) < 10) return;
+    if (y > sonY) cubukGizle(cubuk); else cubukGoster(cubuk);
+    sonY = y;
+  };
+  const sirala = () => { if (!bekliyor) { bekliyor = true; requestAnimationFrame(guncelle); } };
+  window.addEventListener('scroll', sirala, { passive: true });
+  window.addEventListener('resize', sirala);
+  window.addEventListener('load', sirala);
+  document.addEventListener('DOMContentLoaded', sirala);
+  /* Yönlendirici ekranı sonradan kuruyor (hesap paneli, ödeme): kök
+     değişince çubuğun durumu yeniden hesaplanıyor. */
+  const kok = document.getElementById('sayfaKoku');
+  if (kok && typeof MutationObserver !== 'undefined') new MutationObserver(sirala).observe(kok, { childList: true });
+  /* Klavyeyle çubuğa gelen kullanıcı gizli çubuğa düşmesin. */
+  document.addEventListener('focusin', (e) => {
+    const cubuk = e.target.closest && e.target.closest('[data-sayfa-cubugu]');
+    if (cubuk) cubukGoster(cubuk);
+  });
+})();
+
+/* Geri oku: site içinden gelindiyse tarayıcı geçmişine dönülüyor
+   (liste sayfası süzgeçleri ve kaydırma yeriyle birlikte geri gelir);
+   dışarıdan, yeni sekmede ya da doğrudan gelindiyse bağın kendi
+   adresine (bir üst sayfa) gidiliyor. */
+function mola360OncekiSayfaSitede() {
+  try {
+    if (!document.referrer || window.history.length < 2) return false;
+    const onceki = new URL(document.referrer);
+    return onceki.origin === location.origin && onceki.href !== location.href;
+  } catch (_) {
+    return false;
+  }
+}
+document.addEventListener('click', (e) => {
+  const geri = e.target.closest('[data-akilli-geri]');
+  if (!geri || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (!mola360OncekiSayfaSitede()) return;
+  e.preventDefault();
+  window.history.back();
+});
 
 /* ---------------- sidebar "Devamını gör" açılır listeler ---------------- */
 document.addEventListener('click', (e) => {
@@ -1959,6 +2091,10 @@ function hesapCercevesiniCiz(){
   document.querySelectorAll('[data-hesap-uye]').forEach(el => { el.hidden = !uye; });
   document.querySelectorAll('[data-hesap-misafir]').forEach(el => { el.hidden = uye; });
   bildirimleriYukle();
+  /* Misafirde zil yalnızca gösterecek bildirim varsa (ör. favorideki
+     ürünün indirimi); üyede her zaman (style.css). */
+  const zil = byId('notifBtn');
+  if (zil) zil.classList.toggle('has-notif', notifications.length > 0);
   if (typeof renderNotifications === 'function' && typeof notifListEl !== 'undefined') renderNotifications();
   if (!uye || typeof MolaVeri === 'undefined' || !MolaVeri.hesapPaneli) return;
   MolaVeri.hesapPaneli(new Date()).then(p => {
@@ -2057,6 +2193,17 @@ document.addEventListener('click', (e) => {
   const c = (typeof CONTACT !== 'undefined') ? CONTACT : null;
   if (!c) return;
   document.querySelectorAll('[data-destek-whatsapp]').forEach(a => { a.href = c.whatsappHref; });
+  /* Başlıktaki Yardım menüsü: WhatsApp'ın saatleri ve şu anki durumu
+     (ürün sayfasındaki destek kartıyla aynı kaynak). */
+  const saat = (h) => String(h).padStart(2, '0') + ':00';
+  document.querySelectorAll('[data-destek-saat]').forEach(el => {
+    el.textContent = 'Her gün ' + saat(c.whatsappOpenHour) + ' – ' + saat(c.whatsappCloseHour);
+  });
+  const acik = typeof supportOnline === 'function' && supportOnline(new Date(), c.whatsappOpenHour, c.whatsappCloseHour);
+  document.querySelectorAll('[data-destek-durum]').forEach(el => {
+    el.textContent = acik ? 'Çevrimiçi' : 'Kapalı';
+    el.classList.toggle('is-acik', !!acik);
+  });
   document.querySelectorAll('[data-sosyal]').forEach(a => {
     const adres = c.social && c.social[a.getAttribute('data-sosyal')];
     if (adres) { a.href = adres; return; }

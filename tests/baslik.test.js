@@ -1,0 +1,329 @@
+/* Sayfa başlıkları ve liste sayfası (8. adım). Ölçülenler:
+     - masaüstü başlıkta dil/para, Yardım menüsü (WhatsApp + yardım
+       sayfaları); misafirde yalnızca giriş düğmesi, profil ve zil üyede
+     - mobil sayfa çubuğu: akıllı geri, logo → başlık, arama ve menü;
+       ödeme adımında odak çubuğu (arama/menü yok, güvenli ödeme, WhatsApp)
+     - ürün sayfalarının çubuğu (statik kabuk ve şablon) liste sayfasına
+       dönüyor, arama ve menü taşıyor; favori/paylaş banner'da kalıyor
+     - "Ne zaman, kaç kişi?" seçimi adreste; kart bağıyla ürün sayfasına
+       geçiyor, ürün sayfası rezervasyon kutusunu onunla açıyor
+     - kartta kampanya satırı rezervasyon motorundaki kampanyadan
+     - misafire liste arasında üyelik bandı, kampanyadan */
+import { describe, it, expect, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const oku = (yol) => readFileSync(new URL('../' + yol, import.meta.url), 'utf8');
+const L = require('../assets/js/listing-page.js');
+const C = require('../assets/js/catalog.js');
+const R = require('../assets/js/booking-engine.js');
+const D = require('../assets/js/detail-shell.js');
+const { MolaVeri } = require('../assets/js/data-gateway.js');
+
+const cerceve = oku('assets/js/site-chrome.js');
+const app = oku('assets/js/app.js');
+const stil = oku('assets/css/style.css');
+const listeStil = oku('assets/css/listing.css');
+const odemeStil = oku('assets/css/checkout.css');
+const yorumsuz = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+describe('masaüstü başlık', () => {
+  const baslik = cerceve.match(/<header class="site-header">[\s\S]*?<\/header>/)[0];
+
+  it('dil/para düğmesi tercih çekmecesini açıyor ve etiketi taşıyor', () => {
+    expect(baslik).toMatch(/class="header-pref-btn" data-tercih-ac/);
+    expect(baslik).toContain('<span data-tercih-etiket>TR · ₺</span>');
+  });
+
+  it('Yardım menüsünde WhatsApp canlı destek ve yardım sayfaları', () => {
+    const panel = baslik.match(/<div class="header-help-panel"[\s\S]*?<\/div>\s*<\/div>/)[0];
+    expect(baslik).toMatch(/id="headerHelpBtn"[^>]*aria-expanded="false"[^>]*aria-controls="headerHelpPanel"/);
+    expect(panel).toContain('data-destek-whatsapp');
+    expect(panel).toContain('data-destek-saat');
+    expect(panel).toContain('data-destek-durum');
+    ['kurumsal/yardim/', 'kurumsal/sss/', 'kurumsal/iptal-iade/', 'kurumsal/iletisim/']
+      .forEach(yol => expect(panel).toContain('href="' + yol + '"'));
+    /* Paneldeki bağlar gerçek sayfalar. */
+    ['yardim', 'sss', 'iptal-iade', 'iletisim'].forEach(slug => expect(MolaVeri.adres('kurumsal/' + slug)).toBeTruthy());
+    /* Açma/kapama, dışarı tıklama ve Escape app.js'te. */
+    expect(app).toContain("getElementById('headerHelpBtn')");
+    expect(app).toMatch(/initYardimMenusu[\s\S]*?Escape/);
+  });
+
+  it('WhatsApp saatleri ve durumu iletişim kaydından', () => {
+    const blok = app.match(/function destekBaglariniDoldur\(\)\{[\s\S]*?\n\}\)\(\);/)[0];
+    expect(blok).toContain('c.whatsappOpenHour');
+    expect(blok).toContain('c.whatsappCloseHour');
+    expect(blok).toContain('supportOnline(');
+  });
+
+  it('misafirde yalnızca giriş düğmesi; profil ve zil üyede', () => {
+    const css = yorumsuz(stil);
+    expect(css).toMatch(/body:not\(\.is-uye\) \.header-profile-btn \{ display: none; \}/);
+    expect(css).toMatch(/body:not\(\.is-uye\) \.header-notif-btn:not\(\.has-notif\) \{ display: none; \}/);
+    expect(css).toContain('body.is-uye #headerRegisterBtn { display: none; }');
+    /* Misafirde zil, gösterecek bildirimi varsa görünüyor. */
+    expect(app).toContain("zil.classList.toggle('has-notif', notifications.length > 0)");
+    /* Giriş düğmesi dar ekranda kısalıyor: "/ Üye Ol" ayrı parçada. */
+    expect(baslik).toContain('Giriş Yap<span class="header-register-long"> / Üye Ol</span>');
+    expect(css).toContain('@media (max-width: 680px) {\n  .header-right { gap: 6px; }\n  .header-register-long { display: none; }');
+  });
+
+  it('bozuk mobil düğme seçicisi düzeltildi', () => {
+    expect(stil).not.toContain('.header-actions  .header-actions .btn-primary');
+  });
+
+  it('mobil anasayfa başlığında WhatsApp düğmesi', () => {
+    expect(baslik).toMatch(/class="header-wa-btn" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek"/);
+  });
+});
+
+describe('ödeme adımı: odak başlığı', () => {
+  it('masaüstünde arama, menü, tercih, hesap ve bildirim gizli; güvenli ödeme ve Yardım kalıyor', () => {
+    const css = yorumsuz(stil);
+    ['.header-search', '.header-menu-btn', '.header-pref-btn', '.header-quick-btn', '.header-notif-btn', '.header-actions']
+      .forEach(sec => expect(css).toContain('body[data-rota="checkout"] ' + sec));
+    expect(css).not.toContain('body[data-rota="checkout"] .header-help');
+    expect(css).toMatch(/body\[data-rota="checkout"\] \.header-guvenli \{\s*display: inline-flex;/);
+    expect(cerceve).toContain('class="header-guvenli"');
+  });
+
+  it('mobilde alt menü gizli, ödeme çubuğu en altta', () => {
+    expect(yorumsuz(stil)).toContain('body[data-rota="checkout"] .bottom-tab-bar { display: none !important; }');
+    expect(yorumsuz(odemeStil)).toMatch(/body\[data-rota="checkout"\] \.odm-bar:not\(\[hidden\]\) \{\s*bottom: 0;/);
+  });
+
+  it('ödeme ekranı odak çubuğunu kullanıyor', () => {
+    expect(oku('assets/js/checkout-page.js')).toContain('lspMobilBaslikMarkup(baslik, alt, geri, { odak: true })');
+  });
+});
+
+describe('mobil sayfa çubuğu', () => {
+  const cubuk = L.lspMobilBaslikMarkup('Turlar', '14 tur', 'turlar/kapadokya-turlari');
+
+  it('geri oku bir üst sayfaya gidiyor ve akıllı', () => {
+    expect(cubuk).toContain('<a class="lst-mobile-back" href="turlar/kapadokya-turlari/" data-akilli-geri aria-label="Geri">');
+  });
+
+  it('başta logo, sonra başlık; arama ve menü', () => {
+    expect(cubuk).toMatch(/^<div class="lst-mobile-header" data-sayfa-cubugu data-cubuk-gizlenir>/);
+    expect(cubuk).toContain('class="cubuk-logo" href="./"');
+    expect(cubuk).toContain('<span class="lst-mobile-title">Turlar</span>');
+    expect(cubuk).toContain('id="lstMobileSearch"');
+    expect(cubuk).toMatch(/data-menu-ac aria-expanded="false" aria-label="Menüyü aç"/);
+    expect(cubuk).toContain('data-menu-ikon');
+  });
+
+  it('"mola360" alt satırı logo varken tekrarlanmıyor', () => {
+    const c = L.lspMobilBaslikMarkup('Hakkımızda', 'mola360', '');
+    expect(c).toContain('<span class="lst-mobile-subtitle" id="lstMobileSub" hidden></span>');
+  });
+
+  it('odak çubuğu: arama ve menü yok; güvenli ödeme ve WhatsApp var; gizlenmiyor', () => {
+    const c = L.lspMobilBaslikMarkup('Ödeme', 'Efes', 'tur/efes-sirince', { odak: true });
+    expect(c).toContain('data-cubuk-odak');
+    expect(c).not.toContain('data-cubuk-gizlenir');
+    expect(c).not.toContain('lstMobileSearch');
+    expect(c).not.toContain('data-menu-ac');
+    expect(c).toContain('Güvenli ödeme');
+    expect(c).toMatch(/class="cubuk-dugme cubuk-wa" href="[^"]+" data-destek-whatsapp/);
+  });
+
+  it('başlık geçişi, gizlenme ve menü davranışı app.js\'te', () => {
+    expect(app).toContain('function mola360SayfaCubugu()');
+    expect(app).toContain("cubuk.classList.toggle('is-baslikli'");
+    expect(app).toContain("cubuk.hasAttribute('data-cubuk-gizlenir')");
+    expect(app).toMatch(/closest\('\[data-menu-ac\]'\)\) toggleDrawer\(\)/);
+    /* Menü çubuğun altından açılıyor: çekmece çizgisi görünen çubuğa göre. */
+    expect(app).toMatch(/function syncMobileDrawerPosition\(\) \{[\s\S]*?mola360SayfaCubugu\(\)/);
+    /* Menü açıkken sayfa kilitlenince çubuk yerinde donuyor. */
+    expect(app).toContain("['.lst-mobile-header', '--m360-cubuk-freeze']");
+    expect(yorumsuz(stil)).toContain('body.m360-scroll-locked .lst-mobile-header { position: relative; top: var(--m360-cubuk-freeze, 0px); }');
+    expect(yorumsuz(stil)).toContain('body.cubuk-gizli .lst-toolbar { top: 0; }');
+  });
+
+  it('akıllı geri yalnızca site içinden gelindiyse geçmişe dönüyor', () => {
+    const f = app.match(/function mola360OncekiSayfaSitede\(\) \{[\s\S]*?\n\}/)[0];
+    expect(f).toContain('document.referrer');
+    expect(f).toContain('onceki.origin === location.origin');
+    expect(app).toMatch(/\[data-akilli-geri\][\s\S]*?window\.history\.back\(\)/);
+  });
+});
+
+describe('ürün sayfası çubuğu', () => {
+  const KABUKLAR = [
+    ['tour', 'efes-sirince', 'tur/efes-sirince/index.html'],
+    ['hotel', 'kordon-butik-otel', 'otel/kordon-butik-otel/index.html'],
+    ['venue', 'kum-beach-club', 'mekan/kum-beach-club/index.html']
+  ];
+
+  it('statik kabukta ve şablonda aynı: liste sayfasına akıllı geri, arama ve menü', () => {
+    KABUKLAR.forEach(([tip, slug, dosya]) => {
+      const kayit = MolaVeri.urun(tip, slug);
+      const listeYolu = MolaVeri.listeYolu(kayit);
+      const statik = oku(dosya).match(/<div class="tour-mobile-header" data-sayfa-cubugu>[\s\S]*?\n<\/div>/)[0];
+      expect(statik, dosya).toContain('href="../../' + listeYolu + '/" data-akilli-geri aria-label="Geri"');
+      const uretilen = D.dtyIskelet(tip, kayit, '../../', listeYolu, 'Liste').match(/<div class="tour-mobile-header"[\s\S]*?<main/)[0];
+      expect(uretilen, dosya).toContain('href="../../' + listeYolu + '/" data-akilli-geri aria-label="Geri"');
+      [statik, uretilen].forEach(m => {
+        expect(m).toContain('data-ara-ac');
+        expect(m).toContain('data-menu-ac');
+        expect(m).not.toContain('tourGalleryFav');
+      });
+    });
+    expect(app).toMatch(/closest\('\[data-ara-ac\]'\) && typeof openSearchOverlay === 'function'\) openSearchOverlay\(\)/);
+  });
+});
+
+describe('ne zaman, kaç kişi?', () => {
+  it('adres okunuyor ve doğrulanıyor', () => {
+    expect(C.katalogPlanOku('?tarih=2026-10-10&bitis=2026-10-12&kisi=3&q=x'))
+      .toEqual({ tarih: '2026-10-10', bitis: '2026-10-12', kisi: 3 });
+    /* Olmayan gün, sıfır kişi, sınır üstü ve tersine aralık düşüyor. */
+    expect(C.katalogPlanOku('tarih=2026-02-30&kisi=0')).toEqual({ tarih: null, bitis: null, kisi: null });
+    expect(C.katalogPlanOku('tarih=2026-10-10&bitis=2026-10-09&kisi=21')).toEqual({ tarih: '2026-10-10', bitis: null, kisi: null });
+    expect(C.katalogPlanOku('bitis=2026-10-12&kisi=2.5')).toEqual({ tarih: null, bitis: null, kisi: null });
+  });
+
+  it('bağa ekleniyor; seçim yoksa bağ aynı', () => {
+    expect(C.katalogPlanBagi('tur/efes-sirince/', { tarih: '2026-10-10', kisi: 3 })).toBe('tur/efes-sirince/?tarih=2026-10-10&kisi=3');
+    expect(C.katalogPlanBagi('arama/?q=a#x', { tarih: '2026-10-10', bitis: '2026-10-11' })).toBe('arama/?q=a&tarih=2026-10-10&bitis=2026-10-11#x');
+    expect(C.katalogPlanBagi('tur/efes-sirince/', {})).toBe('tur/efes-sirince/');
+  });
+
+  it('ürünün satış tarihlerinden aralığa uyan ilk gün ve otelde gece sayısı', () => {
+    expect(C.katalogPlanTarihi(['2026-10-06', '2026-10-13'], { tarih: '2026-10-10', bitis: '2026-10-14' })).toBe('2026-10-13');
+    expect(C.katalogPlanTarihi(['2026-10-06'], { tarih: '2026-10-10' })).toBe(null);
+    expect(C.katalogPlanGecesi({ tarih: '2026-10-10', bitis: '2026-10-13' })).toBe(3);
+    expect(C.katalogPlanGecesi({ tarih: '2026-10-10' })).toBe(null);
+  });
+
+  it('kutunun metni', () => {
+    expect(L.lspPlanEtiketi({}, false)).toEqual({ tarih: 'Tüm tarihler', kisi: '2 kişi' });
+    expect(L.lspPlanEtiketi({ tarih: '2026-10-03', bitis: '2026-10-04', kisi: 4 }, false)).toEqual({ tarih: '3–4 Eki', kisi: '4 kişi' });
+    expect(L.lspPlanEtiketi({ tarih: '2026-10-30', bitis: '2026-11-01' }, true).tarih).toBe('30 Eki – 1 Kas · 2 gece');
+    expect(L.lspPlanEtiketi({}, true).tarih).toBe('Giriş – çıkış seç');
+  });
+
+  it('hızlı seçimler bugüne göre', () => {
+    const pazartesi = L.lspPlanOnAyarlari(new Date('2026-09-28T10:00:00'), false);
+    expect(pazartesi.map(o => [o.slug, o.tarih, o.bitis])).toEqual([
+      ['haftasonu', '2026-10-03', '2026-10-04'],
+      ['7-gun', '2026-09-28', '2026-10-04'],
+      ['30-gun', '2026-09-28', '2026-10-27']
+    ]);
+    /* Pazar günü "bu hafta sonu" yalnızca bugün. */
+    expect(L.lspPlanOnAyarlari(new Date('2026-10-04T10:00:00'), false)[0]).toMatchObject({ tarih: '2026-10-04', bitis: null });
+    /* Otel: cuma girişi, pazar çıkışı; cumartesi açılırsa o geceden. */
+    expect(L.lspPlanOnAyarlari(new Date('2026-09-28T10:00:00'), true).map(o => o.tarih + '>' + o.bitis))
+      .toEqual(['2026-10-02>2026-10-04', '2026-10-09>2026-10-11']);
+    expect(L.lspPlanOnAyarlari(new Date('2026-10-03T10:00:00'), true).map(o => o.tarih + '>' + o.bitis))
+      .toEqual(['2026-10-03>2026-10-04', '2026-10-09>2026-10-11']);
+  });
+
+  it('kutu otel listesinde giriş–çıkış diyor', () => {
+    expect(L.lspKonaklamaMi({ temel: { type: 'hotel' } })).toBe(true);
+    expect(L.lspKonaklamaMi({ temel: { type: 'tour' } })).toBe(false);
+    expect(L.lspPlanKutusuMarkup({}, true)).toContain('<small>Giriş – çıkış</small>');
+    expect(L.lspPlanKutusuMarkup({}, false)).toContain('<small>Ne zaman?</small>');
+    expect(L.lspPlanKutusuMarkup({}, false)).toMatch(/id="lstPlanBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstPlanPanel"/);
+  });
+
+  it('seçim tarih aralığıyla listeyi süzüyor', async () => {
+    const temel = { type: 'tour' };
+    const tumu = await MolaVeri.liste({ temel, bugun: new Date('2026-09-28T10:00:00') });
+    const haftasonu = await MolaVeri.liste({ temel, bugun: new Date('2026-09-28T10:00:00'), tarihAraligi: { start: '2026-10-03', end: '2026-10-04' } });
+    expect(haftasonu.toplam).toBeGreaterThan(0);
+    expect(haftasonu.toplam).toBeLessThan(tumu.toplam);
+    expect(oku('assets/js/listing-page.js')).toContain('tarihAraligi = plan.tarih ? { start: plan.tarih, end: plan.bitis || plan.tarih } : null');
+  });
+
+  it('ürün sayfaları rezervasyon kutusunu seçimle açıyor', () => {
+    [['tour', 'adults: plan.kisi || 2'], ['hotel', 'adults: plan.kisi || 2'], ['activity', 'adults: plan.kisi || 2'],
+      ['event', 'full: plan.kisi || 2'], ['venue', 'guests: plan.kisi || 2']].forEach(([tip, kisi]) => {
+      const js = oku('assets/js/' + tip + '-page.js');
+      expect(js, tip).toContain('katalogPlanOku(window.location.search)');
+      expect(js, tip).toContain(kisi);
+    });
+    /* Seçilen gün kısa listede değilse tarih listesi açık başlıyor ve
+       düğmenin yazısı durumu söylüyor. */
+    const tur = oku('assets/js/tour-page.js');
+    expect(tur).toContain('allDates: tarihler.indexOf(planTarihi) >= DATE_CHIPS_SHORT');
+    expect(tur).toContain('aria-expanded="${state.allDates}">${state.allDates ? \'Daha az tarih\' : \'Tüm tarihler\'}</button>');
+    /* Otelde tarih giriş, bitiş çıkış: gece sayısı sınırlar içindeyse. */
+    expect(oku('assets/js/hotel-page.js')).toMatch(/nights: planGecesi && planGecesi >= \(p\.minNights \|\| 1\) && \(!p\.maxNights \|\| planGecesi <= p\.maxNights\)/);
+  });
+});
+
+describe('liste kartları: seçim bağı ve üyelik bandı', () => {
+  afterEach(() => {
+    delete globalThis.KATALOG_KART;
+    delete globalThis.poiCardMarkup;
+    delete globalThis.katalogPlanBagi;
+  });
+  const kur = () => {
+    globalThis.KATALOG_KART = { tour: (k) => ({ href: 'tur/' + k.slug + '/' }) };
+    globalThis.poiCardMarkup = (sec, k) => '<a href="' + k.href + '"></a>';
+    globalThis.katalogPlanBagi = C.katalogPlanBagi;
+  };
+  const satirlar = (n) => Array.from({ length: n }, (_, i) => ({ type: 'tour', kayit: { slug: 'u' + i } }));
+
+  it('seçim kart bağlarına geçiyor', () => {
+    kur();
+    const m = L.lspKartlarMarkup(satirlar(2), new Date(), { tarih: '2026-10-10', kisi: 3 });
+    expect(m).toBe('<a href="tur/u0/?tarih=2026-10-10&kisi=3"></a><a href="tur/u1/?tarih=2026-10-10&kisi=3"></a>');
+  });
+
+  it('bant dördüncü karttan sonra; az kartta sonda; kart yoksa yok', () => {
+    kur();
+    const bant = '<aside data-uyelik-bandi></aside>';
+    const sirasi = (m) => m.split(/(?=<a |<aside)/).indexOf(bant);
+    expect(L.LSP_BANT_SIRASI).toBe(4);
+    expect(sirasi(L.lspKartlarMarkup(satirlar(9), new Date(), null, bant))).toBe(4);
+    expect(sirasi(L.lspKartlarMarkup(satirlar(2), new Date(), null, bant))).toBe(2);
+    expect(L.lspKartlarMarkup([], new Date(), null, bant)).toBe('');
+  });
+
+  it('bant üyeye özel ilk rezervasyon kampanyasından; kampanya yoksa boş', () => {
+    const k = MolaVeri.kampanyalar(new Date('2026-09-28T10:00:00')).find(x => x.uyeOzel && x.ilkRezervasyon);
+    const m = L.lspUyelikBandiMarkup(k);
+    expect(m).toContain('Üyelere özel: ' + k.ad);
+    expect(m).toContain('data-uyelik-ol');
+    expect(L.lspUyelikBandiMarkup(null)).toBe('');
+    /* Yalnızca misafire; giriş yapılınca kalkıyor. */
+    const js = oku('assets/js/listing-page.js');
+    expect(js).toContain('(MolaVeri.oturum && MolaVeri.oturum())');
+    expect(js).toContain("window.addEventListener('mola360:oturum'");
+    /* Izgara "dense": bant dolu bir satırın altına oturuyor. */
+    expect(yorumsuz(listeStil)).toContain('.lst-grid { grid-auto-flow: row dense; }');
+    expect(yorumsuz(listeStil)).toMatch(/\.lst-uyelik \{\s*grid-column: 1 \/ -1;/);
+  });
+});
+
+describe('kart: kampanya satırı', () => {
+  const BUGUN = '2026-09-28';
+
+  it('ürüne kendiliğinden uygulanabilen yürürlükteki kampanya', () => {
+    expect(R.rezUrunKampanyasi('tour', MolaVeri.urun('tour', 'kapadokya-3-gece'), BUGUN))
+      .toMatchObject({ kod: 'kapadokya-erken', kisa: '30 gün önceden 500 TL indirim' });
+    expect(R.rezUrunKampanyasi('hotel', MolaVeri.urun('hotel', 'kordon-butik-otel'), BUGUN))
+      .toMatchObject({ kod: 'otel-hafta-sonu', kisa: 'Hafta sonu 2 gece kal, 1 gece öde' });
+    expect(R.rezUrunKampanyasi('tour', MolaVeri.urun('tour', 'efes-sirince'), BUGUN)).toBe(null);
+  });
+
+  it('üyeye özel ve kupon kampanyaları kartta yok', () => {
+    R.REZ_KAMPANYALAR.filter(k => k.tur !== 'otomatik' || k.uyeOzel).forEach(k => {
+      ['tour', 'hotel', 'activity', 'event', 'venue'].forEach(tip => {
+        const bulunan = R.rezUrunKampanyasi(tip, { slug: 'x', taxonomy: {} }, BUGUN);
+        expect(bulunan && bulunan.kod).not.toBe(k.kod);
+      });
+    });
+  });
+
+  it('kart kampanyayı taşıyor ve işaretlemede tek satır', () => {
+    expect(C.tourCatalogCard(MolaVeri.urun('tour', 'kapadokya-3-gece')).campaign).toBe('30 gün önceden 500 TL indirim');
+    expect(C.tourCatalogCard(MolaVeri.urun('tour', 'efes-sirince')).campaign).toBeUndefined();
+    expect(app).toContain('${it.campaign ? `<p class="poi-campaign"><span class="icon">${svg(\'percent\')}</span>${it.campaign}</p>` : \'\'}');
+  });
+});

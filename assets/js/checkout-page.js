@@ -295,7 +295,9 @@ function odmKur(kok, bugun) {
     lspMetaYaz({ title: 'Ödeme — mola360', description: 'Rezervasyon ve ödeme.', noindex: true, canonical: null });
   }
   const adres = MolaVeri.odemeAdresiOku(location.search);
-  const mobil = (baslik, alt, geri) => (typeof lspMobilBaslikMarkup === 'function' ? lspMobilBaslikMarkup(baslik, alt, geri) : '');
+  /* Ödeme adımında odak çubuğu: arama, menü ve alt menü yok; geri,
+     güvenli ödeme notu ve WhatsApp desteği var (listing-page.js). */
+  const mobil = (baslik, alt, geri) => (typeof lspMobilBaslikMarkup === 'function' ? lspMobilBaslikMarkup(baslik, alt, geri, { odak: true }) : '');
   if (!adres) {
     kok.innerHTML = mobil('Ödeme', 'mola360', '')
       + (typeof lspBosSayfaMarkup === 'function' ? lspBosSayfaMarkup({

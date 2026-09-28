@@ -58,16 +58,25 @@
      geçiliyor ve fonksiyon tüm günleri döndürüyor. */
   const tarihler = nextDepartureDates(new Date(), [], DATE_CHIPS_ALL, p.leadDays);
 
+  /* Liste sayfasındaki "Ne zaman, kaç kişi?" seçimi adresle geliyorsa
+     (?tarih=&bitis=&kisi=, catalog.js) rezervasyon kutusu onunla açılıyor. */
+  const plan = typeof katalogPlanOku === 'function' ? katalogPlanOku(window.location.search) : {};
+  /* Otelde seçimin tarihi giriş günü, bitişi çıkış günü. */
+  const planTarihi = plan.tarih && tarihler.indexOf(plan.tarih) !== -1 ? plan.tarih : null;
+  const planGecesi = planTarihi && typeof katalogPlanGecesi === 'function' ? katalogPlanGecesi(plan) : null;
   const state = {
-    checkIn: tarihler[0] || '',
-    nights: p.minNights || 1,
-    rooms: 1,
-    adults: 2,
+    checkIn: planTarihi || tarihler[0] || '',
+    nights: planGecesi && planGecesi >= (p.minNights || 1) && (!p.maxNights || planGecesi <= p.maxNights)
+      ? planGecesi : (p.minNights || 1),
+    /* Kişi sayısı ilk oda tipine sığmıyorsa oda sayısı artıyor (tesisin
+       sınırı içinde); kişiler sessizce düşmesin. */
+    rooms: plan.kisi ? Math.min(p.maxRooms || 1, Math.max(1, Math.ceil(plan.kisi / (hotel.rooms[0].maxGuests || 2)))) : 1,
+    adults: plan.kisi || 2,
     children: 0,
     room: hotel.rooms[0].id,
     board: hotel.boards[0].id,
     addons: [],
-    allDates: false,
+    allDates: tarihler.indexOf(planTarihi) >= DATE_CHIPS_SHORT,
     favorite: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
@@ -636,7 +645,7 @@
         <div class="tour-field-head">
           <span class="tour-field-label">${ic('calendar')}Giriş tarihi</span>
           <button class="tour-text-btn small" type="button" id="tourAllDates"
-                  aria-expanded="false">Tüm tarihler</button>
+                  aria-expanded="${state.allDates}">${state.allDates ? 'Daha az tarih' : 'Tüm tarihler'}</button>
         </div>
         <div class="tour-date-chips" id="tourDateChips" role="group"
              aria-label="Giriş tarihleri">${dateChipsMarkup()}</div>

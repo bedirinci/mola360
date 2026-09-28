@@ -88,6 +88,7 @@ const REZ_TAKSIT = {
    baslangic/bitis  geçerlilik (bugün dahil); boş = süresiz
    uyeOzel  yalnızca üyeye; kod kişiye özel (hesaptaki kuponlar)
    ilkRezervasyon  üyenin iptal edilmemiş rezervasyonu yoksa
+   kisa     ürün kartındaki tek satırlık kampanya notu (otomatik olanlar)
    BU TABLO ÖRNEK; kampanyalar backend'de yönetilecek, kupon kodu
    sunucuda doğrulanacak. */
 const REZ_KAMPANYALAR = [
@@ -97,6 +98,7 @@ const REZ_KAMPANYALAR = [
     kapsam: { tipler: ['tour'], kategoriler: ['kapadokya-turlari'] },
     kosul: { enAzGunOnce: 30 },
     indirim: { tutar: 500 },
+    kisa: '30 gün önceden 500 TL indirim',
     sayfa: 'turlar/kapadokya-turlari' },
   { kod: 'otel-hafta-sonu', tur: 'otomatik', etiket: 'Hafta sonu',
     ad: 'Otellerde hafta sonu 2 gece kal, 1 gece öde',
@@ -104,6 +106,7 @@ const REZ_KAMPANYALAR = [
     kapsam: { tipler: ['hotel'], kategoriler: ['termal-oteller', 'sehir-otelleri'] },
     kosul: { cumaCumartesi: true },
     indirim: { geceOda: 1 },
+    kisa: 'Hafta sonu 2 gece kal, 1 gece öde',
     sayfa: 'oteller' },
   { kod: 'yeni-uye', tur: 'kupon', etiket: 'Yeni üyelere', uyeOzel: true, ilkRezervasyon: true,
     ad: 'İlk rezervasyonda %15 indirim',
@@ -469,6 +472,16 @@ function rezKalanGun(kampanya, bugun) {
   if (!kampanya || !kampanya.bitis) return null;
   const fark = rezGunFarki(bugun, kampanya.bitis);
   return fark !== null && fark >= 0 && fark < 7 ? fark + 1 : null;
+}
+
+/* Ürün kartındaki kampanya satırı: bu ürüne kendiliğinden uygulanabilen
+   (otomatik, herkese açık) ve bugün yürürlükte olan ilk kampanya.
+   Koşulu (tarih, gece) rezervasyonda denetleniyor; kart yalnızca
+   kampanyanın bu ürünü kapsadığını söylüyor. Yoksa null. */
+function rezUrunKampanyasi(tip, kayit, bugun) {
+  const k = REZ_KAMPANYALAR.find(x => x.tur === 'otomatik' && !x.uyeOzel
+    && rezGecerli(x, bugun) && rezKapsamaGirer(x, tip, kayit));
+  return k ? { kod: k.kod, etiket: k.etiket, kisa: k.kisa || k.ad, sayfa: k.sayfa || null } : null;
 }
 
 /* Erken rezervasyon indirimi olan ürün: kalkışa en az N gün koşullu,
@@ -861,7 +874,7 @@ if (typeof module !== 'undefined' && module.exports) {
     REZ_KAPORA, REZ_TAKSIT, REZ_KAMPANYALAR, REZ_ALANLAR, REZ_YOLLAR, REZ_TIPLER,
     rezISO, rezGunEkle, rezGunFarki, rezTarihMetni, rezPara, rezSayi, rezYasAraligi,
     rezSecimYaz, rezSecimOku, rezOdemeYolu, rezUrunCoz,
-    rezKapsamaGirer, rezAktifKampanyalar, rezKalanGun, rezErkenRezervasyonVar, rezCumaCumartesi,
+    rezKapsamaGirer, rezAktifKampanyalar, rezKalanGun, rezErkenRezervasyonVar, rezUrunKampanyasi, rezCumaCumartesi,
     rezKampanyaIndirimi, rezKuponBul, rezTLKarsiligi,
     rezKartAilesi, rezTaksitSecenekleri, rezTaksitTablosu,
     rezIptalTakvimi, rezTeklif, rezPaketTurMu,

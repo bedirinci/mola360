@@ -52,14 +52,18 @@
      fonksiyon bütün günleri döndürüyor. */
   const tarihler = nextDepartureDates(new Date(), [], DATE_CHIPS_ALL, p.leadDays);
 
+  /* Liste sayfasındaki "Ne zaman, kaç kişi?" seçimi adresle geliyorsa
+     (?tarih=&bitis=&kisi=, catalog.js) rezervasyon kutusu onunla açılıyor. */
+  const plan = typeof katalogPlanOku === 'function' ? katalogPlanOku(window.location.search) : {};
+  const planTarihi = typeof katalogPlanTarihi === 'function' ? katalogPlanTarihi(tarihler, plan) : null;
   const state = {
-    date: tarihler[0] || '',
+    date: planTarihi || tarihler[0] || '',
     session: activity.sessions[0].id,
     pack: activity.packages[0].id,
-    adults: 2,
+    adults: plan.kisi || 2,
     children: 0,
     addons: [],
-    allDates: false,
+    allDates: tarihler.indexOf(planTarihi) >= DATE_CHIPS_SHORT,
     favorite: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
@@ -624,7 +628,7 @@
         <div class="tour-field-head">
           <span class="tour-field-label">${ic('calendar')}Uçuş sabahı</span>
           <button class="tour-text-btn small" type="button" id="tourAllDates"
-                  aria-expanded="false">Tüm tarihler</button>
+                  aria-expanded="${state.allDates}">${state.allDates ? 'Daha az tarih' : 'Tüm tarihler'}</button>
         </div>
         <div class="tour-date-chips" id="tourDateChips" role="group"
              aria-label="Uçuş tarihleri">${dateChipsMarkup()}</div>

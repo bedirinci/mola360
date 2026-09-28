@@ -58,15 +58,19 @@
     return !!(kayit && kayit.closed);
   };
 
+  /* Liste sayfasındaki "Ne zaman, kaç kişi?" seçimi adresle geliyorsa
+     (?tarih=&bitis=&kisi=, catalog.js) rezervasyon kutusu onunla açılıyor. */
+  const plan = typeof katalogPlanOku === 'function' ? katalogPlanOku(window.location.search) : {};
+  const planTarihi = typeof katalogPlanTarihi === 'function' ? katalogPlanTarihi(tarihler.filter(iso => !kapaliGun(iso)), plan) : null;
   const state = {
     /* Varsayılan gün ilk AÇIK gün. Önceki sürüm ilk günü seçiyordu; bugün
        kapalı günse çip pasif görünürken rezervasyon o güne kuruluyordu. */
-    date: tarihler.find(iso => !kapaliGun(iso)) || tarihler[0] || '',
+    date: planTarihi || tarihler.find(iso => !kapaliGun(iso)) || tarihler[0] || '',
     slot: '',
     option: venueOptions(place)[0].id,
-    guests: 2,
+    guests: plan.kisi || 2,
     addons: [],
-    allDates: false,
+    allDates: tarihler.indexOf(planTarihi) >= DATE_CHIPS_SHORT,
     favorite: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
@@ -614,7 +618,7 @@
         <div class="tour-field-head">
           <span class="tour-field-label">${ic('calendar')}Gün</span>
           <button class="tour-text-btn small" type="button" id="tourAllDates"
-                  aria-expanded="false">Tüm günler</button>
+                  aria-expanded="${state.allDates}">${state.allDates ? 'Daha az gün' : 'Tüm günler'}</button>
         </div>
         <div class="tour-date-chips" id="tourDateChips" role="group"
              aria-label="Rezervasyon günü">${dateChipsMarkup()}</div>

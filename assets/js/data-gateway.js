@@ -1700,6 +1700,14 @@ function kapiKampanyalar(bugun) {
   return aktif(gun).map(k => Object.assign({}, k, { kalanGun: kalan ? kalan(k, gun) : null }));
 }
 
+/* Ürün kartının kampanya satırı: ürüne kendiliğinden uygulanabilen,
+   yürürlükteki ilk kampanya ({ kod, etiket, kisa, sayfa }) ya da null. */
+function kapiUrunKampanyasi(kayit, bugun) {
+  const bul = kapiRezFn('rezUrunKampanyasi');
+  const tip = kayit ? kapiIcerikTipi(kayit) : null;
+  return bul && tip ? bul(tip, kayit, kapiISO(bugun || new Date())) : null;
+}
+
 /* Ödeme adresinden ürün ve seçim: ?urun=tur/efes-sirince&tarih=… */
 function kapiOdemeAdresiOku(sorgu) {
   const oku = kapiRezFn('rezSecimOku');
@@ -1753,6 +1761,7 @@ const MolaVeri = {
   listeSatiri: kapiListeSatiri,
   /* rezervasyon (sayfa yükü) */
   kampanyalar: kapiKampanyalar,
+  urunKampanyasi: kapiUrunKampanyasi,
   kartAileleri: () => ((kapiRezDeger('REZ_TAKSIT') || {}).aileler || []).slice(),
   taksitTablosu: (tutar) => { const f = kapiRezFn('rezTaksitTablosu'); return f ? f(tutar) : null; },
   odemeYolu: (tip, slug, secim) => { const f = kapiRezFn('rezOdemeYolu'); return f ? f(tip, slug, secim) : ''; },

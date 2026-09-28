@@ -60,7 +60,12 @@ const LSP_IKON = {
   ara: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
   suzgec: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="10" y1="18" x2="14" y2="18"></line></svg>',
   kapat: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-  asagi: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>'
+  asagi: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+  takvim: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><line x1="3" y1="9.5" x2="21" y2="9.5"></line><line x1="8" y1="2.5" x2="8" y2="6.5"></line><line x1="16" y1="2.5" x2="16" y2="6.5"></line></svg>',
+  kisiler: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"></path><path d="M18 14.3c2.2.7 3.5 2.8 3.5 5.7"></path></svg>',
+  menu: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>',
+  kilit: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>',
+  whatsapp: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Zm0 18.13c-1.6 0-3.13-.43-4.46-1.24l-.32-.19-3.12.76.78-3.05-.2-.31A8.13 8.13 0 1 1 20.17 12a8.14 8.14 0 0 1-8.13 8.13Zm4.47-6.08c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/></svg>'
 };
 
 /* ---------------- saf yardımcılar ---------------- */
@@ -155,15 +160,41 @@ function lspSiralamaMarkup(siralamalar, secili) {
 /* Satırdan kart: anasayfanın kart üreticisi (catalog.js) ve kart
    işaretlemesi (app.js/poiCardMarkup) kullanılıyor; liste sayfası ayrı
    bir kart tasarımı taşımıyor. İkisi de yüklü değilse boş. */
-function lspKartlarMarkup(satirlar, bugun) {
+function lspKartlarMarkup(satirlar, bugun, plan, bant) {
   const kartUret = (typeof KATALOG_KART !== 'undefined') ? KATALOG_KART : null;
   const isaretle = (typeof poiCardMarkup === 'function') ? poiCardMarkup : null;
   if (!kartUret || !isaretle) return '';
-  return (satirlar || []).map(s => {
+  /* "Ne zaman, kaç kişi?" seçimi kart bağıyla ürün sayfasına geçer. */
+  const bagla = (typeof katalogPlanBagi === 'function') ? katalogPlanBagi : (h) => h;
+  const kartlar = (satirlar || []).map(s => {
     const uret = kartUret[s.type];
     const kart = uret ? uret(s.kayit, bugun) : null;
-    return kart ? isaretle(LSP_KART_AYARI[s.type] || LSP_KART_AYARI.tour, kart) : '';
-  }).join('');
+    if (!kart) return '';
+    return isaretle(LSP_KART_AYARI[s.type] || LSP_KART_AYARI.tour, plan ? Object.assign({}, kart, { href: bagla(kart.href, plan) }) : kart);
+  }).filter(Boolean);
+  /* Bant (üyelik çağrısı) dördüncü karttan sonra; daha az kart varsa
+     sonda. Listenin başını kapatmıyor: önce ürünler. */
+  if (bant && kartlar.length) kartlar.splice(Math.min(LSP_BANT_SIRASI, kartlar.length), 0, bant);
+  return kartlar.join('');
+}
+
+/* Misafire liste arasında üyelik çağrısı: üyeye özel ilk rezervasyon
+   kampanyası (booking-engine.js, REZ_KAMPANYALAR; uyeOzel +
+   ilkRezervasyon). Kampanya yürürlükte değilse bant yok. */
+const LSP_BANT_SIRASI = 4;
+function lspUyelikBandiMarkup(kampanya) {
+  if (!kampanya) return '';
+  return '<aside class="lst-uyelik" data-uyelik-bandi aria-label="Üyelere özel">'
+    + '<span class="lst-uyelik-ikon" aria-hidden="true">%</span>'
+    + '<div class="lst-uyelik-metin"><strong>Üyelere özel: ' + lspKacis(kampanya.ad) + '</strong>'
+    + '<span>' + lspKacis(kampanya.aciklama || '') + '</span></div>'
+    + '<button class="btn-primary lst-uyelik-btn" type="button" data-uyelik-ol>Ücretsiz üye ol</button>'
+    + '</aside>';
+}
+
+/* Yalnızca otellerden oluşan liste: tarih giriş–çıkış günü. */
+function lspKonaklamaMi(model) {
+  return !!(model && model.temel && model.temel.type === 'hotel');
 }
 
 /* Arama motoru için: sayfa yolu ve listedeki ürünler (yalnızca sayfası
@@ -254,14 +285,33 @@ function lspYapisalYaz(veri) {
   el.textContent = JSON.stringify(veri.length === 1 ? veri[0] : veri);
 }
 
-/* Mobil başlık: tur sayfasındakiyle aynı düzen (geri oku, iki satırlık
-   başlık), sağda arama. */
-function lspMobilBaslikMarkup(baslik, altBaslik, geriYol) {
-  return '<div class="lst-mobile-header">'
-    + '<a class="lst-mobile-back" href="' + lspHref(geriYol) + '" aria-label="Geri"><span class="icon">' + LSP_IKON.geri + '</span></a>'
-    + '<div class="lst-mobile-heading"><span class="lst-mobile-title">' + lspKacis(baslik) + '</span>'
-    + '<span class="lst-mobile-subtitle" id="lstMobileSub">' + lspKacis(altBaslik) + '</span></div>'
-    + '<button class="lst-mobile-search" type="button" id="lstMobileSearch" aria-label="Ara"><span class="icon">' + LSP_IKON.ara + '</span></button>'
+/* Mobil sayfa çubuğu: [geri] [logo → başlık] [ara] [menü].
+   Sayfa açılınca ortada logo duruyor, sayfanın büyük başlığı (h1)
+   çubuğun altına kayınca logonun yerini başlık alıyor (app.js,
+   .is-baslikli); aynı başlık iki kez görünmüyor. Aşağı kaydırınca çubuk
+   gizleniyor, yukarı kaydırınca geri geliyor (data-cubuk-gizlenir).
+   Geri oku site içinden gelindiyse tarayıcı geçmişine dönüyor; dışarıdan
+   gelindiyse bağın adresine, bir üst sayfaya gidiyor (data-akilli-geri).
+
+   odak: true → ödeme ekranı: arama ve menü yok, yerlerinde "güvenli
+   ödeme" notu ve WhatsApp desteği; çubuk gizlenmiyor. */
+function lspMobilBaslikMarkup(baslik, altBaslik, geriYol, secenek) {
+  const odak = !!(secenek && secenek.odak);
+  /* "mola360" alt satırı logo varken tekrar; boş geçiliyor. */
+  const alt = altBaslik && altBaslik !== 'mola360' ? altBaslik : '';
+  const sag = odak
+    ? '<a class="cubuk-dugme cubuk-wa" href="' + lspKacis(typeof CONTACT !== 'undefined' ? CONTACT.whatsappHref : '#') + '" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek"><span class="icon">' + LSP_IKON.whatsapp + '</span></a>'
+    : '<button class="lst-mobile-search cubuk-dugme" type="button" id="lstMobileSearch" aria-label="Ara"><span class="icon">' + LSP_IKON.ara + '</span></button>'
+      + '<button class="cubuk-dugme cubuk-menu" type="button" data-menu-ac aria-expanded="false" aria-label="Menüyü aç"><span class="icon" data-menu-ikon>' + LSP_IKON.menu + '</span></button>';
+  return '<div class="lst-mobile-header" data-sayfa-cubugu' + (odak ? ' data-cubuk-odak' : ' data-cubuk-gizlenir') + '>'
+    + '<a class="lst-mobile-back" href="' + lspHref(geriYol) + '" data-akilli-geri aria-label="Geri"><span class="icon">' + LSP_IKON.geri + '</span></a>'
+    + '<div class="lst-mobile-heading">'
+    + '<a class="cubuk-logo" href="./" aria-label="mola360 anasayfa"><img src="assets/img/logo.png" alt="mola360" width="82" height="34"></a>'
+    + '<span class="cubuk-baslik"><span class="lst-mobile-title">' + lspKacis(baslik) + '</span>'
+    + '<span class="lst-mobile-subtitle" id="lstMobileSub"' + (alt ? '' : ' hidden') + '>' + lspKacis(alt) + '</span></span>'
+    + '</div>'
+    + (odak ? '<span class="cubuk-guvenli"><span class="icon">' + LSP_IKON.kilit + '</span>Güvenli ödeme</span>' : '')
+    + sag
     + '</div>';
 }
 
@@ -323,6 +373,106 @@ function lspBosListeMarkup(model) {
     + '</main>';
 }
 
+/* ---------------- ne zaman, kaç kişi? ----------------
+   Liste ve arama sayfasının üstündeki özet kutusu: seçili tarih ve kişi
+   sayısı tek bakışta; dokununca düzenleme paneli açılıyor (mobilde alttan,
+   masaüstünde kutunun altında). Seçim adreste (?tarih=&bitis=&kisi=,
+   catalog.js katalogPlan*): tarih listeyi o aralıkta satışı olanlarla
+   sınırlıyor (MolaVeri.liste, tarihAraligi), ikisi birlikte kart
+   bağlarıyla ürün sayfasına geçiyor ve rezervasyon kutusu onunla açılıyor.
+   Otel listesinde tarih giriş–çıkış günü. */
+const LSP_AY_KISA = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const LSP_VARSAYILAN_KISI = 2;
+
+function lspISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function lspGunEkle(iso, gun) {
+  const [y, a, g] = iso.split('-').map(Number);
+  return lspISO(new Date(y, a - 1, g + gun));
+}
+function lspTarihKisa(iso) {
+  const [, a, g] = iso.split('-').map(Number);
+  return g + ' ' + LSP_AY_KISA[a - 1];
+}
+function lspGeceSayisi(a, b) {
+  const gun = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+  return Math.round((gun(b) - gun(a)) / 86400000);
+}
+
+/* Kutunun iki satırı: { tarih, kisi }. */
+function lspPlanEtiketi(plan, konaklama) {
+  const p = plan || {};
+  let tarih;
+  if (!p.tarih) tarih = konaklama ? 'Giriş – çıkış seç' : 'Tüm tarihler';
+  else if (!p.bitis) tarih = lspTarihKisa(p.tarih);
+  else if (p.tarih.slice(0, 7) === p.bitis.slice(0, 7)) {
+    tarih = Number(p.tarih.slice(8)) + '–' + Number(p.bitis.slice(8)) + ' ' + LSP_AY_KISA[Number(p.bitis.slice(5, 7)) - 1];
+  } else tarih = lspTarihKisa(p.tarih) + ' – ' + lspTarihKisa(p.bitis);
+  if (konaklama && p.tarih && p.bitis) tarih += ' · ' + lspGeceSayisi(p.tarih, p.bitis) + ' gece';
+  return { tarih, kisi: (p.kisi || LSP_VARSAYILAN_KISI) + ' kişi' };
+}
+
+/* Hızlı seçimler (bugüne göre). Otelde giriş–çıkış: hafta sonu cuma
+   girişi, pazar çıkışı; cumartesi günü açılırsa o geceden. */
+function lspPlanOnAyarlari(bugun, konaklama) {
+  const b = lspISO(bugun);
+  const g = bugun.getDay();
+  if (konaklama) {
+    const cuma = g === 6 ? b : lspGunEkle(b, (5 - g + 7) % 7);
+    const pazar = lspGunEkle(b, (7 - g) % 7 || 7);
+    const buHafta = { slug: 'haftasonu', name: 'Bu hafta sonu', tarih: g === 0 ? lspGunEkle(b, 5) : cuma, bitis: g === 0 ? lspGunEkle(b, 7) : pazar };
+    /* Gelecek hafta sonu her zaman cuma–pazar (2 gece). */
+    const gelecekCuma = g === 6 ? lspGunEkle(b, 6) : lspGunEkle(buHafta.tarih, 7);
+    return [buHafta, { slug: 'gelecek-haftasonu', name: 'Gelecek hafta sonu', tarih: gelecekCuma, bitis: lspGunEkle(gelecekCuma, 2) }];
+  }
+  const cumartesi = g === 0 ? b : lspGunEkle(b, 6 - g);
+  const pazar = g === 0 ? b : lspGunEkle(b, 7 - g);
+  return [
+    { slug: 'haftasonu', name: 'Bu hafta sonu', tarih: cumartesi, bitis: pazar === cumartesi ? null : pazar },
+    { slug: '7-gun', name: 'Önümüzdeki 7 gün', tarih: b, bitis: lspGunEkle(b, 6) },
+    { slug: '30-gun', name: 'Önümüzdeki 30 gün', tarih: b, bitis: lspGunEkle(b, 29) }
+  ];
+}
+
+function lspPlanKutusuMarkup(plan, konaklama) {
+  const e = lspPlanEtiketi(plan, konaklama);
+  return '<div class="lst-plan" id="lstPlan">'
+    + '<button class="lst-plan-kutu" type="button" id="lstPlanBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lstPlanPanel">'
+    + '<span class="lst-plan-alan"><span class="icon">' + LSP_IKON.takvim + '</span><span class="lst-plan-metin"><small>' + (konaklama ? 'Giriş – çıkış' : 'Ne zaman?') + '</small>'
+    + '<strong id="lstPlanTarihMetni">' + lspKacis(e.tarih) + '</strong></span></span>'
+    + '<span class="lst-plan-alan"><span class="icon">' + LSP_IKON.kisiler + '</span><span class="lst-plan-metin"><small>Kaç kişi?</small>'
+    + '<strong id="lstPlanKisiMetni">' + lspKacis(e.kisi) + '</strong></span></span>'
+    + '<span class="lst-plan-ara" aria-hidden="true">' + LSP_IKON.ara + '</span>'
+    + '<span class="lst-visually-hidden">Tarihi ve kişi sayısını değiştir</span>'
+    + '</button>'
+    + lspPlanPaneliMarkup(konaklama)
+    + '</div>';
+}
+
+function lspPlanPaneliMarkup(konaklama) {
+  return '<div class="lst-plan-katman" id="lstPlanKatman" hidden></div>'
+    + '<div class="lst-plan-panel" id="lstPlanPanel" role="dialog" aria-modal="true" aria-labelledby="lstPlanBaslik" tabindex="-1" hidden>'
+    + '<div class="lst-plan-bas"><h2 id="lstPlanBaslik">Ne zaman, kaç kişi?</h2>'
+    + '<button class="lst-plan-kapat" type="button" data-plan-kapat aria-label="Kapat"><span class="icon">' + LSP_IKON.kapat + '</span></button></div>'
+    + '<fieldset class="lst-plan-grup"><legend>' + (konaklama ? 'Giriş – çıkış' : 'Tarih') + '</legend>'
+    + '<div class="lst-plan-hizli" id="lstPlanHizli"></div>'
+    + '<div class="lst-plan-aralik">'
+    + '<label><span>' + (konaklama ? 'Giriş' : 'Başlangıç') + '</span><input type="date" id="lstPlanTarih"></label>'
+    + '<label><span>' + (konaklama ? 'Çıkış' : 'Bitiş (isteğe bağlı)') + '</span><input type="date" id="lstPlanBitis"></label>'
+    + '</div></fieldset>'
+    + '<fieldset class="lst-plan-grup"><legend>Kişi sayısı</legend>'
+    + '<div class="lst-plan-sayac">'
+    + '<button type="button" data-plan-kisi="-1" aria-label="Bir kişi azalt">−</button>'
+    + '<output id="lstPlanKisi" aria-live="polite">' + LSP_VARSAYILAN_KISI + '</output>'
+    + '<button type="button" data-plan-kisi="1" aria-label="Bir kişi artır">+</button></div>'
+    + '<p class="lst-plan-not">Seçimin ürün sayfasındaki rezervasyon kutusuna taşınır; çocuk ve oda sayısını orada seçersin.</p>'
+    + '</fieldset>'
+    + '<div class="lst-plan-alt"><button class="lst-link" type="button" data-plan-temizle>Temizle</button>'
+    + '<button class="btn-primary" type="button" data-plan-uygula>Uygula</button></div>'
+    + '</div>';
+}
+
 /* Arama sayfasının kutusu: GET formu, JS olmadan da çalışır. */
 function lspAramaFormu(q) {
   return '<form class="lst-search" action="arama/" method="get" role="search">'
@@ -331,13 +481,14 @@ function lspAramaFormu(q) {
     + '<button class="btn-primary" type="submit">Ara</button></form>';
 }
 
-function lspListeIskeleti(model, seo) {
+function lspListeIskeleti(model, seo, plan) {
   return '<main class="lst-page" id="lstPage">'
     + lspKirintiMarkup(model.kirinti)
     + (model.kind === 'search' ? lspAramaFormu(model.q) : '')
     + '<header class="lst-head"><h1>' + lspKacis(model.baslik) + '</h1>'
     + '<p class="lst-summary">' + lspKacis(lspSayimMetni(seo.adet, model.birim)
       + (seo.enDusuk ? ' · en düşük ' + seo.enDusuk : '')) + '</p></header>'
+    + lspPlanKutusuMarkup(plan, lspKonaklamaMi(model))
     + lspCiplerMarkup(model.altlar)
     + '<div class="lst-layout">'
     + '<div class="lst-sheet-overlay" id="lstSheetOverlay" hidden></div>'
@@ -379,13 +530,16 @@ function lspListeKur(kok, model, seo, bugun) {
   const siralamalar = ((typeof SUZ_SIRALAMALAR !== 'undefined') ? SUZ_SIRALAMALAR : [])
     .filter(x => arama || !x.arama);
   let durum = oku(location.search, alanlar, varsayilan);
+  /* "Ne zaman, kaç kişi?" seçimi (catalog.js); motorun süzgeçlerinden
+     ayrı, kendi adres parametreleriyle. */
+  let plan = (typeof katalogPlanOku === 'function') ? katalogPlanOku(location.search) : {};
   const kapaliGruplar = new Set();
   const tumuAcik = new Set();
   let sayac = 0;
   let sonSonuc = null;
 
   kok.innerHTML = lspMobilBaslikMarkup(model.baslik, lspSayimMetni(seo.adet, model.birim), lspGeriYolu(model.kirinti))
-    + lspListeIskeleti(model, seo);
+    + lspListeIskeleti(model, seo, plan);
   const $ = (id) => document.getElementById(id);
   $('lstSort').innerHTML = lspSiralamaMarkup(siralamalar, durum.siralama);
 
@@ -426,7 +580,7 @@ function lspListeKur(kok, model, seo, bugun) {
     $('lstApply').textContent = sonuc.toplam ? sonuc.toplam + ' sonucu gör' : 'Sonuç yok';
     document.querySelectorAll('[data-temizle]').forEach(b => { b.hidden = !secimSayisi; });
 
-    $('lstGrid').innerHTML = lspKartlarMarkup(sonuc.satirlar, bugun);
+    $('lstGrid').innerHTML = lspKartlarMarkup(sonuc.satirlar, bugun, plan, uyelikBandi());
     $('lstMore').hidden = !sonuc.dahaVar;
     const bos = $('lstEmpty');
     if (!sonuc.toplam) {
@@ -443,9 +597,19 @@ function lspListeKur(kok, model, seo, bugun) {
     lspYapisalYaz(lspYapisalVeri(model, seo, sonuc.satirlar, lspSiteAdresi()));
   };
 
+  /* Üyelik bandı yalnızca misafire; giriş yapılınca kalkıyor. */
+  const uyelikBandi = () => {
+    if (typeof MolaVeri === 'undefined' || !MolaVeri.kampanyalar || (MolaVeri.oturum && MolaVeri.oturum())) return '';
+    return lspUyelikBandiMarkup(MolaVeri.kampanyalar(bugun).find(k => k.uyeOzel && k.ilkRezervasyon) || null);
+  };
+  window.addEventListener('mola360:oturum', () => {
+    document.querySelectorAll('[data-uyelik-bandi]').forEach(b => { if (!uyelikBandi()) b.remove(); });
+  });
+
   const sorgula = () => {
     const istek = ++sayac;
-    return MolaVeri.liste({ temel: model.temel, alanlar, durum, bugun }).then(sonuc => {
+    const tarihAraligi = plan.tarih ? { start: plan.tarih, end: plan.bitis || plan.tarih } : null;
+    return MolaVeri.liste({ temel: model.temel, alanlar, durum, bugun, tarihAraligi }).then(sonuc => {
       /* Arka arkaya iki tıklama: yalnızca SON sorgunun cevabı çizilir. */
       if (istek !== sayac || !sonuc) return;
       ciz(sonuc);
@@ -503,6 +667,7 @@ function lspListeKur(kok, model, seo, bugun) {
       return;
     }
     if (e.target.closest('#lstFilterBtn')) { lspSuzgecAc(true); return; }
+    if (e.target.closest('[data-uyelik-ol]') && typeof openAuthModal === 'function') { openAuthModal('register'); return; }
     if (e.target.closest('#lstSheetClose') || e.target.closest('#lstApply') || e.target.id === 'lstSheetOverlay') {
       lspSuzgecAc(false);
     }
@@ -512,7 +677,128 @@ function lspListeKur(kok, model, seo, bugun) {
     if (e.key === 'Escape' && document.body.classList.contains('lst-sheet-open')) lspSuzgecAc(false);
   });
 
-  return sorgula();
+  /* ---- ne zaman, kaç kişi? ---- */
+  const konaklama = lspKonaklamaMi(model);
+  const kisiSiniri = (typeof KATALOG_KISI_SINIRI !== 'undefined') ? KATALOG_KISI_SINIRI : 20;
+  const bugunISO = lspISO(bugun);
+  const onAyarlar = lspPlanOnAyarlari(bugun, konaklama);
+  const planKutu = $('lstPlan');
+  const planPanel = $('lstPlanPanel');
+  const planKatman = $('lstPlanKatman');
+  const planBtn = $('lstPlanBtn');
+  const tarihKutusu = $('lstPlanTarih');
+  const bitisKutusu = $('lstPlanBitis');
+  let taslakKisi = LSP_VARSAYILAN_KISI;
+  tarihKutusu.min = bugunISO;
+  bitisKutusu.min = bugunISO;
+  $('lstPlanHizli').innerHTML = [{ slug: '', name: konaklama ? 'Tarih yok' : 'Tüm tarihler' }].concat(onAyarlar)
+    .map(o => '<button class="lst-plan-cip" type="button" data-plan-hizli="' + o.slug + '" aria-pressed="false">' + lspKacis(o.name) + '</button>').join('');
+
+  const planAdresiYaz = () => {
+    const digerleri = location.search.replace(/^\?/, '').split('&')
+      .filter(p => p && ['tarih', 'bitis', 'kisi'].indexOf(decodeURIComponent(p.split('=')[0])) === -1);
+    const ek = (typeof katalogPlanSorgusu === 'function') ? katalogPlanSorgusu(plan) : '';
+    const qs = digerleri.concat(ek ? [ek] : []).join('&');
+    history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  };
+  const basiliYaz = () => {
+    const t = tarihKutusu.value || null;
+    const b = bitisKutusu.value || null;
+    planPanel.querySelectorAll('[data-plan-hizli]').forEach(dugme => {
+      const o = onAyarlar.find(x => x.slug === dugme.getAttribute('data-plan-hizli'));
+      const uyuyor = o ? (o.tarih === t && (o.bitis || null) === b) : (!t && !b);
+      dugme.setAttribute('aria-pressed', String(uyuyor));
+    });
+    bitisKutusu.min = t ? lspGunEkle(t, konaklama ? 1 : 0) : bugunISO;
+  };
+  const kisiYaz = () => {
+    $('lstPlanKisi').textContent = String(taslakKisi);
+    planPanel.querySelector('[data-plan-kisi="-1"]').disabled = taslakKisi <= 1;
+    planPanel.querySelector('[data-plan-kisi="1"]').disabled = taslakKisi >= kisiSiniri;
+  };
+  const panelAc = (ac) => {
+    if (ac) {
+      tarihKutusu.value = plan.tarih || '';
+      bitisKutusu.value = plan.bitis || '';
+      taslakKisi = plan.kisi || LSP_VARSAYILAN_KISI;
+      basiliYaz();
+      kisiYaz();
+    }
+    planPanel.hidden = !ac;
+    planKatman.hidden = !ac;
+    planBtn.setAttribute('aria-expanded', String(ac));
+    document.body.classList.toggle('lst-plan-open', ac);
+    if (ac) planPanel.focus();
+    else planBtn.focus();
+  };
+  const planUygula = (yeni) => {
+    plan = yeni;
+    const etiket = lspPlanEtiketi(plan, konaklama);
+    $('lstPlanTarihMetni').textContent = etiket.tarih;
+    $('lstPlanKisiMetni').textContent = etiket.kisi;
+    planKutu.classList.toggle('is-secili', !!(plan.tarih || plan.kisi));
+    planAdresiYaz();
+    panelAc(false);
+    uygula({ secim: durum.secim, siralama: durum.siralama, sayfa: 1 });
+  };
+  planKutu.classList.toggle('is-secili', !!(plan.tarih || plan.kisi));
+
+  planKutu.addEventListener('click', (e) => {
+    if (e.target.closest('#lstPlanBtn')) { panelAc(planPanel.hidden); return; }
+    if (e.target.closest('[data-plan-kapat]') || e.target === planKatman) { panelAc(false); return; }
+    const hizli = e.target.closest('[data-plan-hizli]');
+    if (hizli) {
+      const o = onAyarlar.find(x => x.slug === hizli.getAttribute('data-plan-hizli'));
+      tarihKutusu.value = o ? o.tarih : '';
+      bitisKutusu.value = o && o.bitis ? o.bitis : '';
+      basiliYaz();
+      return;
+    }
+    const kisi = e.target.closest('[data-plan-kisi]');
+    if (kisi) {
+      taslakKisi = Math.min(kisiSiniri, Math.max(1, taslakKisi + Number(kisi.getAttribute('data-plan-kisi'))));
+      kisiYaz();
+      return;
+    }
+    if (e.target.closest('[data-plan-temizle]')) { planUygula({ tarih: null, bitis: null, kisi: null }); return; }
+    if (e.target.closest('[data-plan-uygula]')) {
+      let t = tarihKutusu.value || null;
+      let b = bitisKutusu.value || null;
+      if (!t && b) { t = b; b = null; }
+      if (t && t < bugunISO) t = bugunISO;
+      if (t && b && b < t) { const x = t; t = b; b = x; }
+      if (t && b && b === t) b = null;
+      /* Otelde çıkış günü yoksa bir gece. */
+      if (konaklama && t && !b) b = lspGunEkle(t, 1);
+      planUygula({ tarih: t, bitis: b, kisi: taslakKisi !== LSP_VARSAYILAN_KISI ? taslakKisi : null });
+    }
+  });
+  tarihKutusu.addEventListener('change', () => {
+    if (bitisKutusu.value && bitisKutusu.value < tarihKutusu.value) bitisKutusu.value = '';
+    basiliYaz();
+  });
+  bitisKutusu.addEventListener('change', basiliYaz);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !planPanel.hidden) panelAc(false);
+  });
+
+  /* Üründen geri dönünce liste kaldığı yerden: kartlar sorgudan sonra
+     çizildiği için tarayıcının kendi kaydırma geri yüklemesi sayfa henüz
+     kısayken çalışıp yeri kaybediyor. Konum geçmiş kaydında
+     (history.state) saklanıyor; depoya bir şey yazılmıyor. */
+  const kaydirmaYaz = () => {
+    try { history.replaceState(Object.assign({}, history.state, { mola360Kaydirma: window.scrollY }), ''); } catch (_) { /* yok say */ }
+  };
+  sayfa.addEventListener('click', (e) => { if (e.target.closest('a[href]')) kaydirmaYaz(); }, true);
+  window.addEventListener('pagehide', kaydirmaYaz);
+  let hedefY = 0;
+  try {
+    const gezinme = performance.getEntriesByType('navigation')[0];
+    if (gezinme && gezinme.type === 'back_forward' && history.state) hedefY = Number(history.state.mola360Kaydirma) || 0;
+  } catch (_) { hedefY = 0; }
+  if (hedefY && 'scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  return sorgula().then(() => { if (hedefY) window.scrollTo(0, hedefY); });
 }
 
 /* Mobilde süzgeçler alttan açılan sayfa. Masaüstünde yan sütun; bu
@@ -825,6 +1111,13 @@ if (typeof module !== 'undefined' && module.exports) {
     lspEtiketMarkup,
     lspSiralamaMarkup,
     lspKartlarMarkup,
+    lspMobilBaslikMarkup,
+    lspPlanEtiketi,
+    lspPlanOnAyarlari,
+    lspPlanKutusuMarkup,
+    lspUyelikBandiMarkup,
+    lspKonaklamaMi,
+    LSP_BANT_SIRASI,
     lspYapisalVeri,
     lspGeriYolu,
     lspKampanyaKosullari,

@@ -3042,7 +3042,7 @@ ul {
 .header-search {
     display: none;
   }
-  .header-actions  .header-actions .btn-primary {
+  .header-actions .btn-primary {
     padding: 8px 14px;
     font-size: 12.5px;
   }
@@ -6135,3 +6135,216 @@ body.is-uye #headerRegisterBtn { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .tercih-cekmece, .tercih-katman { transition: none; }
 }
+
+/* =====================================================
+   BAŞLIK (8. adım)
+   Masaüstü: [menü][logo] [arama] [TR · ₺][Yardım][♡][zil][Giriş | avatar]
+   Misafirde yalnızca giriş düğmesi; profil (avatar) ve zil üyede. Zil
+   misafirde yalnızca gösterecek bildirim varsa (.has-notif, app.js).
+   Mobil anasayfa: [logo] … [WhatsApp][Giriş | zil][menü]. Dil/para ve
+   Yardım mobilde menünün içinde.
+   ===================================================== */
+.header-pref-btn, .header-help, .header-wa-btn { display: none; }
+body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }
+@media (min-width: 681px) {
+  .header-right { gap: 6px; }
+  .header-pref-btn, .header-help-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 38px; padding: 0 12px; border-radius: 999px;
+    color: #fff; background: transparent;
+    font-size: 13.5px; font-weight: 600; white-space: nowrap;
+    transition: background .15s ease;
+  }
+  .header-pref-btn:hover, .header-help-btn:hover, .header-help-btn[aria-expanded="true"] { background: rgba(255,255,255,.12); }
+  .header-pref-btn .icon, .header-help-btn .icon { width: 19px; height: 19px; flex-shrink: 0; }
+  .header-help-btn .header-help-chev { width: 14px; height: 14px; margin-left: -2px; opacity: .7; transition: transform .15s ease; }
+  .header-help-btn[aria-expanded="true"] .header-help-chev { transform: rotate(180deg); }
+  .header-help { display: block; position: relative; }
+  .header-help-panel {
+    position: absolute; top: calc(100% + 14px); right: 0; z-index: 3100;
+    width: 320px; padding: 8px;
+    background: #fff; color: var(--text);
+    border-radius: 16px; box-shadow: 0 18px 44px rgba(11,18,48,.22);
+  }
+  .header-help-panel[hidden] { display: none; }
+  .header-help-panel::before {
+    content: ''; position: absolute; top: -6px; right: 34px;
+    width: 12px; height: 12px; background: #fff; transform: rotate(45deg); border-radius: 2px;
+  }
+  .header-help-wa {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    margin-bottom: 4px; padding: 12px; border-radius: 12px;
+    background: #EAF7EF; color: #0F4D2E;
+  }
+  .header-help-wa:hover { background: #DDF2E5; }
+  .header-help-wa .icon { width: 30px; height: 30px; flex-shrink: 0; color: #1FAF55; }
+  .header-help-wa-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .header-help-wa-text strong { font-size: 14px; }
+  .header-help-wa-text small { font-size: 12px; color: #3E6B54; }
+  .header-help-durum {
+    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+    font-size: 11px; font-weight: 700; color: #6B7280;
+  }
+  .header-help-durum::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #9CA3AF; }
+  .header-help-durum.is-acik { color: #1A8D48; }
+  .header-help-durum.is-acik::before { background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+  .header-help-link {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; color: var(--navy-deep);
+  }
+  .header-help-link::after { content: '›'; font-size: 18px; line-height: 1; color: var(--text-faint); }
+  .header-help-link:hover { background: var(--bg); }
+  body:not(.is-uye) .header-profile-btn { display: none; }
+  .header-actions { margin-left: 4px; }
+  .header-actions .btn-primary { padding: 9px 16px; font-size: 13.5px; }
+}
+/* Dar masaüstü ve tablet: arama kutusuna yer kalsın diye önce Yardım'ın
+   yazısı, sonra tercih etiketi ve "/ Üye Ol" kısalıyor. */
+@media (min-width: 681px) and (max-width: 1180px) {
+  .header-help-btn .header-help-label, .header-help-btn .header-help-chev { display: none; }
+  .header-help-btn { width: 38px; padding: 0; justify-content: center; }
+}
+@media (min-width: 681px) and (max-width: 980px) {
+  .header-pref-btn [data-tercih-etiket] { display: none; }
+  .header-pref-btn { width: 38px; padding: 0; justify-content: center; }
+  .header-register-long { display: none; }
+}
+@media (max-width: 680px) {
+  .header-right { gap: 6px; }
+  .header-register-long { display: none; }
+  .header-actions .btn-primary { padding: 8px 15px; font-size: 13px; }
+  .header-wa-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    color: #25D366; background: rgba(255,255,255,.1);
+  }
+  .header-wa-btn svg { width: 21px; height: 21px; }
+}
+
+/* ---- mobil sayfa çubuğu (anasayfa dışı) ----
+   [geri] [logo → başlık] [ara] [menü]. Başlık, sayfanın büyük başlığı
+   çubuğun altına kayınca logonun yerine geçiyor (app.js, .is-baslikli).
+   Aşağı kaydırınca çubuk gizleniyor, yukarı kaydırınca geliyor. */
+.cubuk-dugme {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255,255,255,.1);
+  transition: background .15s ease;
+}
+.cubuk-dugme:active, .cubuk-menu[aria-expanded="true"] { background: rgba(255,255,255,.24); }
+.cubuk-dugme .icon, .cubuk-dugme svg { width: 20px; height: 20px; }
+.cubuk-wa { color: #25D366; }
+.cubuk-wa .icon, .cubuk-wa svg { width: 21px; height: 21px; }
+.lst-mobile-header .lst-mobile-heading { display: grid; align-items: center; min-height: 38px; }
+.lst-mobile-heading > .cubuk-logo,
+.lst-mobile-heading > .cubuk-baslik {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear 0s;
+}
+.cubuk-logo { display: flex; align-items: center; justify-self: start; }
+.cubuk-logo img { display: block; height: 34px; width: auto; }
+.cubuk-baslik { display: flex; flex-direction: column; gap: 2px; }
+[data-sayfa-cubugu]:not(.is-baslikli) .cubuk-baslik,
+[data-sayfa-cubugu].is-baslikli .cubuk-logo {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
+}
+[data-sayfa-cubugu]:not(.is-baslikli) .cubuk-baslik { transform: translateY(8px); }
+[data-sayfa-cubugu].is-baslikli .cubuk-logo { transform: translateY(-8px); }
+.cubuk-guvenli {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(140,198,63,.16);
+  color: #CDEBA4;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cubuk-guvenli .icon, .cubuk-guvenli svg { width: 14px; height: 14px; }
+@media (max-width: 680px) {
+  .lst-mobile-header[data-cubuk-gizlenir] { transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s ease; }
+  .lst-mobile-header.is-gizli { transform: translateY(calc(-100% - 16px)); box-shadow: none; }
+  .lst-toolbar { transition: top .28s cubic-bezier(.4,0,.2,1); }
+  body.cubuk-gizli .lst-toolbar { top: 0; }
+  /* Menü açıkken sayfa kilitli (body sabit): çubuk yapışkanlığını
+     kaybetmesin diye o anki yerinde donduruluyor (app.js). */
+  body.m360-scroll-locked .lst-mobile-header { position: relative; top: var(--m360-cubuk-freeze, 0px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lst-mobile-header[data-cubuk-gizlenir], .lst-toolbar,
+  .lst-mobile-heading > .cubuk-logo, .lst-mobile-heading > .cubuk-baslik { transition: none; }
+}
+/* İç sayfalarda menü açıkken çubukla menü arasındaki ince şerit de
+   karartılsın (karartma çubuğun altında kalıyor, z-index). */
+@media (max-width: 680px) {
+  body:not([data-sayfa="ana"]) .drawer-overlay { top: 0; }
+}
+
+/* ---- ödeme adımı: odak başlığı ----
+   Ödeme ekranında (yönlendirici body[data-rota="checkout"] yazıyor)
+   dikkat dağıtan her şey kalkıyor: arama, menü, dil/para, favori,
+   bildirim, hesap ve mobil alt menü. Kalan: logo, "Güvenli ödeme" ve
+   Yardım (WhatsApp canlı destek). Onay ekranı normal başlıkla açılıyor;
+   rezervasyondan sonra biletlere ve hesaba gidilebilsin. */
+.header-guvenli { display: none; }
+@media (min-width: 681px) {
+  body[data-rota="checkout"] .header-search,
+  body[data-rota="checkout"] .header-menu-btn,
+  body[data-rota="checkout"] .header-pref-btn,
+  body[data-rota="checkout"] .header-quick-btn,
+  body[data-rota="checkout"] .header-notif-btn,
+  body[data-rota="checkout"] .header-actions { display: none !important; }
+  body[data-rota="checkout"] .header-inner { justify-content: space-between; }
+  body[data-rota="checkout"] .header-guvenli {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(140,198,63,.16);
+    color: #CDEBA4;
+    font-size: 13.5px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  body[data-rota="checkout"] .header-guvenli .icon { width: 16px; height: 16px; }
+}
+@media (max-width: 680px) {
+  body[data-rota="checkout"] .bottom-tab-bar { display: none !important; }
+}
+
+/* ---- kart: kampanya satırı ----
+   Ürüne kendiliğinden uygulanabilen yürürlükteki kampanya (catalog.js,
+   kart.campaign). Izgarada kartlar aynı boyda; fiyat çubuğu hep altta. */
+.poi-campaign {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: #F1F8E8;
+  color: #3B6B12;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.poi-campaign .icon { width: 14px; height: 14px; flex-shrink: 0; }
+.lst-grid .poi-card, .home-results-grid .poi-card { display: flex; flex-direction: column; }
+.lst-grid .poi-body, .home-results-grid .poi-body { flex: 1; }

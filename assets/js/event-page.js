@@ -50,13 +50,17 @@
   const yaklasan = upcomingPerformances(event, new Date());
   const sezonBitti = yaklasan.length === 0;
 
+  /* Liste sayfasındaki "Ne zaman, kaç kişi?" seçimi adresle geliyorsa
+     (?tarih=&bitis=&kisi=, catalog.js) rezervasyon kutusu onunla açılıyor. */
+  const plan = typeof katalogPlanOku === 'function' ? katalogPlanOku(window.location.search) : {};
+  const planTarihi = typeof katalogPlanTarihi === 'function' ? katalogPlanTarihi(yaklasan.map(x => x.date), plan) : null;
   const state = {
-    date: sezonBitti ? '' : yaklasan[0].date,
+    date: sezonBitti ? '' : (planTarihi || yaklasan[0].date),
     category: event.categories[0].id,
-    full: 2,
+    full: plan.kisi || 2,
     student: 0,
     addons: [],
-    allDates: false,
+    allDates: yaklasan.findIndex(x => x.date === planTarihi) >= DATE_CHIPS_SHORT,
     favorite: false,
     reviewStar: 0,
     reviewsShown: REVIEWS_STEP,
@@ -654,7 +658,7 @@
           <span class="tour-field-label">${ic('calendar')}Temsil</span>
           ${yaklasan.length > DATE_CHIPS_SHORT
             ? `<button class="tour-text-btn small" type="button" id="tourAllDates"
-                 aria-expanded="false">Tüm temsiller</button>`
+                 aria-expanded="${state.allDates}">${state.allDates ? 'Daha az temsil' : 'Tüm temsiller'}</button>`
             : ''}
         </div>
         <div class="tour-date-chips" id="tourDateChips" role="group"
