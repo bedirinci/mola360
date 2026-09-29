@@ -9,7 +9,9 @@
    ADLAR: üst seviye adlar HSA_ / hsa ile başlıyor. */
 
 const HSA_BOLUMLER = [
-  { id: 'genel', ad: 'Genel Bakış' },
+  /* Misafirde iki sekme: Genel Bakış (giriş ve rezervasyon bulma) ve
+     Favorilerim; tek başına duran "Favorilerim" çipi boş görünüyordu. */
+  { id: 'genel', ad: 'Genel Bakış', misafir: true },
   { id: 'rezervasyonlarim', ad: 'Rezervasyonlarım' },
   { id: 'biletlerim', ad: 'Biletlerim' },
   { id: 'favorilerim', ad: 'Favorilerim', misafir: true },
@@ -266,9 +268,17 @@ function hsaAyarlarMarkup(h) {
     + '<button type="button" class="hsa-btn-danger" data-sil-onay>Evet, sil</button><button type="button" class="hsa-btn-ghost" data-sil-vazgec>Vazgeç</button></div></div></div>';
 }
 
-function hsaMisafirMarkup() {
+/* Yeni üye kampanyası metni yürürlükteki kampanyadan (menüdeki kart ve
+   liste bandıyla aynı kaynak); kampanya yoksa cümle yok. */
+function hsaUyelikKampanyasi(bugun) {
+  if (typeof MolaVeri === 'undefined' || !MolaVeri.kampanyalar) return '';
+  const k = MolaVeri.kampanyalar(bugun || new Date()).find(x => x.uyeOzel && x.ilkRezervasyon);
+  return k ? ' ' + hsaKacis(k.etiket) + ': ' + hsaKacis(k.ad) + '.' : '';
+}
+
+function hsaMisafirMarkup(bugun) {
   return '<section class="hsa-guest"><h2>Hesabına giriş yap</h2>'
-    + '<p>Rezervasyonların, karekodlu biletlerin, kuponların ve Molapuanın tek yerde. Yeni üyelere ilk rezervasyonda %15 indirim.</p>'
+    + '<p>Rezervasyonların, karekodlu biletlerin, kuponların ve Molapuanın tek yerde.' + hsaUyelikKampanyasi(bugun) + '</p>'
     + '<div class="hsa-guest-actions"><button type="button" class="btn-primary hsa-btn" data-giris="login">Giriş yap</button>'
     + '<button type="button" class="hsa-btn-ghost" data-giris="register">Üye ol</button></div></section>'
     + '<section class="hsa-card"><h3>Rezervasyonunu bul</h3><p>Üye olmadan yaptığın rezervasyonu kod ve e-postayla görüntüle.</p>'
@@ -319,7 +329,7 @@ function hsaKur(kok, adres, bugun) {
     if (!uye) {
       icerik = bolum === 'favorilerim'
         ? '<h2 class="hsa-title">Favorilerim</h2><p class="hsa-lead">Favorilerin bu tarayıcıda duruyor; üye olunca hesabınla birlikte görünür.</p>' + hsaFavorilerMarkup(panel.favoriler, bugun)
-        : hsaMisafirMarkup() + (panel.favoriler.length ? '<h2 class="hsa-title">Favorilerim</h2>' + hsaFavorilerMarkup(panel.favoriler, bugun) : '');
+        : hsaMisafirMarkup(bugun) + (panel.favoriler.length ? '<h2 class="hsa-title">Favorilerim</h2>' + hsaFavorilerMarkup(panel.favoriler, bugun) : '');
     } else {
       const baslik = '<h2 class="hsa-title">' + hsaKacis(b.ad) + '</h2>';
       const seviyeler = (typeof HSP_SEVIYELER !== 'undefined') ? HSP_SEVIYELER : [];

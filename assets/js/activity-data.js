@@ -511,7 +511,6 @@ const ACTIVITIES = {
       { icon: 'shield',  text: 'Lisanslı pilot ve zorunlu uçuş sigortası' }
     ],
 
-    social: { viewedLast24h: 84, bookedThisWeek: 46 },
 
     ratingBreakdown: { 5: 1480, 4: 132, 3: 24, 2: 9, 1: 7 },
 

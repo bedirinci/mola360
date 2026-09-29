@@ -292,11 +292,14 @@ describe('Hesabım paneli', () => {
     favoriler: [], yorumlar: [], bildirimler: []
   });
 
-  it('tek panel: talimattaki 12 bölüm; misafire yalnızca favoriler', () => {
+  it('tek panel: talimattaki 12 bölüm; misafire genel bakış ve favoriler', () => {
     expect(P.HSA_BOLUMLER.map(b => b.ad)).toEqual(['Genel Bakış', 'Rezervasyonlarım', 'Biletlerim', 'Favorilerim', 'Kuponlarım',
       'Mola Puanlarım', 'Üyelik Seviyem', 'Yorumlarım', 'Bildirimlerim', 'Kişisel Bilgilerim', 'Ödeme Yöntemlerim', 'Ayarlar']);
     expect((P.hsaNavMarkup('genel', true).match(/data-bolum=/g) || []).length).toBe(12);
-    expect((P.hsaNavMarkup('genel', false).match(/data-bolum="([a-z-]+)"/g) || [])).toEqual(['data-bolum="favorilerim"']);
+    /* Tek başına "Favorilerim" çipi boş görünüyordu: misafirde giriş ve
+       rezervasyon bulmanın olduğu Genel Bakış da sekme. */
+    expect((P.hsaNavMarkup('genel', false).match(/data-bolum="([a-z-]+)"/g) || []))
+      .toEqual(['data-bolum="genel"', 'data-bolum="favorilerim"']);
     P.HSA_BOLUMLER.forEach(b => expect(MolaVeri.adres('hesabim').kind).toBe('account'));
   });
 

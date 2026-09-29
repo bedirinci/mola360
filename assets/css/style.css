@@ -2778,22 +2778,27 @@ ul {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #E23B3F;
-  color: #fff;
+  /* Puan beyaz zeminde, sarı yıldızla: kırmızı/turuncu indirimin ve
+     aciliyetin rengi; kartta indirim etiketiyle iki kırmızı oluyordu. */
+  background: #fff;
+  color: var(--navy-deep);
   font-size: 11.5px;
   font-weight: 700;
   padding: 5px 10px;
   border-radius: 8px;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(11,18,48,.16);
 }
 .poi-status-badge.sponsored {
   background: #5B6377;
+  color: #fff;
   box-shadow: none;
 }
 .poi-status-badge .icon {
   width: 12px;
   height: 12px;
+  color: #F5A524;
 }
+.poi-status-badge .icon svg { fill: currentColor; }
 .poi-status-badge .count {
   font-weight: 500;
   opacity: .85;
@@ -2894,6 +2899,7 @@ ul {
 }
 .poi-price-now { display: flex; align-items: baseline; gap: 0; white-space: nowrap; }
 .poi-price-now .approx { margin-right: 3px; font-size: 14px; font-weight: 700; color: var(--text-muted); }
+.poi-price-kaynak { font-size: 11.5px; font-weight: 600; line-height: 1.2; color: var(--text-muted); white-space: nowrap; }
 .poi-price-bar.has-old .poi-price-now .main { color: #C2410C; }
 .poi-go-btn {
   width: 34px;
@@ -6266,8 +6272,9 @@ body.is-uye #headerRegisterBtn { display: none; }
 }
 .cubuk-dugme:active, .cubuk-menu[aria-expanded="true"] { background: rgba(255,255,255,.24); }
 .cubuk-dugme .icon, .cubuk-dugme svg { width: 20px; height: 20px; }
-.cubuk-wa { color: #25D366; }
-.cubuk-wa .icon, .cubuk-wa svg { width: 21px; height: 21px; }
+/* Başlıktaki gibi arka plansız, yeşil balon ve beyaz ahize. */
+.cubuk-dugme.cubuk-wa { background: transparent; }
+.cubuk-wa svg { width: 27px; height: 27px; }
 .lst-mobile-header .lst-mobile-heading { display: grid; align-items: center; min-height: 38px; }
 .lst-mobile-heading > .cubuk-logo,
 .lst-mobile-heading > .cubuk-baslik {

@@ -527,7 +527,6 @@ const PLACES = {
       { icon: 'refresh', text: '24 saat öncesine kadar ücretsiz iptal' }
     ],
 
-    social: { viewedLast24h: 96, bookedThisWeek: 58 },
 
     ratingBreakdown: { 5: 612, 4: 148, 3: 41, 2: 14, 1: 9 },
 
@@ -787,7 +786,6 @@ const PLACES = {
       { icon: 'shield',   text: 'Sertifikalı terapist, tek kullanımlık örtü' }
     ],
 
-    social: { viewedLast24h: 41, bookedThisWeek: 27 },
 
     ratingBreakdown: { 5: 288, 4: 44, 3: 9, 2: 3, 1: 2 },
 

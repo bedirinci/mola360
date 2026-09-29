@@ -819,6 +819,13 @@ function kartFiyati(tutar, paraBirimi){
   };
 }
 
+/* Yaklasik karsilik gosterilen kartta urunun kendi fiyati ("199 EUR"):
+   "≈" tek basina neyin yaklasigi oldugunu soylemiyordu. */
+function kartKaynakFiyati(tutar, paraBirimi){
+  const n = Number(tutar);
+  return (Number.isFinite(n) ? Math.round(n).toLocaleString('tr-TR') : String(tutar)) + ' ' + paraBirimiEtiketi(paraBirimi);
+}
+
 /* Indirimli kartta eski (ustu cizili) ve yeni fiyat; indirim etiketi
    gorselin ustunde. Liste fiyati urunun kendi kaydindan (catalog.js,
    katalogIndirimEkle). */
@@ -864,6 +871,7 @@ function poiCardMarkup(sec, it){
             <span class="poi-price">
               ${kartEskiFiyat(it, 'poi-price-old')}
               <span class="poi-price-now">${fiyat.yaklasik ? '<span class="approx" title="Yaklaşık karşılık; ödeme TL">≈</span>' : ''}<span class="main">${fiyat.sayi}</span><span class="currency">${fiyat.birim}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
+              ${fiyat.yaklasik ? `<span class="poi-price-kaynak">${kartKaynakFiyati(it.priceMain, it.currency)} karşılığı</span>` : ''}
             </span>
             ${it.href ? `<a class="poi-go-btn" href="${it.href}" tabindex="-1" aria-hidden="true"><span class="icon">${svg('arrowRight')}</span></a>` : ''}
           </div>

@@ -425,6 +425,9 @@
         </ul>
       </div>
 
+      <!-- Puan dağılımı bütün puanlardan; aşağıdaki liste yalnızca yazılı
+           yorumlar. İkisi karışmasın diye liste ayrıca sayılıyor. -->
+      <h3 class="tour-review-yazili">Yazılı yorumlar <span>${formatNumberTR(tour.reviews.length)}</span></h3>
       <div class="tour-review-filter" role="tablist" aria-label="Yorum filtresi">
         ${cipler.map(c => `
           <button class="tour-filter-chip${c.star === state.reviewStar ? ' active' : ''}" type="button"
@@ -536,10 +539,12 @@
   }
 
   function tagsMarkup() {
-    const etiketler = tour.tags || [];
+    /* Sayfa içi bölüm bağları (#program…) sekmelerde zaten var; burada
+       yalnızca başka sayfalara giden ilgili kategoriler ve ürünler. */
+    const etiketler = (tour.tags || []).filter(t => String(t.href).charAt(0) !== '#');
     if (!etiketler.length) return '';
     return `
-      <div class="tour-block-head"><h2>Sayfa etiketleri</h2><p>Bu turla ilgili bölümler ve yakın kategoriler.</p></div>
+      <div class="tour-block-head"><h2>İlgili kategoriler</h2></div>
       <ul class="seo-chip-list tour-tag-list">
         ${etiketler.map(t => `<li><a class="seo-chip" href="${tagHref(t)}">${t.label}</a></li>`).join('')}
       </ul>`;
@@ -692,10 +697,11 @@
           <span class="tour-price-unit">${p.unitNote}</span>
           ${indirim > 0 ? `<span class="tour-price-off">%${indirim} indirim</span>` : ''}
         </div>
-        <p class="tour-booking-social">${ic('sparkle')}Son 24 saatte
-          ${tour.social.viewedLast24h} kişi bu turu görüntüledi · bu hafta
-          ${tour.social.bookedThisWeek} rezervasyon</p>
       </div>
+
+      <!-- 1024 px ve altında kutu sayfada kısa: seçimler alttan açılan
+           çekmecede adım adım (ui.js, "rezervasyon çekmecesi"). -->
+      <button class="tour-rez-ac" type="button" data-rez-ac>Tarih ve kişi seç</button>
 
       <div class="tour-booking-field">
         <div class="tour-field-head">
@@ -888,7 +894,7 @@
         </span>
         <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Rezervasyon yap</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -1044,21 +1050,25 @@
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
         <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
+        <!-- Tek ana düğme; destek küçük bağlar olarak altında (iki büyük
+             destek düğmesi "Ödemeye geç"in önüne geçiyordu). -->
         <div class="tour-sheet-actions">
-          <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
-          <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
-             target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
           ${odemeAdresi
             ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
             : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
+          <p class="tour-sheet-destek">Sorunuz mu var?
+            <a href="${CONTACT.phoneHref}">${ic('phone')}Arayın</a>
+            <a href="${CONTACT.whatsappHref}" target="_blank" rel="noopener">${whatsappIkon()}WhatsApp</a></p>
         </div>
       </div>`;
 
     sonOdak = document.activeElement;
     sheet.classList.add('open');
     lockScroll(true);
-    const kapat = sheet.querySelector('[data-sheet="close"]');
-    if (kapat) kapat.focus();
+    /* Odak diyaloğun kendisinde: kapatma düğmesine verilince dokunmatik
+       ekranda da kalın odak halkası çiziliyordu. */
+    const panel = sheet.querySelector('.tour-sheet-panel');
+    if (panel) { panel.setAttribute('tabindex', '-1'); panel.focus({ preventScroll: true }); }
   }
 
   function closeSheet() {

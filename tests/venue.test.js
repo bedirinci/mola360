@@ -319,7 +319,12 @@ describe('kontenjan', () => {
     const fn = kontenjanFn();
     expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
     expect(fn).toContain('dugme.disabled = !!satisEngeli');
-    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+    /* Alttaki şeridin düğmesi rezervasyon çekmecesini açıyor (başka
+       tarih seçilebilsin diye pasif değil); çekmecenin son düğmesi
+       sayfanın düğmesiyle birlikte pasif (ui.js). */
+    expect(sayfaJs).toContain('id="tourStickyCta">');
+    expect(readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8'))
+      .toContain("parca('[data-rez-devam]').disabled = adim === alanlar().length - 1 && !!(rez && rez.disabled);");
   });
 
   it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {

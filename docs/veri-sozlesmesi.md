@@ -159,7 +159,7 @@ görünüyor. 2. adımda liste sayfaları açılınca kaldırılacak.
 | `ratingBreakdown` | Yıldız dağılımı. Ortalama ve yorum sayısı **buradan hesaplanır**, ayrıca yazılmaz |
 | `reviews`, `faq`, `gallery`, `highlights`, `description`, `included`, `excluded` | İçerik |
 | `similar` | Benzer ürünler. Hedefin **slug'ı** tutulur; başlık, puan ve fiyat hedef kayıttan okunur (kopya tutulmaz) |
-| `social` | "Son 24 saatte N kişi baktı" gibi sayılar. **Örnek veri.** Canlıda gerçek ölçümden gelmeli; ölçüm yoksa gösterilmez |
+| ~~`social`~~ | 9. adımda kaldırıldı: "Son 24 saatte N kişi baktı" örnek sayıydı. Gerçek ölçüm backend'den gelirse ayrı alanla eklenir |
 
 ### 4.4 Sonraki adımlarda eklenecek alanlar
 
@@ -395,6 +395,46 @@ değil ve sayfa dizine girmiyor. Yönetim paneli ve backend geldiğinde
 yerlerini gerçek ürünler alacak.
 
 ## 10. Adım adım ne değişti
+
+### 9. adım: iç sayfa ekranları
+
+- **Rezervasyon çekmecesi** (tur, otel, aktivite, etkinlik, mekân;
+  1024 px ve altı): kutu sayfada kısa (fiyat, "Tarih ve … seç", güven
+  satırları, destek). Seçimler alttan açılan çekmecede adım adım; her
+  `.tour-booking-field` bir adım, son adımda fiyat dökümü. Kutu
+  (`#tourBooking`) çekmeceye taşınıyor, kapanınca yerine dönüyor (tek
+  DOM düğümü, sayfanın dinleyicileri korunuyor). "Rezervasyon yap"
+  sayfanın kendi özetini açıyor; satış engeli varsa son düğme pasif.
+  Alttaki şeridin düğmesi çekmeceyi açıyor (`ui.js`, "rezervasyon
+  çekmecesi"). Aşağı çekince kapanıyor (ortak alt çekmece kodu).
+- **Ürün sayfasında alt menü yok**; altta yalnızca rezervasyon şeridi.
+  Künye mobilde tek kartta kısa liste.
+- **Uydurma sayı kaldırıldı:** "Son 24 saatte N kişi görüntüledi · bu
+  hafta N rezervasyon" (kayıttaki `social`) sayfalardan ve veriden.
+  Gerçek görüntülenme/rezervasyon sayısı backend'den gelirse eklenebilir.
+  Yorumlarda puan dağılımı bütün puanlardan, liste yalnızca yazılı
+  yorumlar: "Yazılı yorumlar N" ayrıca yazıyor.
+- **Otel fiyatı vergiler dahil:** kartta, başlıkta, oda ve pansiyon
+  seçeneklerinde (`hotelVergiDahil`; `hotelNightlyFrom` vergiler dahil).
+  Hesap değişmedi: dökümde oda ve konaklama vergisi yine ayrı satır,
+  toplamı bu fiyat. Önceden başlıkta 1.950, altta 1.989 TL görünüyordu.
+- **Rezervasyon özeti:** tek ana düğme; destek (telefon, WhatsApp) altında
+  küçük bağlar. Odak diyaloğun kendisinde (kapatma düğmesinde kalın odak
+  halkası çiziliyordu).
+- **İlgili kategoriler:** "Sayfa etiketleri" yerine yalnızca başka
+  sayfalara giden bağlar; sayfa içi bölümler sekmelerde.
+- **Liste kartı:** puan rozeti beyaz, sarı yıldızlı (kırmızı indirimin
+  rengi). Yaklaşık karşılık gösterilen kartta ürünün kendi fiyatı
+  ("149 EUR karşılığı").
+- **Ödeme:** "Bu kişi benim" (ilk kişi, işaretli): ad ve soyad iletişim
+  bilgilerinden, alanları gizli. Kupon "Kupon kodun var mı?" bağının
+  arkasında (üyenin kuponu ya da girilmiş kod varsa açık). Misafire
+  somut kazanç: yeni üye kampanyasının oranı ve üst sınırı bu toplamdan
+  (`odmUyeKazanci`). Odak çubuğundaki WhatsApp başlıktaki gibi.
+  Taksit hâlâ kart ailesiyle seçiliyor; kartın ilk 6 hanesiyle (BIN)
+  otomatik taksit ödeme sağlayıcısı bağlanınca.
+- **Hesabım (misafir):** kampanya cümlesi kampanyadan; iki sekme (Genel
+  Bakış, Favorilerim).
 
 ### 8. adım: sayfa başlıkları ve liste sayfası
 
@@ -657,7 +697,7 @@ yerlerini gerçek ürünler alacak.
 | Ne | Nerede | Adım |
 |---|---|---|
 | ~~Kampanya bantları~~ | 4. adımda kural kaydına bağlandı (`kampanya` alanı) | — |
-| "Son 24 saatte N kişi baktı" sayıları | kayıtlardaki `social` | Canlıda ölçümden; ölçüm yoksa gösterilmeyecek |
+| ~~"Son 24 saatte N kişi baktı" sayıları~~ | 9. adımda sayfalardan ve kayıtlardan kaldırıldı | — |
 | ~~Anasayfa kenar çubuğundaki profil kartı ve bildirimler~~ | 5. adımda hesaptan ve türetilmiş bildirimlerden | — |
 | Arama kutusundaki "Popüler Aramalar" | `app.js` `suggestedSearchTerms` | Editör listesi olarak kalabilir; canlıda arama kayıtlarından |
 
