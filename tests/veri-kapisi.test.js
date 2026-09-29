@@ -173,7 +173,8 @@ describe('SEO', () => {
     const eski = oda.nightly;
     try {
       oda.nightly = 2250;
-      expect(MolaVeri.seo('hotel', otel).description).toContain('gecelik 2.250 TL\'den');
+      /* Gösterilen fiyat vergiler dahil (2.250 + %2). */
+      expect(MolaVeri.seo('hotel', otel).description).toContain('gecelik 2.295 TL\'den');
     } finally {
       oda.nightly = eski;
     }

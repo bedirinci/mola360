@@ -791,7 +791,6 @@ const TOURS = {
     ],
 
     /* Kıtlık ve sosyal kanıt: rakamlar veriden gelir, arayüzde üretilmez. */
-    social: { viewedLast24h: 37, bookedThisWeek: 19 },
 
     ratingBreakdown: { 5: 1065, 4: 140, 3: 26, 2: 10, 1: 6 },
 
@@ -1108,7 +1107,6 @@ const TOURS = {
       { icon: 'shield',  text: 'Güvenli ödeme, 3D Secure' }
     ],
 
-    social: { viewedLast24h: 84, bookedThisWeek: 26 },
 
     ratingBreakdown: { 5: 742, 4: 168, 3: 41, 2: 14, 1: 9 },
 

@@ -58,24 +58,49 @@ describe('masaüstü başlık', () => {
     expect(blok).toContain('supportOnline(');
   });
 
-  it('misafirde yalnızca giriş düğmesi; profil ve zil üyede', () => {
+  it('masaüstünde misafirde yalnızca giriş düğmesi; profil üyede, zil bildirim varsa', () => {
     const css = yorumsuz(stil);
     expect(css).toMatch(/body:not\(\.is-uye\) \.header-profile-btn \{ display: none; \}/);
-    expect(css).toMatch(/body:not\(\.is-uye\) \.header-notif-btn:not\(\.has-notif\) \{ display: none; \}/);
+    expect(css).toContain('@media (min-width: 681px) {\n  body:not(.is-uye) .header-notif-btn:not(.has-notif) { display: none; }\n}');
     expect(css).toContain('body.is-uye #headerRegisterBtn { display: none; }');
-    /* Misafirde zil, gösterecek bildirimi varsa görünüyor. */
+    /* Masaüstünde misafirde zil, gösterecek bildirimi varsa görünüyor. */
     expect(app).toContain("zil.classList.toggle('has-notif', notifications.length > 0)");
     /* Giriş düğmesi dar ekranda kısalıyor: "/ Üye Ol" ayrı parçada. */
     expect(baslik).toContain('Giriş Yap<span class="header-register-long"> / Üye Ol</span>');
-    expect(css).toContain('@media (max-width: 680px) {\n  .header-right { gap: 6px; }\n  .header-register-long { display: none; }');
+  });
+
+  it('mobil başlıkta giriş düğmesi yok; yerinde zil (misafirde de)', () => {
+    const css = yorumsuz(stil);
+    expect(css).toContain('@media (max-width: 680px) {\n  .header-right { gap: 6px; }\n  .header-actions { display: none; }');
+    /* Zili misafirde gizleyen kural yalnızca masaüstünde. */
+    expect(css.match(/body:not\(\.is-uye\) \.header-notif-btn:not\(\.has-notif\)/g)).toHaveLength(1);
+  });
+
+  it('misafirin boş bildirim sayfasında giriş çağrısı; sayfa kapanıp giriş açılıyor', () => {
+    const bos = app.match(/function notifEmptyMarkup\(\)\{[\s\S]*?\n\}/)[0];
+    const markup = (bildirimler, uye) => new Function('notifications', 'notifFilter', 'document', 'notifIconSvg',
+      bos + '; return notifEmptyMarkup();')(bildirimler, 'all', { body: { classList: { contains: () => uye } } }, () => '');
+    expect(markup([], false)).toContain('Giriş yapınca rezervasyon, bilet ve kampanya bildirimlerin burada görünür.');
+    expect(markup([], false)).toContain('class="btn-primary notif-empty-giris"');
+    expect(markup([], true)).not.toContain('notif-empty-giris');
+    expect(markup([{ id: 1 }], false)).not.toContain('notif-empty-giris');
+    const liste = app.slice(app.indexOf("notifListEl.addEventListener('click'"), app.indexOf("const dismissBtn = e.target.closest('[data-notif-dismiss]');"));
+    expect(liste).toContain('closeNotifPanel();');
+    expect(liste).toContain("openAuthModal('login');");
   });
 
   it('bozuk mobil düğme seçicisi düzeltildi', () => {
     expect(stil).not.toContain('.header-actions  .header-actions .btn-primary');
   });
 
-  it('mobil anasayfa başlığında WhatsApp düğmesi', () => {
+  it('mobil anasayfa başlığında WhatsApp: arka plansız, yeşil balon ve beyaz ahize', () => {
     expect(baslik).toMatch(/class="header-wa-btn" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek"/);
+    const wa = baslik.match(/<a href="#" class="header-wa-btn"[\s\S]*?<\/a>/)[0];
+    expect(wa).toContain('<path fill="#25D366"');
+    expect(wa).toContain('<path fill="#fff"');
+    const kural = yorumsuz(stil).match(/@media \(max-width: 680px\) \{\n  \.header-right[\s\S]*?\n\}/)[0];
+    expect(kural).toMatch(/\.header-wa-btn \{[^}]*width: 36px; height: 36px;\s*\}/);
+    expect(kural).not.toMatch(/\.header-wa-btn \{[^}]*background/);
   });
 });
 
@@ -331,54 +356,55 @@ describe('kart: kampanya satırı', () => {
 describe('mobil menü', () => {
   const css = yorumsuz(stil);
 
-  it('en üstte aşağı çekince yalnızca menü esniyor; profil kartı yerinde (iOS)', () => {
-    /* Esneme geri geldi ama yalnızca kaydırılan alanda: profil kartı
-       onun dışında, başlığa yapışık ve yerinde kalıyor. */
+  it('en üstte aşağı çekince yalnızca menü esniyor (iOS); sayfaya taşmıyor', () => {
     expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll \{[^}]*overscroll-behavior-y: contain;/);
-    expect(css).toMatch(/\.mobile-drawer > \.mobile-profile-card \{[^}]*flex: 0 0 auto;/);
   });
 
-  it('profil kartı kaydırılan alanın dışında; masaüstü kenar çubuğu onu da kopyalıyor', () => {
+  it('profil kartı menüyle kayıyor; en üstteki esnemede yerinde kalıyor', () => {
     const cekmece = cerceve.slice(cerceve.indexOf('<aside class="mobile-drawer"'), cerceve.indexOf('</aside>', cerceve.indexOf('<aside class="mobile-drawer"')));
-    expect(cekmece.indexOf('class="mobile-profile-card"')).toBeGreaterThan(0);
-    expect(cekmece.indexOf('class="mobile-profile-card"')).toBeLessThan(cekmece.indexOf('drawer-sidebar-scroll'));
-    expect(app).toContain("drawer.querySelector(':scope > .mobile-profile-card')");
-    expect(app).toContain("scroll.innerHTML = (profilKarti ? profilKarti.outerHTML : '') + sourceScroll.innerHTML;");
+    expect(cekmece.indexOf('class="mobile-profile-card"')).toBeGreaterThan(cekmece.indexOf('drawer-sidebar-scroll'));
+    const fonk = app.match(/function cekmeceKartiEsnemesi\(kaydirici, kart\)\{[\s\S]*?\n\}/)[0];
+    const kaydir = (scrollTop) => {
+      const kart = { style: { transform: 'eski' } };
+      new Function('k', 'kart', fonk + '; cekmeceKartiEsnemesi(k, kart);')({ scrollTop }, kart);
+      return kart.style.transform;
+    };
+    /* iOS esnemesinde scrollTop eksi: kart o kadar yukarı itiliyor. */
+    expect(kaydir(-40)).toBe('translateY(-40px)');
+    expect(kaydir(0)).toBe('');
+    expect(kaydir(300)).toBe('');
+    expect(app).toContain("kaydirici.addEventListener('scroll', () => cekmeceKartiEsnemesi(kaydirici, kart), { passive: true });");
   });
 
   it('iç sayfalarda kart çubuğun yuvarlak köşelerinin altına giriyor (arada şerit yok)', () => {
     expect(app).toContain("'--m360-cekmece-aralik': `${cubuk ? -kose : 10}px`");
     expect(css).toMatch(/\.mobile-drawer \{[^}]*top: calc\(var\(--mobile-header-height, 62px\) \+ var\(--m360-cekmece-aralik, 10px\)\);/);
-    expect(css).toMatch(/\.mobile-drawer > \.mobile-profile-card \.mobile-profile-hero \{[^}]*padding-top: calc\(14px \+ var\(--m360-cekmece-kose, 0px\)\);/);
+    expect(css).toMatch(/\.mobile-drawer \.mobile-profile-card \.mobile-profile-hero \{[^}]*padding-top: calc\(14px \+ var\(--m360-cekmece-kose, 0px\)\);/);
   });
 
-  it('misafirde kart üyelik daveti: eski açıklama yok, indirim elle yazılmamış', () => {
+  it('misafirde kart tek satırlık üyelik daveti: eski açıklama yok, indirim elle yazılmamış', () => {
     expect(cerceve).not.toContain('Rezervasyonların, biletlerin ve Molapuanın tek yerde. Yeni üyelere');
     const davet = cerceve.match(/<div class="mobile-profile-davet" data-hesap-misafir>[\s\S]*?<\/button>/)[0];
     expect(davet).not.toMatch(/%|\d+ TL/);
-    expect(davet).toContain('data-hesap-uye-ol>Ücretsiz üye ol</button>');
-    expect(davet.match(/<li>/g)).toHaveLength(3);
+    expect(davet).toContain('data-hesap-uye-ol>Üye ol</button>');
     /* Misafirde avatar ve "Misafir" satırı yok; üyede kartın kendisi. */
     expect(cerceve).toContain('<div class="mobile-profile-top" data-hesap-uye hidden>');
     expect(app).toContain("else if (e.target.closest('[data-hesap-uye-ol]')) openAuthModal('register');");
+    expect(yorumsuz(stil)).toMatch(/\.mobile-profile-davet \{[^}]*display: flex; align-items: center;/);
   });
 
   it('davetin başlığı yeni üye kampanyasından; kampanya yoksa genel çağrı kalıyor', () => {
     const fonk = app.match(/function uyelikDavetiniCiz\(\)\{[\s\S]*?\n\}/)[0];
     const calistir = (kampanyalar) => {
-      const el = { etiket: { textContent: '', hidden: true }, baslik: { textContent: 'genel' }, alt: { textContent: 'genel' } };
-      const harita = { '[data-uyelik-etiket]': [el.etiket], '[data-uyelik-baslik]': [el.baslik], '[data-uyelik-alt]': [el.alt] };
+      const el = { baslik: { textContent: 'genel' }, alt: { textContent: 'genel' } };
+      const harita = { '[data-uyelik-baslik]': [el.baslik], '[data-uyelik-alt]': [el.alt] };
       new Function('MolaVeri', 'document', fonk + '; uyelikDavetiniCiz();')(
         { kampanyalar: () => kampanyalar }, { querySelectorAll: (s) => harita[s] || [] });
-      return { etiket: el.etiket.hidden ? null : el.etiket.textContent, baslik: el.baslik.textContent, alt: el.alt.textContent };
+      return { baslik: el.baslik.textContent, alt: el.alt.textContent };
     };
     const yeniUye = MolaVeri.kampanyalar(new Date(2026, 9, 1)).find(k => k.uyeOzel && k.ilkRezervasyon);
-    expect(calistir([yeniUye])).toEqual({
-      etiket: 'Yeni üyelere',
-      baslik: 'İlk rezervasyonda %15 indirim',
-      alt: 'En fazla 1.500 TL · kişiye özel kodun e-postana gelir'
-    });
-    expect(calistir([])).toEqual({ etiket: null, baslik: 'genel', alt: 'genel' });
+    expect(calistir([yeniUye])).toEqual({ baslik: 'İlk rezervasyonda %15 indirim', alt: 'Yeni üyelere · en fazla 1.500 TL' });
+    expect(calistir([])).toEqual({ baslik: 'genel', alt: 'genel' });
   });
 
   it('dil/para düğmesi yanındaki yardım bağlarıyla aynı boyda', () => {

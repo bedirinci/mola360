@@ -466,7 +466,6 @@ const EVENTS = {
       { icon: 'shield',  text: 'Güvenli ödeme, 3D Secure' }
     ],
 
-    social: { viewedLast24h: 63, bookedThisWeek: 31 },
 
     /* Dağılım anasayfada uzun süredir yazan 4,9 puanı veriyor
        (ortalama 4,85 → 4,9) ve toplam 187 yorum "180+" olarak

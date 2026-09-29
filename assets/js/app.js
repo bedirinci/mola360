@@ -15,10 +15,7 @@
 
   const scroll = document.createElement('div');
   scroll.className = 'desktop-sidebar-scroll';
-  /* Çekmecede profil kartı kaydırılan alanın dışında (başlığa yapışık
-     sabit); kenar çubuğunda kaydırılan alanın başında. */
-  const profilKarti = drawer.querySelector(':scope > .mobile-profile-card');
-  scroll.innerHTML = (profilKarti ? profilKarti.outerHTML : '') + sourceScroll.innerHTML;
+  scroll.innerHTML = sourceScroll.innerHTML;
 
   // Mobil drawer'a ait ID'leri kopyada bırakma; tekil masaüstü kimlikleri kullan.
   scroll.querySelectorAll('[id]').forEach(el => {
@@ -822,6 +819,13 @@ function kartFiyati(tutar, paraBirimi){
   };
 }
 
+/* Yaklasik karsilik gosterilen kartta urunun kendi fiyati ("199 EUR"):
+   "≈" tek basina neyin yaklasigi oldugunu soylemiyordu. */
+function kartKaynakFiyati(tutar, paraBirimi){
+  const n = Number(tutar);
+  return (Number.isFinite(n) ? Math.round(n).toLocaleString('tr-TR') : String(tutar)) + ' ' + paraBirimiEtiketi(paraBirimi);
+}
+
 /* Indirimli kartta eski (ustu cizili) ve yeni fiyat; indirim etiketi
    gorselin ustunde. Liste fiyati urunun kendi kaydindan (catalog.js,
    katalogIndirimEkle). */
@@ -867,6 +871,7 @@ function poiCardMarkup(sec, it){
             <span class="poi-price">
               ${kartEskiFiyat(it, 'poi-price-old')}
               <span class="poi-price-now">${fiyat.yaklasik ? '<span class="approx" title="Yaklaşık karşılık; ödeme TL">≈</span>' : ''}<span class="main">${fiyat.sayi}</span><span class="currency">${fiyat.birim}</span>${it.unit ? `<span class="unit">${it.unit}</span>` : ''}</span>
+              ${fiyat.yaklasik ? `<span class="poi-price-kaynak">${kartKaynakFiyati(it.priceMain, it.currency)} karşılığı</span>` : ''}
             </span>
             ${it.href ? `<a class="poi-go-btn" href="${it.href}" tabindex="-1" aria-hidden="true"><span class="icon">${svg('arrowRight')}</span></a>` : ''}
           </div>
@@ -1908,14 +1913,20 @@ function notifItemMarkup(item){
   </div>`;
 }
 
+/* Hiç bildirimi olmayan misafire (mobilde zil artık her zaman başlıkta)
+   filtre önerisi yerine giriş çağrısı. */
 function notifEmptyMarkup(){
-  const text = notifFilter === 'unread'
-    ? 'Okunmamış bildirimin kalmadı. Yeni bir şey olduğunda burada göreceksin.'
-    : 'Bu filtrede gösterilecek bildirim yok. Başka bir filtre deneyebilirsin.';
+  const misafirBos = !notifications.length && !document.body.classList.contains('is-uye');
+  const text = misafirBos
+    ? 'Giriş yapınca rezervasyon, bilet ve kampanya bildirimlerin burada görünür.'
+    : notifFilter === 'unread'
+      ? 'Okunmamış bildirimin kalmadı. Yeni bir şey olduğunda burada göreceksin.'
+      : 'Bu filtrede gösterilecek bildirim yok. Başka bir filtre deneyebilirsin.';
   return `<div class="notif-empty">
     <span class="notif-empty-icon">${notifIconSvg('<path d="M18 8a6 6 0 0 0-9.3-5"></path><path d="M6.2 6.3A6 6 0 0 0 6 8c0 7-3 9-3 9h13"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path><line x1="3" y1="3" x2="21" y2="21"></line>')}</span>
     <p class="notif-empty-title">Bildirim yok</p>
     <p class="notif-empty-text">${text}</p>
+    ${misafirBos ? '<button type="button" class="btn-primary notif-empty-giris">Giriş yap / Üye ol</button>' : ''}
   </div>`;
 }
 
@@ -2056,6 +2067,13 @@ notifFiltersEl.addEventListener('click', (e)=>{
   notifListEl.scrollTop = 0;
 });
 notifListEl.addEventListener('click', (e)=>{
+  /* Misafirin boş bildirim sayfasındaki giriş çağrısı (panel tıklamaları
+     document'a iletmiyor): sayfa kapanıp giriş penceresi açılıyor. */
+  if (e.target.closest('.notif-empty-giris')) {
+    closeNotifPanel();
+    if (typeof openAuthModal === 'function') openAuthModal('login');
+    return;
+  }
   const dismissBtn = e.target.closest('[data-notif-dismiss]');
   if (dismissBtn){
     e.stopPropagation();
@@ -2142,12 +2160,25 @@ function uyelikDavetiniCiz(){
     ? MolaVeri.kampanyalar(new Date()).find(x => x.uyeOzel && x.ilkRezervasyon) : null;
   if (!k) return;
   const enFazla = k.indirim && k.indirim.enFazla;
-  document.querySelectorAll('[data-uyelik-etiket]').forEach(el => { el.textContent = k.etiket || ''; el.hidden = !k.etiket; });
+  const alt = [k.etiket, enFazla ? 'en fazla ' + enFazla.toLocaleString('tr-TR') + ' TL' : ''].filter(Boolean).join(' · ');
   document.querySelectorAll('[data-uyelik-baslik]').forEach(el => { el.textContent = k.ad; });
-  document.querySelectorAll('[data-uyelik-alt]').forEach(el => {
-    el.textContent = (enFazla ? 'En fazla ' + enFazla.toLocaleString('tr-TR') + ' TL · ' : '') + 'kişiye özel kodun e-postana gelir';
-  });
+  document.querySelectorAll('[data-uyelik-alt]').forEach(el => { el.textContent = alt; });
 }
+
+/* Çekmecedeki profil kartı menüyle birlikte kayıyor. En üstte aşağı
+   çekilince iOS kaydırılan alanı esnetiyor (scrollTop eksiye iniyor):
+   kart o kadar yukarı itiliyor, yani yerinde kalıyor ve esneme kartın
+   altından başlıyor; başlıkla kart arasında boşluk açılmıyor. */
+function cekmeceKartiEsnemesi(kaydirici, kart){
+  const y = Math.min(0, kaydirici.scrollTop);
+  kart.style.transform = y ? 'translateY(' + y + 'px)' : '';
+}
+(function(){
+  const kaydirici = document.querySelector('#mobileDrawer .drawer-sidebar-scroll');
+  const kart = kaydirici && kaydirici.querySelector('.mobile-profile-card');
+  if (!kart) return;
+  kaydirici.addEventListener('scroll', () => cekmeceKartiEsnemesi(kaydirici, kart), { passive: true });
+})();
 ['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
 document.addEventListener('click', (e) => {
   if (typeof openAuthModal !== 'function') return;

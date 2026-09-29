@@ -224,10 +224,19 @@ describe('konaklama tutari', () => {
     expect(hesap.nights).toBe(otel.pricing.maxNights);
   });
 
-  it('en ucuz oda fiyati ve liste fiyati', () => {
+  it('en ucuz oda fiyati ve liste fiyati: vergiler dahil', () => {
     const enUcuz = otel.rooms.reduce((a, b) => (a.nightly <= b.nightly ? a : b));
-    expect(hotelNightlyFrom(otel)).toBe(enUcuz.nightly);
-    expect(hotelNightlyListFrom(otel)).toBe(enUcuz.nightlyList);
+    const oran = otel.pricing.taxRate;
+    expect(hotelNightlyFrom(otel)).toBe(Math.round(enUcuz.nightly * (1 + oran)));
+    expect(hotelNightlyListFrom(otel)).toBe(Math.round(enUcuz.nightlyList * (1 + oran)));
+  });
+
+  it('gösterilen gecelik fiyat, o odanın bir gecelik rezervasyon toplamı', () => {
+    /* Sayfada "1.950 TL gecelik" yazıp altta "1.989 TL" toplam göstermek
+       iki fiyat gibi okunuyordu: başlık fiyatı toplamla aynı. */
+    const enUcuz = otel.rooms.reduce((a, b) => (a.nightly <= b.nightly ? a : b));
+    const hesap = calcHotelTotal(otel, { room: enUcuz.id, board: otel.boards[0].id, nights: 1, rooms: 1, adults: 1, children: 0, addons: [] });
+    expect(hesap.total).toBe(hotelNightlyFrom(otel));
   });
 });
 
@@ -283,7 +292,12 @@ describe('kontenjan', () => {
     const fn = kontenjanFn();
     expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
     expect(fn).toContain('dugme.disabled = !!satisEngeli');
-    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+    /* Alttaki şeridin düğmesi rezervasyon çekmecesini açıyor (başka
+       tarih seçilebilsin diye pasif değil); çekmecenin son düğmesi
+       sayfanın düğmesiyle birlikte pasif (ui.js). */
+    expect(sayfaJs).toContain('id="tourStickyCta">');
+    expect(readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8'))
+      .toContain("parca('[data-rez-devam]').disabled = adim === alanlar().length - 1 && !!(rez && rez.disabled);");
   });
 
   it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {

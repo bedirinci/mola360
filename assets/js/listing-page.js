@@ -55,6 +55,13 @@ const LSP_KART_AYARI = {
    "Tümünü göster" ile açılır. */
 const LSP_GORUNEN_SECENEK = 6;
 
+/* Ödeme çubuğundaki WhatsApp: başlıktaki gibi yeşil balon, beyaz ahize
+   (iki renkli; .icon sarmalı yok, onun çizgi kuralı logoyu bozuyor). */
+const LSP_WA_LOGO = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">'
+  + '<path fill="#25D366" d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.45 1.27 4.9L2 22l5.25-1.28A9.96 9.96 0 0 0 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10Z"/>'
+  + '<path fill="#fff" d="M16.51 14.05c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.2-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.64.3s-.85.83-.85 2.02.87 2.35.99 2.51c.12.16 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28Z"/>'
+  + '</svg>';
+
 const LSP_IKON = {
   geri: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>',
   ara: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
@@ -315,7 +322,7 @@ function lspMobilBaslikMarkup(baslik, altBaslik, geriYol, secenek) {
   /* "mola360" alt satırı logo varken tekrar; boş geçiliyor. */
   const alt = altBaslik && altBaslik !== 'mola360' ? altBaslik : '';
   const sag = odak
-    ? '<a class="cubuk-dugme cubuk-wa" href="' + lspKacis(typeof CONTACT !== 'undefined' ? CONTACT.whatsappHref : '#') + '" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek"><span class="icon">' + LSP_IKON.whatsapp + '</span></a>'
+    ? '<a class="cubuk-dugme cubuk-wa" href="' + lspKacis(typeof CONTACT !== 'undefined' ? CONTACT.whatsappHref : '#') + '" data-destek-whatsapp target="_blank" rel="noopener" aria-label="WhatsApp canlı destek">' + LSP_WA_LOGO + '</a>'
     : '<button class="lst-mobile-search cubuk-dugme" type="button" id="lstMobileSearch" aria-label="Ara"><span class="icon">' + LSP_IKON.ara + '</span></button>'
       + '<button class="cubuk-dugme cubuk-menu" type="button" data-menu-ac aria-expanded="false" aria-label="Menüyü aç"><span class="icon" data-menu-ikon>' + LSP_IKON.menu + '</span></button>';
   return '<div class="lst-mobile-header" data-sayfa-cubugu' + (odak ? ' data-cubuk-odak' : ' data-cubuk-gizlenir') + '>'

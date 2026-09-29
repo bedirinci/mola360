@@ -246,8 +246,8 @@
           <p class="otel-oda-not">${ic('info')}<span>${o.note}</span></p>
           <div class="otel-oda-alt">
             <span class="otel-oda-fiyat">
-              ${indirimOran > 0 ? `<span class="tour-price-was">${formatTRY(o.nightlyList)}</span>` : ''}
-              <strong>${formatTRY(o.nightly)}</strong>
+              ${indirimOran > 0 ? `<span class="tour-price-was">${formatTRY(hotelVergiDahil(hotel, o.nightlyList))}</span>` : ''}
+              <strong>${formatTRY(hotelVergiDahil(hotel, o.nightly))}</strong>
               <span>${p.unitNote}</span>
             </span>
             <button class="tour-cta small${secili ? ' ghost' : ''}" type="button" data-room-pick="${o.id}">
@@ -265,8 +265,8 @@
       + `<div class="otel-oda-list" id="otelOdaList">
            ${hotel.rooms.map(roomCardMarkup).join('')}
          </div>
-         <p class="tour-note">${ic('info')}<span>Fiyatlar oda başına gecelik, kahvaltı dahildir.
-           Konaklama vergisi rezervasyon özetinde ayrı satır olarak görünür.</span></p>`;
+         <p class="tour-note">${ic('info')}<span>Fiyatlar oda başına gecelik; kahvaltı ve konaklama
+           vergisi dahil. Rezervasyon özetinde vergi ayrı satır olarak görünür.</span></p>`;
   }
 
   /* Oda kartları yeniden çizilmeden yalnızca seçim ve kalan oda satırı
@@ -416,6 +416,9 @@
         </ul>
       </div>
 
+      <!-- Puan dağılımı bütün puanlardan; aşağıdaki liste yalnızca yazılı
+           yorumlar. İkisi karışmasın diye liste ayrıca sayılıyor. -->
+      <h3 class="tour-review-yazili">Yazılı yorumlar <span>${formatNumberTR(hotel.reviews.length)}</span></h3>
       <div class="tour-review-filter" role="tablist" aria-label="Yorum filtresi">
         ${cipler.map(c => `
           <button class="tour-filter-chip${c.star === state.reviewStar ? ' active' : ''}" type="button"
@@ -494,10 +497,12 @@
   }
 
   function tagsMarkup() {
-    const etiketler = hotel.tags || [];
+    /* Sayfa içi bölüm bağları (#program…) sekmelerde zaten var; burada
+       yalnızca başka sayfalara giden ilgili kategoriler ve ürünler. */
+    const etiketler = (hotel.tags || []).filter(t => String(t.href).charAt(0) !== '#');
     if (!etiketler.length) return '';
     return `
-      <div class="tour-block-head"><h2>Sayfa etiketleri</h2><p>Bu otelle ilgili bölümler ve yakın kategoriler.</p></div>
+      <div class="tour-block-head"><h2>İlgili kategoriler</h2></div>
       <ul class="seo-chip-list tour-tag-list">
         ${etiketler.map(t => `<li><a class="seo-chip" href="${tagHref(t)}">${t.label}</a></li>`).join('')}
       </ul>`;
@@ -561,7 +566,7 @@
               data-room="${o.id}" aria-pressed="${o.id === state.room ? 'true' : 'false'}">
         <strong>${o.name}</strong>
         <span>${o.size} · ${o.view} · en fazla ${o.maxGuests} kişi</span>
-        <span class="tour-city-fee">${formatTRY(o.nightly)} / gece</span>
+        <span class="tour-city-fee">${formatTRY(hotelVergiDahil(hotel, o.nightly))} / gece</span>
       </button>`).join('');
   }
 
@@ -572,7 +577,7 @@
         <strong>${b.label}</strong>
         <span>${b.note}</span>
         <span class="tour-city-fee">${Number(b.adultNight) > 0
-          ? '+' + formatTRY(b.adultNight) + ' / kişi / gece'
+          ? '+' + formatTRY(hotelVergiDahil(hotel, b.adultNight)) + ' / kişi / gece'
           : 'Fiyata dahil'}</span>
       </button>`).join('');
   }
@@ -636,10 +641,11 @@
           <span class="tour-price-unit">${p.unitNote}</span>
           ${indirim > 0 ? `<span class="tour-price-off">%${indirim} indirim</span>` : ''}
         </div>
-        <p class="tour-booking-social">${ic('sparkle')}Son 24 saatte
-          ${hotel.social.viewedLast24h} kişi bu oteli görüntüledi · bu hafta
-          ${hotel.social.bookedThisWeek} rezervasyon</p>
       </div>
+
+      <!-- 1024 px ve altında kutu sayfada kısa: seçimler alttan açılan
+           çekmecede adım adım (ui.js, "rezervasyon çekmecesi"). -->
+      <button class="tour-rez-ac" type="button" data-rez-ac>Tarih ve oda seç</button>
 
       <div class="tour-booking-field">
         <div class="tour-field-head">
@@ -822,7 +828,7 @@
         </span>
         <span class="tour-sticky-date">${dateRangeText(true)}</span>
       </div>
-      <button class="tour-cta small" type="button" id="tourStickyCta"${satisEngeli ? ' disabled' : ''}>Rezervasyon yap</button>`;
+      <button class="tour-cta small" type="button" id="tourStickyCta">Rezervasyon yap</button>`;
   }
 
   /* ---------------- fotoğraf büyütme (lightbox) ---------------- */
@@ -968,21 +974,25 @@
           ${satir('Ödenecek tutar', formatTRY(hesap.total))}
         </ul>
         <p class="tour-sheet-note">${ic('info')}<span>${odemeAdresi ? ODEME_NOTU : 'Ödeme adımı bu sayfada yüklenmedi; destek hattından rezervasyon yapabilirsiniz.'}</span></p>
+        <!-- Tek ana düğme; destek küçük bağlar olarak altında (iki büyük
+             destek düğmesi "Ödemeye geç"in önüne geçiyordu). -->
         <div class="tour-sheet-actions">
-          <a class="tour-cta ghost" href="${CONTACT.phoneHref}">${ic('phone')}Destek hattını ara</a>
-          <a class="tour-cta ghost" href="${CONTACT.whatsappHref}"
-             target="_blank" rel="noopener">${whatsappIkon()}WhatsApp'tan yaz</a>
           ${odemeAdresi
             ? `<a class="tour-cta" href="${odemeAdresi}">Ödemeye geç</a>`
             : '<button class="tour-cta" type="button" data-sheet="close">Anladım</button>'}
+          <p class="tour-sheet-destek">Sorunuz mu var?
+            <a href="${CONTACT.phoneHref}">${ic('phone')}Arayın</a>
+            <a href="${CONTACT.whatsappHref}" target="_blank" rel="noopener">${whatsappIkon()}WhatsApp</a></p>
         </div>
       </div>`;
 
     sonOdak = document.activeElement;
     sheet.classList.add('open');
     lockScroll(true);
-    const kapat = sheet.querySelector('[data-sheet="close"]');
-    if (kapat) kapat.focus();
+    /* Odak diyaloğun kendisinde: kapatma düğmesine verilince dokunmatik
+       ekranda da kalın odak halkası çiziliyordu. */
+    const panel = sheet.querySelector('.tour-sheet-panel');
+    if (panel) { panel.setAttribute('tabindex', '-1'); panel.focus({ preventScroll: true }); }
   }
 
   function closeSheet() {

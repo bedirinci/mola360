@@ -571,7 +571,8 @@ window.m360AutoHideThumb = function (thumb, options) {
 
 /* ===== alt çekmeceler: aşağı çekince kapanma (ortak) =====
    Sitedeki bütün alt çekmeceler (anasayfa süzgeçleri, liste süzgeçleri
-   ve sıralaması, "Ne zaman, kaç kişi?", dil/para, rezervasyon özeti)
+   ve sıralaması, "Ne zaman, kaç kişi?", dil/para, rezervasyon çekmecesi
+   ve özeti)
    aynı davranıyor:
    tutamaçtan, başlıktan ya da en üstteki listeden aşağı çekilince parmağı
    izliyor; yeterince çekilince (ya da hızlı savrulunca) aşağı kayıp
@@ -632,7 +633,12 @@ window.m360AutoHideThumb = function (thumb, options) {
       acik: (p) => !!p.closest('.tour-sheet.open'),
       kaydirici: 'self',
       katman: (p) => p.closest('.tour-sheet'),
-      kapat: dugmeyeBas('[data-sheet="close"]') }
+      kapat: dugmeyeBas('[data-sheet="close"]') },
+    { secici: '.rez-cekmece-panel', genislik: 1024, sinif: true,
+      acik: (p) => !!p.closest('.rez-cekmece.is-acik'),
+      kaydirici: '.rez-cekmece-govde',
+      katman: (p) => p.parentElement.querySelector('.rez-cekmece-katman'),
+      kapat: dugmeyeBas('.rez-cekmece-kapat') }
   ];
 
   const durumlar = new WeakMap();
@@ -890,4 +896,202 @@ window.m360AutoHideThumb = function (thumb, options) {
 
     olay.preventDefault();
   }, { passive: false });
+})();
+
+/* ===== rezervasyon çekmecesi (ürün sayfaları, 1024 px ve altı) =====
+   Tur, otel, aktivite, etkinlik ve mekân sayfalarında rezervasyon kutusu
+   sayfada kısa: fiyat, "Tarih ve kişi seç" ve güven satırları (tour.css).
+   Seçimler alttan açılan çekmecede adım adım yapılıyor: kutunun her alanı
+   (.tour-booking-field: tarih, kalkış şehri, kişi, oda, ek seçenekler…)
+   bir adım; son adımda fiyat dökümü ve "Rezervasyon yap".
+
+   Kutunun kendisi (#tourBooking) çekmeceye taşınıyor, kapanınca yerine
+   dönüyor: tek DOM düğümü, sayfanın dinleyicileri ve seçimler korunuyor,
+   iki kopya tutulmuyor. "Rezervasyon yap" çekmeceyi kapatıp sayfanın
+   kendi rezervasyon özetini (Ödemeye geç) açıyor. Alttaki yapışkan
+   şeridin düğmesi de bu çekmeceyi açıyor. */
+(function () {
+  const DAR = window.matchMedia('(max-width: 1024px)');
+  const KAPAT_IKON = '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+  let kok = null;
+  let kart = null;
+  let yer = null;
+  let adim = 0;
+  let oncekiOdak = null;
+  let kilitY = 0;
+  let kapanis = null;
+
+  const kacis = (m) => String(m).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const parca = (sec) => kok.querySelector(sec);
+
+  function alanlar() {
+    return kart ? Array.from(kart.querySelectorAll(':scope > .tour-booking-field')) : [];
+  }
+  function baslik(alan) {
+    const etiket = alan && alan.querySelector('.tour-field-label');
+    return etiket ? etiket.textContent.replace(/\s+/g, ' ').trim() : 'Seçim';
+  }
+
+  /* Ürün sayfasının kendi kilidiyle aynı yol: gövde sabitleniyor
+     (iOS'ta html'e overflow:hidden yetmiyor), konum geri veriliyor. */
+  function kilit(ac) {
+    const govde = document.body;
+    if (ac) {
+      kilitY = window.scrollY || document.documentElement.scrollTop || 0;
+      govde.style.position = 'fixed';
+      govde.style.top = -kilitY + 'px';
+      govde.style.left = '0';
+      govde.style.right = '0';
+      govde.style.width = '100%';
+      document.documentElement.style.overflow = 'hidden';
+      return;
+    }
+    ['position', 'top', 'left', 'right', 'width'].forEach(o => govde.style.removeProperty(o));
+    document.documentElement.style.removeProperty('overflow');
+    window.scrollTo(0, kilitY);
+  }
+
+  function kur() {
+    if (kok) return;
+    kok = document.createElement('div');
+    kok.className = 'rez-cekmece';
+    kok.id = 'rezCekmece';
+    kok.hidden = true;
+    kok.innerHTML = '<div class="rez-cekmece-katman" data-rez-kapat></div>'
+      + '<div class="rez-cekmece-panel" role="dialog" aria-modal="true" aria-labelledby="rezCekmeceBaslik" tabindex="-1">'
+      +   '<div class="rez-cekmece-ust">'
+      +     '<div class="rez-cekmece-baslik"><span data-rez-sayac></span><strong id="rezCekmeceBaslik"></strong></div>'
+      +     '<button type="button" class="rez-cekmece-kapat" data-rez-kapat aria-label="Kapat">' + KAPAT_IKON + '</button>'
+      +   '</div>'
+      +   '<div class="rez-cekmece-adimlar" data-rez-adimlar></div>'
+      +   '<div class="rez-cekmece-govde" data-rez-govde></div>'
+      +   '<div class="rez-cekmece-alt">'
+      +     '<div class="rez-cekmece-toplam"><span>Toplam</span><strong data-rez-toplam></strong></div>'
+      +     '<button type="button" class="rez-cekmece-geri" data-rez-geri>Geri</button>'
+      +     '<button type="button" class="rez-cekmece-devam" data-rez-devam>Devam</button>'
+      +   '</div>'
+      + '</div>';
+    document.body.appendChild(kok);
+
+    kok.addEventListener('click', (e) => {
+      if (e.target.closest('[data-rez-kapat]')) { kapat(false); return; }
+      if (e.target.closest('[data-rez-geri]')) { git(adim - 1); return; }
+      const nokta = e.target.closest('[data-rez-git]');
+      if (nokta) { git(Number(nokta.getAttribute('data-rez-git')) || 0); return; }
+      if (e.target.closest('[data-rez-devam]')) { ileri(); return; }
+      /* Kutudaki seçim (sayfanın kendi dinleyicisi) toplamı değiştirmiş
+         olabilir. */
+      window.setTimeout(guncelle, 0);
+    });
+    kok.addEventListener('change', () => window.setTimeout(guncelle, 0));
+  }
+
+  function ciz() {
+    const liste = alanlar();
+    const n = liste.length;
+    if (!n) return;
+    adim = Math.max(0, Math.min(adim, n - 1));
+    const son = adim === n - 1;
+    liste.forEach((a, i) => a.classList.toggle('is-rez-aktif', i === adim));
+    kart.classList.toggle('is-rez-son', son);
+    parca('[data-rez-sayac]').textContent = 'Adım ' + (adim + 1) + ' / ' + n;
+    parca('#rezCekmeceBaslik').textContent = baslik(liste[adim]);
+    parca('[data-rez-adimlar]').innerHTML = liste.map((a, i) =>
+      '<button type="button" class="rez-cekmece-nokta' + (i < adim ? ' is-gecti' : i === adim ? ' is-simdi' : '') + '"'
+      + ' data-rez-git="' + i + '" aria-label="' + (i + 1) + '. adım: ' + kacis(baslik(a)) + '"'
+      + (i === adim ? ' aria-current="step"' : '') + '></button>').join('');
+    parca('[data-rez-geri]').hidden = adim === 0;
+    parca('[data-rez-devam]').textContent = son ? 'Rezervasyon yap' : 'Devam';
+    parca('[data-rez-govde]').scrollTop = 0;
+    guncelle();
+  }
+
+  /* Alttaki toplam sayfanın kendi hesabından (kutudaki özet); son adımda
+     satış engeli (yer kalmadı, kişi sayısı fazla) varsa düğme pasif. */
+  function guncelle() {
+    if (!kok || kok.hidden || !kart) return;
+    const toplam = kart.querySelector('.tour-summary .tour-sum-total strong')
+      || document.querySelector('#tourStickyBar .tour-sticky-price strong');
+    parca('[data-rez-toplam]').textContent = toplam ? toplam.textContent.trim() : '';
+    const rez = kart.querySelector('#tourReserve');
+    parca('[data-rez-devam]').disabled = adim === alanlar().length - 1 && !!(rez && rez.disabled);
+  }
+
+  function git(i) { adim = i; ciz(); }
+
+  function ileri() {
+    if (adim < alanlar().length - 1) { git(adim + 1); return; }
+    const rez = kart.querySelector('#tourReserve');
+    if (!rez || rez.disabled) return;
+    kapat(true);
+    rez.click();
+  }
+
+  function ac() {
+    if (kapanis) { window.clearTimeout(kapanis); kapanis = null; geriKoy(); }
+    kart = document.getElementById('tourBooking');
+    if (!kart || !kart.querySelector(':scope > .tour-booking-field')) return false;
+    kur();
+    if (kok.hidden) {
+      yer = document.createComment('rezervasyon kutusu');
+      kart.parentNode.insertBefore(yer, kart);
+      parca('[data-rez-govde]').appendChild(kart);
+      kart.classList.add('is-cekmecede');
+      oncekiOdak = document.activeElement;
+      kilit(true);
+      kok.hidden = false;
+    }
+    adim = 0;
+    ciz();
+    window.requestAnimationFrame(() => kok.classList.add('is-acik'));
+    parca('.rez-cekmece-panel').focus({ preventScroll: true });
+    return true;
+  }
+
+  function geriKoy() {
+    if (!kart) return;
+    kart.classList.remove('is-cekmecede', 'is-rez-son');
+    alanlar().forEach(a => a.classList.remove('is-rez-aktif'));
+    /* Ekran genişleyince sayfa kutuyu sağ sütuna kendisi taşımış
+       olabilir; o zaman eski yere geri konmuyor. */
+    if (yer && yer.parentNode && kok.contains(kart)) yer.parentNode.insertBefore(kart, yer);
+    if (yer) yer.remove();
+    yer = null;
+    kok.hidden = true;
+    kilit(false);
+  }
+
+  /* hemen: "Rezervasyon yap" sonrası özet açılacak; kilit ve kutu anında
+     bırakılıyor ki sayfanın kendi kilidi doğru konumu okusun. */
+  function kapat(hemen) {
+    if (!kok || kok.hidden || kapanis) return;
+    kok.classList.remove('is-acik');
+    const bitir = () => {
+      kapanis = null;
+      geriKoy();
+      if (!hemen && oncekiOdak && typeof oncekiOdak.focus === 'function') oncekiOdak.focus({ preventScroll: true });
+      oncekiOdak = null;
+    };
+    const azHareket = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (hemen || azHareket) bitir();
+    else kapanis = window.setTimeout(bitir, 280);
+  }
+
+  /* Yapan: kutudaki "Tarih ve kişi seç" ve yapışkan şeridin düğmesi.
+     Yakalama evresinde: şeridin kendi dinleyicisi (kutuya kaydırma ya da
+     doğrudan özet) dar ekranda çalışmıyor. */
+  document.addEventListener('click', (e) => {
+    if (!DAR.matches) return;
+    const hedef = e.target.closest && e.target.closest('#tourStickyCta, [data-rez-ac]');
+    if (!hedef || (kok && kok.contains(hedef))) return;
+    if (ac()) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && kok && !kok.hidden) kapat(false);
+  });
+
+  const genisledi = () => { if (!DAR.matches) kapat(true); };
+  if (DAR.addEventListener) DAR.addEventListener('change', genisledi);
+  else if (DAR.addListener) DAR.addListener(genisledi);
 })();

@@ -473,6 +473,22 @@
   text-underline-offset: 2px;
 }
 .odm-coupon-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--text-muted); }
+/* Misafire somut kazanç: yeni üye kampanyasının bu rezervasyondaki tutarı. */
+.odm-member-kazanc { background: #EAF7EF; color: #0F4D2E; }
+.odm-member-kazanc strong { color: #0F4D2E; }
+.odm-member-kazanc .odm-member-btn { color: #0F4D2E; }
+/* Kupon bağın arkasında ("Kupon kodun var mı?"). */
+.odm-coupon-card { padding-top: 14px; padding-bottom: 14px; }
+.odm-coupon-toggle > summary {
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.odm-coupon-toggle[open] > summary { margin-bottom: 12px; }
+/* "Bu kişi benim": işaretliyken ilk kişinin ad ve soyadı iletişimden. */
+.odm-ben { margin-bottom: 12px; }
+.odm-row[hidden] { display: none; }
 
 /* ---------------- ön bilgilendirme ve sözleşme (6. adım) ---------------- */
 .odm-docs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }

@@ -190,7 +190,12 @@ describe('kontenjan', () => {
     const fn = kontenjanFn();
     expect(fn).toContain("durum.durum === 'doldu' || durum.durum === 'yetersiz'");
     expect(fn).toContain('dugme.disabled = !!satisEngeli');
-    expect(sayfaJs).toMatch(/id="tourStickyCta"\$\{satisEngeli \? ' disabled' : ''\}/);
+    /* Alttaki şeridin düğmesi rezervasyon çekmecesini açıyor (başka
+       tarih seçilebilsin diye pasif değil); çekmecenin son düğmesi
+       sayfanın düğmesiyle birlikte pasif (ui.js). */
+    expect(sayfaJs).toContain('id="tourStickyCta">');
+    expect(readFileSync(new URL('../assets/js/ui.js', import.meta.url), 'utf8'))
+      .toContain("parca('[data-rez-devam]').disabled = adim === alanlar().length - 1 && !!(rez && rez.disabled);");
   });
 
   it('cevap gelmeden kontenjan satırı gizli, satış engellenmiyor', () => {
@@ -2265,27 +2270,23 @@ describe('rezervasyon panelindeki iletişim kartları', () => {
 });
 
 describe('rezervasyon özetindeki iletişim düğmeleri', () => {
-  it('telefonun altında WhatsApp düğmesi var, ikisi de beyaz', () => {
+  it('önde tek ana düğme; telefon ve WhatsApp altında küçük bağlar', () => {
     const blok = sayfaJs.match(/<div class="tour-sheet-actions">([\s\S]*?)<\/div>/)[1];
-    expect(blok).toContain('CONTACT.phoneHref');
-    expect(blok).toContain('CONTACT.whatsappHref');
-    /* Sira: once telefon, sonra WhatsApp. */
+    /* İki büyük destek düğmesi "Ödemeye geç"in önüne geçiyordu. */
+    expect(blok.indexOf('Ödemeye geç')).toBeLessThan(blok.indexOf('phoneHref'));
+    expect(blok).not.toContain('tour-cta ghost');
+    expect(blok).toContain('<p class="tour-sheet-destek">');
+    /* Sıra: önce telefon, sonra WhatsApp. */
     expect(blok.indexOf('phoneHref')).toBeLessThan(blok.indexOf('whatsappHref'));
-    /* Ikisi de beyaz (ghost); yesil olan yalnizca "Anladim". */
-    const wa = blok.match(/<a class="([^"]+)" href="\$\{CONTACT\.whatsappHref\}/)[1];
-    expect(wa).toContain('ghost');
     expect(blok).toContain('rel="noopener"');
   });
 
-  it('masaüstünde onay düğmesi alt satırı tek başına kaplıyor', () => {
-    /* 681px ustunde dugmeler 2 sutunlu grid'e giriyor. WhatsApp eklenene
-       kadar dugme sayisi 2'ydi ve satir kendiliginden doluyordu; 3 olunca
-       "Anladim" yarim genislikte kalip saginda bosluk biraktı. */
-    const blok = turStil.match(
-      /@media \(min-width: 681px\) \{\s*\.tour-sheet-actions \{[^}]*\}([\s\S]*?)\n\}/);
-    expect(blok, '681px bloğu bulunamadı').not.toBe(null);
-    expect(blok[1].replace(/\s+/g, ' '), 'onay düğmesi tüm sütunları kaplamıyor')
-      .toMatch(/\[data-sheet="close"\][^{]*\{[^}]*grid-column:\s*1\s*\/\s*-1/);
+  it('düğmeler tek sütun; odak kapatma düğmesinde değil diyalogda', () => {
+    expect(turStil).toContain('.tour-sheet-actions { display: grid; gap: 12px; }');
+    expect(turStil).not.toMatch(/\.tour-sheet-actions \{ grid-template-columns: 1fr 1fr; \}/);
+    const ac = sayfaJs.match(/function openSheet\(\) \{[\s\S]*?\n  \}/)[0];
+    expect(ac).toContain("panel.focus({ preventScroll: true })");
+    expect(ac).not.toContain('kapat.focus()');
   });
 
   it('WhatsApp logosunun yolu tek kaynaktan geliyor', () => {

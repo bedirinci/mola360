@@ -275,14 +275,25 @@ function calcHotelTotal(hotel, secim) {
   };
 }
 
+/* Gösterilen fiyatlar vergiler dahil: oda ve pansiyon (verginin matrahı)
+   konaklama vergisiyle birlikte yazılıyor. Sayfada "1.950 TL gecelik"
+   yazıp altta "1.989 TL" toplam göstermek aynı şeyin iki fiyatı gibi
+   okunuyordu. Hesap (calcHotelTotal) değişmiyor: dökümde oda ve vergi
+   yine ayrı satır, toplamı bu fiyat. */
+function hotelVergiDahil(hotel, tutar) {
+  const oran = Number(hotel && hotel.pricing && hotel.pricing.taxRate) || 0;
+  return Math.round((Number(tutar) || 0) * (1 + oran));
+}
+
 /* Kartlarda ve rezervasyon kartının tepesinde görünen "…TL'den başlayan"
-   fiyat: en ucuz odanın gecelik ücreti. Anasayfadaki otel kartının fiyatı
-   da bu olmak zorunda; tests/hotel.test.js ikisini karşılaştırır. */
+   fiyat: en ucuz odanın vergiler dahil gecelik ücreti. Anasayfadaki otel
+   kartının fiyatı da bu olmak zorunda; tests/hotel.test.js ikisini
+   karşılaştırır. */
 function hotelNightlyFrom(hotel) {
   const liste = (hotel && hotel.rooms) || [];
   if (!liste.length) return 0;
-  return liste.reduce((enAz, o) => Math.min(enAz, Number(o.nightly) || 0),
-    Number(liste[0].nightly) || 0);
+  return hotelVergiDahil(hotel, liste.reduce((enAz, o) => Math.min(enAz, Number(o.nightly) || 0),
+    Number(liste[0].nightly) || 0));
 }
 
 function hotelNightlyListFrom(hotel) {
@@ -290,7 +301,7 @@ function hotelNightlyListFrom(hotel) {
   if (!liste.length) return 0;
   const ucuz = liste.reduce((secili, o) =>
     (Number(o.nightly) || 0) < (Number(secili.nightly) || 0) ? o : secili, liste[0]);
-  return Number(ucuz.nightlyList) || Number(ucuz.nightly) || 0;
+  return hotelVergiDahil(hotel, Number(ucuz.nightlyList) || Number(ucuz.nightly) || 0);
 }
 
 /* ---------------- puan ----------------
@@ -584,7 +595,7 @@ const HOTELS = {
     },
 
     pricing: {
-      unitNote: 'gecelik, oda başı',
+      unitNote: 'gecelik, oda başı · vergiler dahil',
       /* Konaklama vergisi ayrı satır: fatura üzerinde de böyle görünür. */
       taxRate: 0.02,
       minNights: 1,
@@ -618,7 +629,6 @@ const HOTELS = {
     ],
 
     /* Kıtlık ve sosyal kanıt: rakamlar veriden gelir, arayüzde üretilmez. */
-    social: { viewedLast24h: 52, bookedThisWeek: 23 },
 
     /* 10'luk skor bu dağılımdan türetilir (hotelScore): 8,9.
        Anasayfadaki otel kartının puanı da aynı sayı olmak zorunda;
@@ -723,6 +733,7 @@ if (typeof module !== 'undefined' && module.exports) {
     calcHotelTotal,
     hotelNightlyFrom,
     hotelNightlyListFrom,
+    hotelVergiDahil,
     hotelScore,
     hotelScoreText,
     hotelSlugFromPath

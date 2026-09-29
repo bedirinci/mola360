@@ -80,13 +80,19 @@ function odmKatilimciMarkup(sablonlar, tip) {
         + '<label class="odm-check"><input type="checkbox" name="' + on + 'yabanci"><span>T.C. vatandaşı değilim</span></label>'
         + '</div>'
       : '';
+    /* İlk kişi çoğu zaman rezervasyonu yapanın kendisi: "Bu kişi benim"
+       işaretliyken ad ve soyad iletişim bilgilerinden yazılıyor, alanları
+       gizli (form yarıya iniyor). İşaret kalkınca alanlar açılıyor. */
+    const ben = (i === 0 && !s.adsiz)
+      ? '<label class="odm-check odm-ben"><input type="checkbox" data-ben checked><span>Bu kişi benim (iletişim bilgilerimdeki ad ve soyad)</span></label>'
+      : '';
     const adlar = s.adsiz ? ''
-      : '<div class="odm-row">'
+      : '<div class="odm-row"' + (i === 0 ? ' data-ben-adlar hidden' : '') + '>'
         + alan('ad', 'Ad', 'autocomplete="' + (i === 0 ? 'given-name' : 'off') + '" maxlength="50"')
         + alan('soyad', 'Soyad', 'autocomplete="' + (i === 0 ? 'family-name' : 'off') + '" maxlength="50"')
         + '</div>';
     return '<fieldset class="odm-person"><legend>' + odmKacis(baslik) + '</legend>'
-      + adlar + (yas ? '<div class="odm-row">' + yas + '</div>' : '') + kimlik + '</fieldset>';
+      + ben + adlar + (yas ? '<div class="odm-row">' + yas + '</div>' : '') + kimlik + '</fieldset>';
   }).join('');
 }
 
@@ -264,9 +270,27 @@ function odmFormOku(form) {
 function odmOturum() {
   return (typeof MolaVeri !== 'undefined' && MolaVeri.oturum) ? MolaVeri.oturum() : null;
 }
-function odmUyeSeridi() {
+/* Misafir üye olursa bu rezervasyonda kazanacağı: yürürlükteki yeni üye
+   kampanyasının (üyeye özel, ilk rezervasyon) oranı ve üst sınırı bu
+   toplamdan. Kampanya yoksa 0; kod üyelikle hesaba düşüyor ve kupon
+   çiplerinde çıkıyor, geçerliliğine yine teklif karar veriyor. */
+function odmUyeKazanci(t, bugun) {
+  if (!t || typeof MolaVeri === 'undefined' || !MolaVeri.kampanyalar) return 0;
+  const k = MolaVeri.kampanyalar(bugun || new Date())
+    .find(x => x.uyeOzel && x.ilkRezervasyon && x.indirim && Number(x.indirim.oran) > 0);
+  if (!k) return 0;
+  const tutar = Math.round((Number(t.toplam) || 0) * Number(k.indirim.oran));
+  return k.indirim.enFazla ? Math.min(tutar, Number(k.indirim.enFazla)) : tutar;
+}
+function odmUyeSeridi(t, bugun) {
   const h = odmOturum();
   if (h) return '<p class="odm-member">' + odmKacis(h.ad) + ', bilgilerin hesabından yazıldı. Rezervasyon ve biletler Hesabım\'da görünecek.</p>';
+  const kazanc = odmUyeKazanci(t, bugun);
+  if (kazanc > 0) {
+    return '<p class="odm-member odm-member-kazanc">Üye olursan bu rezervasyonda <strong>' + odmKacis(odmTL(kazanc)) + '</strong> indirim: '
+      + 'yeni üyelere ilk rezervasyonda. <button type="button" class="odm-member-btn" data-giris="register">Ücretsiz üye ol</button> · '
+      + '<button type="button" class="odm-member-btn" data-giris="login">Giriş yap</button></p>';
+  }
   return '<p class="odm-member">Üye misin? <button type="button" class="odm-member-btn" data-giris="login">Giriş yap</button> ya da '
     + '<button type="button" class="odm-member-btn" data-giris="register">üye ol</button>: kişisel kuponların ve Molapuanın hesabına işlesin.</p>';
 }
@@ -405,7 +429,7 @@ function odmKur(kok, bugun) {
         + odmKacis(odmPara(t.kur.oran)) + ') rezervasyonla sabitlenir, kalan ödeme de bu kurla.</p>' : '';
     ana.innerHTML = '<form class="odm-form" id="odmForm" novalidate>'
       + '<div class="odm-errors" id="odmErrors" role="alert" hidden></div>'
-      + odmUyeSeridi()
+      + odmUyeSeridi(t, bugun)
       + '<section class="odm-card"><h2>İletişim bilgileri</h2>'
       + '<p class="odm-lead">Rezervasyon onayı ve bilet bu adrese gönderilir.</p>'
       + '<div class="odm-row">'
@@ -424,10 +448,14 @@ function odmKur(kok, bugun) {
       + '<section class="odm-card"><h2>Kart ve taksit</h2><div id="odmTaksit"></div>'
       + '<p class="odm-secure">Kart bilgileri bir sonraki adımda bankanın 3D Secure sayfasında girilir; mola360 kart numaranızı görmez ve saklamaz.'
       + (taksitAyar.ornek ? ' Taksit oranları örnektir, banka anlaşmalarıyla güncellenecek.' : '') + '</p></section>'
-      + '<section class="odm-card"><h2>İndirim kuponu</h2><div class="odm-coupon">'
-      + '<label class="odm-field"><span class="lst-visually-hidden">Kupon kodu</span><input id="odmKupon" placeholder="Kupon kodu" autocomplete="off" maxlength="20"></label>'
+      /* Kupon alanı bağın arkasında: hep açık alan, kodu olmayanı kod
+         aramaya gönderip sayfadan çıkarabiliyor. Üyenin kuponu varsa ya da
+         bir kod girilmişse açık. */
+      + '<section class="odm-card odm-coupon-card"><details class="odm-coupon-toggle"'
+      + (secenek.kupon || odmKuponCipleri() ? ' open' : '') + '><summary>Kupon kodun var mı?</summary><div class="odm-coupon">'
+      + '<label class="odm-field"><span class="lst-visually-hidden">Kupon kodu</span><input id="odmKupon" placeholder="Kupon kodu" autocomplete="off" maxlength="20" value="' + odmKacis(secenek.kupon || '') + '"></label>'
       + '<button type="button" class="odm-coupon-btn" id="odmKuponUygula">Uygula</button></div>'
-      + '<p class="odm-coupon-msg" id="odmKuponMesaj" role="status"></p>' + odmKuponCipleri() + '</section>'
+      + '<p class="odm-coupon-msg" id="odmKuponMesaj" role="status"></p>' + odmKuponCipleri() + '</details></section>'
       + '<section class="odm-card"><h2>Fatura</h2><div class="odm-options odm-options-compact odm-invoice" role="radiogroup" aria-label="Fatura türü">'
       + '<label class="odm-option is-selected"><input type="radio" name="fatura.tur" value="bireysel" checked><span class="odm-option-body"><strong>Bireysel</strong><span>İletişim bilgilerinize</span></span></label>'
       + '<label class="odm-option"><input type="radio" name="fatura.tur" value="kurumsal"><span class="odm-option-body"><strong>Kurumsal</strong><span>Firma adına</span></span></label>'
@@ -450,19 +478,35 @@ function odmKur(kok, bugun) {
 
     const form = document.getElementById('odmForm');
     odmUyeBilgileriniYaz(form);
-    /* İletişimdeki ad, dokunulmadıkça ilk katılımcıya da yazılıyor. */
-    const elle = new Set();
+    /* "Bu kişi benim" işaretliyken iletişimdeki ad ve soyad ilk kişiye
+       yazılıyor; işaret kalkınca ilk kişinin alanları boş açılıyor. */
+    const ben = form.querySelector('[data-ben]');
+    const benYaz = () => {
+      if (!ben || !ben.checked) return;
+      ['ad', 'soyad'].forEach(k => {
+        const hedef = form.querySelector('[name="katilimci.0.' + k + '"]');
+        const kaynak = form.querySelector('[name="iletisim.' + k + '"]');
+        if (hedef && kaynak) hedef.value = kaynak.value;
+      });
+    };
+    benYaz();
     form.addEventListener('input', (e) => {
       const ad = e.target.name || '';
-      if (ad.indexOf('katilimci.0.') === 0) elle.add(ad);
-      if (ad === 'iletisim.ad' || ad === 'iletisim.soyad') {
-        const hedef = form.querySelector('[name="katilimci.0.' + ad.split('.')[1] + '"]');
-        if (hedef && !elle.has(hedef.name)) hedef.value = e.target.value;
-      }
+      if (ad === 'iletisim.ad' || ad === 'iletisim.soyad') benYaz();
       if (denendi) dogrula();
     });
     form.addEventListener('change', (e) => {
       const el = e.target;
+      if (el.hasAttribute('data-ben')) {
+        const alanlar = form.querySelector('[data-ben-adlar]');
+        if (alanlar) alanlar.hidden = el.checked;
+        if (el.checked) benYaz();
+        else {
+          ['ad', 'soyad'].forEach(k => { const h = form.querySelector('[name="katilimci.0.' + k + '"]'); if (h) h.value = ''; });
+          const ilk = form.querySelector('[name="katilimci.0.ad"]');
+          if (ilk) ilk.focus();
+        }
+      }
       if (el.name === 'odeme') { secenek.odeme = el.value; yenile(); }
       if (el.name === 'kalan') { secenek.kalan = el.value; yenile(); }
       if (el.name === 'taksit') { secenek.taksit = Number(el.value) || 1; yenile(); }
@@ -668,6 +712,7 @@ function odmOnayKur(kok) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ODM_TIP_ADI, odmKacis, odmTL, odmKatilimciMarkup, odmPlanMarkup, odmTaksitMarkup,
-    odmTaksitTablosuMarkup, odmOzetMarkup, odmOnayMarkup, odmBelgeleri, odmBelgeAdlariMetni
+    odmTaksitTablosuMarkup, odmOzetMarkup, odmOnayMarkup, odmBelgeleri, odmBelgeAdlariMetni,
+    odmUyeKazanci
   };
 }
