@@ -483,9 +483,12 @@ yerlerini gerçek ürünler alacak.
   başlık ve alt satır aynı kampanyadan (`app.js/uyelikDavetiniCiz`: ad,
   etiket, `indirim.enFazla`), kampanya yoksa genel çağrı; sağda "Üye ol".
   Kart başlığa (iç sayfalarda çubuğun yuvarlak köşelerinin altına)
-  bitişik ve menüyle birlikte kayıyor; en üstte aşağı çekilince (iOS
-  esnemesi) yerinde kalıyor, esneme kartın altından başlıyor
-  (`cekmeceKartiEsnemesi`).
+  bitişik ve menüyle birlikte kayıyor. En üstte aşağı çekilince kart
+  yerinde kalıyor, kartın altındaki içerik parmakla birlikte direnerek
+  iniyor ve bırakınca dönüyor (`app.js/cekmeEsnemesi`). Tarayıcının
+  kendi esnemesi menüde kapalı (`overscroll-behavior: none`): iOS
+  esnerken kaydırılan içeriği ayrı katmanda çizip taşanı kestiği için
+  kartı kaydırma olayında geri itmek kartın üstünü kesiyordu.
 - **Liste başlığı:** başlığın altındaki "N ürün · en düşük X TL" satırı
   kalktı (sayı araç çubuğunda; en düşük fiyat yalnızca arama motoru
   açıklamasında). Yerine listedeki ürünlerin kurallarından güven çipleri
