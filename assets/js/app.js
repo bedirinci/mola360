@@ -2165,19 +2165,67 @@ function uyelikDavetiniCiz(){
   document.querySelectorAll('[data-uyelik-alt]').forEach(el => { el.textContent = alt; });
 }
 
-/* Çekmecedeki profil kartı menüyle birlikte kayıyor. En üstte aşağı
-   çekilince iOS kaydırılan alanı esnetiyor (scrollTop eksiye iniyor):
-   kart o kadar yukarı itiliyor, yani yerinde kalıyor ve esneme kartın
-   altından başlıyor; başlıkla kart arasında boşluk açılmıyor. */
-function cekmeceKartiEsnemesi(kaydirici, kart){
-  const y = Math.min(0, kaydirici.scrollTop);
-  kart.style.transform = y ? 'translateY(' + y + 'px)' : '';
+/* Çekmecede en üstte aşağı çekme: esneme kartın altından.
+   iOS'un kendi esnemesi kaydırılan alanın tamamını (kartla birlikte)
+   aşağı itiyordu. Kartı kaydırma olayında geri itmek işe yaramadı: iOS
+   esnerken kaydırılan içeriği ayrı katmanda çiziyor ve katmanın dışına
+   taşanı kesiyor (kartın üstü kesiliyor, başlıkla kart arasında boşluk
+   açılıyordu); kaydırma olayı da geç geldiği için kart titriyordu.
+
+   Şimdi doğal esneme kapalı (style.css, overscroll-behavior: none) ve
+   esneme burada: en üstteyken aşağı çekilince kartın altındaki içerik
+   parmakla birlikte, direnerek iniyor; bırakınca yerine dönüyor. Kart
+   hiç hareket etmiyor. Normal kaydırma tarayıcının kendisinde. */
+function cekmeEsnemesi(fark){
+  if (!(fark > 0)) return 0;
+  const EN_FAZLA = 120;
+  return Math.round(EN_FAZLA * (1 - 1 / (fark / EN_FAZLA + 1)));
 }
 (function(){
   const kaydirici = document.querySelector('#mobileDrawer .drawer-sidebar-scroll');
-  const kart = kaydirici && kaydirici.querySelector('.mobile-profile-card');
-  if (!kart) return;
-  kaydirici.addEventListener('scroll', () => cekmeceKartiEsnemesi(kaydirici, kart), { passive: true });
+  if (!kaydirici) return;
+  let oncekiY = 0;
+  let basY = null;
+  let cekiliyor = false;
+  let donusSayaci = null;
+  const yaz = (px) => kaydirici.style.setProperty('--m360-cekme', px + 'px');
+  const birak = () => {
+    basY = null;
+    if (!cekiliyor) return;
+    cekiliyor = false;
+    kaydirici.classList.add('is-cekme-donus');
+    yaz(0);
+    window.clearTimeout(donusSayaci);
+    donusSayaci = window.setTimeout(() => kaydirici.classList.remove('is-cekiliyor', 'is-cekme-donus'), 340);
+  };
+  kaydirici.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    oncekiY = e.touches[0].clientY;
+    basY = null;
+  }, { passive: true });
+  kaydirici.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1) return;
+    const y = e.touches[0].clientY;
+    if (kaydirici.scrollTop > 0) { birak(); oncekiY = y; return; }
+    if (basY === null) {
+      /* En üstte ve parmak aşağı gidiyor: çekme başlıyor. Yukarı gidiyorsa
+         tarayıcı kaydırıyor. */
+      if (y <= oncekiY) { oncekiY = y; return; }
+      basY = oncekiY;
+    }
+    const fark = y - basY;
+    if (fark <= 0) { birak(); oncekiY = y; return; }
+    if (!cekiliyor) {
+      cekiliyor = true;
+      window.clearTimeout(donusSayaci);
+      kaydirici.classList.remove('is-cekme-donus');
+      kaydirici.classList.add('is-cekiliyor');
+    }
+    if (e.cancelable) e.preventDefault();
+    yaz(cekmeEsnemesi(fark));
+  }, { passive: false });
+  kaydirici.addEventListener('touchend', birak, { passive: true });
+  kaydirici.addEventListener('touchcancel', birak, { passive: true });
 })();
 ['oturum', 'favori', 'rezervasyon'].forEach(ad => window.addEventListener('mola360:' + ad, hesapCercevesiniCiz));
 document.addEventListener('click', (e) => {

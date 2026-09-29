@@ -26,9 +26,9 @@
     <div class="sidebar-scroll drawer-sidebar-scroll">
 
       <!-- Mobil profil kartı: profil ekranındaki üst bölümle aynı görsel dil.
-           Menüyle birlikte kayıyor; en üstte aşağı çekilince (iOS esnemesi)
-           yerinde kalıyor, esneme kartın altından başlıyor (app.js,
-           cekmeceKartiEsnemesi). -->
+           Menüyle birlikte kayıyor; en üstte aşağı çekilince yerinde
+           kalıyor, esneme kartın altından başlıyor (app.js,
+           cekmeEsnemesi). -->
       <!-- Profil kartları hesaptan dolduruluyor (app.js, MolaVeri.hesapPaneli):
            sayılar, puan ve seviye gerçek; misafirde üyelik daveti (başlığı
            yeni üye kampanyasından). Burada elle yazılmış sayı ya da indirim yok. -->

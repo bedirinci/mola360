@@ -356,24 +356,32 @@ describe('kart: kampanya satırı', () => {
 describe('mobil menü', () => {
   const css = yorumsuz(stil);
 
-  it('en üstte aşağı çekince yalnızca menü esniyor (iOS); sayfaya taşmıyor', () => {
-    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll \{[^}]*overscroll-behavior-y: contain;/);
+  it('tarayıcının kendi esnemesi kapalı (kartla birlikte bütün alanı itiyordu)', () => {
+    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll \{[^}]*overscroll-behavior: none;/);
+    /* Kartı kaydırma olayında geri itme yöntemi iOS'ta kartın üstünü
+       kesiyordu: kaldırıldı. */
+    expect(app).not.toContain('cekmeceKartiEsnemesi');
   });
 
-  it('profil kartı menüyle kayıyor; en üstteki esnemede yerinde kalıyor', () => {
+  it('profil kartı menüyle kayıyor; en üstte aşağı çekince kartın altındaki içerik iniyor', () => {
     const cekmece = cerceve.slice(cerceve.indexOf('<aside class="mobile-drawer"'), cerceve.indexOf('</aside>', cerceve.indexOf('<aside class="mobile-drawer"')));
     expect(cekmece.indexOf('class="mobile-profile-card"')).toBeGreaterThan(cekmece.indexOf('drawer-sidebar-scroll'));
-    const fonk = app.match(/function cekmeceKartiEsnemesi\(kaydirici, kart\)\{[\s\S]*?\n\}/)[0];
-    const kaydir = (scrollTop) => {
-      const kart = { style: { transform: 'eski' } };
-      new Function('k', 'kart', fonk + '; cekmeceKartiEsnemesi(k, kart);')({ scrollTop }, kart);
-      return kart.style.transform;
-    };
-    /* iOS esnemesinde scrollTop eksi: kart o kadar yukarı itiliyor. */
-    expect(kaydir(-40)).toBe('translateY(-40px)');
-    expect(kaydir(0)).toBe('');
-    expect(kaydir(300)).toBe('');
-    expect(app).toContain("kaydirici.addEventListener('scroll', () => cekmeceKartiEsnemesi(kaydirici, kart), { passive: true });");
+    /* Yalnızca çekme ve dönüş sırasında, kart dışındaki öğeler. */
+    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll\.is-cekiliyor > :not\(\.mobile-profile-card\) \{\s*transform: translateY\(var\(--m360-cekme, 0px\)\);/);
+    expect(css).toMatch(/\.mobile-drawer \.drawer-sidebar-scroll\.is-cekme-donus > :not\(\.mobile-profile-card\) \{\s*transition: transform/);
+  });
+
+  it('çekme direnerek: parmakla başlıyor, yavaşlıyor, 120 px\'i geçmiyor', () => {
+    const esneme = new Function(app.match(/function cekmeEsnemesi\(fark\)\{[\s\S]*?\n\}/)[0] + '; return cekmeEsnemesi;')();
+    expect(esneme(0)).toBe(0);
+    expect(esneme(-30)).toBe(0);
+    expect(esneme(10)).toBeGreaterThan(8);
+    expect(esneme(60)).toBeLessThan(60);
+    expect(esneme(160)).toBeGreaterThan(esneme(60));
+    expect(esneme(5000)).toBeLessThan(120);
+    /* Yalnızca en üstte ve aşağı çekerken; tarayıcının kaydırması engellenmiyor. */
+    expect(app).toContain("if (kaydirici.scrollTop > 0) { birak(); oncekiY = y; return; }");
+    expect(app).toContain('if (e.cancelable) e.preventDefault();');
   });
 
   it('iç sayfalarda kart çubuğun yuvarlak köşelerinin altına giriyor (arada şerit yok)', () => {

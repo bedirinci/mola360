@@ -4398,12 +4398,20 @@ ul {
     overflow-y: auto;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
-    /* "contain": iOS'un esnemesi var ama sayfaya taşmıyor. Profil kartı
-       menüyle kayıyor; en üstteki esnemede yerinde kalıyor (app.js,
-       cekmeceKartiEsnemesi), esneme kartın altından başlıyor. */
-    overscroll-behavior-y: contain;
+    /* Tarayıcının kendi esnemesi kapalı: kartla birlikte bütün alanı
+       itiyordu. En üstte aşağı çekince esneme app.js'te (cekmeEsnemesi):
+       kartın altındaki içerik iniyor, kart yerinde kalıyor. */
+    overscroll-behavior: none;
   }
   .mobile-drawer .mobile-profile-card { position: relative; z-index: 2; }
+  /* Çekme sırasında ve dönüşte kart dışındaki her şey birlikte iniyor;
+     transform yalnızca o anlarda (sabit konumlu iç öğeleri etkilemesin). */
+  .mobile-drawer .drawer-sidebar-scroll.is-cekiliyor > :not(.mobile-profile-card) {
+    transform: translateY(var(--m360-cekme, 0px));
+  }
+  .mobile-drawer .drawer-sidebar-scroll.is-cekme-donus > :not(.mobile-profile-card) {
+    transition: transform .32s cubic-bezier(.32,.72,0,1);
+  }
   /* İç sayfalarda kartın üstü çubuğun yuvarlak köşelerinin altında. */
   .mobile-drawer .mobile-profile-card .mobile-profile-hero {
     padding-top: calc(14px + var(--m360-cekmece-kose, 0px));
