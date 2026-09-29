@@ -384,8 +384,13 @@ describe('mobil menü', () => {
     expect(app).toContain('if (e.cancelable) e.preventDefault();');
   });
 
-  it('iç sayfalarda kart çubuğun yuvarlak köşelerinin altına giriyor (arada şerit yok)', () => {
-    expect(app).toContain("'--m360-cekmece-aralik': `${cubuk ? -kose : 10}px`");
+  it('çekmece üstteki çubuğun altına giriyor: iç sayfada köşe kadar, anasayfada 2 px (arada şerit ve çizgi yok)', () => {
+    /* Anasayfada 10 px aşağıdan başlarken iki sınırda iPhone'da kıl gibi
+       çizgi görünüyordu; kaydırılmış anasayfada eski yer korunuyor. */
+    expect(app).toContain('const baslikUstte = !cubuk && kutu.top >= 0;');
+    expect(app).toContain("const giris = cubuk ? kose : (baslikUstte ? 2 : 0);");
+    expect(app).toContain("'--m360-cekmece-aralik': `${cubuk || baslikUstte ? -giris : 10}px`");
+    expect(app).toContain("'--m360-cekmece-kose': `${giris}px`");
     expect(css).toMatch(/\.mobile-drawer \{[^}]*top: calc\(var\(--mobile-header-height, 62px\) \+ var\(--m360-cekmece-aralik, 10px\)\);/);
     expect(css).toMatch(/\.mobile-drawer \.mobile-profile-card \.mobile-profile-hero \{[^}]*padding-top: calc\(14px \+ var\(--m360-cekmece-kose, 0px\)\);/);
   });

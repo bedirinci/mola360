@@ -1224,16 +1224,26 @@ function syncMobileDrawerPosition() {
   const cubuk = mola360SayfaCubugu();
   const ust = cubuk || siteHeader;
   if (!ust) return;
-  const headerHeight = ust.getBoundingClientRect().height;
-  /* İç sayfa çubuğunun alt köşeleri yuvarlak: çekmece o köşelerin altına
-     giriyor (çubuk üstte), profil kartı çubuğa bitişik görünüyor; arada
-     sayfanın göründüğü şerit kalmıyor. Kart üst boşluğunu köşe kadar
-     büyütüyor. Anasayfa başlığı düz: çekmece 10 px aşağıda. */
+  const kutu = ust.getBoundingClientRect();
+  const headerHeight = kutu.height;
+  /* Çekmece üstteki çubuğun ALTINA giriyor (çubuk üstte kalıyor), profil
+     kartı ona bitişik görünüyor; kart üst boşluğunu girdiği kadar
+     büyütüyor.
+       İç sayfa çubuğu: alt köşeleri yuvarlak, köşe kadar giriyor.
+       Anasayfa başlığı (sayfa en üstteyken): 2 px giriyor. Eskiden 10 px
+       aşağıdan başlıyordu; başlıkla arama çubuğu ve arama çubuğuyla
+       çekmece arasındaki iki sınırda iPhone yarım pikseli yuvarlarken
+       arkadaki açık zemin kıl gibi çizgi olarak görünüyordu (menüde
+       çekip bırakınca belirginleşiyordu). Üst üste binince sınır kalmıyor.
+       Anasayfa kaydırılmışken başlık ekranda değil: çekmece yapışkan
+       arama çubuğunun altından (başlık + 10 px) başlıyor, eskisi gibi. */
   const kose = cubuk ? parseFloat(getComputedStyle(cubuk).borderBottomLeftRadius) || 0 : 0;
+  const baslikUstte = !cubuk && kutu.top >= 0;
+  const giris = cubuk ? kose : (baslikUstte ? 2 : 0);
   setCssVars(document.documentElement, {
     '--mobile-header-height': `${headerHeight}px`,
-    '--m360-cekmece-aralik': `${cubuk ? -kose : 10}px`,
-    '--m360-cekmece-kose': `${kose}px`
+    '--m360-cekmece-aralik': `${cubuk || baslikUstte ? -giris : 10}px`,
+    '--m360-cekmece-kose': `${giris}px`
   });
 }
 
