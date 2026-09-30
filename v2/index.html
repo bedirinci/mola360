@@ -153,7 +153,7 @@ a{color:inherit;text-decoration:none}
 .ac .now{font-size:17px}
 
 /* kaydırma */
-.rail{cursor:grab;touch-action:pan-x pan-y;overscroll-behavior-x:contain}
+.rail{cursor:grab;touch-action:pan-x pan-y pinch-zoom;overscroll-behavior-x:contain}
 .rail.drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
 .rail.drag *{pointer-events:none}
 .arrows{display:flex;gap:6px;flex:none}
@@ -289,7 +289,7 @@ a{color:inherit;text-decoration:none}
 .wa-dot.light{border-color:var(--navy)}
 .call{display:flex;flex-direction:column;gap:6px;background:var(--card);border-radius:14px;padding:14px}
 .call label{font-size:12px;font-weight:700;color:var(--mute);margin-top:4px}
-.call input,.call select{font:inherit;font-size:15px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.call input,.call select{font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .call .btn{justify-content:center;margin-top:8px;background:var(--green);color:var(--navy)}
 .call-note{font-size:11.5px!important}
 .call-ok{background:var(--green-soft);color:var(--green-ink)!important;font-weight:700;border-radius:12px;padding:12px}
@@ -364,12 +364,18 @@ a{color:inherit;text-decoration:none}
 .m-foot{margin-top:24px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--navy-ink)}
 .m-foot .copy{text-align:right;line-height:1.4;font-size:11px;max-width:150px}
 .sel{position:relative;display:inline-flex}
-.sel select{appearance:none;-webkit-appearance:none;font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23C7CDE4%27 stroke-width=%272.4%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E") no-repeat right 7px center/12px;border:0;border-radius:8px;padding:7px 24px 7px 10px;cursor:pointer}
+.sel select{appearance:none;-webkit-appearance:none;font:inherit;font-size:16px;font-weight:600;line-height:1.2;color:#fff;background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23C7CDE4%27 stroke-width=%272.4%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E") no-repeat right 7px center/12px;border:0;border-radius:8px;padding:6px 24px 6px 10px;cursor:pointer}
 .sel select option{color:#141A2E}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .lang{display:flex;gap:6px}
 body.locked{overflow:hidden}
 [hidden]{display:none!important}
+/* Çift dokunma: iOS'un çift dokunmada sayfayı büyütmesini kapatır, iki parmakla
+   büyütme (erişilebilirlik) açık kalır. Düğme ve etiketlerde dokununca gri
+   parlama ve kelime seçilmesi olmaz; düz metin seçilebilir kalır. */
+html{touch-action:manipulation}
+a,button,select,input,label,.cd,.tk,.hc,.th,.tt,.tr,.chip,.fc,.tab,.nav a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,.tag,.type,.score,.pill,.visa,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nw{white-space:nowrap}
 .help p{text-wrap:pretty}
 .help .tel{color:var(--ink);font-weight:800;font-size:16px;letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -755,6 +761,14 @@ const ABF={all:()=>true,kolay:x=>!x.visaReq,avrupa:x=>x.reg==='avrupa',uzak:x=>x
 function renderAbroad(f){curF=f;ab.innerHTML=ABO.map(t=>ITEMS.find(x=>x.t===t)).filter(ABF[f]).map(card).join('');fitFacts(ab);ab.scrollLeft=0;ab.dispatchEvent(new Event('scroll'))}
 document.querySelector('.fchips').addEventListener('click',e=>{const b=e.target.closest('.fc');if(!b)return;document.querySelectorAll('.fc').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAbroad(b.dataset.f)});
 renderAbroad('all');
+
+/* Hızlı çift dokunma: aynı aç/kapa düğmesine 350 ms içinde gelen ikinci
+   dokunuş yok sayılır (favori ekle-çıkar, açıklama aç-kapa gibi). */
+(function(){const son=new WeakMap();
+  document.addEventListener('click',e=>{const t=e.target.closest('.heart,.tr,#callBtn,.lvb,.tt,.fc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
+    const now=Date.now(),prev=son.get(t)||0;son.set(t,now);
+    if(now-prev<350){e.preventDefault();e.stopImmediatePropagation();}},true);})();
+document.addEventListener('dblclick',e=>{if(e.target.closest('button,a,.cd,.tk,.hc,.th,.tt,.tr'))e.preventDefault()},{passive:false});
 
 /* Yeni sitede henüz yapılmamış sayfalar */
 document.addEventListener('click',e=>{const a=e.target.closest('a[href="#yakinda"]');if(!a)return;e.preventDefault();
