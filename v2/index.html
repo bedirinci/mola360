@@ -39,7 +39,7 @@ a{color:inherit;text-decoration:none}
 .ib{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative}
 .ib svg{width:23px;height:23px}
 .ib .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--navy)}
-.hello{margin:12px 0 14px;font-size:25px;line-height:1.18;font-weight:800;letter-spacing:-.6px;text-wrap:balance}
+.hello{margin:12px 0 14px;font-size:25px;line-height:1.18;font-weight:800;letter-spacing:-.6px}
 .hello span{color:var(--green)}
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
@@ -79,8 +79,8 @@ a{color:inherit;text-decoration:none}
 /* bölüm */
 .sec{padding:30px 16px 0}
 .hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.hd h2{font-size:20px;font-weight:800;letter-spacing:-.4px;text-wrap:balance}
-.hd a{font-size:13.5px;font-weight:700;color:var(--green-ink);white-space:nowrap}
+.hd h2{font-size:20px;font-weight:800;letter-spacing:-.4px;flex:1 1 auto;min-width:0}
+.hd a{font-size:13.5px;font-weight:700;color:var(--green-ink);white-space:nowrap;flex:none}
 .sub{font-size:13.5px;color:var(--mute);margin-top:3px}
 
 /* ne kadar molan var */
@@ -360,7 +360,7 @@ body.locked{overflow:hidden}
 .cd .info .visa{flex:none}
 .tb .x,.hc .x,.th,.m-theme{min-width:0}
 .th b,.th span,.m-theme b,.m-theme small{display:block;max-width:100%}
-.more-l{display:flex;align-items:center;gap:8px}
+.more-l{display:flex;align-items:center;gap:8px;flex:none}
 .all{display:inline-flex;align-items:center;min-height:44px;padding:0 0 0 12px}
 .hd{align-items:center}
 .arrows{display:none}
