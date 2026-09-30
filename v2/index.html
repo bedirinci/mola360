@@ -79,7 +79,7 @@ a{color:inherit;text-decoration:none}
 /* bölüm */
 .sec{padding:30px 16px 0}
 .hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.hd h2{font-size:20px;font-weight:800;letter-spacing:-.4px;flex:1 1 auto;min-width:0}
+.hd h2{font-size:20px;font-weight:800;letter-spacing:-.4px;flex:1 1 0%;min-width:0}
 .hd a{font-size:13.5px;font-weight:700;color:var(--green-ink);white-space:nowrap;flex:none}
 .sub{font-size:13.5px;color:var(--mute);margin-top:3px}
 
@@ -225,6 +225,19 @@ a{color:inherit;text-decoration:none}
 .tags .type{position:static}
 .tr-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:4px 8px 4px 6px;border-radius:7px;line-height:1.2}
 .tr-tag svg{width:14px;height:14px;color:var(--navy);stroke-width:2}
+.hc .x{gap:4px}
+.hc .stars{line-height:1}
+.hrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+.hrow .score{margin-top:0}
+.hrow .pill{margin-top:0;align-self:center}
+.hrow .score{align-self:center}
+.hc .lvb.in{margin-top:0}
+.hfoot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--line)}
+.hl-l{display:flex;flex-direction:column;font-size:11.5px;color:var(--mute);line-height:1.35;min-width:0}
+.hl-l .mp{margin-top:1px}
+.hl-r{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.hl-r strong{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hl-r s{font-size:11px;color:var(--mute);font-weight:600}
 .score.new b{background:var(--green-soft);color:var(--green-ink)}
 /* etkinlik bileti */
 .ev{display:flex;flex-direction:column;gap:12px;padding:14px 16px 0}
@@ -246,7 +259,7 @@ a{color:inherit;text-decoration:none}
 /* otel kartı */
 .hl{display:flex;flex-direction:column;gap:12px;padding:14px 16px 0}
 .hc{display:flex;gap:12px;padding:10px;border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow)}
-.hc .ph{width:112px;height:136px;border-radius:12px;flex:none;overflow:hidden}
+.hc .ph{width:108px;min-height:128px;align-self:stretch;border-radius:12px;flex:none;overflow:hidden}
 .hc .heart{width:28px;height:28px;right:6px;top:6px}.hc .heart svg{width:14px;height:14px}
 .hc .x{flex:1;display:flex;flex-direction:column;min-width:0}
 .stars{color:var(--gold);font-size:11px;letter-spacing:1.5px}
@@ -357,6 +370,7 @@ a{color:inherit;text-decoration:none}
 .lang{display:flex;gap:6px}
 body.locked{overflow:hidden}
 [hidden]{display:none!important}
+.hc .hrow .score,.hc .hrow .pill{margin:0;align-self:center}
 /* Kartlarda sığmayan başlık ve alt metin tek satırda … ile biter; tam metin dokununca ürün sayfasında. */
 .cd h3,.tb h3,.hc h3,.cd .info .it,.th b,.th span,.m-theme b,.m-theme small,.tr b,.tr small,.cd .f,.cd .svc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cd h3{display:block;-webkit-line-clamp:unset}
@@ -728,8 +742,8 @@ function renderLower(){
   fitFacts(document.getElementById('venues'));
   const ht=HT.filter(h=>!shown.has(h[1])).slice(0,2);
   document.getElementById('hotels').innerHTML=ht.map(h=>'<article class="hc"><div class="ph" style="--g:'+G[h[7]]+'">'+heartBtn(h[1])+'</div>'
-   +'<div class="x"><div class="stars" aria-label="Otel sınıfı">'+h[0]+'</div><h3>'+ttl(h[1])+'</h3><div class="meta">'+I.pin+'<span>'+h[2]+'</span></div>'+scoreOrNew(h[3],h[4])
-   +'<span class="pill">'+h[5]+'</span>'+lvb(h[1],'in')+'<div class="tot">2 gece toplam'+(lvOn(h[1])?'<s class="old">'+tl(h[6]*2)+'</s>':'')+'<strong>'+tl(lvPrice(h[1],h[6]*2))+'</strong>'+mp(lvPrice(h[1],h[6]*2))+'</div></div></article>').join('');
+   +'<div class="x"><div class="stars" aria-label="Otel sınıfı">'+h[0]+'</div><h3>'+ttl(h[1])+'</h3><div class="meta">'+I.pin+'<span>'+h[2]+'</span></div>'+'<div class="hrow">'+scoreOrNew(h[3],h[4])+'<span class="pill">'+h[5]+'</span></div>'+lvb(h[1],'in')
+   +'<div class="hfoot"><div class="hl-l"><span>2 gece toplam</span>'+mp(lvPrice(h[1],h[6]*2))+'</div><div class="hl-r">'+(lvOn(h[1])?'<s class="old">'+tl(h[6]*2)+'</s>':'')+'<strong>'+tl(lvPrice(h[1],h[6]*2))+'</strong></div></div></div></article>').join('');
 }
 /* Yurt dışında tekrar filtresi yok: bölüm her zaman 4 ürünü gösteriyor */
 const ab=document.getElementById('abroad');
