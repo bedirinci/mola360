@@ -27,14 +27,15 @@ body{font-family:var(--font);color:var(--ink);background:var(--page);max-width:4
 svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:8px}
+:focus,:focus-visible{outline:none}
+html.kb :focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:8px}
+html.kb .menu :focus-visible,html.kb .top :focus-visible{outline-color:#fff}
 
 /* üst bant */
 .top{background:var(--navy);color:#fff;padding:10px 16px 60px;border-radius:0 0 24px 24px}
 .bar{display:flex;align-items:center;justify-content:space-between;height:44px}
 .logo{display:inline-flex;align-items:center}
 .logo img{display:block;height:40px;width:auto}
-.m-bar .logo img{height:38px}
 .bar-i{display:flex;gap:4px}
 .ib{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative}
 .ib svg{width:23px;height:23px}
@@ -219,7 +220,7 @@ a{color:inherit;text-decoration:none}
 .lk{color:inherit;text-decoration:none}
 .lk::after{content:"";position:absolute;inset:0;z-index:1}
 .lk:focus-visible{outline:none}
-.cd:has(.lk:focus-visible),.tk:has(.lk:focus-visible),.hc:has(.lk:focus-visible){outline:3px solid var(--green);outline-offset:2px}
+html.kb .cd:has(.lk:focus-visible),html.kb .tk:has(.lk:focus-visible),html.kb .hc:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
 .dates,.opts{position:relative;z-index:0}
 .tags{z-index:2}
 .tags .type{position:static}
@@ -312,11 +313,9 @@ a{color:inherit;text-decoration:none}
 .badge{position:absolute;top:-4px;left:56%;background:var(--green);color:var(--navy);font-size:10px;font-weight:800;border-radius:9px;padding:1px 5px}
 
 /* tam ekran menü */
-.menu{position:fixed;inset:0;z-index:50;background:var(--navy);color:#fff;display:flex;flex-direction:column;max-width:440px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .22s ease,transform .22s ease,visibility 0s linear .22s}
-.menu.open{opacity:1;visibility:visible;transform:none;transition:opacity .22s ease,transform .22s ease}
-.m-bar{display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 10px 0 16px;flex:none}
-.m-close{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);display:grid;place-items:center}
-.m-close svg{width:22px;height:22px}
+.menu{position:fixed;inset:0;z-index:50;background:var(--navy);color:#fff;display:flex;flex-direction:column;max-width:440px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s}
+.menu.open{opacity:1;visibility:visible;transition:opacity .18s ease}
+.m-bar{display:flex;align-items:center;justify-content:space-between;height:44px;margin-top:10px;padding:0 16px;flex:none}
 .m-body{flex:1;overflow-y:auto;padding:4px 16px calc(24px + env(safe-area-inset-bottom,0px))}
 .m-user{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.07);border-radius:16px;padding:14px}
 .av{width:44px;height:44px;border-radius:50%;background:var(--navy-2);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px var(--green)}
@@ -404,6 +403,7 @@ button,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,
 .m-link b{font-size:clamp(17px,5.4vw,21px);min-width:0}
 @media (max-width:359px){.m-link em{display:none}.m-user{flex-wrap:wrap}.m-user .btn{width:100%;justify-content:center}}
 .err{font-size:12px;font-weight:700;color:#B42318;margin-top:2px}
+.call input:focus,.call select:focus{border-color:var(--navy)}
 .call input[aria-invalid="true"]{border-color:#B42318;box-shadow:0 0 0 3px rgba(180,35,24,.12)}
 /* Okunabilirlik: gövde metni 1.5 satır aralığı; başlıklarda sıkı ama Türkçe
    şapka/nokta işaretleri çakışmayacak kadar; küçük metinlerde hafif açık harf
@@ -559,8 +559,11 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
 
 <div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
   <div class="m-bar">
-    <a class="logo" href="./" aria-label="mola360 anasayfa"><img src="logo.png" alt="mola360" width="92" height="38"></a>
-    <button class="m-close" id="menuClose" aria-label="Menüyü kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <a class="logo" href="./" aria-label="mola360 anasayfa"><img src="logo.png" alt="mola360" width="97" height="40"></a>
+    <div class="bar-i">
+      <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+      <button class="ib" id="menuClose" aria-label="Menüyü kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
   </div>
   <div class="m-body">
     <div class="m-user" data-guest>
@@ -861,6 +864,8 @@ const M=[['Turlar','<path d="M3 20h18M6 20l6-14 6 14"/>','Günübirlik, hafta so
  ['Etkinlikler','<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/>','Konser, festival, sahne'],['Aktiviteler','<path d="M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6z"/>','Rafting, paraşüt, tekne'],
  ['Mekânlar','<path d="M5 21V10l7-6 7 6v11M9 21v-6h6v6"/>','Spa, beach club'],['Fırsatlar','<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/>','Kampanyalar']];
 document.getElementById('mMain').innerHTML=M.map(m=>'<a href="#yakinda" class="m-link"><span class="ico"><svg viewBox="0 0 24 24">'+m[1]+'</svg></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
+document.addEventListener('keydown',e=>{if(e.key==='Tab')document.documentElement.classList.add('kb')});
+document.addEventListener('pointerdown',()=>document.documentElement.classList.remove('kb'));
 const menu=document.getElementById('menu'),btn=document.getElementById('menuBtn');
 const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.tagName!=='SCRIPT');
 function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);setTimeout(()=>document.getElementById('menuClose').focus(),50)}
