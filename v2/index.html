@@ -45,7 +45,8 @@ html.kb .m-bar :focus-visible,html.kb .m-top :focus-visible,html.kb .top :focus-
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;font-size:14px;font-weight:600;color:var(--navy-ink);white-space:nowrap}
-.tab img{width:28px;height:28px;padding:3px;border-radius:8px;background:var(--green-soft);display:block;flex:none;box-sizing:border-box}
+.tab img{width:28px;height:28px;padding:3px;border-radius:8px;background:rgba(255,255,255,.2);display:block;flex:none;box-sizing:border-box}
+.tab[aria-selected="true"] img{background:var(--soft)}
 .tab[aria-selected="true"]{background:#fff;color:var(--navy);font-weight:800}
 
 /* arama */
