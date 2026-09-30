@@ -678,7 +678,7 @@ const PL={Tur:'Turlar',Otel:'Oteller',Etkinlik:'Etkinlikler',Aktivite:'Aktivitel
 /* Molapuan önerisi: her 100 TL'ye 1 puan, 1 puan = 1 TL. Seviye indirimi programa katılan üründe. */
 const LV=new Set(['Kapadokya Turu','Efes ve Şirince Turu','Göreme Mağara Otel','Sealight Resort','Kordon Spa & Masaj']);
 const STAR='<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>';
-const mp=p=>'<span class="mp">'+STAR+'+'+Math.floor(p/100)+' Molapuan</span>';
+const mp=p=>'<span class="mp">+'+Math.floor(p/100)+' Molapuan</span>';
 /* Seviye indirimi (öneri): Kâşif %10, Mola Ustası %15. Rozet görünümü kullanıcının seviyesine göre değişir. */
 let LEVEL='guest';
 const LVTXT={guest:'Üyelere %15\'e varan indirim',gezgin:'Kâşif\'e %10 indirim',kasif:'Kâşif indirimi %10'};
