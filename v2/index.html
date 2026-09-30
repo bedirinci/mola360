@@ -199,7 +199,7 @@ a{color:inherit;text-decoration:none}
 .cd .info{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0}
 .visa{background:var(--green-soft);color:var(--green-ink);font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px}
 .visa.req{background:#FFF1D6;color:#7A4A00}
-.fchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 0}
+.fchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 0;scroll-padding-inline:16px}
 .fchips::-webkit-scrollbar{display:none}
 .fc{flex:none;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink);background:var(--card)}
 .fc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
@@ -370,6 +370,16 @@ a{color:inherit;text-decoration:none}
 .lang{display:flex;gap:6px}
 body.locked{overflow:hidden}
 [hidden]{display:none!important}
+/* popüler aramalar */
+.popular{padding:14px 0 0}
+.pop-h{display:flex;align-items:center;gap:6px;padding:0 16px;font-size:12px;font-weight:700;color:var(--mute);letter-spacing:.01em}
+.pop-h svg{width:15px;height:15px;color:var(--green-ink);stroke-width:2.2}
+.pchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:8px 16px 2px;scroll-padding-inline:16px}
+.pchips::-webkit-scrollbar{display:none}
+.pc{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}
+.pc svg{width:15px;height:15px;color:var(--mute)}
+.pc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.pc[aria-pressed="true"] svg{color:var(--green)}
 /* Çift dokunma: iOS'un çift dokunmada sayfayı büyütmesini kapatır, iki parmakla
    büyütme (erişilebilirlik) açık kalır. Düğme ve etiketlerde dokununca gri
    parlama ve kelime seçilmesi olmaz; düz metin seçilebilir kalır. */
@@ -392,8 +402,8 @@ button,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,
 .hd{align-items:center}
 .arrows{display:none}
 @media (hover:hover) and (pointer:fine){.arrows{display:flex}.more-l .all{display:none}}
-.tabs,.promise,.fchips,.trust{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
-.tabs.end,.promise.end,.fchips.end,.trust.end{-webkit-mask-image:none;mask-image:none}
+.tabs,.promise,.fchips,.trust,.pchips{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.tabs.end,.promise.end,.fchips.end,.trust.end,.pchips.end{-webkit-mask-image:none;mask-image:none}
 .m-link .ico{flex:none}
 .m-link b{font-size:clamp(17px,5.4vw,21px);min-width:0}
 @media (max-width:359px){.m-link em{display:none}.m-user{flex-wrap:wrap}.m-user .btn{width:100%;justify-content:center}}
@@ -473,6 +483,10 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
   </div>
   <button class="go" id="go" type="submit">Molamı bul</button>
 </form>
+<div class="popular">
+  <div class="pop-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Popüler aramalar</div>
+  <div class="pchips" id="pchips" role="group" aria-label="Popüler aramalar"></div>
+</div>
 <div class="trust" role="group" aria-label="Neden mola360">
   <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="iptal"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx"><b>Ücretsiz iptal</b><small>çoğu üründe</small></span></button>
   <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="taksit"><span class="ti"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><span class="tx"><b>3 taksit</b><small>vade farksız</small></span></button>
@@ -765,10 +779,16 @@ renderAbroad('all');
 /* Hızlı çift dokunma: aynı aç/kapa düğmesine 350 ms içinde gelen ikinci
    dokunuş yok sayılır (favori ekle-çıkar, açıklama aç-kapa gibi). */
 (function(){const son=new WeakMap();
-  document.addEventListener('click',e=>{const t=e.target.closest('.heart,.tr,#callBtn,.lvb,.tt,.fc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
+  document.addEventListener('click',e=>{const t=e.target.closest('.heart,.tr,#callBtn,.lvb,.tt,.fc,.pc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
     const now=Date.now(),prev=son.get(t)||0;son.set(t,now);
     if(now-prev<350){e.preventDefault();e.stopImmediatePropagation();}},true);})();
 document.addEventListener('dblclick',e=>{if(e.target.closest('button,a,.cd,.tk,.hc,.th,.tt,.tr'))e.preventDefault()},{passive:false});
+
+/* Seçilen çip, sekme ya da güven kutusu kenardaki solmada kalmasın */
+document.addEventListener('click',e=>{const c=e.target.closest('.pc,.fc,.tab,.tr');if(!c)return;
+  const sc=c.parentElement,r=c.getBoundingClientRect(),R=sc.getBoundingClientRect(),pad=48;
+  if(r.right>R.right-pad)sc.scrollBy({left:r.right-R.right+pad,behavior:'smooth'});
+  else if(r.left<R.left+16)sc.scrollBy({left:r.left-R.left-16,behavior:'smooth'});});
 
 /* Yeni sitede henüz yapılmamış sayfalar */
 document.addEventListener('click',e=>{const a=e.target.closest('a[href="#yakinda"]');if(!a)return;e.preventDefault();
@@ -822,10 +842,25 @@ const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','Ekim, esnek
  etkinlik:['ŞEHİR','Tüm şehirler','NE ZAMAN','Bu hafta sonu','BİLET','2 bilet','Etkinlik bul'],
  aktivite:['NEREYE','Şehir veya aktivite','NE ZAMAN','Bu hafta sonu','KİŞİ','2 kişi','Aktivite bul'],
  mekan:['NEREYE','Şehir veya mekân adı','NE ZAMAN','Bugün','KİŞİ','2 kişi','Mekân bul']};
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;
+/* Popüler aramalar: seçili sekmeye göre değişir; dokununca "Nereye" alanına yazılır. */
+const POP={tur:['Yurt dışı','Güneydoğu','Karadeniz','Antalya','Kapadokya','Ege adaları','Balkanlar','Dubai'],
+ otel:['Antalya','Bodrum','Kapadokya','Termal oteller','Sapanca','Çeşme','Kemer'],
+ etkinlik:['İstanbul','İzmir','Konser','Festival','Tiyatro','Stand-up'],
+ aktivite:['Yamaç paraşütü','Rafting','Tekne turu','Balon turu','Dalış','Kayak'],
+ mekan:['Spa ve masaj','Beach club','Hamam','Brunch','Çeşme','Bodrum']};
+const PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>';
+const pEl=document.getElementById('pchips'),f1=()=>document.querySelector('#f1 span');
+let curTab='tur';
+function renderPop(){pEl.innerHTML=POP[curTab].map(q=>'<button type="button" class="pc" aria-pressed="false">'+PIN+q+'</button>').join('');pEl.scrollLeft=0;pEl.dispatchEvent(new Event('scroll'))}
+function resetWhere(){const sp=f1();sp.textContent=TABS[curTab][1];sp.classList.add('hint')}
+pEl.addEventListener('click',e=>{const b=e.target.closest('.pc');if(!b)return;const on=b.getAttribute('aria-pressed')!=='true';
+  pEl.querySelectorAll('.pc').forEach(x=>x.setAttribute('aria-pressed',x===b&&on));
+  if(on){const sp=f1();sp.textContent=b.textContent;sp.classList.remove('hint')}else resetWhere()});
+renderPop();
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;curTab=t.dataset.tab;
   document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
   const v=TABS[t.dataset.tab];['f1','f2','f3'].forEach((id,i)=>{const f=document.getElementById(id);f.querySelector('small').textContent=v[i*2];f.querySelector('span').textContent=v[i*2+1]});
-  document.getElementById('go').textContent=v[6];});
+  document.getElementById('go').textContent=v[6];f1().classList.add('hint');renderPop();});
 
 /* tam ekran menü */
 const M=[['Turlar','<path d="M3 20h18M6 20l6-14 6 14"/>','Günübirlik, hafta sonu, uzun'],['Oteller','<path d="M3 18V8h18v10M3 14h18M7 11h3"/>','Butik, termal, resort'],
@@ -863,7 +898,7 @@ function makeScroll(el,withProg){
   el.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);upd();
 }
 document.querySelectorAll('.rail').forEach(el=>makeScroll(el,true));
-document.querySelectorAll('.tabs,.promise,.fchips,.trust').forEach(el=>makeScroll(el,false));
+document.querySelectorAll('.tabs,.promise,.fchips,.trust,.pchips').forEach(el=>makeScroll(el,false));
 
 /* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
 function liveNow(){
