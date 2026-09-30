@@ -195,7 +195,7 @@ a{color:inherit;text-decoration:none}
 .cd .svc b{font-size:13px}
 .cd .mode{font-size:12px;font-weight:800;color:var(--green-ink);display:flex;align-items:center;gap:5px}
 .cd .mode svg{width:15px;height:15px}
-.cd .info{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cd .info{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0}
 .visa{background:var(--green-soft);color:var(--green-ink);font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px}
 .visa.req{background:#FFF1D6;color:#7A4A00}
 .fchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 0}
@@ -352,6 +352,13 @@ a{color:inherit;text-decoration:none}
 .lang{display:flex;gap:6px}
 body.locked{overflow:hidden}
 [hidden]{display:none!important}
+/* Kartlarda sığmayan başlık ve alt metin tek satırda … ile biter; tam metin dokununca ürün sayfasında. */
+.cd h3,.tb h3,.hc h3,.cd .info .it,.th b,.th span,.m-theme b,.m-theme small,.tr b,.tr small,.cd .f,.cd .svc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cd h3{display:block;-webkit-line-clamp:unset}
+.cd .info .it{flex:0 1 auto}
+.cd .info .visa{flex:none}
+.tb .x,.hc .x,.th,.m-theme{min-width:0}
+.th b,.th span,.m-theme b,.m-theme small{display:block;max-width:100%}
 .more-l{display:flex;align-items:center;gap:8px}
 .all{display:inline-flex;align-items:center;min-height:44px;padding:0 0 0 12px}
 .hd{align-items:center}
@@ -359,7 +366,6 @@ body.locked{overflow:hidden}
 @media (hover:hover) and (pointer:fine){.arrows{display:flex}.more-l .all{display:none}}
 .tabs,.promise,.fchips,.trust{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 .tabs.end,.promise.end,.fchips.end,.trust.end{-webkit-mask-image:none;mask-image:none}
-.meta span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .m-link .ico{flex:none}
 .m-link b{font-size:clamp(17px,5.4vw,21px);min-width:0}
 @media (max-width:359px){.m-link em{display:none}.m-user{flex-wrap:wrap}.m-user .btn{width:100%;justify-content:center}}
@@ -600,7 +606,7 @@ const FAV=new Set((()=>{try{return JSON.parse(localStorage.getItem('m360-fav')||
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 const heartBtn=t=>{const on=FAV.has(t);return '<button class="heart" type="button" data-fav="'+esc(t)+'" aria-pressed="'+on+'" aria-label="'+esc(t)+(on?' favorilerden çıkar':' favorilere ekle')+'">'+I.heart+'</button>'};
 /* Ürün sayfaları yeni sitede henüz yok; kart dokununca "hazırlanıyor" bildirimi çıkar. */
-const ttl=t=>'<a class="lk" href="#yakinda">'+t+'</a>';
+const ttl=t=>'<a class="lk" href="#yakinda" title="'+t.replace(/"/g,'&quot;')+'">'+t+'</a>';
 const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
 
 /* Tek kart düzeni: görsel (tür + favori) · başlık · konum · bilgi satırı · alt satırda puan solda, fiyat sağda */
@@ -611,7 +617,7 @@ function card(x){
   return '<article class="cd"><div class="ph" style="--g:'+G[x.g]+'"><span class="type">'+x.k+'</span>'+lvb(x.t)
   +''+heartBtn(x.t)+'</div>'
   +'<div class="bd"><h3>'+ttl(x.t)+'</h3><div class="meta">'+I.pin+'<span>'+x.a+'</span></div>'
-  +(x.info?'<div class="info">'+x.info+(x.visa?'<span class="visa'+(x.visaReq?' req':'')+'">'+x.visa+'</span>':'')+'</div>':'')
+  +(x.info?'<div class="info"><span class="it">'+x.info+'</span>'+(x.visa?'<span class="visa'+(x.visaReq?' req':'')+'">'+x.visa+'</span>':'')+'</div>':'')
   +'<div class="dep">'+row+'</div>'
   +'<div class="pr">'+scoreOrNew(x.s,x.c)+'<div class="price">'+(lvOn(x.t)?'<span class="old">'+tl(x.p)+'</span>':(x.old?'<span class="old">'+tl(x.old)+'</span>':''))
   +'<span class="unit">'+(x.u||'kişi başı')+'</span><span class="now">'+tl(lvPrice(x.t,x.p))+'</span>'+mp(lvPrice(x.t,x.p))+'</div></div></div></article>';
