@@ -378,7 +378,8 @@ body.locked{overflow:hidden}
 .pchips::-webkit-scrollbar{display:none}
 .pc{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px 0 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}
 .pc svg{width:15px;height:15px;color:var(--mute)}
-.pc[aria-pressed="true"]{background:#EEF1F8;border-color:var(--navy)}
+.pc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.pc[aria-pressed="true"] svg{color:var(--green)}
 /* Çift dokunma: iOS'un çift dokunmada sayfayı büyütmesini kapatır, iki parmakla
    büyütme (erişilebilirlik) açık kalır. Düğme ve etiketlerde dokununca gri
    parlama ve kelime seçilmesi olmaz; düz metin seçilebilir kalır. */
