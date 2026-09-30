@@ -44,9 +44,9 @@ html.kb .m-bar :focus-visible,html.kb .m-top :focus-visible,html.kb .top :focus-
 .hello span{color:var(--green)}
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
-.tab{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;font-size:14px;font-weight:600;color:var(--navy-ink);white-space:nowrap}
-.tab img{width:28px;height:28px;padding:3px;border-radius:8px;background:rgba(255,255,255,.2);display:block;flex:none;box-sizing:border-box}
-.tab[aria-selected="true"] img{background:var(--soft)}
+.tab{display:flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:999px;font-size:14px;font-weight:600;color:var(--navy-ink);white-space:nowrap}
+.tab svg{width:20px;height:20px;stroke-width:1.7;color:#fff}
+.tab[aria-selected="true"] svg{color:var(--navy)}
 .tab[aria-selected="true"]{background:#fff;color:var(--navy);font-weight:800}
 
 /* arama */
@@ -496,11 +496,11 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
   </div>
   <h1 class="hello">Bir molayı hak ettin.<br><span>Nereye gidiyoruz?</span></h1>
   <div class="tabs" role="tablist" aria-label="Ürün türü">
-    <button class="tab" role="tab" aria-selected="true" data-tab="tur"><img src="m-tur.webp" alt="" width="28" height="28" decoding="async">Turlar</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="otel"><img src="m-otel.webp" alt="" width="28" height="28" decoding="async">Oteller</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="etkinlik"><img src="m-etkinlik.webp" alt="" width="28" height="28" decoding="async">Etkinlikler</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="aktivite"><img src="m-aktivite.webp" alt="" width="28" height="28" decoding="async">Aktiviteler</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="mekan"><img src="m-mekan.webp" alt="" width="28" height="28" decoding="async">Mekânlar</button>
+    <button class="tab" role="tab" aria-selected="true" data-tab="tur"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20h20M4 20l7-13 7 13M11 7V3.5l3 1.2-3 1.3M9 20l2-4 2 4"/><circle cx="19" cy="6" r="1.8"/></svg>Turlar</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="otel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v15M2 9h18a2 2 0 0 1 2 2v9M2 16h20M6.5 9v7"/></svg>Oteller</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="etkinlik"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10 12 4l9 6M5 8.7V20M19 8.7V20M7.5 10.2q4.5 2 9 0"/><circle cx="12" cy="15.3" r="1.7"/><path d="M8.6 20a3.4 3.4 0 0 1 6.8 0"/></svg>Etkinlikler</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="aktivite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6c0 3.4 2.9 5.7 4 8h4c1.1-2.3 4-4.6 4-8a6 6 0 0 0-6-6z"/><path d="M12 3c-1.7 1.8-2.4 3.8-2.4 6 0 2.6 1 5.2 1.4 8M12 3c1.7 1.8 2.4 3.8 2.4 6 0 2.6-1 5.2-1.4 8"/><rect x="10" y="19" width="4" height="2.4" rx=".6"/></svg>Aktiviteler</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="mekan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10l1.6-4h12.8L20 10M4 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0M5 12v8h14v-8M9 20v-5h3v5"/><rect x="14" y="14" width="3" height="2.6" rx=".4"/></svg>Mekânlar</button>
   </div>
 </header>
 
