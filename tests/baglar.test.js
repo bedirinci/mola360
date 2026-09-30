@@ -44,10 +44,11 @@ function bagCalisir(gorece) {
   return !!adres && adres.kind !== 'home';
 }
 
-/* Depodaki butun HTML sayfalari (_backup yedekleri haric). */
+/* Depodaki butun HTML sayfalari (_backup yedekleri haric). v2/ ayri bir
+   site: kendi kurallari ve testleri var (tests/v2.test.js). */
 function htmlSayfalari(dizin = KOK, toplam = []) {
   readdirSync(dizin, { withFileTypes: true }).forEach(giris => {
-    if (giris.name.startsWith('.') || giris.name === 'node_modules' || giris.name === '_backup') return;
+    if (giris.name.startsWith('.') || giris.name === 'node_modules' || giris.name === '_backup' || giris.name === 'v2') return;
     const tam = path.join(dizin, giris.name);
     if (giris.isDirectory()) htmlSayfalari(tam, toplam);
     else if (giris.name.endsWith('.html')) toplam.push(path.relative(KOK, tam));

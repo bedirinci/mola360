@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#152048">
-<title>mola360 — Yeni sürüm önizlemesi</title>
-<meta name="description" content="mola360'ın yeni tasarımının önizlemesi. Klasik site: bedirinci.github.io/mola360">
+<title>mola360 — Keşfet</title>
+<meta name="description" content="Yeni mola360: tur, otel, etkinlik, aktivite ve mekân rezervasyonu. Önizleme.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
 <style>
@@ -22,8 +22,6 @@
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-.pv{background:#0d1533;color:#C7CDE4;font-size:12px;font-weight:600;text-align:center;padding:7px 12px calc(7px);padding-top:calc(7px + env(safe-area-inset-top,0px))}
-.pv a{color:#8CC63F;font-weight:800}
 html{background:#E9ECF3;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font-family:var(--font);color:var(--ink);background:var(--page);max-width:440px;margin:0 auto;min-height:100%;-webkit-font-smoothing:antialiased;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -110,7 +108,7 @@ a{color:inherit;text-decoration:none}
 .heart::after{content:"";position:absolute;inset:-6px;border-radius:50%}
 .heart.pop svg{animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:calc(100% - 32px);max-width:408px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;z-index:20}
+.toast{z-index:60!important;position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:calc(100% - 32px);max-width:408px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;z-index:20}
 .toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
 .toast button{color:var(--green);font-weight:800;min-height:36px;padding:0 4px}
 .score{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700}
@@ -371,7 +369,6 @@ body.locked{overflow:hidden}
 </style>
 </head>
 <body>
-<div class="pv">Yeni mola360 önizlemesi · <a href="../index.html">Klasik siteye dön</a></div>
 
 <header class="top">
   <div class="bar">
@@ -412,33 +409,33 @@ body.locked{overflow:hidden}
   <p class="sub">Vaktine göre seçelim, gerisini biz sıralayalım.</p>
   <div class="time" id="time"></div>
 </section>
-<div class="sec" style="padding-top:18px"><div class="hd"><h2 id="railTitle" style="font-size:17px">Hafta sonuna sığanlar</h2><div class="more-l"><a href="../turlar/" class="all" id="railAll">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div><p class="sub" id="railSub"></p></div>
+<div class="sec" style="padding-top:18px"><div class="hd"><h2 id="railTitle" style="font-size:17px">Hafta sonuna sığanlar</h2><div class="more-l"><a href="#yakinda" class="all">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div><p class="sub" id="railSub"></p></div>
 <div class="rail" id="timeRail"></div>
 
 <section aria-labelledby="h-ev">
-  <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sonu sahnede</h2><a href="../etkinlikler/" class="all">Takvim →</a></div><p class="sub">2 – 4 Ekim · konser, festival, sahne</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sonu sahnede</h2><a href="#yakinda" class="all">Takvim →</a></div><p class="sub">2 – 4 Ekim · konser, festival, sahne</p></div>
   <div class="ev" id="events"></div>
 </section>
 
 <section aria-labelledby="h-vn" id="secVn">
-  <div class="sec"><div class="hd"><h2 id="h-vn">Mekânlarda bir mola</h2><a href="../mekanlar/" class="all">Tümü →</a></div><p class="sub">Randevulu spa, masa ve şezlong rezervasyonu</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-vn">Mekânlarda bir mola</h2><a href="#yakinda" class="all">Tümü →</a></div><p class="sub">Randevulu spa, masa ve şezlong rezervasyonu</p></div>
   <div class="rail" id="venues"></div>
 </section>
 
 <section aria-labelledby="h-ht">
-  <div class="sec"><div class="hd"><h2 id="h-ht">Hafta sonu için oteller</h2><a href="../oteller/" class="all">Tümü →</a></div><p class="sub">2 – 4 Ekim · 2 gece · 2 yetişkin, toplam fiyat</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-ht">Hafta sonu için oteller</h2><a href="#yakinda" class="all">Tümü →</a></div><p class="sub">2 – 4 Ekim · 2 gece · 2 yetişkin, toplam fiyat</p></div>
   <div class="hl" id="hotels"></div>
 </section>
 
 <section aria-labelledby="h-yd">
-  <div class="sec"><div class="hd"><h2 id="h-yd">Yurt dışı</h2><div class="more-l"><a href="../turlar/yurt-disi-turlar/" class="all">Tümü →</a><div class="arrows" data-for="abroad"></div></div></div><p class="sub">Vizesiz kaçamaklardan Avrupa ve uzak rotalara</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-yd">Yurt dışı</h2><div class="more-l"><a href="#yakinda" class="all">Tümü →</a><div class="arrows" data-for="abroad"></div></div></div><p class="sub">Vizesiz kaçamaklardan Avrupa ve uzak rotalara</p></div>
   <div class="fchips" role="group" aria-label="Yurt dışı filtresi"><button class="fc" aria-pressed="true" data-f="all">Tümü</button><button class="fc" aria-pressed="false" data-f="kolay">Kolay vize</button><button class="fc" aria-pressed="false" data-f="avrupa">Avrupa</button><button class="fc" aria-pressed="false" data-f="uzak">Uzak rotalar</button></div>
   <div class="rail" id="abroad"></div>
 </section>
 
 <section aria-labelledby="h-th">
-  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="more-l"><a href="../temalar/" class="all">Tümü →</a><div class="arrows" data-for="themeRail"></div></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
-  <div class="rail themes" id="themeRail"><a href="../temalar/doga-yayla/" class="th" style="background:linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)"><b>Doğa ve yayla</b><span>Tur · Otel · Aktivite</span></a><a href="../temalar/deniz-tekne/" class="th" style="background:linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)"><b>Deniz ve tekne</b><span>Tur · Otel · Aktivite · Mekân</span></a><a href="../temalar/kultur-tarih/" class="th" style="background:linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)"><b>Kültür ve tarih</b><span>Tur · Etkinlik · Aktivite</span></a><a href="../temalar/kis-sporlari/" class="th" style="background:linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)"><b>Kış ve kayak</b><span>Tur · Otel · Aktivite</span></a><a href="../oteller/termal-oteller/" class="th" style="background:linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)"><b>Termal ve spa</b><span>Otel · Mekân</span></a><a href="../temalar/macera-adrenalin/" class="th" style="background:linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)"><b>Macera ve spor</b><span>Aktivite · Etkinlik</span></a><a href="../etkinlikler/" class="th" style="background:linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)"><b>Konser ve festival</b><span>Etkinlik · Mekân</span></a><a href="../etkinlikler/" class="th" style="background:linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)"><b>Sahne ve gösteri</b><span>Etkinlik</span></a><a href="../temalar/gastronomi/" class="th" style="background:linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)"><b>Yeme içme</b><span>Tur · Etkinlik · Mekân</span></a><a href="../temalar/" class="th" style="background:linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)"><b>Balayı</b><span>Tur · Otel · Mekân</span></a><a href="../temalar/" class="th" style="background:linear-gradient(160deg,#F4E3A6,#E0A04A 50%,#4E7A9A)"><b>Ailece</b><span>Tur · Otel · Etkinlik · Aktivite</span></a><a href="../mekanlar/" class="th" style="background:linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)"><b>Gece hayatı</b><span>Etkinlik · Mekân</span></a></div>
+  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="more-l"><a href="#yakinda" class="all">Tümü →</a><div class="arrows" data-for="themeRail"></div></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
+  <div class="rail themes" id="themeRail"><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)"><b>Doğa ve yayla</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)"><b>Deniz ve tekne</b><span>Tur · Otel · Aktivite · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)"><b>Kültür ve tarih</b><span>Tur · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)"><b>Kış ve kayak</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)"><b>Termal ve spa</b><span>Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)"><b>Macera ve spor</b><span>Aktivite · Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)"><b>Konser ve festival</b><span>Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)"><b>Sahne ve gösteri</b><span>Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)"><b>Yeme içme</b><span>Tur · Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)"><b>Balayı</b><span>Tur · Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F4E3A6,#E0A04A 50%,#4E7A9A)"><b>Ailece</b><span>Tur · Otel · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)"><b>Gece hayatı</b><span>Etkinlik · Mekân</span></a></div>
 </section>
 
 <section class="help" aria-labelledby="h-help">
@@ -460,7 +457,7 @@ body.locked{overflow:hidden}
 </section>
 
 <footer class="foot">
-  <a href="../kurumsal/hakkimizda/">Hakkımızda</a> · <a href="../kurumsal/sss/">Sıkça sorulan sorular</a> · <a href="../kurumsal/kvkk/">Gizlilik</a> · <a href="../kurumsal/cerez-politikasi/">Çerezler</a> · <a href="../kurumsal/kullanim-kosullari/">Kullanım koşulları</a><br>© 2026 Mola360. Tüm hakları saklıdır.
+  <a href="#yakinda">Hakkımızda</a> · <a href="#yakinda">Sıkça sorulan sorular</a> · <a href="#yakinda">Gizlilik</a> · <a href="#yakinda">Çerezler</a> · <a href="#yakinda">Kullanım koşulları</a><br>© 2026 Mola360. Tüm hakları saklıdır.
   <br><span class="draft">Tasarım taslağı · veriler örnek katalogdan</span>
   <div class="demo" role="group" aria-label="Taslak görünümü">Görünüm: <button type="button" class="dm" aria-pressed="true" data-v="guest">Misafir</button><button type="button" class="dm" aria-pressed="false" data-v="gezgin">Gezgin</button><button type="button" class="dm" aria-pressed="false" data-v="kasif">Kâşif</button></div>
 </footer>
@@ -468,9 +465,9 @@ body.locked{overflow:hidden}
 <div class="toast" id="toast" role="status" aria-live="polite"><span></span><button type="button"></button></div>
 <nav class="nav" aria-label="Alt menü">
   <a href="./" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Keşfet</a>
-  <a href="../hesabim/?bolum=favorilerim"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" id="favCount" hidden>0</span>Favorilerim</a>
-  <a href="../hesabim/?bolum=rezervasyonlarim"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg><span class="badge" data-member hidden>1</span>Rezervasyonlarım</a>
-  <a href="../hesabim/"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Hesabım</a>
+  <a href="#yakinda"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" id="favCount" hidden>0</span>Favorilerim</a>
+  <a href="#yakinda"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg><span class="badge" data-member hidden>1</span>Rezervasyonlarım</a>
+  <a href="#yakinda"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Hesabım</a>
 </nav>
 
 <div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
@@ -482,37 +479,37 @@ body.locked{overflow:hidden}
     <div class="m-user" data-guest>
       <div class="av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
       <div class="x"><b>Hoş geldin</b><span>İlk rezervasyonda %15 indirim</span></div>
-      <a href="../hesabim/" class="btn">Giriş yap</a>
+      <a href="#yakinda" class="btn">Giriş yap</a>
     </div>
     <div class="m-user" data-member hidden>
       <div class="av ini">AY</div>
       <div class="x"><b>Merhaba, Ayşe</b><span class="lvl"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg><em id="lvlTxt">Kâşif · 1.240 Molapuan</em></span></div>
-      <a href="../hesabim/" class="btn">Hesabım</a>
+      <a href="#yakinda" class="btn">Hesabım</a>
     </div>
 
     <nav class="m-main" aria-label="Ürünler" id="mMain"></nav>
 
     <div class="m-h">NE KADAR VAKTİN VAR?</div>
     <div class="chips">
-      <a href="../aktiviteler/" class="chip">Birkaç saat</a><a href="../turlar/" class="chip">Günübirlik</a><a href="../turlar/" class="chip hot">Hafta sonu</a><a href="../turlar/" class="chip">4 gün +</a>
+      <a href="#yakinda" class="chip">Birkaç saat</a><a href="#yakinda" class="chip">Günübirlik</a><a href="#yakinda" class="chip hot">Hafta sonu</a><a href="#yakinda" class="chip">4 gün +</a>
     </div>
 
     <div class="m-h">TEMALAR</div>
     <p class="m-note">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte listeler.</p>
-    <div class="m-themes"><a href="../temalar/doga-yayla/" class="m-theme"><b>Doğa ve yayla</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="../temalar/deniz-tekne/" class="m-theme"><b>Deniz ve tekne</b><small>Turlar · Oteller · Aktiviteler · Mekânlar</small></a><a href="../temalar/kultur-tarih/" class="m-theme"><b>Kültür ve tarih</b><small>Turlar · Etkinlikler · Aktiviteler</small></a><a href="../temalar/kis-sporlari/" class="m-theme"><b>Kış ve kayak</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="../oteller/termal-oteller/" class="m-theme"><b>Termal ve spa</b><small>Oteller · Mekânlar</small></a><a href="../temalar/macera-adrenalin/" class="m-theme"><b>Macera ve spor</b><small>Aktiviteler · Etkinlikler</small></a><a href="../etkinlikler/" class="m-theme"><b>Konser ve festival</b><small>Etkinlikler · Mekânlar</small></a><a href="../etkinlikler/" class="m-theme"><b>Sahne ve gösteri</b><small>Etkinlikler</small></a><a href="../temalar/gastronomi/" class="m-theme"><b>Yeme içme</b><small>Turlar · Etkinlikler · Mekânlar</small></a><a href="../temalar/" class="m-theme"><b>Balayı</b><small>Turlar · Oteller · Mekânlar</small></a><a href="../temalar/" class="m-theme"><b>Ailece</b><small>Turlar · Oteller · Etkinlikler · Aktiviteler</small></a><a href="../mekanlar/" class="m-theme"><b>Gece hayatı</b><small>Etkinlikler · Mekânlar</small></a></div>
+    <div class="m-themes"><a href="#yakinda" class="m-theme"><b>Doğa ve yayla</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="#yakinda" class="m-theme"><b>Deniz ve tekne</b><small>Turlar · Oteller · Aktiviteler · Mekânlar</small></a><a href="#yakinda" class="m-theme"><b>Kültür ve tarih</b><small>Turlar · Etkinlikler · Aktiviteler</small></a><a href="#yakinda" class="m-theme"><b>Kış ve kayak</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="#yakinda" class="m-theme"><b>Termal ve spa</b><small>Oteller · Mekânlar</small></a><a href="#yakinda" class="m-theme"><b>Macera ve spor</b><small>Aktiviteler · Etkinlikler</small></a><a href="#yakinda" class="m-theme"><b>Konser ve festival</b><small>Etkinlikler · Mekânlar</small></a><a href="#yakinda" class="m-theme"><b>Sahne ve gösteri</b><small>Etkinlikler</small></a><a href="#yakinda" class="m-theme"><b>Yeme içme</b><small>Turlar · Etkinlikler · Mekânlar</small></a><a href="#yakinda" class="m-theme"><b>Balayı</b><small>Turlar · Oteller · Mekânlar</small></a><a href="#yakinda" class="m-theme"><b>Ailece</b><small>Turlar · Oteller · Etkinlikler · Aktiviteler</small></a><a href="#yakinda" class="m-theme"><b>Gece hayatı</b><small>Etkinlikler · Mekânlar</small></a></div>
 
     <div class="m-h">BÖLGELER</div>
     <p class="m-note">Seçtiğin yerdeki turlar, oteller, etkinlikler, aktiviteler ve mekânlar birlikte gelir.</p>
-    <div class="chips"><a href="../turlar/?bolge=marmara" class="chip">Marmara</a><a href="../turlar/?bolge=ege" class="chip">Ege</a><a href="../turlar/?bolge=akdeniz" class="chip">Akdeniz</a><a href="../turlar/?bolge=karadeniz" class="chip">Karadeniz</a><a href="../turlar/?bolge=ic-anadolu" class="chip">İç Anadolu</a><a href="../turlar/?bolge=dogu-anadolu" class="chip">Doğu Anadolu</a><a href="../turlar/?bolge=guneydogu-anadolu" class="chip">Güneydoğu</a><a href="../turlar/yurt-disi-turlar/" class="chip">Yurt dışı</a></div>
+    <div class="chips"><a href="#yakinda" class="chip">Marmara</a><a href="#yakinda" class="chip">Ege</a><a href="#yakinda" class="chip">Akdeniz</a><a href="#yakinda" class="chip">Karadeniz</a><a href="#yakinda" class="chip">İç Anadolu</a><a href="#yakinda" class="chip">Doğu Anadolu</a><a href="#yakinda" class="chip">Güneydoğu</a><a href="#yakinda" class="chip">Yurt dışı</a></div>
     <div class="m-sub">Şehirler</div>
-    <div class="chips"><a href="../turlar/?sehir=istanbul" class="chip line">İstanbul</a><a href="../turlar/?sehir=izmir" class="chip line">İzmir</a><a href="../turlar/?sehir=antalya" class="chip line">Antalya</a><a href="../turlar/?sehir=ankara" class="chip line">Ankara</a><a href="../turlar/?sehir=mugla" class="chip line">Muğla</a><a href="../turlar/?sehir=nevsehir" class="chip line">Nevşehir</a><a href="../turlar/?sehir=bursa" class="chip line">Bursa</a></div>
+    <div class="chips"><a href="#yakinda" class="chip line">İstanbul</a><a href="#yakinda" class="chip line">İzmir</a><a href="#yakinda" class="chip line">Antalya</a><a href="#yakinda" class="chip line">Ankara</a><a href="#yakinda" class="chip line">Muğla</a><a href="#yakinda" class="chip line">Nevşehir</a><a href="#yakinda" class="chip line">Bursa</a></div>
 
     <div class="m-h">HESABIM</div>
     <div class="m-grid">
-      <a href="../hesabim/?bolum=rezervasyonlarim" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım<small>Karekodlu biletler</small></a>
-      <a href="../hesabim/?bolum=favorilerim" class="m-tile"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Favorilerim<small>Kaydettiklerin</small></a>
-      <a href="../hesabim/?bolum=kuponlarim" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım<small>Molapuan ve kodlar</small></a>
-      <a href="../hesabim/" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Rezervasyonumu bul<small>Kod ve e-postayla</small></a>
+      <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım<small>Karekodlu biletler</small></a>
+      <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Favorilerim<small>Kaydettiklerin</small></a>
+      <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım<small>Molapuan ve kodlar</small></a>
+      <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Rezervasyonumu bul<small>Kod ve e-postayla</small></a>
     </div>
 
     <div class="m-h">YARDIM</div>
@@ -521,7 +518,7 @@ body.locked{overflow:hidden}
       <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="btn wa">WhatsApp<em class="wa-dot" data-live-dot aria-hidden="true"></em></a>
     </div>
     <div class="chips">
-      <a href="../kurumsal/yardim/" class="chip">Yardım merkezi</a><a href="../kurumsal/sss/" class="chip">Sıkça sorulan sorular</a><a href="../kurumsal/iptal-iade/" class="chip">İptal ve iade</a>
+      <a href="#yakinda" class="chip">Yardım merkezi</a><a href="#yakinda" class="chip">Sıkça sorulan sorular</a><a href="#yakinda" class="chip">İptal ve iade</a>
     </div>
 
     <div class="m-foot">
@@ -602,9 +599,8 @@ const lvb=(t,cls)=>LV.has(t)?'<button type="button" class="lvb'+(cls?' '+cls:'')
 const FAV=new Set((()=>{try{return JSON.parse(localStorage.getItem('m360-fav')||'[]')}catch(e){return []}})());
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 const heartBtn=t=>{const on=FAV.has(t);return '<button class="heart" type="button" data-fav="'+esc(t)+'" aria-pressed="'+on+'" aria-label="'+esc(t)+(on?' favorilerden çıkar':' favorilere ekle')+'">'+I.heart+'</button>'};
-/* Kartlar klasik sitenin sayfalarına bağlı; sayfası olmayan örnek yurt dışı turları kategori listesine gider. */
-const HREF={"Kapadokya Turu": "../tur/kapadokya-3-gece/", "Efes ve Şirince Turu": "../tur/efes-sirince/", "Sapanca ve Maşukiye Turu": "../tur/sapanca-masukiye/", "Pamukkale ve Hierapolis": "../tur/pamukkale-hierapolis/", "Ege Adaları Balayı Kaçamağı": "../tur/ege-adalari-balayi/", "Karadeniz Yaylaları Turu": "../tur/karadeniz-yaylalari/", "Turistik Doğu Ekspresi": "../tur/dogu-ekspresi/", "Erciyes Kayak Haftası": "../tur/erciyes-kayak-haftasi/", "Göreme Mağara Otel": "../otel/goreme-magara-otel/", "Sealight Resort": "../otel/sealight-resort/", "Kordon Butik Otel": "../otel/kordon-butik-otel/", "Termal Vadi Resort": "../otel/termal-vadi-resort/", "İstanbul Boğaz Turu": "../aktivite/istanbul-bogaz-turu/", "Ölüdeniz Yamaç Paraşütü": "../aktivite/oludeniz-yamac-parasutu/", "Uludağ Kayak Dersi": "../aktivite/uludag-kayak-dersi/", "Köprülü Kanyon Rafting": "../aktivite/koprulu-kanyon-rafting/", "Bodrum Tekne Turu": "../aktivite/bodrum-tekne-turu/", "Harbiye Açıkhava Konserleri": "../etkinlik/harbiye-acikhava-konserleri/", "Aspendos Opera ve Bale Festivali": "../etkinlik/aspendos-opera-bale-festivali/", "Kordon Caz Akşamları": "../etkinlik/kordon-caz-aksamlari/", "İstanbul Kahve Festivali": "../etkinlik/istanbul-kahve-festivali/", "Stand Up Gecesi": "../etkinlik/stand-up-gecesi/", "Çeşme Yaz Festivali": "../etkinlik/cesme-yaz-festivali/", "Kordon Spa & Masaj": "../mekan/kordon-spa-masaj/", "Kum Beach Club": "../mekan/kum-beach-club/", "Midilli Adası Kaçamağı": "../turlar/yunan-adalari-turlari/", "Batum ve Acara Turu": "../turlar/yurt-disi-turlar/", "Balkanlar: Saraybosna ve Mostar": "../turlar/balkan-turlari/", "Dubai Turu": "../turlar/dubai-turlari/", "İtalya: Roma, Floransa ve Venedik": "../turlar/italya-turlari/", "İspanya: Barselona ve Madrid": "../turlar/ispanya-turlari/", "Fransa: Paris ve Loire Şatoları": "../turlar/fransa-turlari/"};
-const ttl=t=>'<a class="lk" href='+JSON.stringify(HREF[t]||'../turlar/')+'>'+t+'</a>';
+/* Ürün sayfaları yeni sitede henüz yok; kart dokununca "hazırlanıyor" bildirimi çıkar. */
+const ttl=t=>'<a class="lk" href="#yakinda">'+t+'</a>';
 const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
 
 /* Tek kart düzeni: görsel (tür + favori) · başlık · konum · bilgi satırı · alt satırda puan solda, fiyat sağda */
@@ -636,7 +632,7 @@ const tEl=document.getElementById('time'),rail=document.getElementById('timeRail
 tEl.innerHTML=BUCKETS.map(b=>{const n=ITEMS.filter(x=>x.b===b[0]).length;return '<button class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="n">'+b[1]+'</span><span class="l">'+b[2]+'</span><span class="c">'+n+' seçenek</span></button>'}).join('');
 let shown=new Set();
 let curB='hs',curF='all';
-function pick(b){curB=b;const ra=document.getElementById('railAll');if(ra)ra.href=b==='saat'?'../aktiviteler/':'../turlar/';
+function pick(b){curB=b;
   tEl.querySelectorAll('.tt').forEach(e=>e.setAttribute('aria-pressed',e.dataset.b===b));
   rt.textContent=BUCKETS.find(x=>x[0]===b)[3];
   const list=ITEMS.filter(x=>x.b===b);
@@ -682,6 +678,10 @@ const ABF={all:()=>true,kolay:x=>!x.visaReq,avrupa:x=>x.reg==='avrupa',uzak:x=>x
 function renderAbroad(f){curF=f;ab.innerHTML=ABO.map(t=>ITEMS.find(x=>x.t===t)).filter(ABF[f]).map(card).join('');fitFacts(ab);ab.scrollLeft=0;ab.dispatchEvent(new Event('scroll'))}
 document.querySelector('.fchips').addEventListener('click',e=>{const b=e.target.closest('.fc');if(!b)return;document.querySelectorAll('.fc').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAbroad(b.dataset.f)});
 renderAbroad('all');
+
+/* Yeni sitede henüz yapılmamış sayfalar */
+document.addEventListener('click',e=>{const a=e.target.closest('a[href="#yakinda"]');if(!a)return;e.preventDefault();
+  toast('Bu sayfa yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},4000)});
 
 /* taslak: misafir / üye görünümü */
 document.querySelector('.demo').addEventListener('click',e=>{const b=e.target.closest('.dm');if(!b)return;LEVEL=b.dataset.v;const m=LEVEL!=='guest';
@@ -740,8 +740,7 @@ document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.cl
 const M=[['Turlar','<path d="M3 20h18M6 20l6-14 6 14"/>','Günübirlik, hafta sonu, uzun'],['Oteller','<path d="M3 18V8h18v10M3 14h18M7 11h3"/>','Butik, termal, resort'],
  ['Etkinlikler','<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/>','Konser, festival, sahne'],['Aktiviteler','<path d="M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6z"/>','Rafting, paraşüt, tekne'],
  ['Mekânlar','<path d="M5 21V10l7-6 7 6v11M9 21v-6h6v6"/>','Spa, beach club'],['Fırsatlar','<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/>','Kampanyalar']];
-const MH={'Turlar':'../turlar/','Oteller':'../oteller/','Etkinlikler':'../etkinlikler/','Aktiviteler':'../aktiviteler/','Mekânlar':'../mekanlar/','Fırsatlar':'../firsatlar/'};
-document.getElementById('mMain').innerHTML=M.map(m=>'<a href='+JSON.stringify(MH[m[0]])+' class="m-link"><span class="ico"><svg viewBox="0 0 24 24">'+m[1]+'</svg></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
+document.getElementById('mMain').innerHTML=M.map(m=>'<a href="#yakinda" class="m-link"><span class="ico"><svg viewBox="0 0 24 24">'+m[1]+'</svg></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
 const menu=document.getElementById('menu'),btn=document.getElementById('menuBtn');
 const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.tagName!=='SCRIPT');
 function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);setTimeout(()=>document.getElementById('menuClose').focus(),50)}
