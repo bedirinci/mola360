@@ -293,6 +293,29 @@ html.kb .cd:has(.lk:focus-visible),html.kb .tk:has(.lk:focus-visible),html.kb .h
 .call input,.call select{font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .call .btn{justify-content:center;margin-top:8px;background:var(--green);color:var(--navy)}
 .call-note{font-size:11.5px!important}
+.call input{font-feature-settings:"calt" 0,"liga" 0}
+.call input::placeholder{font-feature-settings:"calt" 0,"liga" 0;color:#8A91A3}
+.pick{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.pick svg{width:18px;height:18px;color:var(--mute)}
+.pick[aria-expanded="true"]{border-color:var(--navy)}
+/* alttan çekmece */
+.sh-bg{position:fixed;inset:0;z-index:60;background:rgba(12,18,40,.32);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
+.sh-bg.open{opacity:1;visibility:visible;transition:opacity .24s ease}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:440px;margin:0 auto;background:var(--card);color:var(--ink);border-radius:22px 22px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(12,18,40,.18);transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s;touch-action:none;overscroll-behavior:contain}
+.sheet.open{transform:translateY(0);visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sheet.drag{transition:none}
+.sh-grab{width:40px;height:5px;border-radius:3px;background:#D5D9E2;margin:0 auto 6px}
+.sh-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.sh-hd h3{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.sh-x{width:36px;height:36px;border-radius:50%;background:var(--soft,#F1F3F7);display:grid;place-items:center;flex:none}
+.sh-x svg{width:18px;height:18px}
+.sh-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:16px;font-weight:600;text-align:left;color:var(--ink)}
+.opt small{display:block;font-size:13px;font-weight:500;color:var(--mute)}
+.opt i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.opt[aria-checked="true"]{border-color:var(--navy);background:#F4F6FB}
+.opt[aria-checked="true"] i{border-color:var(--navy);background:var(--navy)}
+.opt[aria-checked="true"] i::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
 .call-ok{background:var(--green-soft);color:var(--green-ink)!important;font-weight:700;border-radius:12px;padding:12px}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:12px;font-weight:800;font-size:14px;background:var(--navy);color:#fff}
 .btn.ghost{background:var(--card);color:var(--navy);box-shadow:inset 0 0 0 1px var(--line)}
@@ -380,7 +403,7 @@ body.locked{overflow:hidden}
    parlama ve kelime seçilmesi olmaz; düz metin seçilebilir kalır. */
 html{touch-action:manipulation}
 a,button,select,input,label,.cd,.tk,.hc,.th,.tt,.tr,.chip,.fc,.tab,.nav a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-button,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,.tag,.type,.score,.pill,.visa,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button,.opt,.pick,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,.tag,.type,.score,.pill,.visa,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nw{white-space:nowrap}
 .help p{text-wrap:pretty}
 .help .tel{color:var(--ink);font-weight:800;font-size:16px;letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -403,7 +426,7 @@ button,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,
 .m-link b{font-size:clamp(17px,5.4vw,21px);min-width:0}
 @media (max-width:359px){.m-link em{display:none}.m-user{flex-wrap:wrap}.m-user .btn{width:100%;justify-content:center}}
 .err{font-size:12px;font-weight:700;color:#B42318;margin-top:2px}
-.call input:focus,.call select:focus{border-color:var(--navy)}
+.call input:focus,.call .pick:focus{border-color:var(--navy)}
 .call input[aria-invalid="true"]{border-color:#B42318;box-shadow:0 0 0 3px rgba(180,35,24,.12)}
 /* Okunabilirlik: gövde metni 1.5 satır aralığı; başlıklarda sıkı ama Türkçe
    şapka/nokta işaretleri çakışmayacak kadar; küçük metinlerde hafif açık harf
@@ -535,8 +558,9 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
   <form class="call" id="callForm" hidden novalidate>
     <label for="cName">Adın</label><input id="cName" autocomplete="given-name" placeholder="Örn. Ayşe" required>
     <label for="cTel">Telefon numaran</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required aria-describedby="telErr"><p class="err" id="telErr" hidden>Cep telefonunu 05 ile başlayan 11 hane olarak yaz, örneğin 0532 123 45 67.</p>
-    <label for="cWhen">Ne zaman arayalım?</label>
-    <select id="cWhen"></select>
+    <label for="cWhenBtn" id="cWhenLbl">Ne zaman arayalım?</label>
+    <button type="button" class="pick" id="cWhenBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="whenSheet"><span id="cWhenTxt">Hemen</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+    <input type="hidden" id="cWhen" value="Hemen">
     <button class="btn" type="submit">Aranma talebi gönder</button>
     <p class="call-note">Taslakta talep gönderilmiyor; gerçek sitede uzmanımız seçtiğin saatte arar.</p>
   </form>
@@ -556,6 +580,13 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
   <a href="#yakinda"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg><span class="badge" data-member hidden>1</span>Rezervasyonlarım</a>
   <a href="#yakinda"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Hesabım</a>
 </nav>
+
+<div class="sh-bg" id="whenBg" aria-hidden="true"></div>
+<div class="sheet" id="whenSheet" role="dialog" aria-modal="true" aria-labelledby="whenTtl">
+  <div class="sh-grab" aria-hidden="true"></div>
+  <div class="sh-hd"><h3 id="whenTtl">Ne zaman arayalım?</h3><button type="button" class="sh-x" id="whenX" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sh-list" id="whenList" role="radiogroup" aria-labelledby="whenTtl"></div>
+</div>
 
 <div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
   <div class="m-bar">
@@ -907,13 +938,33 @@ function liveNow(){
   document.querySelectorAll('[data-live-dot]').forEach(x=>x.classList.toggle('off',!on));
   const sel=document.getElementById('cWhen'),prev=sel.value;
   const opts=on?['Hemen'].concat(h<18?['Bugün akşam (18:00 – 21:00)']:[] ,['Yarın öğlen (12:00 – 14:00)']):['Yarın sabah (09:00 – 12:00)','Yarın öğlen (12:00 – 14:00)','Yarın akşam (18:00 – 21:00)'];
-  sel.innerHTML=opts.map(o=>'<option>'+o+'</option>').join('');if(opts.includes(prev))sel.value=prev;
+  const v=opts.includes(prev)?prev:opts[0];sel.value=v;document.getElementById('cWhenTxt').textContent=v;
+  document.getElementById('whenList').innerHTML=opts.map(o=>{const m=o.match(/^(.*?) \((.*)\)$/);return '<button type="button" class="opt" role="radio" aria-checked="'+(o===v)+'" data-v="'+o+'"><span>'+(m?m[1]+'<small>'+m[2]+'</small>':o+'<small>Birkaç dakika içinde</small>')+'</span><i aria-hidden="true"></i></button>'}).join('');
 }
 liveNow();setInterval(liveNow,60000);
 
 /* beni ara */
 const cb=document.getElementById('callBtn'),cf=document.getElementById('callForm'),ok=document.getElementById('callOk');
 cb.addEventListener('click',()=>{const o=cf.hidden;cf.hidden=!o;ok.hidden=true;cb.setAttribute('aria-expanded',o);if(o)document.getElementById('cName').focus()});
+/* ne zaman arayalım: alttan çekmece */
+const wb=document.getElementById('cWhenBtn'),sh=document.getElementById('whenSheet'),bg=document.getElementById('whenBg');
+const shBehind=()=>[...document.body.children].filter(el=>el!==sh&&el!==bg&&el.tagName!=='SCRIPT');
+function openSh(){bg.classList.add('open');sh.classList.add('open');document.body.classList.add('locked');wb.setAttribute('aria-expanded','true');shBehind().forEach(el=>el.inert=true);
+  setTimeout(()=>(sh.querySelector('.opt[aria-checked="true"]')||document.getElementById('whenX')).focus({preventScroll:true}),60)}
+function closeSh(){if(!sh.classList.contains('open'))return;sh.style.transform='';bg.style.opacity='';bg.classList.remove('open');sh.classList.remove('open');document.body.classList.remove('locked');wb.setAttribute('aria-expanded','false');shBehind().forEach(el=>el.inert=false);wb.focus({preventScroll:true})}
+wb.addEventListener('click',openSh);bg.addEventListener('click',closeSh);document.getElementById('whenX').addEventListener('click',closeSh);
+document.getElementById('whenList').addEventListener('click',e=>{const o=e.target.closest('.opt');if(!o)return;
+  sh.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-checked',x===o));
+  document.getElementById('cWhen').value=o.dataset.v;document.getElementById('cWhenTxt').textContent=o.dataset.v;setTimeout(closeSh,140)});
+sh.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSh();return}
+  if(e.key==='Tab'){const f=[...sh.querySelectorAll('button')],a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
+/* aşağı kaydırınca kapanır */
+let y0=null,dy=0,t0=0;
+sh.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;t0=Date.now();sh.classList.add('drag')},{passive:true});
+sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>0)e.preventDefault();sh.style.transform='translateY('+dy+'px)';bg.style.opacity=String(Math.max(0,1-dy/sh.offsetHeight))},{passive:false});
+sh.addEventListener('touchend',()=>{if(y0==null)return;sh.classList.remove('drag');const v=dy/Math.max(1,Date.now()-t0);y0=null;
+  if(dy>sh.offsetHeight*.3||(dy>30&&v>.5))closeSh();else{sh.style.transform='';bg.style.opacity=''}});
+sh.addEventListener('touchcancel',()=>{y0=null;sh.classList.remove('drag');sh.style.transform='';bg.style.opacity=''});
 const tel=document.getElementById('cTel'),telErr=document.getElementById('telErr');
 const telOk=v=>{const d=v.replace(/\D/g,'').replace(/^90/,'').replace(/^(?=5)/,'0');return /^05\d{9}$/.test(d)};
 tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true'&&telOk(tel.value)){tel.removeAttribute('aria-invalid');telErr.hidden=true}});
