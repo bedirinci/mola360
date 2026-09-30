@@ -15,6 +15,7 @@ Gezi, etkinlik ve konaklama rezervasyon platformu. Frontend + backend + admin pa
 - `docs/icerik-katalogu.md` — içerik kayıtlarının anasayfaya akışı
 - `docs/seo-arastirma.md` — SEO kararları
 - `docs/gorsel-kaynaklari.md` — görsel kaynakları
+- `docs/yeni-surum.md` — yeni tasarımın önizlemesi (`/v2/`)
 
 ## Yerelde çalıştırma
 

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#152048">
+<title>mola360 — Yeni sürüm önizlemesi</title>
+<meta name="description" content="mola360'ın yeni tasarımının önizlemesi. Klasik site: bedirinci.github.io/mola360">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+<style>
+/* Tek sütun telefon düzeni: lacivert bant + yüzen arama kartı, altında yatay raylar; masaüstünde 440px ortalı sütun */
+:root{
+  --navy:#152048; --navy-2:#223066; --navy-ink:#C7CDE4;
+  --green:#8CC63F; --green-ink:#3F6512; --green-soft:#EEF6E2;
+  --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
+  --gold:#C98A00;
+  --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --r-card:18px; --r-sm:10px;
+  --shadow:0 1px 2px rgba(20,26,46,.06),0 8px 22px rgba(20,26,46,.08);
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+.pv{background:#0d1533;color:#C7CDE4;font-size:12px;font-weight:600;text-align:center;padding:7px 12px calc(7px);padding-top:calc(7px + env(safe-area-inset-top,0px))}
+.pv a{color:#8CC63F;font-weight:800}
+html{background:#E9ECF3;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--page);max-width:440px;margin:0 auto;min-height:100%;-webkit-font-smoothing:antialiased;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:8px}
+
+/* üst bant */
+.top{background:var(--navy);color:#fff;padding:10px 16px 60px;border-radius:0 0 24px 24px}
+.bar{display:flex;align-items:center;justify-content:space-between;height:44px}
+.logo{font-weight:800;font-size:25px;letter-spacing:-.8px;font-style:italic}
+.logo b{color:var(--green);font-style:normal;font-size:19px;letter-spacing:-.4px}
+.bar-i{display:flex;gap:4px}
+.ib{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative}
+.ib svg{width:23px;height:23px}
+.ib .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--navy)}
+.hello{margin:12px 0 14px;font-size:25px;line-height:1.18;font-weight:800;letter-spacing:-.6px;text-wrap:balance}
+.hello span{color:var(--green)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;font-size:14px;font-weight:600;color:var(--navy-ink);white-space:nowrap}
+.tab svg{width:17px;height:17px}
+.tab[aria-selected="true"]{background:#fff;color:var(--navy);font-weight:800}
+
+/* arama */
+.search{margin:-46px 16px 0;background:var(--card);border-radius:18px;box-shadow:0 12px 32px rgba(21,32,72,.18);padding:6px;position:relative}
+.fld{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;text-align:left;width:100%}
+.fld svg{width:21px;height:21px;color:var(--navy)}
+.fld small{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;color:var(--mute)}
+.fld span{display:block;font-size:15.5px;font-weight:600;margin-top:1px}
+.fld span.hint{color:var(--mute);font-weight:500}
+.split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.split .fld+.fld{border-left:1px solid var(--line);border-radius:0 12px 12px 0}
+.go{display:block;width:100%;margin-top:6px;background:var(--green);color:var(--navy);border-radius:12px;font-weight:800;font-size:16.5px;padding:14px}
+
+.trust{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding-inline:16px;padding:14px 16px 2px;margin:0}
+.trust::-webkit-scrollbar{display:none}
+.tr{flex:none;display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:14px;background:var(--soft);text-align:left;scroll-snap-align:start;border:1px solid transparent}
+.tr[aria-expanded="true"]{background:var(--card);border-color:var(--navy)}
+.ti{width:34px;height:34px;border-radius:50%;background:var(--green-soft);color:var(--green-ink);display:grid;place-items:center;flex:none}
+.ti svg{width:18px;height:18px;stroke-width:2}
+.ti.lira{font-size:19px;font-weight:800;line-height:1}
+.tx{display:flex;flex-direction:column;line-height:1.25}
+.tr b{font-size:13.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap}
+.tr small{font-size:11.5px;color:var(--mute);font-weight:600;white-space:nowrap}
+.trust-info{margin:8px 16px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--ink)}
+.trust-info b{display:block;font-size:14px;margin-bottom:2px}
+.trust-info span{color:var(--mute)}
+.promise{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 0;font-size:12.5px;font-weight:600;color:var(--mute);white-space:nowrap}
+.promise::-webkit-scrollbar{display:none}
+.promise span{display:flex;align-items:center;gap:5px}
+.promise svg{width:15px;height:15px;color:var(--green-ink);stroke-width:2.4}
+
+/* bölüm */
+.sec{padding:30px 16px 0}
+.hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.hd h2{font-size:20px;font-weight:800;letter-spacing:-.4px;text-wrap:balance}
+.hd a{font-size:13.5px;font-weight:700;color:var(--green-ink);white-space:nowrap}
+.sub{font-size:13.5px;color:var(--mute);margin-top:3px}
+
+/* ne kadar molan var */
+.time{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.tt{background:var(--soft);border-radius:14px;padding:12px 4px 11px;text-align:center;transition:background .2s,color .2s}
+.tt .n svg{width:21px;height:21px;margin:1px auto 2px;display:block;stroke-width:2.2}
+.tt .n{font-size:19px;font-weight:800;letter-spacing:-.4px;display:block}
+.tt .l{font-size:11.5px;color:var(--mute);font-weight:600;display:block}
+.tt .c{font-size:11px;font-weight:800;color:var(--green-ink);display:block;margin-top:6px;font-variant-numeric:tabular-nums}
+.tt[aria-pressed="true"]{background:var(--navy);color:#fff}
+.tt[aria-pressed="true"] .l{color:var(--navy-ink)}
+.tt[aria-pressed="true"] .c{color:var(--green)}
+
+.rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none;padding:14px 16px 8px}
+.rail::-webkit-scrollbar{display:none}
+.rail>*{scroll-snap-align:start}
+
+/* görsel yer tutucu */
+.ph{position:relative;background:var(--g,linear-gradient(160deg,#E4C49A,#B47A4E 50%,#56698F))}
+.ph::before{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(0deg,rgba(10,14,30,.18),transparent)}
+.heart{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;color:var(--ink)}
+.heart svg{width:17px;height:17px}
+.heart[aria-pressed="true"] svg{fill:#E0464B;stroke:#E0464B}
+.heart{z-index:2;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+.heart:active{transform:scale(.9)}
+.heart::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.heart.pop svg{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:calc(100% - 32px);max-width:408px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;z-index:20}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
+.toast button{color:var(--green);font-weight:800;min-height:36px;padding:0 4px}
+.score{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700}
+.score b{background:var(--navy);color:#fff;border-radius:7px 7px 7px 2px;padding:3px 6px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.score i{font-style:normal;font-weight:500;color:var(--mute)}
+.meta{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--mute);margin-top:4px;min-width:0}
+.meta svg{width:14px;height:14px}
+.meta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* tur kartı */
+.tc{width:280px;flex:none;border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tc .ph{height:168px}
+.tags{position:absolute;left:10px;top:10px;display:flex;gap:6px}
+.tag{background:rgba(255,255,255,.95);font-size:11.5px;font-weight:800;padding:5px 8px;border-radius:8px;color:var(--ink)}
+.tc .score{position:absolute;left:10px;bottom:-14px;background:var(--card);border-radius:10px;padding:4px 9px 4px 4px;box-shadow:0 2px 10px rgba(0,0,0,.14)}
+.bd{padding:24px 14px 14px;display:flex;flex-direction:column;flex:1}
+.bd h3{font-size:16px;font-weight:800;letter-spacing:-.2px;line-height:1.25}
+.dep{margin-top:12px}
+.lbl{font-size:10.5px;font-weight:800;letter-spacing:.7px;color:var(--mute)}
+.dates{display:flex;gap:6px;margin-top:6px}
+.d{border:1px solid var(--line);border-radius:9px;padding:5px 9px;text-align:center;font-size:10.5px;font-weight:600;color:var(--mute);line-height:1.25}
+.d b{display:block;font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.d.first{border-color:var(--navy);background:#EEF1F8}
+.d.more{display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--navy)}
+.pr{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line)}
+.dep+.pr{margin-top:12px}
+.old{font-size:12px;color:var(--mute);text-decoration:line-through}
+.now{font-size:21px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.now small{font-size:12px;font-weight:600;color:var(--mute);letter-spacing:0}
+.pay{text-align:right;font-size:11.5px;font-weight:800;color:var(--green-ink);line-height:1.35}
+.pay span{display:block;font-weight:500;color:var(--mute)}
+
+/* aktivite kartı (dikey, kısa) */
+.ac{width:200px;flex:none;border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.ac .ph{height:132px}
+.dur{position:absolute;left:10px;bottom:10px;display:flex;align-items:center;gap:5px;background:var(--navy);color:#fff;font-size:12px;font-weight:800;padding:5px 9px;border-radius:999px;z-index:1}
+.dur svg{width:13px;height:13px;color:var(--green);stroke-width:2.4}
+.ac .bd{padding:12px 12px 14px}
+.ac h3{font-size:14.5px}
+.ac .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.ac .now{font-size:17px}
+
+/* kaydırma */
+.rail{cursor:grab;touch-action:pan-x pan-y;overscroll-behavior-x:contain}
+.rail.drag{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.rail.drag *{pointer-events:none}
+.arrows{display:flex;gap:6px;flex:none}
+.arr{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--navy)}
+.arr svg{width:16px;height:16px;stroke-width:2.4}
+.arr:disabled{opacity:.35;cursor:default}
+.prog{height:3px;border-radius:3px;background:var(--line);margin:4px 16px 0;overflow:hidden}
+.prog i{display:block;height:100%;border-radius:3px;background:var(--navy);width:30%;transform-origin:left;transition:transform .15s}
+.type{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.95);color:var(--ink);font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:4px 7px;border-radius:7px;text-transform:uppercase}
+.ac .pl{font-size:10.5px;color:var(--mute);text-align:right;line-height:1.2}
+.ac .pl b{display:block;font-size:17px;color:var(--ink);letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+/* mekân kartı */
+.vl{display:flex;flex-direction:column;gap:12px;padding:14px 16px 0}
+.vc{border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.vc .ph{height:120px}
+.vc .bd{padding:12px 14px 14px}
+.vc .opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.vc .opt{border:1px solid var(--line);border-radius:10px;padding:6px 9px;font-size:11.5px;color:var(--mute);line-height:1.3}
+.vc .opt b{display:block;color:var(--ink);font-size:13px;font-variant-numeric:tabular-nums}
+.vc .foot2{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.vc .mode{font-size:12px;font-weight:800;color:var(--green-ink);display:flex;align-items:center;gap:5px}
+.vc .mode svg{width:15px;height:15px}
+/* ortak kart */
+.rail .cd{width:260px;flex:none;border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.cd .ph{height:150px}
+.cd .bd{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
+.cd h3{font-size:15.5px;font-weight:800;line-height:1.25;letter-spacing:-.2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cd .info{font-size:12px;font-weight:700;color:var(--navy);margin-top:4px}
+.cd .dep{margin:10px 0 12px}
+.cd .dates{min-height:42px;align-items:stretch}
+.cd .dates{overflow:hidden;flex-wrap:nowrap}
+.cd .d{white-space:nowrap;flex:none}
+.cd .f{white-space:nowrap;flex:none;display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:12px;font-weight:700;color:var(--ink);line-height:1.25}
+.cd .pr{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line)}
+.price{display:flex;flex-direction:column;align-items:flex-end;text-align:right;line-height:1.2}
+.price .unit{font-size:11px;color:var(--mute);font-weight:600}
+.price .now{font-size:19px}
+.price .pay{font-size:11px;font-weight:800;color:var(--green-ink);margin-top:2px}
+.cd .svc{text-align:left;padding:5px 10px}
+.cd .svc b{font-size:13px}
+.cd .mode{font-size:12px;font-weight:800;color:var(--green-ink);display:flex;align-items:center;gap:5px}
+.cd .mode svg{width:15px;height:15px}
+.cd .info{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.visa{background:var(--green-soft);color:var(--green-ink);font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px}
+.visa.req{background:#FFF1D6;color:#7A4A00}
+.fchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px 0}
+.fchips::-webkit-scrollbar{display:none}
+.fc{flex:none;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink);background:var(--card)}
+.fc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.mp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--green-ink);margin-top:3px;white-space:nowrap}
+.mp svg{width:12px;height:12px;fill:currentColor;stroke:none}
+.lvb{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:5px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px}
+.lvb svg{width:12px;height:12px;fill:var(--green);stroke:none}
+.lvb.in{position:relative;left:auto;bottom:auto;align-self:flex-start;margin-top:6px}
+.lvb::after{content:"";position:absolute;inset:-8px -4px}
+.lvb{cursor:pointer;z-index:2;max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc s,.tot s{color:var(--mute);font-weight:600;font-size:11px}
+.tot s{display:block}
+.toast span{font-weight:600;line-height:1.4}
+#lvlTxt{font-style:normal}
+.tot .mp{justify-content:flex-end}
+.cd,.tk,.hc{position:relative}
+.lk{color:inherit;text-decoration:none}
+.lk::after{content:"";position:absolute;inset:0;z-index:1}
+.lk:focus-visible{outline:none}
+.cd:has(.lk:focus-visible),.tk:has(.lk:focus-visible),.hc:has(.lk:focus-visible){outline:3px solid var(--green);outline-offset:2px}
+.dates,.opts{position:relative;z-index:0}
+.score.new b{background:var(--green-soft);color:var(--green-ink)}
+/* etkinlik bileti */
+.ev{display:flex;flex-direction:column;gap:12px;padding:14px 16px 0}
+.tk{display:flex;border-radius:16px;background:var(--card);box-shadow:var(--shadow);position:relative;overflow:hidden;min-height:112px}
+.stub{width:76px;flex:none;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px dashed rgba(255,255,255,.3)}
+.stub .dw{font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--navy-ink)}
+.stub .dn{font-size:30px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.stub .mo{font-size:11.5px;font-weight:800;letter-spacing:.6px;color:var(--green)}
+.notch{position:absolute;left:68px;width:16px;height:16px;border-radius:50%;background:var(--page)}
+.notch.t{top:-8px}.notch.b{bottom:-8px}
+.tb{flex:1;display:flex;gap:10px;padding:12px 12px 12px 14px;min-width:0}
+.tb .x{flex:1;min-width:0}
+.cat{font-size:10.5px;font-weight:800;letter-spacing:.7px;color:var(--green-ink)}
+.tb h3{font-size:15px;font-weight:800;line-height:1.25;margin-top:2px}
+.tb .p{margin-top:8px;font-size:12px;color:var(--mute)}
+.tb .p b{font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+.thumb{width:62px;height:62px;border-radius:12px;flex:none;align-self:center}
+
+/* otel kartı */
+.hl{display:flex;flex-direction:column;gap:12px;padding:14px 16px 0}
+.hc{display:flex;gap:12px;padding:10px;border-radius:var(--r-card);background:var(--card);box-shadow:var(--shadow)}
+.hc .ph{width:112px;height:136px;border-radius:12px;flex:none;overflow:hidden}
+.hc .heart{width:28px;height:28px;right:6px;top:6px}.hc .heart svg{width:14px;height:14px}
+.hc .x{flex:1;display:flex;flex-direction:column;min-width:0}
+.stars{color:var(--gold);font-size:11px;letter-spacing:1.5px}
+.hc h3{font-size:15px;font-weight:800;line-height:1.25}
+.hc .score{margin-top:7px}
+.pill{align-self:flex-start;margin-top:7px;background:var(--green-soft);color:var(--green-ink);font-size:11.5px;font-weight:800;padding:3px 7px;border-radius:6px}
+.tot{margin-top:auto;text-align:right;font-size:11.5px;color:var(--mute)}
+.tot strong{display:block;font-size:18px;color:var(--ink);letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+
+/* temalar */
+.rail.themes{display:grid;grid-template-rows:repeat(2,104px);grid-auto-flow:column;grid-auto-columns:158px;gap:10px}
+.th{height:104px;border-radius:16px;padding:12px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;position:relative;overflow:hidden}
+.th::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,14,30,.55),transparent 70%)}
+.th b,.th span{position:relative}
+.th b{font-size:15px;font-weight:800}
+.th span{font-size:10.5px;font-weight:700;opacity:.92;line-height:1.3}
+
+/* yardım */
+.help{margin:30px 16px 0;background:var(--soft);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.help h2{font-size:17px;font-weight:800}
+.help p{font-size:13.5px;color:var(--mute);line-height:1.45}
+.help .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.help .acts .btn{justify-content:center;white-space:nowrap;padding:12px 8px;font-size:13.5px}
+.help-hd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.live.dark{color:var(--green-ink);font-size:12px}
+.live.dark.off{color:var(--mute)}
+.wa-dot.light{border-color:var(--navy)}
+.call{display:flex;flex-direction:column;gap:6px;background:var(--card);border-radius:14px;padding:14px}
+.call label{font-size:12px;font-weight:700;color:var(--mute);margin-top:4px}
+.call input,.call select{font:inherit;font-size:15px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.call .btn{justify-content:center;margin-top:8px;background:var(--green);color:var(--navy)}
+.call-note{font-size:11.5px!important}
+.call-ok{background:var(--green-soft);color:var(--green-ink)!important;font-weight:700;border-radius:12px;padding:12px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:12px;font-weight:800;font-size:14px;background:var(--navy);color:#fff}
+.btn.ghost{background:var(--card);color:var(--navy);box-shadow:inset 0 0 0 1px var(--line)}
+.btn svg{width:17px;height:17px}
+.foot{padding:26px 16px 10px;font-size:12px;color:var(--mute);line-height:1.7}
+.demo{display:flex;align-items:center;gap:6px;margin-top:10px;font-weight:700}
+.dm{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-weight:700;font-size:12.5px}
+.dm[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.foot a{text-decoration:underline;text-underline-offset:2px}
+.foot .draft{display:inline-block;margin-top:6px;background:#FFF4D6;color:#7A5300;font-weight:700;padding:2px 8px;border-radius:6px}
+
+/* alt menü */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(10px + env(safe-area-inset-bottom,0px));z-index:10}
+.nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#7A8196;position:relative}
+.nav svg{width:24px;height:24px}
+.nav a[aria-current]{color:var(--navy);font-weight:800}
+.nav a[aria-current]::before{content:"";position:absolute;top:-9px;width:28px;height:3px;border-radius:3px;background:var(--green)}
+.badge{position:absolute;top:-4px;left:56%;background:var(--green);color:var(--navy);font-size:10px;font-weight:800;border-radius:9px;padding:1px 5px}
+
+/* tam ekran menü */
+.menu{position:fixed;inset:0;z-index:50;background:var(--navy);color:#fff;display:flex;flex-direction:column;max-width:440px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .22s ease,transform .22s ease,visibility 0s linear .22s}
+.menu.open{opacity:1;visibility:visible;transform:none;transition:opacity .22s ease,transform .22s ease}
+.m-bar{display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 10px 0 16px;flex:none}
+.m-close{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);display:grid;place-items:center}
+.m-close svg{width:22px;height:22px}
+.m-body{flex:1;overflow-y:auto;padding:4px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.m-user{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.07);border-radius:16px;padding:14px}
+.av{width:44px;height:44px;border-radius:50%;background:var(--navy-2);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px var(--green)}
+.av svg{width:22px;height:22px}
+.m-user .x{flex:1;min-width:0}
+.m-user b{display:block;font-size:15px}
+.av.ini{font-weight:800;font-size:15px;color:#fff}
+.lvl{display:inline-flex!important;align-items:center;gap:5px;color:var(--green)!important;font-weight:700}
+.lvl svg{width:13px;height:13px;fill:var(--green);stroke:none}
+.m-user span{font-size:12.5px;color:var(--navy-ink)}
+.m-user .btn{background:var(--green);color:var(--navy);padding:9px 13px}
+.m-main{margin-top:18px;display:flex;flex-direction:column}
+.m-link{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.m-link .ico{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;color:var(--green)}
+.m-link .ico svg{width:20px;height:20px}
+.m-link b{flex:1;font-size:21px;font-weight:800;letter-spacing:-.4px}
+.m-link em{font-style:normal;font-size:12px;max-width:40%;text-align:right;line-height:1.3;font-weight:700;color:var(--navy-ink);font-variant-numeric:tabular-nums}
+.m-link .chev{width:18px;height:18px;color:var(--navy-ink)}
+.m-h{margin-top:24px;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--navy-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{padding:8px 12px;border-radius:999px;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.08)}
+.chip.hot{background:var(--green);color:var(--navy)}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.m-tile{background:rgba(255,255,255,.07);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;font-weight:700}
+.m-tile svg{width:20px;height:20px;color:var(--green)}
+.m-tile small{font-weight:500;color:var(--navy-ink);font-size:11.5px}
+.m-contact{margin-top:10px;background:rgba(255,255,255,.07);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.m-contact b{font-size:18px;letter-spacing:.2px;font-variant-numeric:tabular-nums;user-select:all}
+.m-contact span{display:block;font-size:11.5px;color:var(--navy-ink)}
+.m-contact .btn{background:rgba(255,255,255,.12);padding:9px 12px;font-size:13px}
+.m-note{margin-top:6px;font-size:12px;color:var(--navy-ink);line-height:1.4}
+.m-sub{margin-top:14px;font-size:12px;font-weight:700;color:var(--navy-ink)}
+.chip.line{background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.m-themes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.m-theme{background:rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.m-theme b{font-size:14px;font-weight:800}
+.m-theme small{font-size:11px;color:var(--navy-ink);font-weight:600}
+.hours{display:flex!important;align-items:center;gap:8px;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:5px;font-style:normal;font-weight:700;color:var(--green)}
+.live.off{color:var(--navy-ink)}
+.live.off em,.off.wa-dot,.help .off.wa-dot{background:#9AA3BD!important;box-shadow:none}
+.live em,.wa-dot{width:8px;height:8px;border-radius:50%;background:#35D25B;box-shadow:0 0 0 3px rgba(53,210,91,.22)}
+.btn.wa{position:relative}
+.wa-dot{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border:2px solid var(--navy);box-shadow:none}
+.m-foot{margin-top:24px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--navy-ink)}
+.m-foot .copy{text-align:right;line-height:1.4;font-size:11px;max-width:150px}
+.sel{position:relative;display:inline-flex}
+.sel select{appearance:none;-webkit-appearance:none;font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23C7CDE4%27 stroke-width=%272.4%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E") no-repeat right 7px center/12px;border:0;border-radius:8px;padding:7px 24px 7px 10px;cursor:pointer}
+.sel select option{color:#141A2E}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.lang{display:flex;gap:6px}
+body.locked{overflow:hidden}
+[hidden]{display:none!important}
+.more-l{display:flex;align-items:center;gap:8px}
+.all{display:inline-flex;align-items:center;min-height:44px;padding:0 0 0 12px}
+.hd{align-items:center}
+.arrows{display:none}
+@media (hover:hover) and (pointer:fine){.arrows{display:flex}.more-l .all{display:none}}
+.tabs,.promise,.fchips,.trust{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.tabs.end,.promise.end,.fchips.end,.trust.end{-webkit-mask-image:none;mask-image:none}
+.meta span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.m-link .ico{flex:none}
+.m-link b{font-size:clamp(17px,5.4vw,21px);min-width:0}
+@media (max-width:359px){.m-link em{display:none}.m-user{flex-wrap:wrap}.m-user .btn{width:100%;justify-content:center}}
+.err{font-size:12px;font-weight:700;color:#B42318;margin-top:2px}
+.call input[aria-invalid="true"]{border-color:#B42318;box-shadow:0 0 0 3px rgba(180,35,24,.12)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="pv">Yeni mola360 önizlemesi · <a href="../index.html">Klasik siteye dön</a></div>
+
+<header class="top">
+  <div class="bar">
+    <div class="logo" aria-label="mola360">mola<b>360</b></div>
+    <div class="bar-i">
+      <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+      <button class="ib" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    </div>
+  </div>
+  <h1 class="hello">Bir molayı hak ettin.<br><span>Nereye gidiyoruz?</span></h1>
+  <div class="tabs" role="tablist" aria-label="Ürün türü">
+    <button class="tab" role="tab" aria-selected="true" data-tab="tur"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 20l6-14 6 14"/></svg>Turlar</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="otel"><svg viewBox="0 0 24 24"><path d="M3 18V8h18v10M3 14h18M7 11h3"/></svg>Oteller</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="etkinlik"><svg viewBox="0 0 24 24"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/></svg>Etkinlikler</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="aktivite"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6z"/></svg>Aktiviteler</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="mekan"><svg viewBox="0 0 24 24"><path d="M5 21V10l7-6 7 6v11M9 21v-6h6v6"/></svg>Mekânlar</button>
+  </div>
+</header>
+
+<form class="search" id="search" onsubmit="event.preventDefault()">
+  <button type="button" class="fld" id="f1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><div><small>NEREYE</small><span class="hint">Şehir, bölge veya tur adı</span></div></button>
+  <div class="split">
+    <button type="button" class="fld" id="f2"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><div><small>NE ZAMAN</small><span>Ekim, esnek</span></div></button>
+    <button type="button" class="fld" id="f3"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><div><small>KİŞİ</small><span>2 yetişkin</span></div></button>
+  </div>
+  <button class="go" id="go" type="submit">Molamı bul</button>
+</form>
+<div class="trust" role="group" aria-label="Neden mola360">
+  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="iptal"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx"><b>Ücretsiz iptal</b><small>çoğu üründe</small></span></button>
+  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="taksit"><span class="ti"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><span class="tx"><b>3 taksit</b><small>vade farksız</small></span></button>
+  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="kapora"><span class="ti lira" aria-hidden="true">₺</span><span class="tx"><b>%20 kapora</b><small>ile yer ayırt</small></span></button>
+  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="puan"><span class="ti"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg></span><span class="tx"><b>Molapuan</b><small>her rezervasyonda kazan</small></span></button>
+</div>
+<div class="trust-info" id="trustInfo" role="region" aria-live="polite" hidden></div>
+
+<section class="sec" aria-labelledby="h-time">
+  <div class="hd"><h2 id="h-time">Ne kadar molan var?</h2></div>
+  <p class="sub">Vaktine göre seçelim, gerisini biz sıralayalım.</p>
+  <div class="time" id="time"></div>
+</section>
+<div class="sec" style="padding-top:18px"><div class="hd"><h2 id="railTitle" style="font-size:17px">Hafta sonuna sığanlar</h2><div class="more-l"><a href="../turlar/" class="all" id="railAll">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div><p class="sub" id="railSub"></p></div>
+<div class="rail" id="timeRail"></div>
+
+<section aria-labelledby="h-ev">
+  <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sonu sahnede</h2><a href="../etkinlikler/" class="all">Takvim →</a></div><p class="sub">2 – 4 Ekim · konser, festival, sahne</p></div>
+  <div class="ev" id="events"></div>
+</section>
+
+<section aria-labelledby="h-vn" id="secVn">
+  <div class="sec"><div class="hd"><h2 id="h-vn">Mekânlarda bir mola</h2><a href="../mekanlar/" class="all">Tümü →</a></div><p class="sub">Randevulu spa, masa ve şezlong rezervasyonu</p></div>
+  <div class="rail" id="venues"></div>
+</section>
+
+<section aria-labelledby="h-ht">
+  <div class="sec"><div class="hd"><h2 id="h-ht">Hafta sonu için oteller</h2><a href="../oteller/" class="all">Tümü →</a></div><p class="sub">2 – 4 Ekim · 2 gece · 2 yetişkin, toplam fiyat</p></div>
+  <div class="hl" id="hotels"></div>
+</section>
+
+<section aria-labelledby="h-yd">
+  <div class="sec"><div class="hd"><h2 id="h-yd">Yurt dışı</h2><div class="more-l"><a href="../turlar/yurt-disi-turlar/" class="all">Tümü →</a><div class="arrows" data-for="abroad"></div></div></div><p class="sub">Vizesiz kaçamaklardan Avrupa ve uzak rotalara</p></div>
+  <div class="fchips" role="group" aria-label="Yurt dışı filtresi"><button class="fc" aria-pressed="true" data-f="all">Tümü</button><button class="fc" aria-pressed="false" data-f="kolay">Kolay vize</button><button class="fc" aria-pressed="false" data-f="avrupa">Avrupa</button><button class="fc" aria-pressed="false" data-f="uzak">Uzak rotalar</button></div>
+  <div class="rail" id="abroad"></div>
+</section>
+
+<section aria-labelledby="h-th">
+  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="more-l"><a href="../temalar/" class="all">Tümü →</a><div class="arrows" data-for="themeRail"></div></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
+  <div class="rail themes" id="themeRail"><a href="../temalar/doga-yayla/" class="th" style="background:linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)"><b>Doğa ve yayla</b><span>Tur · Otel · Aktivite</span></a><a href="../temalar/deniz-tekne/" class="th" style="background:linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)"><b>Deniz ve tekne</b><span>Tur · Otel · Aktivite · Mekân</span></a><a href="../temalar/kultur-tarih/" class="th" style="background:linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)"><b>Kültür ve tarih</b><span>Tur · Etkinlik · Aktivite</span></a><a href="../temalar/kis-sporlari/" class="th" style="background:linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)"><b>Kış ve kayak</b><span>Tur · Otel · Aktivite</span></a><a href="../oteller/termal-oteller/" class="th" style="background:linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)"><b>Termal ve spa</b><span>Otel · Mekân</span></a><a href="../temalar/macera-adrenalin/" class="th" style="background:linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)"><b>Macera ve spor</b><span>Aktivite · Etkinlik</span></a><a href="../etkinlikler/" class="th" style="background:linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)"><b>Konser ve festival</b><span>Etkinlik · Mekân</span></a><a href="../etkinlikler/" class="th" style="background:linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)"><b>Sahne ve gösteri</b><span>Etkinlik</span></a><a href="../temalar/gastronomi/" class="th" style="background:linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)"><b>Yeme içme</b><span>Tur · Etkinlik · Mekân</span></a><a href="../temalar/" class="th" style="background:linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)"><b>Balayı</b><span>Tur · Otel · Mekân</span></a><a href="../temalar/" class="th" style="background:linear-gradient(160deg,#F4E3A6,#E0A04A 50%,#4E7A9A)"><b>Ailece</b><span>Tur · Otel · Etkinlik · Aktivite</span></a><a href="../mekanlar/" class="th" style="background:linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)"><b>Gece hayatı</b><span>Etkinlik · Mekân</span></a></div>
+</section>
+
+<section class="help" aria-labelledby="h-help">
+  <div class="help-hd"><h2 id="h-help">Planlarken yanındayız</h2><i class="live dark" data-live><em></em><span data-live-t>Çevrimiçi</span></i></div>
+  <p>Her gün 09:00 – 23:59 arası seyahat uzmanlarımız WhatsApp'tan yazıyor, istersen seni arıyor.</p>
+  <div class="acts">
+    <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="btn wa"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg>WhatsApp'tan yaz<em class="wa-dot light" data-live-dot aria-hidden="true"></em></a>
+    <button type="button" class="btn ghost" id="callBtn" aria-expanded="false" aria-controls="callForm"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Beni ara</button>
+  </div>
+  <form class="call" id="callForm" hidden novalidate>
+    <label for="cName">Adın</label><input id="cName" autocomplete="given-name" placeholder="Örn. Ayşe" required>
+    <label for="cTel">Telefon numaran</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required aria-describedby="telErr"><p class="err" id="telErr" hidden>Cep telefonunu 05 ile başlayan 11 hane olarak yaz, örneğin 0532 123 45 67.</p>
+    <label for="cWhen">Ne zaman arayalım?</label>
+    <select id="cWhen"></select>
+    <button class="btn" type="submit">Aranma talebi gönder</button>
+    <p class="call-note">Taslakta talep gönderilmiyor; gerçek sitede uzmanımız seçtiğin saatte arar.</p>
+  </form>
+  <p class="call-ok" id="callOk" hidden role="status"></p>
+</section>
+
+<footer class="foot">
+  <a href="../kurumsal/hakkimizda/">Hakkımızda</a> · <a href="../kurumsal/sss/">Sıkça sorulan sorular</a> · <a href="../kurumsal/kvkk/">Gizlilik</a> · <a href="../kurumsal/cerez-politikasi/">Çerezler</a> · <a href="../kurumsal/kullanim-kosullari/">Kullanım koşulları</a><br>© 2026 Mola360. Tüm hakları saklıdır.
+  <br><span class="draft">Tasarım taslağı · veriler örnek katalogdan</span>
+  <div class="demo" role="group" aria-label="Taslak görünümü">Görünüm: <button type="button" class="dm" aria-pressed="true" data-v="guest">Misafir</button><button type="button" class="dm" aria-pressed="false" data-v="gezgin">Gezgin</button><button type="button" class="dm" aria-pressed="false" data-v="kasif">Kâşif</button></div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span></span><button type="button"></button></div>
+<nav class="nav" aria-label="Alt menü">
+  <a href="./" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Keşfet</a>
+  <a href="../hesabim/?bolum=favorilerim"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" id="favCount" hidden>0</span>Favorilerim</a>
+  <a href="../hesabim/?bolum=rezervasyonlarim"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg><span class="badge" data-member hidden>1</span>Rezervasyonlarım</a>
+  <a href="../hesabim/"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Hesabım</a>
+</nav>
+
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
+  <div class="m-bar">
+    <div class="logo">mola<b>360</b></div>
+    <button class="m-close" id="menuClose" aria-label="Menüyü kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="m-body">
+    <div class="m-user" data-guest>
+      <div class="av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+      <div class="x"><b>Hoş geldin</b><span>İlk rezervasyonda %15 indirim</span></div>
+      <a href="../hesabim/" class="btn">Giriş yap</a>
+    </div>
+    <div class="m-user" data-member hidden>
+      <div class="av ini">AY</div>
+      <div class="x"><b>Merhaba, Ayşe</b><span class="lvl"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg><em id="lvlTxt">Kâşif · 1.240 Molapuan</em></span></div>
+      <a href="../hesabim/" class="btn">Hesabım</a>
+    </div>
+
+    <nav class="m-main" aria-label="Ürünler" id="mMain"></nav>
+
+    <div class="m-h">NE KADAR VAKTİN VAR?</div>
+    <div class="chips">
+      <a href="../aktiviteler/" class="chip">Birkaç saat</a><a href="../turlar/" class="chip">Günübirlik</a><a href="../turlar/" class="chip hot">Hafta sonu</a><a href="../turlar/" class="chip">4 gün +</a>
+    </div>
+
+    <div class="m-h">TEMALAR</div>
+    <p class="m-note">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte listeler.</p>
+    <div class="m-themes"><a href="../temalar/doga-yayla/" class="m-theme"><b>Doğa ve yayla</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="../temalar/deniz-tekne/" class="m-theme"><b>Deniz ve tekne</b><small>Turlar · Oteller · Aktiviteler · Mekânlar</small></a><a href="../temalar/kultur-tarih/" class="m-theme"><b>Kültür ve tarih</b><small>Turlar · Etkinlikler · Aktiviteler</small></a><a href="../temalar/kis-sporlari/" class="m-theme"><b>Kış ve kayak</b><small>Turlar · Oteller · Aktiviteler</small></a><a href="../oteller/termal-oteller/" class="m-theme"><b>Termal ve spa</b><small>Oteller · Mekânlar</small></a><a href="../temalar/macera-adrenalin/" class="m-theme"><b>Macera ve spor</b><small>Aktiviteler · Etkinlikler</small></a><a href="../etkinlikler/" class="m-theme"><b>Konser ve festival</b><small>Etkinlikler · Mekânlar</small></a><a href="../etkinlikler/" class="m-theme"><b>Sahne ve gösteri</b><small>Etkinlikler</small></a><a href="../temalar/gastronomi/" class="m-theme"><b>Yeme içme</b><small>Turlar · Etkinlikler · Mekânlar</small></a><a href="../temalar/" class="m-theme"><b>Balayı</b><small>Turlar · Oteller · Mekânlar</small></a><a href="../temalar/" class="m-theme"><b>Ailece</b><small>Turlar · Oteller · Etkinlikler · Aktiviteler</small></a><a href="../mekanlar/" class="m-theme"><b>Gece hayatı</b><small>Etkinlikler · Mekânlar</small></a></div>
+
+    <div class="m-h">BÖLGELER</div>
+    <p class="m-note">Seçtiğin yerdeki turlar, oteller, etkinlikler, aktiviteler ve mekânlar birlikte gelir.</p>
+    <div class="chips"><a href="../turlar/?bolge=marmara" class="chip">Marmara</a><a href="../turlar/?bolge=ege" class="chip">Ege</a><a href="../turlar/?bolge=akdeniz" class="chip">Akdeniz</a><a href="../turlar/?bolge=karadeniz" class="chip">Karadeniz</a><a href="../turlar/?bolge=ic-anadolu" class="chip">İç Anadolu</a><a href="../turlar/?bolge=dogu-anadolu" class="chip">Doğu Anadolu</a><a href="../turlar/?bolge=guneydogu-anadolu" class="chip">Güneydoğu</a><a href="../turlar/yurt-disi-turlar/" class="chip">Yurt dışı</a></div>
+    <div class="m-sub">Şehirler</div>
+    <div class="chips"><a href="../turlar/?sehir=istanbul" class="chip line">İstanbul</a><a href="../turlar/?sehir=izmir" class="chip line">İzmir</a><a href="../turlar/?sehir=antalya" class="chip line">Antalya</a><a href="../turlar/?sehir=ankara" class="chip line">Ankara</a><a href="../turlar/?sehir=mugla" class="chip line">Muğla</a><a href="../turlar/?sehir=nevsehir" class="chip line">Nevşehir</a><a href="../turlar/?sehir=bursa" class="chip line">Bursa</a></div>
+
+    <div class="m-h">HESABIM</div>
+    <div class="m-grid">
+      <a href="../hesabim/?bolum=rezervasyonlarim" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım<small>Karekodlu biletler</small></a>
+      <a href="../hesabim/?bolum=favorilerim" class="m-tile"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Favorilerim<small>Kaydettiklerin</small></a>
+      <a href="../hesabim/?bolum=kuponlarim" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım<small>Molapuan ve kodlar</small></a>
+      <a href="../hesabim/" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Rezervasyonumu bul<small>Kod ve e-postayla</small></a>
+    </div>
+
+    <div class="m-h">YARDIM</div>
+    <div class="m-contact">
+      <div><span class="hours">Her gün 09:00 – 23:59<i class="live" data-live><em></em><span data-live-t>Çevrimiçi</span></i></span><b>0850 000 00 00</b></div>
+      <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="btn wa">WhatsApp<em class="wa-dot" data-live-dot aria-hidden="true"></em></a>
+    </div>
+    <div class="chips">
+      <a href="../kurumsal/yardim/" class="chip">Yardım merkezi</a><a href="../kurumsal/sss/" class="chip">Sıkça sorulan sorular</a><a href="../kurumsal/iptal-iade/" class="chip">İptal ve iade</a>
+    </div>
+
+    <div class="m-foot">
+      <div class="lang">
+        <label class="sel"><span class="sr">Dil</span><select id="langSel" aria-label="Dil"><option>Türkçe</option><option>English</option><option>Deutsch</option><option>Русский</option></select></label>
+        <label class="sel"><span class="sr">Para birimi</span><select id="curSel" aria-label="Para birimi"><option>₺ TL</option><option>€ EUR</option><option>$ USD</option><option>£ GBP</option></select></label>
+      </div>
+      <span class="copy">© 2026 Mola360. Tüm hakları saklıdır.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const I={pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>',
+clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+chev:'<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>'};
+const G={kapadokya:'linear-gradient(160deg,#EBC79B,#B97648 48%,#5B6B92)',efes:'linear-gradient(160deg,#EDDFC2,#B8925B 50%,#6E93AE)',sapanca:'linear-gradient(160deg,#B7D79A,#4F8F5B 55%,#2D5570)',
+ege:'linear-gradient(160deg,#9ED8EC,#2F8DBA 55%,#E9D6AE)',karadeniz:'linear-gradient(160deg,#A9CFA0,#3F7A52 50%,#475E7A)',dogu:'linear-gradient(160deg,#EEF2F7,#9AA9C2 45%,#6B3F3F)',
+erciyes:'linear-gradient(160deg,#F1F4F9,#AFC2DA 50%,#40577E)',bogaz:'linear-gradient(160deg,#9CC7E4,#3A6FA5 55%,#223A66)',parasut:'linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)',
+rafting:'linear-gradient(160deg,#A8D8C8,#2F8F86 55%,#35506E)',bodrum:'linear-gradient(160deg,#BDE7F0,#3796C0 55%,#F0E1BE)',kayak:'linear-gradient(160deg,#F3F6FA,#B8C8DE 50%,#5A6F93)',
+pamukkale:'linear-gradient(160deg,#F7F8FA,#CFE3EE 45%,#79A9C6)',aspendos:'linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)',harbiye:'linear-gradient(160deg,#1C2640,#3A5F8A 55%,#9CC0DC)',
+caz:'linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)',kahve:'linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)',goreme:'linear-gradient(160deg,#F0D2A8,#C08050 50%,#6D5C84)',
+sealight:'linear-gradient(160deg,#9CD9EE,#2E8CB8 50%,#E7D7B0)',kordon:'linear-gradient(160deg,#9CC8E0,#3F86A8 50%,#E8D9B5)',termal:'linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',
+batum:'linear-gradient(160deg,#BFD9E8,#4F7FA8 50%,#2F4F4A)',midilli:'linear-gradient(160deg,#F2E6C8,#6FB3C9 50%,#2E6F8E)',balkan:'linear-gradient(160deg,#D9E3C8,#7C9A6A 45%,#5A4A3A)',
+dubai:'linear-gradient(160deg,#F6DDB0,#D39A55 45%,#5B6E9A)',italya:'linear-gradient(160deg,#F1D9B8,#C0704A 50%,#5C7A5A)',ispanya:'linear-gradient(160deg,#F7D98A,#D0603A 50%,#7A3A4A)',fransa:'linear-gradient(160deg,#E4E8F2,#8FA3C8 45%,#4A4F7A)'};
+const tl=n=>n.toLocaleString('tr-TR')+' TL';
+const word=s=>s>=9.5?'Olağanüstü':s>=9?'Harika':s>=8.5?'Çok iyi':'İyi';
+const sc=(s,c)=>'<span class="score"><b>'+s.toFixed(1).replace('.',',')+'</b>'+word(s)+'</span>';
+
+/* Puanlar örnek katalogdaki 5'lik ortalamaların 10'luğa çevrilmiş hali; kalkış ve etkinlik tarihleri örnek.
+   Yorum sayısı olmayan üründe puan gösterilmiyor, "Yeni" yazıyor. */
+const ITEMS=[
+ {k:'Aktivite',b:'saat',t:'İstanbul Boğaz Turu',a:'Eminönü, İstanbul',facts:['2 saat','Standart paket'],p:650,g:'bogaz'},
+ {k:'Mekân',b:'saat',t:'Kordon Spa & Masaj',a:'Alsancak, İzmir',facts:['Klasik masaj · 60 dk','Randevulu'],p:1200,s:9.5,c:346,g:'termal',u:'seans'},
+ {k:'Etkinlik',b:'saat',t:'Kordon Caz Akşamları',a:'Kordon Açıkhava, İzmir',facts:['Cmt 3 Eki · 20:00','Genel giriş'],p:480,s:9.4,c:120,g:'caz',u:'bilet'},
+ {k:'Aktivite',b:'saat',t:'Ölüdeniz Yamaç Paraşütü',a:'Fethiye, Muğla',facts:['20 dk uçuş','Tandem'],p:1450,s:9.8,c:1200,g:'parasut'},
+ {k:'Etkinlik',b:'saat',t:'Stand Up Gecesi',a:'Jolly Joker, Ankara',facts:['Cum 2 Eki · 21:30','Genel giriş'],p:420,g:'harbiye',u:'bilet'},
+ {k:'Aktivite',b:'saat',t:'Uludağ Kayak Dersi',a:'Uludağ, Bursa',facts:['2 saat','Özel ders'],p:750,s:9.0,c:330,g:'kayak'},
+ {k:'Tur',b:'gun',t:'Efes ve Şirince Turu',a:'İzmir çıkışlı · rehberli',info:'Günübirlik',p:1290,old:1690,s:9.6,c:1200,g:'efes',dates:[['Per','1 Eki'],['Cmt','3 Eki'],['Paz','4 Eki']],more:'+12'},
+ {k:'Mekân',b:'gun',t:'Kum Beach Club',a:'Alaçatı, Çeşme',facts:['Tam gün','Şezlong · 2 kişi'],p:1500,s:9.3,c:824,g:'bodrum',u:'min. harcama'},
+ {k:'Aktivite',b:'gun',t:'Bodrum Tekne Turu',a:'Bodrum, Muğla',facts:['6 saat','Kalkış 10:30'],p:1150,g:'ege'},
+ {k:'Etkinlik',b:'gun',t:'Çeşme Yaz Festivali',a:'Alaçatı Sahil, İzmir',facts:['Cmt 3 Eki · tüm gün','Günlük bilet'],p:650,s:9.2,c:310,g:'aspendos',u:'bilet'},
+ {k:'Tur',b:'gun',t:'Sapanca ve Maşukiye Turu',a:'İstanbul çıkışlı · 07:30',info:'Günübirlik · otobüslü',p:780,s:9.2,c:75,g:'sapanca',dates:[['Cmt','3 Eki'],['Cmt','10 Eki'],['Cmt','17 Eki']],more:'+9'},
+ {k:'Aktivite',b:'gun',t:'Köprülü Kanyon Rafting',a:'Manavgat, Antalya',facts:['Yarım gün','Standart paket'],p:850,s:9.6,c:440,g:'rafting'},
+ {k:'Tur',b:'gun',t:'Pamukkale ve Hierapolis',a:'İzmir çıkışlı · 12 saat',info:'Günübirlik',p:1890,g:'pamukkale',dates:[['Cmt','3 Eki'],['Çar','7 Eki'],['Cmt','10 Eki']],more:'+14'},
+ {k:'Tur',b:'hs',t:'Ege Adaları Balayı Kaçamağı',a:'Sakız Adası · İzmir çıkışlı',info:'2 gece 3 gün · feribotlu',visa:'Kapıda vize',abroad:1,reg:'avrupa',p:7450,s:9.8,c:288,g:'ege',dates:[['Cum','2 Eki'],['Cum','9 Eki'],['Cum','16 Eki']],more:'+4'},
+ {k:'Otel',b:'hs',t:'Göreme Mağara Otel',a:'Göreme, Nevşehir',facts:['2 – 4 Eki · 2 gece','Kahvaltı dahil'],p:4900,s:9.4,c:96,g:'goreme',u:'2 gece toplam'},
+ {k:'Otel',b:'hs',t:'Sealight Resort',a:'Kemer, Antalya',facts:['2 – 4 Eki · 2 gece','Her şey dahil'],p:4200,s:9.2,c:340,g:'sealight',u:'2 gece toplam'},
+ {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · Ayvalık çıkışlı',info:'2 gece 3 gün · feribotlu',visa:'Kapıda vize',abroad:1,reg:'avrupa',p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3',sample:1},
+ {k:'Tur',b:'uzun',t:'Batum ve Acara Turu',a:'Batum, Gürcistan · Trabzon çıkışlı',info:'3 gece 4 gün · otobüslü',visa:'Kimlikle geçiş',abroad:1,reg:'kafkas',p:6900,g:'batum',dates:[['Per','8 Eki'],['Per','15 Eki'],['Per','22 Eki']],more:'+5',sample:1},
+ {k:'Tur',b:'uzun',t:'Balkanlar: Saraybosna ve Mostar',a:'Bosna-Hersek · İstanbul çıkışlı',info:'4 gece 5 gün · uçaklı',visa:'Vizesiz',abroad:1,reg:'avrupa',p:18900,g:'balkan',dates:[['Pzt','12 Eki'],['Pzt','26 Eki'],['Pzt','9 Kas']],more:'+2',sample:1},
+ {k:'Tur',b:'uzun',t:'Dubai Turu',a:'Birleşik Arap Emirlikleri · İstanbul çıkışlı',info:'4 gece 5 gün · uçaklı',visa:'E-vize',visaReq:1,abroad:1,reg:'uzak',p:32900,g:'dubai',dates:[['Per','15 Eki'],['Per','29 Eki'],['Per','12 Kas']],more:'+6',sample:1},
+ {k:'Tur',b:'uzun',t:'İtalya: Roma, Floransa ve Venedik',a:'İtalya · İstanbul çıkışlı',info:'5 gece 6 gün · uçaklı',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:39900,g:'italya',dates:[['Cmt','17 Eki'],['Cmt','31 Eki'],['Cmt','14 Kas']],more:'+4',sample:1},
+ {k:'Tur',b:'uzun',t:'İspanya: Barselona ve Madrid',a:'İspanya · İstanbul çıkışlı',info:'5 gece 6 gün · uçaklı',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:41500,g:'ispanya',dates:[['Paz','18 Eki'],['Paz','1 Kas'],['Paz','15 Kas']],more:'+3',sample:1},
+ {k:'Tur',b:'uzun',t:'Fransa: Paris ve Loire Şatoları',a:'Fransa · İstanbul çıkışlı',info:'4 gece 5 gün · uçaklı',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:36750,g:'fransa',dates:[['Cum','23 Eki'],['Cum','6 Kas'],['Cum','20 Kas']],more:'+4',sample:1},
+ {k:'Tur',b:'uzun',t:'Kapadokya Turu',a:'Göreme · İstanbul, İzmir, Ankara çıkışlı',info:'3 gece 4 gün · uçaklı',p:8990,old:10900,s:9.4,c:974,g:'kapadokya',dates:[['Pzt','5 Eki'],['Cum','9 Eki'],['Pzt','12 Eki']],more:'+8'},
+ {k:'Tur',b:'uzun',t:'Karadeniz Yaylaları Turu',a:'Ayder, Rize · İstanbul çıkışlı',info:'4 gece 5 gün · uçaklı',p:12500,g:'karadeniz',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+6'},
+ {k:'Tur',b:'uzun',t:'Turistik Doğu Ekspresi',a:'Kars · Ankara çıkışlı',info:'5 gece 6 gün · trenli',p:9750,s:9.2,c:450,g:'dogu',dates:[['Sal','20 Eki'],['Sal','3 Kas'],['Sal','17 Kas']],more:'+5'},
+ {k:'Tur',b:'uzun',t:'Erciyes Kayak Haftası',a:'Kayseri · İstanbul çıkışlı',info:'4 gece 5 gün · uçaklı',p:6400,s:9.2,c:140,g:'erciyes',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+2'}
+];
+const CLOCK='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const BUCKETS=[['saat',CLOCK,'Birkaç saat','Birkaç saate sığanlar'],['gun','1','gün','Bir güne sığanlar'],['hs','2–3','hafta sonu','Hafta sonuna sığanlar'],['uzun','4 +','gün','4 gün + uzun molalar']];
+const PL={Tur:'Turlar',Otel:'Oteller',Etkinlik:'Etkinlikler',Aktivite:'Aktiviteler','Mekân':'Mekânlar'};
+/* Molapuan önerisi: her 100 TL'ye 1 puan, 1 puan = 1 TL. Seviye indirimi programa katılan üründe. */
+const LV=new Set(['Kapadokya Turu','Efes ve Şirince Turu','Göreme Mağara Otel','Sealight Resort','Kordon Spa & Masaj']);
+const STAR='<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>';
+const mp=p=>'<span class="mp">'+STAR+'+'+Math.floor(p/100)+' Molapuan</span>';
+/* Seviye indirimi (öneri): Kâşif %10, Mola Ustası %15. Rozet görünümü kullanıcının seviyesine göre değişir. */
+let LEVEL='guest';
+const LVTXT={guest:'Üyelere %15\'e varan indirim',gezgin:'Kâşif\'e %10 indirim',kasif:'Kâşif indirimi %10'};
+const lvOn=t=>LEVEL==='kasif'&&LV.has(t);
+const lvPrice=(t,p)=>lvOn(t)?Math.round(p*.9):p;
+const lvb=(t,cls)=>LV.has(t)?'<button type="button" class="lvb'+(cls?' '+cls:'')+'" aria-label="Seviye indirimi: '+LVTXT[LEVEL]+'. Ayrıntı için dokun">'+STAR+LVTXT[LEVEL]+'</button>':'';
+/* Favoriler: ürün adına göre tek kayıt; aynı ürün sayfada iki yerde olsa da ikisi birlikte değişir.
+   Taslakta yalnızca bu tarayıcıda saklanıyor. */
+const FAV=new Set((()=>{try{return JSON.parse(localStorage.getItem('m360-fav')||'[]')}catch(e){return []}})());
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+const heartBtn=t=>{const on=FAV.has(t);return '<button class="heart" type="button" data-fav="'+esc(t)+'" aria-pressed="'+on+'" aria-label="'+esc(t)+(on?' favorilerden çıkar':' favorilere ekle')+'">'+I.heart+'</button>'};
+/* Kartlar klasik sitenin sayfalarına bağlı; sayfası olmayan örnek yurt dışı turları kategori listesine gider. */
+const HREF={"Kapadokya Turu": "../tur/kapadokya-3-gece/", "Efes ve Şirince Turu": "../tur/efes-sirince/", "Sapanca ve Maşukiye Turu": "../tur/sapanca-masukiye/", "Pamukkale ve Hierapolis": "../tur/pamukkale-hierapolis/", "Ege Adaları Balayı Kaçamağı": "../tur/ege-adalari-balayi/", "Karadeniz Yaylaları Turu": "../tur/karadeniz-yaylalari/", "Turistik Doğu Ekspresi": "../tur/dogu-ekspresi/", "Erciyes Kayak Haftası": "../tur/erciyes-kayak-haftasi/", "Göreme Mağara Otel": "../otel/goreme-magara-otel/", "Sealight Resort": "../otel/sealight-resort/", "Kordon Butik Otel": "../otel/kordon-butik-otel/", "Termal Vadi Resort": "../otel/termal-vadi-resort/", "İstanbul Boğaz Turu": "../aktivite/istanbul-bogaz-turu/", "Ölüdeniz Yamaç Paraşütü": "../aktivite/oludeniz-yamac-parasutu/", "Uludağ Kayak Dersi": "../aktivite/uludag-kayak-dersi/", "Köprülü Kanyon Rafting": "../aktivite/koprulu-kanyon-rafting/", "Bodrum Tekne Turu": "../aktivite/bodrum-tekne-turu/", "Harbiye Açıkhava Konserleri": "../etkinlik/harbiye-acikhava-konserleri/", "Aspendos Opera ve Bale Festivali": "../etkinlik/aspendos-opera-bale-festivali/", "Kordon Caz Akşamları": "../etkinlik/kordon-caz-aksamlari/", "İstanbul Kahve Festivali": "../etkinlik/istanbul-kahve-festivali/", "Stand Up Gecesi": "../etkinlik/stand-up-gecesi/", "Çeşme Yaz Festivali": "../etkinlik/cesme-yaz-festivali/", "Kordon Spa & Masaj": "../mekan/kordon-spa-masaj/", "Kum Beach Club": "../mekan/kum-beach-club/", "Midilli Adası Kaçamağı": "../turlar/yunan-adalari-turlari/", "Batum ve Acara Turu": "../turlar/yurt-disi-turlar/", "Balkanlar: Saraybosna ve Mostar": "../turlar/balkan-turlari/", "Dubai Turu": "../turlar/dubai-turlari/", "İtalya: Roma, Floransa ve Venedik": "../turlar/italya-turlari/", "İspanya: Barselona ve Madrid": "../turlar/ispanya-turlari/", "Fransa: Paris ve Loire Şatoları": "../turlar/fransa-turlari/"};
+const ttl=t=>'<a class="lk" href='+JSON.stringify(HREF[t]||'../turlar/')+'>'+t+'</a>';
+const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
+
+/* Tek kart düzeni: görsel (tür + favori) · başlık · konum · bilgi satırı · alt satırda puan solda, fiyat sağda */
+function card(x){
+  const row=x.dates
+    ?'<div class="lbl">YAKLAŞAN KALKIŞLAR</div><div class="dates" data-fit data-base="'+parseInt(x.more)+'">'+x.dates.map((d,i)=>'<span class="d'+(i?'':' first')+'">'+d[0]+'<b>'+d[1]+'</b></span>').join('')+'<span class="d more">'+x.more+'</span></div>'
+    :'<div class="lbl">ÖNE ÇIKANLAR</div><div class="dates" data-fit>'+x.facts.map(f=>'<span class="f">'+f+'</span>').join('')+'</div>';
+  return '<article class="cd"><div class="ph" style="--g:'+G[x.g]+'"><span class="type">'+x.k+'</span>'+lvb(x.t)
+  +''+heartBtn(x.t)+'</div>'
+  +'<div class="bd"><h3>'+ttl(x.t)+'</h3><div class="meta">'+I.pin+'<span>'+x.a+'</span></div>'
+  +(x.info?'<div class="info">'+x.info+(x.visa?'<span class="visa'+(x.visaReq?' req':'')+'">'+x.visa+'</span>':'')+'</div>':'')
+  +'<div class="dep">'+row+'</div>'
+  +'<div class="pr">'+scoreOrNew(x.s,x.c)+'<div class="price">'+(lvOn(x.t)?'<span class="old">'+tl(x.p)+'</span>':(x.old?'<span class="old">'+tl(x.old)+'</span>':''))
+  +'<span class="unit">'+(x.u||'kişi başı')+'</span><span class="now">'+tl(lvPrice(x.t,x.p))+'</span>'+mp(lvPrice(x.t,x.p))+'</div></div></div></article>';
+}
+function fitFacts(root){
+  root.querySelectorAll('.dates[data-fit]').forEach(row=>{
+    const chips=[...row.children].filter(c=>!c.classList.contains('more'));chips.forEach(c=>c.hidden=false);
+    let more=row.querySelector('.more');const base=+(row.dataset.base||0);
+    if(more&&!base)more.remove(),more=null;
+    if(more)more.textContent='+'+base;
+    const fits=()=>row.scrollWidth<=row.clientWidth;
+    if(fits())return;
+    if(!more){more=document.createElement('span');more.className='d more';row.appendChild(more)}
+    for(let n=chips.length-1;n>0;n--){chips[n].hidden=true;more.textContent='+'+(base+chips.length-n);if(fits())break;}
+  });
+}
+const tEl=document.getElementById('time'),rail=document.getElementById('timeRail'),rt=document.getElementById('railTitle');
+tEl.innerHTML=BUCKETS.map(b=>{const n=ITEMS.filter(x=>x.b===b[0]).length;return '<button class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="n">'+b[1]+'</span><span class="l">'+b[2]+'</span><span class="c">'+n+' seçenek</span></button>'}).join('');
+let shown=new Set();
+let curB='hs',curF='all';
+function pick(b){curB=b;const ra=document.getElementById('railAll');if(ra)ra.href=b==='saat'?'../aktiviteler/':'../turlar/';
+  tEl.querySelectorAll('.tt').forEach(e=>e.setAttribute('aria-pressed',e.dataset.b===b));
+  rt.textContent=BUCKETS.find(x=>x[0]===b)[3];
+  const list=ITEMS.filter(x=>x.b===b);
+  const ks=[...new Set(list.map(x=>PL[x.k]))].map((k,i)=>i?k.toLocaleLowerCase('tr'):k);
+  document.getElementById('railSub').textContent=ks.length>1?ks.slice(0,-1).join(', ')+' ve '+ks[ks.length-1]:ks[0];
+  rail.innerHTML=list.map(card).join('');fitFacts(rail);
+  rail.scrollLeft=0;rail.dispatchEvent(new Event('scroll'));
+  shown=new Set(list.map(x=>x.t));renderLower();
+}
+tEl.addEventListener('click',e=>{const t=e.target.closest('.tt');if(t)pick(t.dataset.b)});
+
+/* Alt bölümler, yukarıdaki listede gösterilenleri tekrar etmiyor */
+const EV=[['CUM','2','Konser','Harbiye Açıkhava Konserleri','21:00 · Harbiye, İstanbul',890,'harbiye'],
+ ['CMT','3','Opera · Bale','Aspendos Opera ve Bale Festivali','20:30 · Aspendos, Antalya',420,'aspendos'],
+ ['CMT','3','Caz','Kordon Caz Akşamları','20:00 · Alsancak, İzmir',480,'caz'],
+ ['PAZ','4','Festival','İstanbul Kahve Festivali','11:00 · Maçka, İstanbul',290,'kahve']];
+const HT=[['★★★★★','Göreme Mağara Otel','Göreme, Nevşehir · Tarihi doku',9.4,96,'Kahvaltı dahil',2450,'goreme'],
+ ['★★★★★','Sealight Resort','Kemer, Antalya · Denize sıfır',9.2,340,'Her şey dahil',2100,'sealight'],
+ ['★★★★','Kordon Butik Otel','Alsancak, İzmir · Denize 120 m',8.9,214,'Kahvaltı dahil',1989,'kordon'],
+ ['★★★★','Termal Vadi Resort','Termal, Yalova · Termal havuz',0,0,'Kahvaltı dahil',1590,'termal']];
+const VN=[{t:'Kordon Spa & Masaj',a:'Alsancak, İzmir · Masaj salonu',s:9.5,c:346,g:'termal',mode:'Randevulu',opts:[['Klasik masaj · 60 dk',1200],['Sıcak taş · 75 dk',1650]]},
+ {t:'Kum Beach Club',a:'Alaçatı, Çeşme · Plaj kulübü',s:9.3,c:824,g:'bodrum',mode:'Masa ve şezlong',opts:[['Şezlong · 2 kişi',1500],['Sedir · 4 kişi',3000],['Loca · 8 kişi',9000]]}];
+function renderLower(){
+  const ev=EV.filter(e=>!shown.has(e[3])).slice(0,3);
+  document.getElementById('events').innerHTML=ev.map(e=>'<article class="tk"><div class="stub"><span class="dw">'+e[0]+'</span><span class="dn">'+e[1]+'</span><span class="mo">EKİM</span></div><span class="notch t"></span><span class="notch b"></span>'
+   +'<div class="tb"><div class="x"><div class="cat">'+e[2].toUpperCase()+'</div><h3>'+ttl(e[3])+'</h3><div class="meta">'+I.clock+'<span>'+e[4]+'</span></div><div class="p"><b>'+tl(e[5])+'</b>\'den başlayan</div>'+mp(e[5])+'</div>'
+   +'<div class="thumb" style="background:'+G[e[6]]+'"></div></div></article>').join('');
+  /* Mekânlarda tekrar filtresi yok: yalnızca iki mekân var, ikisi de her zaman görünsün */
+  document.getElementById('venues').innerHTML=VN.map(v=>'<article class="cd"><div class="ph" style="--g:'+G[v.g]+'"><span class="type">Mekân</span>'+lvb(v.t)+''+heartBtn(v.t)+'</div>'
+   +'<div class="bd"><h3>'+ttl(v.t)+'</h3><div class="meta">'+I.pin+'<span>'+v.a+'</span></div>'
+   +'<div class="dep"><div class="lbl">HİZMETLER</div><div class="dates"><span class="d svc">'+v.opts[0][0]+'<b>'+(lvOn(v.t)?'<s>'+tl(v.opts[0][1])+'</s> ':'')+tl(lvPrice(v.t,v.opts[0][1]))+'</b></span>'+(v.opts.length>1?'<span class="d more">+'+(v.opts.length-1)+'</span>':'')+'</div></div>'
+   +'<div class="pr">'+scoreOrNew(v.s,v.c)+'<div class="price"><span class="mode">'+I.clock+v.mode+'</span>'+mp(lvPrice(v.t,v.opts[0][1]))+'</div></div></div></article>').join('');
+  fitFacts(document.getElementById('venues'));
+  const ht=HT.filter(h=>!shown.has(h[1])).slice(0,2);
+  document.getElementById('hotels').innerHTML=ht.map(h=>'<article class="hc"><div class="ph" style="--g:'+G[h[7]]+'">'+heartBtn(h[1])+'</div>'
+   +'<div class="x"><div class="stars" aria-label="Otel sınıfı">'+h[0]+'</div><h3>'+ttl(h[1])+'</h3><div class="meta">'+I.pin+'<span>'+h[2]+'</span></div>'+scoreOrNew(h[3],h[4])
+   +'<span class="pill">'+h[5]+'</span>'+lvb(h[1],'in')+'<div class="tot">2 gece toplam'+(lvOn(h[1])?'<s class="old">'+tl(h[6]*2)+'</s>':'')+'<strong>'+tl(lvPrice(h[1],h[6]*2))+'</strong>'+mp(lvPrice(h[1],h[6]*2))+'</div></div></article>').join('');
+}
+/* Yurt dışında tekrar filtresi yok: bölüm her zaman 4 ürünü gösteriyor */
+const ab=document.getElementById('abroad');
+const ABO=['Ege Adaları Balayı Kaçamağı','İtalya: Roma, Floransa ve Venedik','Dubai Turu','Balkanlar: Saraybosna ve Mostar','İspanya: Barselona ve Madrid','Midilli Adası Kaçamağı','Fransa: Paris ve Loire Şatoları','Batum ve Acara Turu'];
+const ABF={all:()=>true,kolay:x=>!x.visaReq,avrupa:x=>x.reg==='avrupa',uzak:x=>x.reg==='uzak'};
+function renderAbroad(f){curF=f;ab.innerHTML=ABO.map(t=>ITEMS.find(x=>x.t===t)).filter(ABF[f]).map(card).join('');fitFacts(ab);ab.scrollLeft=0;ab.dispatchEvent(new Event('scroll'))}
+document.querySelector('.fchips').addEventListener('click',e=>{const b=e.target.closest('.fc');if(!b)return;document.querySelectorAll('.fc').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAbroad(b.dataset.f)});
+renderAbroad('all');
+
+/* taslak: misafir / üye görünümü */
+document.querySelector('.demo').addEventListener('click',e=>{const b=e.target.closest('.dm');if(!b)return;LEVEL=b.dataset.v;const m=LEVEL!=='guest';
+  document.querySelectorAll('.dm').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.querySelectorAll('[data-member]').forEach(x=>x.hidden=!m);document.querySelectorAll('[data-guest]').forEach(x=>x.hidden=m);
+  document.getElementById('lvlTxt').textContent=LEVEL==='kasif'?'Kâşif · 1.240 Molapuan':'Gezgin · 320 Molapuan';
+  pick(curB);renderAbroad(curF);favSync()});
+/* rozete dokununca açıklama */
+const LVINFO={guest:'Üye ol, rezervasyon yaptıkça seviyen yükselsin: bu üründe Kâşif %10, Mola Ustası %15 indirim alır.',
+ gezgin:'24 ayda 3 rezervasyonla Kâşif olursun; bu üründe Kâşif %10, Mola Ustası %15 indirim alır.',
+ kasif:'Kâşif olduğun için bu üründe %10 indirim fiyata yansıdı. Mola Ustası %15 indirim alır.'};
+document.addEventListener('click',e=>{const b=e.target.closest('.lvb');if(!b)return;e.preventDefault();e.stopPropagation();toast(LVINFO[LEVEL],'Tamam',()=>{},6000)});
+
+/* güven şeridi: dokununca kısa açıklama */
+const TR={iptal:['Ücretsiz iptal','Çoğu tur, otel, etkinlik ve aktivitede belirli bir tarihe kadar ücretsiz iptal edebilirsin. Son iptal tarihi ürün sayfasında ve ödeme adımında yazar.'],
+ taksit:['3 taksit, vade farksız','Anlaşmalı kredi kartlarıyla 3 taksite kadar vade farkı yok. Kartına göre diğer taksit seçenekleri ödeme adımında listelenir.'],
+ kapora:['%20 kaporayla yer ayırt','Turlarda tutarın %20\'sini ödeyip yerini ayırtırsın, kalanını kalkıştan önce ödersin. Örneğin 8.990 TL\'lik Kapadokya turunda 1.798 TL.'],
+ puan:['Molapuan · her rezervasyonda kazan','Her rezervasyonda puan kazanırsın; 1 puan = 1 TL olarak sonraki rezervasyonunda kullanılır. Gezgin, Kâşif ve Mola Ustası seviyelerinde avantajların artar.']};
+const tin=document.getElementById('trustInfo');
+document.querySelector('.trust').addEventListener('click',e=>{const b=e.target.closest('.tr');if(!b)return;const open=b.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('.tr').forEach(x=>x.setAttribute('aria-expanded',x===b&&open));
+  tin.hidden=!open;if(open){const t=TR[b.dataset.t];tin.innerHTML='<b>'+t[0]+'</b><span>'+t[1]+'</span>'}});
+pick('hs');
+favSync();
+window.addEventListener('resize',()=>document.querySelectorAll('.rail').forEach(fitFacts));
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>document.querySelectorAll('.rail').forEach(fitFacts));
+
+function favSave(){try{localStorage.setItem('m360-fav',JSON.stringify([...FAV]))}catch(e){}}
+function favSync(){
+  document.querySelectorAll('.heart[data-fav]').forEach(h=>{const t=h.dataset.fav,on=FAV.has(t);h.setAttribute('aria-pressed',on);h.setAttribute('aria-label',t+(on?' favorilerden çıkar':' favorilere ekle'))});
+  const n=FAV.size,bd=document.getElementById('favCount');bd.textContent=n;bd.hidden=!n;
+}
+let toastT;
+function toast(msg,act,fn,ms){const el=document.getElementById('toast');el.querySelector('span').textContent=msg;const b=el.querySelector('button');b.textContent=act;b.onclick=()=>{fn();el.classList.remove('show')};
+  el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),ms||3500)}
+function favToggle(t){
+  const on=!FAV.has(t);on?FAV.add(t):FAV.delete(t);favSave();favSync();
+  document.querySelectorAll('.heart[data-fav]').forEach(h=>{if(h.dataset.fav===t&&on){h.classList.remove('pop');void h.offsetWidth;h.classList.add('pop')}});
+  on?toast('Favorilerine eklendi','Geri al',()=>favToggle(t)):toast('Favorilerinden çıkarıldı','Geri al',()=>favToggle(t));
+}
+document.addEventListener('click',e=>{const h=e.target.closest('.heart[data-fav]');if(!h)return;e.preventDefault();e.stopPropagation();favToggle(h.dataset.fav)});
+
+
+/* sekmeye göre arama kutusu */
+const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','Ekim, esnek','KİŞİ','2 yetişkin','Molamı bul'],
+ otel:['NEREYE','Şehir, bölge veya otel adı','GİRİŞ – ÇIKIŞ','2 – 4 Eki · 2 gece','ODA · KİŞİ','1 oda · 2 yetişkin','Otel bul'],
+ etkinlik:['ŞEHİR','Tüm şehirler','NE ZAMAN','Bu hafta sonu','BİLET','2 bilet','Etkinlik bul'],
+ aktivite:['NEREYE','Şehir veya aktivite','NE ZAMAN','Bu hafta sonu','KİŞİ','2 kişi','Aktivite bul'],
+ mekan:['NEREYE','Şehir veya mekân adı','NE ZAMAN','Bugün','KİŞİ','2 kişi','Mekân bul']};
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  const v=TABS[t.dataset.tab];['f1','f2','f3'].forEach((id,i)=>{const f=document.getElementById(id);f.querySelector('small').textContent=v[i*2];f.querySelector('span').textContent=v[i*2+1]});
+  document.getElementById('go').textContent=v[6];});
+
+/* tam ekran menü */
+const M=[['Turlar','<path d="M3 20h18M6 20l6-14 6 14"/>','Günübirlik, hafta sonu, uzun'],['Oteller','<path d="M3 18V8h18v10M3 14h18M7 11h3"/>','Butik, termal, resort'],
+ ['Etkinlikler','<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/>','Konser, festival, sahne'],['Aktiviteler','<path d="M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6z"/>','Rafting, paraşüt, tekne'],
+ ['Mekânlar','<path d="M5 21V10l7-6 7 6v11M9 21v-6h6v6"/>','Spa, beach club'],['Fırsatlar','<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/>','Kampanyalar']];
+const MH={'Turlar':'../turlar/','Oteller':'../oteller/','Etkinlikler':'../etkinlikler/','Aktiviteler':'../aktiviteler/','Mekânlar':'../mekanlar/','Fırsatlar':'../firsatlar/'};
+document.getElementById('mMain').innerHTML=M.map(m=>'<a href='+JSON.stringify(MH[m[0]])+' class="m-link"><span class="ico"><svg viewBox="0 0 24 24">'+m[1]+'</svg></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
+const menu=document.getElementById('menu'),btn=document.getElementById('menuBtn');
+const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.tagName!=='SCRIPT');
+function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);setTimeout(()=>document.getElementById('menuClose').focus(),50)}
+function closeM(){menu.classList.remove('open');document.body.classList.remove('locked');btn.setAttribute('aria-expanded','false');behind().forEach(el=>el.inert=false);btn.focus()}
+menu.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const f=[...menu.querySelectorAll('a,button,select')].filter(x=>x.offsetParent);const a=f[0],z=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
+menu.addEventListener('click',e=>{const l=e.target.closest('a');if(!l)return;if(l.getAttribute('href')==='#')e.preventDefault();closeM()});
+btn.addEventListener('click',openM);document.getElementById('menuClose').addEventListener('click',closeM);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open'))closeM()});
+if(location.hash==='#menu')openM();
+
+/* kaydırılabilir alanlar: fareyle sürükleme, oklar, ilerleme çubuğu */
+const chevL='<svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>',chevR='<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+function makeScroll(el,withProg){
+  let down=false,sx=0,sl=0,moved=false;
+  el.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;down=true;moved=false;sx=e.clientX;sl=el.scrollLeft});
+  window.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-sx;if(Math.abs(dx)>4){moved=true;el.classList.add('drag')}el.scrollLeft=sl-dx});
+  window.addEventListener('pointerup',()=>{if(!down)return;down=false;setTimeout(()=>el.classList.remove('drag'),0)});
+  el.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false}},true);
+  let bar=null;
+  if(withProg){const pg=document.createElement('div');pg.className='prog';pg.innerHTML='<i></i>';el.after(pg);bar=pg.firstChild}
+  const ar=document.querySelector('.arrows[data-for="'+el.id+'"]');let pb,nb;
+  if(ar){ar.innerHTML='<button class="arr" aria-label="Geri kaydır">'+chevL+'</button><button class="arr" aria-label="İleri kaydır">'+chevR+'</button>';[pb,nb]=ar.children;
+    const step=()=>Math.max(160,el.clientWidth*.8);pb.onclick=()=>el.scrollBy({left:-step(),behavior:'smooth'});nb.onclick=()=>el.scrollBy({left:step(),behavior:'smooth'})}
+  const upd=()=>{const max=el.scrollWidth-el.clientWidth;const f=max>0?el.scrollLeft/max:0;
+    if(bar){const w=max>0?el.clientWidth/el.scrollWidth:1;bar.style.width=(w*100)+'%';bar.style.transform='translateX('+(f*(1/w-1)*100)+'%)';bar.parentNode.hidden=max<=2}
+    if(pb){pb.disabled=el.scrollLeft<=2;nb.disabled=el.scrollLeft>=max-2}
+    el.classList.toggle('end',el.scrollLeft>=max-2)};
+  el.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);upd();
+}
+document.querySelectorAll('.rail').forEach(el=>makeScroll(el,true));
+document.querySelectorAll('.tabs,.promise,.fchips,.trust').forEach(el=>makeScroll(el,false));
+
+/* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
+function liveNow(){
+  let h;try{h=+new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Europe/Istanbul'}).format(new Date())}catch(e){h=new Date().getHours()}
+  const on=h>=9&&h<24;
+  document.querySelectorAll('[data-live]').forEach(x=>{x.classList.toggle('off',!on);x.querySelector('[data-live-t]').textContent=on?'Çevrimiçi':'Çevrimdışı · 09:00\'da'});
+  document.querySelectorAll('[data-live-dot]').forEach(x=>x.classList.toggle('off',!on));
+  const sel=document.getElementById('cWhen'),prev=sel.value;
+  const opts=on?['Hemen'].concat(h<18?['Bugün akşam (18:00 – 21:00)']:[] ,['Yarın öğlen (12:00 – 14:00)']):['Yarın sabah (09:00 – 12:00)','Yarın öğlen (12:00 – 14:00)','Yarın akşam (18:00 – 21:00)'];
+  sel.innerHTML=opts.map(o=>'<option>'+o+'</option>').join('');if(opts.includes(prev))sel.value=prev;
+}
+liveNow();setInterval(liveNow,60000);
+
+/* beni ara */
+const cb=document.getElementById('callBtn'),cf=document.getElementById('callForm'),ok=document.getElementById('callOk');
+cb.addEventListener('click',()=>{const o=cf.hidden;cf.hidden=!o;ok.hidden=true;cb.setAttribute('aria-expanded',o);if(o)document.getElementById('cName').focus()});
+const tel=document.getElementById('cTel'),telErr=document.getElementById('telErr');
+const telOk=v=>{const d=v.replace(/\D/g,'').replace(/^90/,'').replace(/^(?=5)/,'0');return /^05\d{9}$/.test(d)};
+tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true'&&telOk(tel.value)){tel.removeAttribute('aria-invalid');telErr.hidden=true}});
+cf.addEventListener('submit',e=>{e.preventDefault();
+  if(!telOk(tel.value)){tel.setAttribute('aria-invalid','true');telErr.hidden=false;tel.focus();return}
+  const n=document.getElementById('cName').value.trim(),w=document.getElementById('cWhen').value;
+  cf.hidden=true;cb.setAttribute('aria-expanded','false');ok.hidden=false;ok.textContent=(n?n+', ':'')+'talebin alındı. Uzmanımız '+(w==='Hemen'?'birkaç dakika içinde':w.toLocaleLowerCase('tr').replace(/ \(.*\)/,'')+' '+(w.match(/\((.*)\)/)||['',''])[1]+' arasında')+' seni arayacak. (Taslak: gerçek talep gönderilmedi.)'});
+})();
+</script>
+</body>
+</html>
