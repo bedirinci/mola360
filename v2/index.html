@@ -340,9 +340,9 @@ html.kb .cd:has(.lk:focus-visible),html.kb .tk:has(.lk:focus-visible),html.kb .h
 /* tam ekran menü */
 .menu{position:fixed;inset:0;z-index:50;background:var(--navy);color:var(--ink);display:flex;flex-direction:column;max-width:440px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s}
 .menu.open{opacity:1;visibility:visible;transition:opacity .18s ease}
-.m-bar{color:#fff;display:flex;align-items:center;justify-content:space-between;height:44px;margin-top:10px;padding:0 16px;flex:none}
+.m-bar{color:#fff;display:flex;align-items:center;justify-content:space-between;height:64px;padding:10px 16px;flex:none}
 .m-body{flex:1;overflow-y:auto;background:linear-gradient(var(--navy),var(--navy)) top/100% 60px no-repeat local,var(--page);overscroll-behavior:contain;padding:4px 16px calc(24px + env(safe-area-inset-bottom,0px))}
-.m-top{margin:-4px -16px 0;padding:4px 16px 20px;background:var(--navy);color:#fff;border-radius:0 0 24px 24px}
+.m-top{margin:-4px -16px 0;padding:0 16px 20px;background:var(--navy);color:#fff;border-radius:0 0 24px 24px}
 .m-user{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.07);border-radius:16px;padding:14px}
 .av{width:44px;height:44px;border-radius:50%;background:var(--navy-2);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px var(--green)}
 .av svg{width:22px;height:22px}
@@ -363,6 +363,8 @@ html.kb .cd:has(.lk:focus-visible),html.kb .tk:has(.lk:focus-visible),html.kb .h
 .m-h{margin-top:24px;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--mute)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .chip{padding:8px 12px;border-radius:999px;font-size:13.5px;font-weight:700;background:var(--soft);border:1px solid var(--line);color:var(--ink)}
+.chips.m-time{display:grid;grid-template-columns:1fr 1fr}
+.m-time .chip{text-align:center}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .m-tile{background:var(--soft);color:var(--navy);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;font-weight:700}
 .m-tile svg{width:20px;height:20px;color:var(--green-ink)}
@@ -620,7 +622,7 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
     <nav class="m-main" aria-label="Ürünler" id="mMain"></nav>
 
     <div class="m-h">NE KADAR VAKTİN VAR?</div>
-    <div class="chips">
+    <div class="chips m-time">
       <a href="#yakinda" class="chip">Birkaç saat</a><a href="#yakinda" class="chip">Günübirlik</a><a href="#yakinda" class="chip">Hafta sonu</a><a href="#yakinda" class="chip">4 gün +</a>
     </div>
 
