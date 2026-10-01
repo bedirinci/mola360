@@ -207,8 +207,6 @@ html.kb .m-bar :focus-visible,html.kb .m-top :focus-visible,html.kb .top :focus-
 .fchips::-webkit-scrollbar{display:none}
 .fc{flex:none;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink);background:var(--card)}
 .fc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
-.mp{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--green-ink);margin-top:3px;white-space:nowrap}
-.mp svg{width:12px;height:12px;fill:currentColor;stroke:none}
 .lvb{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:5px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px}
 .lvb svg{width:12px;height:12px;fill:var(--green);stroke:none}
 .lvb.in{position:relative;left:auto;bottom:auto;align-self:flex-start;margin-top:6px}
@@ -218,7 +216,6 @@ html.kb .m-bar :focus-visible,html.kb .m-top :focus-visible,html.kb .top :focus-
 .tot s{display:block}
 .toast span{font-weight:600;line-height:1.4}
 #lvlTxt{font-style:normal}
-.tot .mp{justify-content:flex-end}
 .cd,.tk,.hc{position:relative}
 .lk{color:inherit;text-decoration:none}
 .lk::after{content:"";position:absolute;inset:0;z-index:1}
@@ -238,7 +235,6 @@ html.kb .cd:has(.lk:focus-visible),html.kb .tk:has(.lk:focus-visible),html.kb .h
 .hc .lvb.in{margin-top:0}
 .hfoot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--line)}
 .hl-l{display:flex;flex-direction:column;font-size:11.5px;color:var(--mute);line-height:1.35;min-width:0}
-.hl-l .mp{margin-top:1px}
 .hl-r{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
 .hl-r strong{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .hl-r s{font-size:11px;color:var(--mute);font-weight:600}
@@ -461,7 +457,6 @@ body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:opt
 .score b{letter-spacing:0}
 .now{letter-spacing:-.015em}
 .price .unit{font-size:11.5px;letter-spacing:.01em}
-.mp{font-size:11.5px;letter-spacing:.01em}
 .visa{font-size:11.5px;letter-spacing:.01em}
 .tag,.pill,.lvb{letter-spacing:.01em}
 .tr b{font-size:14px;letter-spacing:-.005em}
@@ -722,7 +717,6 @@ const PL={Tur:'Turlar',Otel:'Oteller',Etkinlik:'Etkinlikler',Aktivite:'Aktivitel
 /* Molapuan önerisi: her 100 TL'ye 1 puan, 1 puan = 1 TL. Seviye indirimi programa katılan üründe. */
 const LV=new Set(['Kapadokya Turu','Efes ve Şirince Turu','Göreme Mağara Otel','Sealight Resort','Kordon Spa & Masaj']);
 const STAR='<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>';
-const mp=p=>'<span class="mp">+'+Math.floor(p/100)+' Molapuan</span>';
 /* Seviye indirimi (öneri): Kâşif %10, Mola Ustası %15. Rozet görünümü kullanıcının seviyesine göre değişir. */
 let LEVEL='guest';
 const LVTXT={guest:'Üyelere %15\'e varan indirim',gezgin:'Kâşif\'e %10 indirim',kasif:'Kâşif indirimi %10'};
@@ -755,7 +749,7 @@ function card(x){
   +(x.info?'<div class="info"><span class="it">'+x.info+'</span>'+(x.visa?'<span class="visa'+(x.visaReq?' req':'')+'">'+x.visa+'</span>':'')+'</div>':'')
   +'<div class="dep">'+row+'</div>'
   +'<div class="pr">'+scoreOrNew(x.s,x.c)+'<div class="price">'+(lvOn(x.t)?'<span class="old">'+tl(x.p)+'</span>':(x.old?'<span class="old">'+tl(x.old)+'</span>':''))
-  +'<span class="unit">'+(x.u||'kişi başı')+'</span><span class="now">'+tl(lvPrice(x.t,x.p))+'</span>'+mp(lvPrice(x.t,x.p))+'</div></div></div></article>';
+  +'<span class="unit">'+(x.u||'kişi başı')+'</span><span class="now">'+tl(lvPrice(x.t,x.p))+'</span>'+'</div></div></div></article>';
 }
 function fitFacts(root){
   root.querySelectorAll('.dates[data-fit]').forEach(row=>{
@@ -799,18 +793,18 @@ const VN=[{t:'Kordon Spa & Masaj',a:'Alsancak, İzmir · Masaj salonu',s:9.5,c:3
 function renderLower(){
   const ev=EV.filter(e=>!shown.has(e[3])).slice(0,3);
   document.getElementById('events').innerHTML=ev.map(e=>'<article class="tk"><div class="stub"><span class="dw">'+e[0]+'</span><span class="dn">'+e[1]+'</span><span class="mo">EKİM</span></div><span class="notch t"></span><span class="notch b"></span>'
-   +'<div class="tb"><div class="x"><div class="cat">'+e[2].toUpperCase()+'</div><h3>'+ttl(e[3])+'</h3><div class="meta">'+I.clock+'<span>'+e[4]+'</span></div><div class="p"><b>'+tl(e[5])+'</b>\'den başlayan</div>'+mp(e[5])+'</div>'
+   +'<div class="tb"><div class="x"><div class="cat">'+e[2].toUpperCase()+'</div><h3>'+ttl(e[3])+'</h3><div class="meta">'+I.clock+'<span>'+e[4]+'</span></div><div class="p"><b>'+tl(e[5])+'</b>\'den başlayan</div>'+'</div>'
    +'<div class="thumb" style="background:'+G[e[6]]+'"></div></div></article>').join('');
   /* Mekânlarda tekrar filtresi yok: yalnızca iki mekân var, ikisi de her zaman görünsün */
   document.getElementById('venues').innerHTML=VN.map(v=>'<article class="cd"><div class="ph" style="--g:'+G[v.g]+'"><div class="tags"><span class="type">Mekân</span></div>'+lvb(v.t)+''+heartBtn(v.t)+'</div>'
    +'<div class="bd"><h3>'+ttl(v.t)+'</h3><div class="meta">'+I.pin+'<span>'+v.a+'</span></div>'
    +'<div class="dep"><div class="lbl">HİZMETLER</div><div class="dates"><span class="d svc">'+v.opts[0][0]+'<b>'+(lvOn(v.t)?'<s>'+tl(v.opts[0][1])+'</s> ':'')+tl(lvPrice(v.t,v.opts[0][1]))+'</b></span>'+(v.opts.length>1?'<span class="d more">+'+(v.opts.length-1)+'</span>':'')+'</div></div>'
-   +'<div class="pr">'+scoreOrNew(v.s,v.c)+'<div class="price"><span class="mode">'+I.clock+v.mode+'</span>'+mp(lvPrice(v.t,v.opts[0][1]))+'</div></div></div></article>').join('');
+   +'<div class="pr">'+scoreOrNew(v.s,v.c)+'<div class="price"><span class="mode">'+I.clock+v.mode+'</span>'+'</div></div></div></article>').join('');
   fitFacts(document.getElementById('venues'));
   const ht=HT.filter(h=>!shown.has(h[1])).slice(0,2);
   document.getElementById('hotels').innerHTML=ht.map(h=>'<article class="hc"><div class="ph" style="--g:'+G[h[7]]+'">'+heartBtn(h[1])+'</div>'
    +'<div class="x"><div class="stars" aria-label="Otel sınıfı">'+h[0]+'</div><h3>'+ttl(h[1])+'</h3><div class="meta">'+I.pin+'<span>'+h[2]+'</span></div>'+'<div class="hrow">'+scoreOrNew(h[3],h[4])+'<span class="pill">'+h[5]+'</span></div>'+lvb(h[1],'in')
-   +'<div class="hfoot"><div class="hl-l"><span>2 gece toplam</span>'+mp(lvPrice(h[1],h[6]*2))+'</div><div class="hl-r">'+(lvOn(h[1])?'<s class="old">'+tl(h[6]*2)+'</s>':'')+'<strong>'+tl(lvPrice(h[1],h[6]*2))+'</strong></div></div></div></article>').join('');
+   +'<div class="hfoot"><div class="hl-l"><span>2 gece toplam</span>'+'</div><div class="hl-r">'+(lvOn(h[1])?'<s class="old">'+tl(h[6]*2)+'</s>':'')+'<strong>'+tl(lvPrice(h[1],h[6]*2))+'</strong></div></div></div></article>').join('');
 }
 /* Yurt dışında tekrar filtresi yok: bölüm her zaman 4 ürünü gösteriyor */
 const ab=document.getElementById('abroad');
