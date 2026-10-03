@@ -1,10 +1,13 @@
 /* Keşfet araması: sekmeye göre üç alan (nereye, ne zaman, kaç kişi); her
    biri alttan bir çekmece açar. Yer ve tarih liste sayfasına adresle gider;
    kişi sayısı ve tarih bu sekme açık kaldıkça ürün ve rezervasyon
-   sayfalarına taşınır (api.js setSearch). Veri yalnızca api.js'ten. */
-import { I } from './icons.js';
+   sayfalarına taşınır (api.js setSearch). Keşfet'in hatırladığı "Kiminle?"
+   seçimi aramaya da biner (formda kaldırılabilir bir çip, listede kimle=)
+   ve kişi sayısının başlangıcını belirler; yakındaki yer "Nereye?"nin
+   başında önerilir. Veri yalnızca api.js'ten. */
+import { I, IC } from './icons.js';
 import { makeSheet } from './ui.js';
-import { listDestinations, getDestination, suggest, listProducts, listSearches, saveSearch, clearSearches, getSearch, setSearch, productUrl, norm, WHEN, TYPES } from './api.js';
+import { listDestinations, getDestination, suggest, listProducts, listSearches, saveSearch, clearSearches, getSearch, setSearch, productUrl, norm, WHEN, WITH, TYPES } from './api.js';
 import { ROOT } from './root.js';
 
 /* sekmeye göre alan adları */
@@ -17,6 +20,10 @@ const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','KİŞİ','M
 const WHO={tur:[['y','Yetişkin','18 yaş ve üstü',1,9],['c','Çocuk','2 – 17 yaş',0,6]],
  otel:[['o','Oda','Odada en çok 2 yetişkin',1,3],['y','Yetişkin','18 yaş ve üstü',1,6],['c','Çocuk','2 – 17 yaş',0,4]],
  etkinlik:[['b','Bilet','',1,8]],aktivite:[['k','Kişi','',1,9]],mekan:[['k','Kişi','',1,9]]};
+/* kişi sayısının başlangıcı; kiminle seçimi belliyse ona göre (kullanıcı
+   sayaçlara dokunana kadar) */
+const BASE={y:2,c:0,o:1,b:2,k:2};
+const PRESET={yalniz:{y:1,b:1,k:1},sevgili:{y:2,b:2,k:2},cocuk:{y:2,c:1,b:3,k:3}};
 
 const FOLD={ı:'i',ğ:'g',ü:'u',ş:'s',ö:'o',ç:'c',â:'a',î:'i',û:'u'};
 const fold=t=>[...t].map(c=>{const l=c.toLocaleLowerCase('tr');return l.length===1?FOLD[l]||l:c}).join('');
@@ -52,15 +59,20 @@ const SHEETS=`<div class="sh-bg" id="whereBg" aria-hidden="true"></div>
   <button type="button" class="btn who-ok" data-x>Tamam</button>
 </div>`;
 
-export function initSearch(){
+export function initSearch({kimle='',onWith}={}){
 document.querySelector('script[type="module"]').insertAdjacentHTML('beforebegin',SHEETS);
 const $=id=>document.getElementById(id);
 const f1=$('f1'),f2=$('f2'),f3=$('f3'),inp=$('whereIn'),list=$('whereList'),clr=$('whereClr');
+/* Keşfet'in hatırladığı kiminle: formda, gönder düğmesinin üstünde */
+$('go').insertAdjacentHTML('beforebegin','<div class="ctx" id="ctx" hidden></div>');
+const ctx=$('ctx');
 
 /* arama durumu: bu sekmede açık kaldıkça hatırlanır */
 const saved=getSearch();
 const st={tur:TABS[saved.tur]?saved.tur:'tur',yer:getDestination(saved.yer)?saved.yer:'',ara:saved.ara||'',
-  tarih:WHEN.some(w=>w[0]===saved.tarih)?saved.tarih:'',n:{y:2,c:0,o:1,b:2,k:2,...(saved.n||{})}};
+  tarih:WHEN.some(w=>w[0]===saved.tarih)?saved.tarih:'',kimle:WITH.some(w=>w[0]===kimle)?kimle:'',nSet:!!saved.nSet,near:null,
+  n:{...BASE,...(saved.n||{})}};
+if(!st.nSet)Object.assign(st.n,BASE,PRESET[st.kimle]);
 const T=()=>TYPES.find(t=>t[0]===st.tur);
 const unit=()=>T()[1].toLocaleLowerCase('tr');
 const whereTxt=()=>st.yer?getDestination(st.yer).name:st.ara?'“'+st.ara+'”':'';
@@ -78,6 +90,8 @@ function fields(){
   f2.querySelector('small').textContent=v[2];f2.querySelector('span').textContent=whenTxt();
   f3.querySelector('small').textContent=v[3];f3.querySelector('span').textContent=whoTxt();
   $('go').textContent=v[4];
+  const W=WITH.find(w=>w[0]===st.kimle);ctx.hidden=!W;
+  if(W)ctx.innerHTML='<button type="button" class="ctx-c" data-ctx aria-label="'+W[1]+' seçimini kaldır">'+IC.users+'<span>'+W[1]+'</span>'+X+'</button>';
   document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.tab===st.tur));
 }
 
@@ -93,8 +107,11 @@ function drawWhere(){
     const rs=listSearches();
     if(rs.length)html+=head('Son aramaların','<button type="button" class="clr" data-clear-recent>Temizle</button>')
       +rs.map((r,i)=>'<button type="button" class="sr-row" data-recent="'+i+'"><span class="sr-ic">'+I.clock+'</span><span class="x"><b>'+h(r.title)+'</b><small>'+h(r.sub)+'</small></span></button>').join('');
+    /* yakınımda açıksa o yer en başta */
+    const nd=st.near&&st.yer!==st.near&&listDestinations({type:st.tur}).find(d=>d.id===st.near);
+    if(nd)html+=head('Yakınında')+destRow(nd,'');
     html+=head('Yerler')+(st.yer||st.ara?'<button type="button" class="sr-row" data-yer=""><span class="sr-ic">'+GLOBE+'</span><span class="x"><b>Her yer</b><small>Seçimi kaldır</small></span></button>':'')
-      +listDestinations({type:st.tur}).map(d=>destRow(d,'')).join('');
+      +listDestinations({type:st.tur}).filter(d=>d!==nd&&d.id!==(nd&&nd.id)).map(d=>destRow(d,'')).join('');
   }else{
     const r=suggest(q,{type:st.tur});
     if(r.dests.length)html+=head('Yerler')+r.dests.map(d=>destRow(d,q)).join('');
@@ -156,7 +173,7 @@ function drawWho(){
 f3.setAttribute('aria-haspopup','dialog');f3.setAttribute('aria-expanded','false');
 f3.addEventListener('click',()=>{drawWho();who.open(f3)});
 $('whoList').addEventListener('click',e=>{const b=e.target.closest('[data-who]');if(!b)return;const k=b.dataset.who,d=+b.dataset.d;if(!can(k,d))return;
-  n[k]+=d;if(st.tur==='otel'&&n.y>n.o*2)n.o=Math.ceil(n.y/2);
+  n[k]+=d;st.nSet=true;if(st.tur==='otel'&&n.y>n.o*2)n.o=Math.ceil(n.y/2);
   drawWho();fields();remember();
   const same=$('whoList').querySelector('[data-who="'+k+'"][data-d="'+d+'"]');(same.disabled?$('whoList').querySelector('[data-who="'+k+'"]:not(:disabled)')||$('whoSheet').querySelector('.who-ok'):same).focus()});
 
@@ -165,12 +182,18 @@ document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.cl
 
 /* Molamı bul: liste sayfasına; yer ya da metin varsa son aramalara yazılır */
 $('search').addEventListener('submit',e=>{e.preventDefault();
-  const qs=[['tur',st.tur],['yer',st.yer],['ara',st.ara],['tarih',st.tarih]].filter(x=>x[1]).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  const qs=[['tur',st.tur],['yer',st.yer],['ara',st.ara],['tarih',st.tarih],['kimle',st.kimle]].filter(x=>x[1]).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
   const url=ROOT+'liste/?'+qs;
   remember();
-  if(st.yer||st.ara)saveSearch({url,title:whereTxt(),sub:[T()[2],whenTxt(),whoTxt()].join(' · '),state:{...st,n:{...n},adet:adet(),who:whoTxt()}});
+  const W=WITH.find(w=>w[0]===st.kimle);
+  if(st.yer||st.ara)saveSearch({url,title:whereTxt(),sub:[T()[2],whenTxt(),W?W[1]:whoTxt()].join(' · '),state:{...st,n:{...n},adet:adet(),who:whoTxt()}});
   location.href=url;
 });
 
+ctx.addEventListener('click',e=>{if(!e.target.closest('[data-ctx]'))return;setWith('');remember();if(onWith)onWith('');f3.focus({preventScroll:true})});
+function setWith(k){st.kimle=k;if(!st.nSet)Object.assign(n,BASE,PRESET[k]);fields()}
+
 fields();
+/* Keşfet'ten: kiminle değişince ve yakındaki yer belli olunca */
+return {setWith:k=>{setWith(k);remember()},setNear:id=>{st.near=id||null}};
 }

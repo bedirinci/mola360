@@ -317,6 +317,12 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .vk-p b{font-size:var(--fs-base);font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .vk-p small{font-size:var(--fs-xs);font-weight:600;color:var(--mute)}
 .vk-p s{font-size:var(--fs-xs);color:var(--mute)}
+/* deneyimi yaşayanların paylaşımları (ürün sayfasına, #paylasimlar) */
+.vk-pp{position:relative;z-index:2;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:3px 10px 3px 3px;border-radius:var(--r-pill);
+  background:rgba(10,14,30,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:var(--fs-xs);font-weight:700;text-decoration:none;white-space:nowrap}
+.vk-pp .avs{display:flex}
+.vk-pp .ava{width:20px;height:20px;font-size:var(--fs-xs);letter-spacing:-.04em;box-shadow:0 0 0 1.5px #fff}
+.vk-pp .ava+.ava{margin-left:-6px}
 /* Liste ve favoriler: karşılaştırmak için yatay, sık kart (görsel solda) */
 .stack{gap:var(--s-3)}
 .stack .vk{width:auto;aspect-ratio:auto;min-height:124px;flex-direction:row;justify-content:flex-start;padding:10px 12px 10px 128px;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
@@ -333,6 +339,8 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .stack .vk .type{left:128px;top:12px;padding:0;background:none;color:var(--green-ink)}
 .stack .vk .heart{left:78px;right:auto;top:16px;width:30px;height:30px}
 .stack .vk .heart svg{width:15px;height:15px}
+.stack .vk-pp{order:1;margin:7px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.stack .vk-r{order:2}
 @media (hover:hover){.stack .vk:hover{box-shadow:0 0 0 1px var(--line),var(--shadow)}}
 html.kb .vk:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
 /* Yakınımda: kartta uzaklık */

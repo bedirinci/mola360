@@ -111,6 +111,32 @@ describe('v2', () => {
     expect(api.nearestPlace([38.43, 27.14]).id).toBe('izmir');
   });
 
+  it('fotoğraf kuralı, tema girişi ve paylaşımdan ürüne bağ', async () => {
+    const { IMG } = await import('../v2/js/data.js');
+    const api = await import('../v2/js/api.js');
+    /* fotoğraf: v2/img/ altında, kurala uygun ad ve boyut; bağlı olduğu ürün ya da tema var */
+    expect(existsSync(join(V2, 'img/KAYNAK.md'))).toBe(true);
+    Object.entries(IMG).forEach(([k, f]) => {
+      expect(k.startsWith('tema:') ? api.getTheme(k.slice(5)) : api.findByTitle(k), k).toBeTruthy();
+      expect(f, k).toMatch(/^[a-z0-9-]+\.(webp|jpe?g)$/);
+      expect(existsSync(join(V2, 'img', f)), f).toBe(true);
+      expect(statSync(join(V2, 'img', f)).size, f).toBeLessThanOrEqual(200 * 1024);
+    });
+    /* fotoğraf renk geçişinin üstüne biner; yoksa geçiş kalır */
+    expect(api.photo('a.webp', 'linear-gradient(red,blue)')).toMatch(/^url\(\S+\/img\/a\.webp\) center\/cover no-repeat,linear-gradient\(red,blue\)$/);
+    expect(api.photo(undefined, 'linear-gradient(red,blue)')).toBe('linear-gradient(red,blue)');
+    /* tema vitrini: iki cümlelik giriş */
+    api.listThemes().forEach(t => expect((t.intro.match(/[.!?](\s|$)/g) || []).length, t.name).toBe(2));
+    /* her paylaşım bir ürüne bağlı ve o ürünün paylaşımları arasında */
+    api.listPosts().forEach(p => {
+      expect(p.product, p.id).toBeTruthy();
+      expect(api.listPosts({ productId: p.product.id }).map(x => x.id)).toContain(p.id);
+    });
+    /* kişiye göre sıra için uzaklık: konumu bilinmeyen üründe null */
+    expect(api.kmTo([38.43, 27.14], api.getProduct('kordon-caz-aksamlari'))).toBeLessThan(10);
+    expect(api.kmTo(null, api.getProduct('kordon-caz-aksamlari'))).toBeNull();
+  });
+
   it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
     expect(oku(join(V2, 'js/icerik.js'))).toMatch(/ÖRNEK/);

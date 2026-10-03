@@ -891,3 +891,46 @@ güncellenecek yaşayan proje dokümanıdır.
   fiyat ve birim taşmıyor, kartın tamamı ürüne gidiyor. Konum izni
   istemek kullanıcının kararı; izin vermeyen de şehir seçerek aynı
   sonuca ulaşıyor (karanlık örüntü yok, §20).
+
+### 2026-10-03 — Keşfet seni hatırlıyor, tema vitrini, paylaşımdan ürüne bağ, fotoğraf kuralı
+
+- **Karar:** Keşfet süre ve kiminle seçimini bu cihazda hatırlıyor.
+  Kiminle seçimi arama kutusuna biniyor: formda kaldırılabilir bir çip,
+  listede `kimle` filtresi ve kişi sayısının başlangıcı (tek başıma 1,
+  sevgilimle 2, çocuklarla 2 yetişkin + 1 çocuk; kullanıcı sayaca
+  dokunursa onunki geçerli). "Yakınımda" açıksa o yer "Nereye?"nin en
+  başında öneriliyor. Bölümlerin sırası değişmiyor; içlerindeki
+  deneyimler önce kiminle seçimine uyanlar, sonra yakında olanlar (60 km,
+  300 km, ötesi) diye sıralanıyor. Tema sayfası bir vitrin oldu: kapak,
+  iki cümlelik giriş, yalnızca temada olan kategoriler, temanın kendi
+  sırası ve araya "Bu temada paylaşılanlar". Ürün kartında, o deneyimin
+  paylaşımı varsa paylaşanların küçük resimleri ve "N paylaşım" var;
+  dokununca ürün sayfasındaki paylaşımlara gidiyor. Fotoğraf için bir
+  kural yazıldı (docs/yeni-surum.md "Fotoğraf kuralı") ve kartlar
+  fotoğrafı ayrıca bir şey yapmadan gösterecek hale geldi. Bağlan'a altı
+  ÖRNEK paylaşım eklendi; her tema en az bir paylaşım taşıyor.
+- **Neden:** Bedir İnci Keşfet önerilerinden 1 – 4'ün uygulanmasını
+  istedi; masaüstü düzeni (5) bilerek en sona kaldı. Keşfet her
+  açılışta aynı soruları yeniden sormamalı; temadan gelen kullanıcı ilk
+  dokunuşta düz bir listede kaybolmamalı; paylaşım ile ürün arasındaki
+  bağ iki yönlü olmalı ki "Mola360 ile gitti" rozeti güvene dönüşsün.
+- **Etkilediği alanlar:** `v2/js/kesfet.js`, `v2/js/arama.js`,
+  `v2/js/liste.js`, `v2/js/cards.js` (`vk-pp`), `v2/js/urun.js`
+  (`#paylasimlar`), `v2/js/api.js` (`photo`, `kmTo`, temada `intro`),
+  `v2/js/data.js` (`IMG`, `THEMES` girişleri, yeni `POSTS`),
+  `v2/img/KAYNAK.md`, `v2/css/`, `docs/yeni-surum.md`.
+- **Teknik sonuç:** Seçim `localStorage` `m360-kesfet` ({b, k}); konumun
+  kendisi de konumdan çıkan yer de saklanmıyor (yer önerisi yalnızca o
+  açılışta). Fotoğraf `bg` değerinin ilk katmanı
+  (`url(...) center/cover, <geçiş>`), bu yüzden kart, ray, bilet ve ürün
+  sayfası değişmeden gösteriyor. Henüz fotoğraf yok: bu ortamdan stok
+  fotoğraf sitelerine erişilemiyor ve kaynak kararı bekleniyor.
+  Rezervasyon sonrası "Paylaş" çağrısı ve paylaşım çekmecesi alt menü
+  değişikliğiyle (Planlarım) geliyor; kartlardaki "N paylaşım" o
+  paylaşımları da sayıyor.
+- **UX sonucu:** Geri dönen kullanıcı Keşfet'i bıraktığı gibi buluyor ve
+  aramaya her şeyi yeniden girmiyor. Kişiselleştirme görünür ve geri
+  alınabilir: hangi seçimin aramaya bindiği formda yazıyor, çipin
+  çarpısıyla kalkıyor (karanlık örüntü yok, §20). Tema sayfası neyin
+  neden bir arada olduğunu iki cümleyle anlatıyor. Paylaşımı okuyan
+  ürüne, ürüne bakan paylaşımlara tek dokunuşla geçiyor.

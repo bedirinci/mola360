@@ -15,6 +15,11 @@
 .fld span.hint{color:var(--mute);font-weight:500}
 .split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
 .split .fld+.fld{border-left:1px solid var(--line);border-radius:0 var(--r-md) var(--r-md) 0}
+/* Keşfet'in hatırladığı kiminle: aramaya biner, dokununca kalkar */
+.ctx{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;border-top:1px solid var(--line)}
+.ctx-c{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px 0 12px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink);font-size:var(--fs-md);font-weight:700}
+.ctx-c svg{width:17px;height:17px}
+.ctx-c svg:last-child{width:14px;height:14px;opacity:.75}
 .go{display:block;width:100%;margin-top:6px;background:var(--green);color:var(--navy);border-radius:var(--r-md);font-weight:800;font-size:var(--fs-base);padding:14px}
 .time{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-2);margin-top:14px}
 .tt{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 12px 10px 10px;border-radius:var(--r-md);background:var(--soft);text-align:left;color:var(--ink)}

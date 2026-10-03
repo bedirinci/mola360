@@ -2,6 +2,13 @@
    etkinlik saatleri ve yurt dışı turları uydurma (docs/yeni-surum.md).
    Bu dosya ileride yerini tek veri katmanına (api.js) bırakacak. */
 
+/* Fotoğraflar: ürün adı (ya da "tema:<id>") → v2/img/ altındaki dosya.
+   Fotoğrafı olmayan her şey renk geçişiyle görünür; fotoğraf yüklenemezse
+   de geçiş arkada kalır. Kural (docs/yeni-surum.md "Fotoğraf kuralı"):
+   4:5, en az 1200×1500, webp ya da jpg, 200 KB altı; konu ortada, alt
+   üçte bir sakin (yazı oraya biner). Kaynak ve lisans v2/img/KAYNAK.md'de. */
+export const IMG={};
+
 /* Görsel yer tutucu renk geçişleri (gerçek fotoğraf gelene kadar) */
 export const G={kapadokya:'linear-gradient(160deg,#EBC79B,#B97648 48%,#5B6B92)',efes:'linear-gradient(160deg,#EDDFC2,#B8925B 50%,#6E93AE)',sapanca:'linear-gradient(160deg,#B7D79A,#4F8F5B 55%,#2D5570)',
 ege:'linear-gradient(160deg,#9ED8EC,#2F8DBA 55%,#E9D6AE)',karadeniz:'linear-gradient(160deg,#A9CFA0,#3F7A52 50%,#475E7A)',dogu:'linear-gradient(160deg,#EEF2F7,#9AA9C2 45%,#6B3F3F)',
@@ -98,23 +105,25 @@ export const KIMLE={'İstanbul Boğaz Turu':'yalniz sevgili arkadas aile cocuk i
  'Maşukiye Dere Evi':'sevgili arkadas aile cocuk','Kaleiçi Konak Restoran':'sevgili arkadas aile is','Erciyes Dağ Evi':'sevgili arkadas aile','Kadıköy Akustik Sahne':'yalniz sevgili arkadas is'};
 
 /* Temalar: tür karışık koleksiyonlar (kategori de filtre de değil). Hangi
-   ürünün hangi temada olduğu ÖRNEK. */
+   ürünün hangi temada olduğu ÖRNEK. [adres anahtarı, ad, renk geçişi,
+   ürünler, tema sayfasının iki cümlelik girişi] */
 export const THEMES=[
- ['doga','Doğa ve yayla','linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)',['Sapanca ve Maşukiye Turu','Ayder Yayla Evi','Köprülü Kanyon Rafting','Maşukiye Dere Evi','Karadeniz Yaylaları Turu','Pamukkale ve Hierapolis','Ölüdeniz Yamaç Paraşütü','Göreme Mağara Otel','Turistik Doğu Ekspresi']],
- ['deniz','Deniz ve tekne','linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)',['Bodrum Tekne Turu','Sealight Resort','Kum Beach Club','Ege Adaları Balayı Kaçamağı','Çeşme Yaz Festivali','İstanbul Boğaz Turu','Kordon Butik Otel','Midilli Adası Kaçamağı']],
- ['kultur','Kültür ve tarih','linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)',['Efes ve Şirince Turu','Aspendos Opera ve Bale Festivali','Göreme Mağara Otel','Kaleiçi Konak Restoran','İstanbul Boğaz Turu','Kapadokya Turu','Pamukkale ve Hierapolis','Balkanlar: Saraybosna ve Mostar','İtalya: Roma, Floransa ve Venedik','Fransa: Paris ve Loire Şatoları','İspanya: Barselona ve Madrid']],
- ['kis','Kış ve kayak','linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)',['Erciyes Kayak Haftası','Uludağ Kayak Dersi','Erciyes Dağ Evi','Ayder Yayla Evi','Termal Vadi Resort','Turistik Doğu Ekspresi']],
- ['termal','Termal ve spa','linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',['Termal Vadi Resort','Kordon Spa & Masaj','Pamukkale ve Hierapolis','Sealight Resort']],
- ['macera','Macera ve spor','linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)',['Ölüdeniz Yamaç Paraşütü','Köprülü Kanyon Rafting','Ayder Yayla Evi','Uludağ Kayak Dersi','Karadeniz Yaylaları Turu','Erciyes Kayak Haftası','Erciyes Dağ Evi','Turistik Doğu Ekspresi']],
- ['festival','Konser ve festival','linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)',['Harbiye Açıkhava Konserleri','Kadıköy Akustik Sahne','Kordon Caz Akşamları','Kordon Butik Otel','Çeşme Yaz Festivali','Kum Beach Club','İstanbul Kahve Festivali']],
- ['sahne','Sahne ve gösteri','linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)',['Stand Up Gecesi','Kadıköy Akustik Sahne','Aspendos Opera ve Bale Festivali','Harbiye Açıkhava Konserleri']],
- ['lezzet','Yeme içme','linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)',['Kaleiçi Konak Restoran','İstanbul Kahve Festivali','Efes ve Şirince Turu','Maşukiye Dere Evi','Bodrum Tekne Turu','Erciyes Dağ Evi','Kum Beach Club']],
- ['balayi','Balayı','linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)',['Ege Adaları Balayı Kaçamağı','Göreme Mağara Otel','Kordon Spa & Masaj','Kordon Caz Akşamları','İstanbul Boğaz Turu','Kaleiçi Konak Restoran','Kapadokya Turu','Kordon Butik Otel','İtalya: Roma, Floransa ve Venedik','Sealight Resort']],
- ['gece','Gece hayatı','linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)',['Kadıköy Akustik Sahne','Stand Up Gecesi','Kum Beach Club','Kordon Caz Akşamları','Kaleiçi Konak Restoran','Harbiye Açıkhava Konserleri']]];
+ ['doga','Doğa ve yayla','linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)',['Sapanca ve Maşukiye Turu','Ayder Yayla Evi','Köprülü Kanyon Rafting','Maşukiye Dere Evi','Karadeniz Yaylaları Turu','Pamukkale ve Hierapolis','Ölüdeniz Yamaç Paraşütü','Göreme Mağara Otel','Turistik Doğu Ekspresi'],'Şehrin gürültüsünden uzak yaylalar, dereler ve kanyonlar. Günübirlik kaçamaktan yayla evinde birkaç güne kadar, doğada geçen molalar.'],
+ ['deniz','Deniz ve tekne','linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)',['Bodrum Tekne Turu','Sealight Resort','Kum Beach Club','Ege Adaları Balayı Kaçamağı','Çeşme Yaz Festivali','İstanbul Boğaz Turu','Kordon Butik Otel','Midilli Adası Kaçamağı'],'Ege ve Akdeniz\'in koyları, tekne turları ve deniz kenarında konaklama. Güne denizde başlayıp gün batımını sahilde bitirenler için.'],
+ ['kultur','Kültür ve tarih','linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)',['Efes ve Şirince Turu','Aspendos Opera ve Bale Festivali','Göreme Mağara Otel','Kaleiçi Konak Restoran','İstanbul Boğaz Turu','Kapadokya Turu','Pamukkale ve Hierapolis','Balkanlar: Saraybosna ve Mostar','İtalya: Roma, Floransa ve Venedik','Fransa: Paris ve Loire Şatoları','İspanya: Barselona ve Madrid'],'Antik kentler, tarihi konaklar ve rehberli turlar. Gezdiğin yerin hikâyesini dinleyerek yaşamak isteyenler için.'],
+ ['kis','Kış ve kayak','linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)',['Erciyes Kayak Haftası','Uludağ Kayak Dersi','Erciyes Dağ Evi','Ayder Yayla Evi','Termal Vadi Resort','Turistik Doğu Ekspresi'],'Kayak, dağ evleri ve karlı yollar. Pistte geçen bir günden sobalı bir dağ evindeki uzun akşamlara kadar.'],
+ ['termal','Termal ve spa','linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',['Termal Vadi Resort','Kordon Spa & Masaj','Pamukkale ve Hierapolis','Sealight Resort'],'Termal sular, spa ve masaj. Yorgunluğu atmak için yavaş geçen bir gün ya da birkaç gecelik dinlenme.'],
+ ['macera','Macera ve spor','linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)',['Ölüdeniz Yamaç Paraşütü','Köprülü Kanyon Rafting','Ayder Yayla Evi','Uludağ Kayak Dersi','Karadeniz Yaylaları Turu','Erciyes Kayak Haftası','Erciyes Dağ Evi','Turistik Doğu Ekspresi'],'Yamaç paraşütü, rafting ve yayla yürüyüşleri. Hafta sonunu hareket ederek geçirmek isteyenler için.'],
+ ['festival','Konser ve festival','linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)',['Harbiye Açıkhava Konserleri','Kadıköy Akustik Sahne','Kordon Caz Akşamları','Kordon Butik Otel','Çeşme Yaz Festivali','Kum Beach Club','İstanbul Kahve Festivali'],'Açıkhava konserleri, caz geceleri ve festivaller. Müziği canlı dinlemek, kalabalığın enerjisine karışmak isteyenler için.'],
+ ['sahne','Sahne ve gösteri','linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)',['Stand Up Gecesi','Kadıköy Akustik Sahne','Aspendos Opera ve Bale Festivali','Harbiye Açıkhava Konserleri'],'Stand up, opera, bale ve küçük sahnelerde akustik geceler. Bir akşamı sahnenin önünde geçirmek isteyenler için.'],
+ ['lezzet','Yeme içme','linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)',['Kaleiçi Konak Restoran','İstanbul Kahve Festivali','Efes ve Şirince Turu','Maşukiye Dere Evi','Bodrum Tekne Turu','Erciyes Dağ Evi','Kum Beach Club'],'Serpme kahvaltıdan konak sofralarına, kahve festivalinden teknede ızgara balığa. Gittiği yeri tadıyla hatırlayanlar için.'],
+ ['balayi','Balayı','linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)',['Ege Adaları Balayı Kaçamağı','Göreme Mağara Otel','Kordon Spa & Masaj','Kordon Caz Akşamları','İstanbul Boğaz Turu','Kaleiçi Konak Restoran','Kapadokya Turu','Kordon Butik Otel','İtalya: Roma, Floransa ve Venedik','Sealight Resort'],'Mağara otelleri, ada kaçamakları ve baş başa akşamlar. İkiniz için sakin ve özenli molalar.'],
+ ['gece','Gece hayatı','linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)',['Kadıköy Akustik Sahne','Stand Up Gecesi','Kum Beach Club','Kordon Caz Akşamları','Kaleiçi Konak Restoran','Harbiye Açıkhava Konserleri'],'Akustik sahneler, stand up, beach club ve caz. Gün bittiğinde başlayan planlar için.']];
 
 /* Bağlan: ÖRNEK paylaşımlar. Kullanıcılar ve metinler uydurma; her paylaşım
    Mola360'daki bir ürüne (ürün adıyla) bağlı. "gitti": paylaşan kişi bu
-   deneyimi Mola360'tan rezerve edip yaşamış (doğrulanmış katılımcı). */
+   deneyimi Mola360'tan rezerve edip yaşamış (doğrulanmış katılımcı).
+   "img": paylaşımın fotoğrafı (v2/img/ altında; yoksa renk geçişi). */
 export const USERS={
  deniz:{ad:'Deniz Aksoy',kul:'deniz.yolda',ini:'DA',renk:'#3A6FA5'},
  selin:{ad:'Selin ve Can',kul:'selinilecan',ini:'SC',renk:'#B0764A'},
@@ -134,7 +143,19 @@ export const POSTS=[
  {u:'kaan',yer:'Manavgat, Antalya',ne:'1 hafta önce',g:'rafting',urun:'Köprülü Kanyon Rafting',gitti:0,
   metin:'Arkadaş grubuyla rafting, sonra nehir kenarında alabalık. Hafta sonu için birebir.',beg:134,yor:22},
  {u:'zeynep',yer:'Kemer, Antalya',ne:'4 gün önce',g:'sealight',urun:'Sealight Resort',gitti:1,
-  metin:'Ekim\'de deniz hâlâ sıcak. Çocuklar havuzdan, biz plajdan çıkmadık.',beg:88,yor:9}];
+  metin:'Ekim\'de deniz hâlâ sıcak. Çocuklar havuzdan, biz plajdan çıkmadık.',beg:88,yor:9},
+ {u:'kaan',yer:'Göreme, Nevşehir',ne:'1 hafta önce',g:'goreme',urun:'Kapadokya Turu',gitti:1,
+  metin:'Balonlar kalkmadan vadide yürüdük, rehber her kayanın hikâyesini biliyordu. İki gün az bile geldi.',beg:157,yor:14},
+ {u:'zeynep',yer:'Ayder, Rize',ne:'2 gün önce',g:'ayder',urun:'Ayder Yayla Evi',gitti:1,
+  metin:'Sabah sis, öğlen güneş, akşam sobada mısır ekmeği. Telefonu çantadan hiç çıkarmadık.',beg:121,yor:16},
+ {u:'mert',yer:'Bodrum, Muğla',ne:'3 gün önce',g:'ege',urun:'Bodrum Tekne Turu',gitti:1,
+  metin:'Dört koy, iki yüzme molası, teknede ızgara balık. Akşama tuzlu ve mutlu döndük.',beg:203,yor:21},
+ {u:'elif',yer:'Kaleiçi, Antalya',ne:'6 gün önce',g:'kaleici',urun:'Kaleiçi Konak Restoran',gitti:0,
+  metin:'Avluda yemek, sonra dar sokaklarda yürüyüş. Doğum günü için güzel bir akşamdı.',beg:64,yor:7},
+ {u:'selin',yer:'Maşukiye, Sakarya',ne:'Dün',g:'masukiye',urun:'Maşukiye Dere Evi',gitti:1,
+  metin:'Dere kenarında serpme kahvaltı, sonra göl kıyısında kısa bir yürüyüş. Pazar sabahı için tam kıvamında.',beg:77,yor:8},
+ {u:'deniz',yer:'Kavaklıdere, Ankara',ne:'3 hafta önce',g:'harbiye',urun:'Stand Up Gecesi',gitti:0,
+  metin:'Geçen ayki gösteriye gittik, salon kahkahadan yıkıldı. Bu cuma yine oradayız.',beg:58,yor:6}];
 
 /* Yerler: arama önerileri için. Bir ürün, adında ya da yerinde (kalkış
    şehri sayılmaz) bu adlardan biri geçiyorsa o yerdedir. Liste ÖRNEK;
