@@ -54,7 +54,7 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama, "Ne kadar molan var?", raylar, Bağlan önizlemesi |
+| Keşfet | `v2/` | 6 bölüm: arama, "Ne kadar molan var?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
 | Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
 | Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, iptal ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
 | Liste | `v2/liste/?tur=otel&sure=hs` | Kategori satırı (`tur`) ve filtre satırı (`sure`) ayrı |
@@ -70,7 +70,7 @@ Kod düzeni:
 - `js/api.js`: yeni sayfaların okuduğu tek veri katmanı. Bugün `js/data.js`
   içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
   türeyen `slug`. Backend gelince yalnızca içi değişecek.
-- `js/cards.js`: ürün kartı, paylaşım kartı, paylaşıma bağlı ürün.
+- `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında), paylaşım kartı, paylaşıma bağlı ürün.
 - Her sayfanın kendi modülü: `kesfet.js`, `baglan.js`, `urun.js` …
 
 Notlar:

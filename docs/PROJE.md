@@ -700,3 +700,25 @@ güncellenecek yaşayan proje dokümanıdır.
   Mola360'tan yaşayanlarda). Ödeme, giriş, paylaşım oluşturma henüz
   "hazırlanıyor".
 
+### 2026-10-03 — Keşfet sadeleşti: görsel ağırlıklı kart, 6 bölüm
+
+- **Karar:** Ürün kartı görsel ağırlıklı oldu: görselin üstünde tür,
+  favori, ad, yer · süre, puan ve fiyat. Tarihler, vize, ulaşım ve
+  üyelik rozeti yalnızca ürün sayfasında. Keşfet 14 bölümden 6'ya indi:
+  arama, "Ne kadar molan var?", Bağlan önizlemesi, "Bu hafta sonu için"
+  (Oteller · Mekânlar · Yurt dışı), etkinlikler, temalar. Güven şeridi
+  ve popüler aramalar kaldırıldı; "Planlarken yanındayız" kutusu ürün
+  sayfasına taşındı.
+- **Neden:** Bedir İnci Keşfet'i kalabalık buldu ve kart için "görsel
+  ağırlıklı" seçeneği seçti. Kalabalığı hem kartlardaki bilgi yükü hem
+  de bölüm sayısı yaratıyordu; keşif ekranı görselle karar verdirmeli
+  (§6), ayrıntı ürün sayfasında.
+- **Etkilediği alanlar:** `v2/index.html`, `v2/js/kesfet.js`,
+  `v2/js/cards.js`, `v2/js/help.js`, `v2/js/urun.js`, `v2/css/` (eski
+  kart ve kullanılmayan kurallar silindi).
+- **Teknik sonuç:** Liste, favoriler ve benzer deneyimler aynı kartı
+  kullanıyor. Yardım kutusu `renderHelp()` ile ürün sayfasına
+  ekleniyor. Yurt dışı rayı `api.js`'teki `abroad` alanından süzülüyor.
+- **UX sonucu:** Keşfet yaklaşık yarı boyuna indi; kartta en fazla iki
+  satır metin ve tek fiyat var. Karar için gereken ayrıntı (tarih, vize,
+  arama, WhatsApp) ürün sayfasında, "Tarih seç" düğmesinin yanında.

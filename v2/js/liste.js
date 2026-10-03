@@ -4,12 +4,10 @@ import { renderShell } from './shell.js';
 import { listProducts, TYPES } from './api.js';
 import { BUCKETS } from './data.js';
 import { productCard } from './cards.js';
-import { toast, fitFacts } from './ui.js';
+import { toast } from './ui.js';
 import { initFavorites, favSync } from './favorites.js';
-import { initLevelInfo } from './level.js';
 
 renderShell('kesfet');
-initLevelInfo();
 initFavorites();
 
 const q=new URLSearchParams(location.search);
@@ -36,7 +34,7 @@ function draw(){
   const el=document.getElementById('list');
   el.innerHTML=list.length?list.map(x=>productCard(x)).join('')
     :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>Süre filtresini kaldırmayı ya da başka bir kategoriye bakmayı dene.</p><a class="btn" href="'+href(tur,'')+'">Filtreyi kaldır</a></div>';
-  fitFacts(el);favSync();
+  favSync();
   document.title='mola360 — '+document.getElementById('lsTitle').textContent;
 }
 document.getElementById('filters').addEventListener('click',e=>{
@@ -46,4 +44,3 @@ document.getElementById('filters').addEventListener('click',e=>{
 });
 document.querySelector('[data-soon-sort]').addEventListener('click',()=>toast('Sıralama seçenekleri yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000));
 draw();
-window.addEventListener('resize',()=>fitFacts(document.getElementById('list')));

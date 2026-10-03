@@ -13,7 +13,7 @@ export const TYPES=[['tur','Tur','Turlar'],['otel','Otel','Oteller'],['etkinlik'
 export const typeKey=k=>(TYPES.find(t=>t[1]===k)||TYPES[0])[0];
 
 const fromItem=x=>({id:slug(x.t),type:x.k,title:x.t,place:x.a,price:x.p,old:x.old,unit:x.u||'kişi başı',score:x.s||0,count:x.c||0,
-  bg:G[x.g],facts:x.facts||[],dates:x.dates||[],more:x.more,info:x.info,tr:x.tr,visa:x.visa,b:x.b,sample:true});
+  bg:G[x.g],facts:x.facts||[],dates:x.dates||[],more:x.more,info:x.info,tr:x.tr,visa:x.visa,b:x.b,abroad:!!x.abroad,sample:true});
 const all=new Map();
 ITEMS.forEach(x=>all.set(slug(x.t),fromItem(x)));
 EV.forEach(e=>{const id=slug(e[3]);if(!all.has(id))all.set(id,{id,type:'Etkinlik',title:e[3],place:e[4],price:e[5],unit:'bilet',score:0,count:0,bg:G[e[6]],facts:[e[0][0]+e[0].slice(1).toLocaleLowerCase('tr')+' '+e[1]+' Eki',e[2]],dates:[],b:'saat',sample:true})});

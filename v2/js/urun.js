@@ -2,9 +2,10 @@
 import { renderShell } from './shell.js';
 import { getProduct, listProducts, listPosts, typeKey } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
-import { tl, sc, word, toast, fitFacts, makeScroll } from './ui.js';
+import { tl, sc, word, toast, makeScroll } from './ui.js';
 import { favToggle, isFav, initFavorites, favSync } from './favorites.js';
-import { initLevelInfo } from './level.js';
+import { initLevelInfo, lvb } from './level.js';
+import { renderHelp } from './help.js';
 import { TRUST } from './data.js';
 import { IC, I, TRI } from './icons.js';
 import { ROOT } from './root.js';
@@ -39,7 +40,7 @@ document.getElementById('urun').innerHTML=
  +'<section class="u-hd"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-score">'+(p.count?sc(p.score)+'<a href="#yorumlar">'+p.count.toLocaleString('tr-TR')+' değerlendirme</a>':'<span class="score new"><b>Yeni</b></span><span>Henüz değerlendirme yok</span>')+'</div>'
- +'<div class="u-chips">'+chips.map(c=>'<span>'+c+'</span>').join('')+'</div></section>'
+ +lvb(p.title,'in')+'<div class="u-chips">'+chips.map(c=>'<span>'+c+'</span>').join('')+'</div></section>'
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -83,11 +84,12 @@ document.getElementById('urun').addEventListener('click',e=>{
 });
 
 renderShell('urun',{nav:false});
+renderHelp(document.getElementById('urun'));
 initPostActions(toast);
 initFavorites();
 initLevelInfo();
 favSync();
 const fb=document.getElementById('favP');
 fb.addEventListener('click',()=>{favToggle(p.title);fb.setAttribute('aria-pressed',isFav(p.title))});
-document.querySelectorAll('.rail').forEach(el=>{fitFacts(el);makeScroll(el,true)});
+document.querySelectorAll('.rail').forEach(el=>{makeScroll(el,true)});
 }
