@@ -152,7 +152,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .pf-went .plink{background:var(--card);box-shadow:var(--shadow)}
 
 /* Rezervasyon akışı */
-.bk-h{font-size:var(--fs-lg);font-weight:800;margin-left:4px}
+.bk-h{font-size:var(--fs-lg);font-weight:800;line-height:1.5;margin-left:4px}
 .steps{display:flex;gap:6px;margin-top:12px;counter-reset:s}
 .steps li{list-style:none;flex:1;font-size:var(--fs-sm);font-weight:700;color:var(--navy-ink);counter-increment:s;padding-top:8px;border-top:3px solid rgba(255,255,255,.18)}
 .steps li::before{content:counter(s) ". "}
@@ -184,7 +184,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-sum{display:flex;flex-direction:column;gap:10px;margin-top:12px;font-size:var(--fs-md)}
 .bk-sum div{display:flex;justify-content:space-between;gap:16px}
 .bk-sum dt{color:var(--mute)}
-.bk-sum dd{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.bk-sum dd{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
 .bk-sum .ok{color:var(--green-ink)}
 .bk-sum .tot{border-top:1px solid var(--line);padding-top:10px}
 .bk-sum .tot dt,.bk-sum .tot dd{color:var(--ink);font-weight:800;font-size:var(--fs-lg)}
@@ -198,7 +198,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-done{text-align:center;padding:28px 24px 8px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .bk-done .ei{width:64px;height:64px;border-radius:50%;background:var(--green);display:grid;place-items:center;color:var(--navy)}
 .bk-done .ei svg{width:32px;height:32px;stroke-width:2.6}
-.bk-done h1{font-size:var(--fs-2xl);font-weight:800;margin-top:6px}
+.bk-done h2{font-size:var(--fs-2xl);font-weight:800;margin-top:6px}
 .bk-done p{font-size:var(--fs-base);line-height:1.5;color:var(--mute)}
 .bk-done .no{font-size:var(--fs-md)}
 .bk-acts{display:flex;flex-direction:column;gap:10px;margin:16px 16px 0}
