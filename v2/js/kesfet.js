@@ -11,7 +11,6 @@ import { getLevel, setLevel } from './level.js';
 import { favSync, initFavorites } from './favorites.js';
 import { productCard, recentCard, ticket, postMini, initPostActions } from './cards.js';
 import { renderShell } from './shell.js';
-import { initSearch } from './arama.js';
 import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, listNearby, nearestPlace, placePos, getDestination, kmTo, BUCKETS, WITH, TYPES, typeKey } from './api.js';
 
 renderShell('kesfet');
@@ -27,7 +26,12 @@ let curB=BUCKETS.some(b=>b[0]===mem.b)?mem.b:'hs',curK=WITH.some(w=>w[0]===mem.k
 
 /* Arama: nereye, ne zaman, kaç kişi (arama.js). Kiminle seçimi aramayı
    etkilemez; yalnızca Keşfet'teki rayların sırasını belirler */
-const srch=initSearch();
+/* Arama ayrı yüklenir: arama modülünde bir sorun olsa (ör. yayından hemen
+   sonra tarayıcı eski ve yeni dosyaları karıştırırsa) raylar ve kartlar
+   yine çizilir */
+let srch={setNear(){}};
+import('./arama.js').then(m=>{srch=m.initSearch();if(nearAt)srch.setNear(nearAt[2]);
+  document.querySelectorAll('.pchips').forEach(el=>makeScroll(el))}).catch(e=>console.error(e));
 
 /* Kişiye göre sıra: kiminle seçimine uyanlar, sonra yakında olanlar öne
    (60 km, 300 km, ötesi); aynı derecedekiler kendi sırasında kalır */
@@ -143,4 +147,4 @@ initFavorites();
 favSync();
 
 document.querySelectorAll('.rail').forEach(el=>makeScroll(el));
-document.querySelectorAll('.tabs,.fchips,.pchips').forEach(el=>makeScroll(el));
+document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el));
