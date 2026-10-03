@@ -1,0 +1,9 @@
+/* Tasarım tokenları: renk, yazı, köşe, gölge. Tasarım sisteminin tohumu (PROJE.md §14). */
+:root{--navy:#152048; --navy-2:#223066; --navy-ink:#C7CDE4;
+  --green:#8CC63F; --green-ink:#3F6512; --green-soft:#EEF6E2;
+  --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
+  --gold:#C98A00;
+  --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --r-card:18px; --r-sm:10px;
+  --shadow:0 1px 2px rgba(20,26,46,.06),0 8px 22px rgba(20,26,46,.08);
+  color-scheme:light;}
