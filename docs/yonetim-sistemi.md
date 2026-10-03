@@ -7,6 +7,11 @@ kullanıcı katmanı.
 Bu belge mimariyi, verilen kararların **gerekçesini** ve hangi fazın
 tamamlandığını anlatıyor.
 
+> **3 Ekim 2026 notu.** Klasik site ve onun `/admin/` paneli
+> `arsiv/klasik/` altına taşındı. Ürünün yol haritası artık
+> `docs/PROJE.md` §18'de. Aşağıdaki "Faz" numaraları yalnızca bu yönetim
+> sisteminin (backend) planı; PROJE.md'deki fazlarla aynı şey değil.
+
 ## Neden ayrı bir backend
 
 Site GitHub Pages'te yayınlanıyor. Pages **statik dosya sunar, süreç
@@ -41,7 +46,7 @@ Bu yüzden sistem ikiye ayrıldı:
 > `/tur/<slug>/` gibi adresler tek bir şablon tarafından karşılanacak ve
 > sayfa kaydı sunucudan alacak. Ön yüz bu geçişe hazırlanıyor: bütün
 > ekranlar veriyi tek bir veri kapısından istiyor, backend geldiğinde
-> yalnızca o kapının içi değişecek (`docs/veri-sozlesmesi.md`). Mevcut
+> yalnızca o kapının içi değişecek (`arsiv/klasik/docs/veri-sozlesmesi.md`). Mevcut
 > 7 ürün sayfasının HTML kabuğu, sosyal medya önizlemesi bozulmasın diye
 > sunucu gelene kadar duruyor; yenisi yazılmayacak. Aşağıdaki paragraf
 > kararın tarihçesi olarak bırakıldı.
@@ -148,7 +153,7 @@ gezinme), SEO (ayrı yetki), etiketler (filtre), ek hizmetler (fiyat).
 ### İlişkiler ID üzerinden
 
 Eski veride "benzer içerikler" slug ve **başlık kopyalayarak**
-tutuluyordu; başlık değişince kopya eskiyordu — `docs/icerik-katalogu.md`
+tutuluyordu; başlık değişince kopya eskiyordu — `arsiv/klasik/docs/icerik-katalogu.md`
 içindeki "kart eskiyor" sorununun aynısı. Artık `content_relations`
 hedefin **id**'sini tutuyor.
 
@@ -235,7 +240,7 @@ ekliyor.
 Bunlar **bilerek** sonraki fazlarda:
 
 - İçerik CRUD uç noktaları ve panel arayüzü (`/admin/` hâlâ eski,
-  statik dosyaları okuyan sürüm — `docs/admin-paneli.md`)
+  statik dosyaları okuyan sürüm — `arsiv/klasik/docs/admin-paneli.md`)
 - Dinamik adresler: sunucunun `/tur/<slug>/` gibi adresleri tek şablonla
   karşılaması (statik üretimin yerine)
 - Rezervasyon, ödeme ve envanter **servisleri** (şema hazır, iş mantığı yok)

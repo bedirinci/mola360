@@ -20,7 +20,7 @@ import { sifreOzetle } from '../src/lib/password.js';
 const calistir = promisify(execFile);
 const require = createRequire(import.meta.url);
 const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const yol = (a) => path.join(KOK, 'assets/js', a);
+const yol = (a) => path.join(KOK, 'arsiv/klasik/assets/js', a);
 
 const TUR = require(yol('tour-data.js'));
 const OTEL = require(yol('hotel-data.js'));

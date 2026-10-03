@@ -42,7 +42,7 @@ jobs:
         run: |
           VER="${GITHUB_SHA::8}"
           echo "Surum: $VER"
-          find . -name '*.html' -not -path './_backup/*' -not -path './node_modules/*' -print0 \
+          find . -name '*.html' -not -path './arsiv/*' -not -path './node_modules/*' -print0 \
           | while IFS= read -r -d '' SAYFA; do
               sed -E -i 's#(href|src)="((\.\./)*assets/(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
               echo "--- $SAYFA"
@@ -54,6 +54,11 @@ jobs:
       # yanlislikla commit edilirse yayina cikmasin diye.
       - name: Backend kaynagini yayin disinda birak
         run: rm -rf backend docker-compose.yml
+
+      # Klasik site arsivde; yayina cikmaz (adresleri kok dizine gore
+      # yazildigi icin arsiv klasorunden zaten calismaz).
+      - name: Arsivi yayin disinda birak
+        run: rm -rf arsiv
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

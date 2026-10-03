@@ -24,7 +24,7 @@ import { transaction, kapat, sorgu } from '../src/db/pool.js';
 
 const require = createRequire(import.meta.url);
 const KOK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const veriYolu = (ad) => path.join(KOK, 'assets/js', ad);
+const veriYolu = (ad) => path.join(KOK, 'arsiv/klasik/assets/js', ad);
 
 const TUR_VERI      = require(veriYolu('tour-data.js'));
 const OTEL_VERI     = require(veriYolu('hotel-data.js'));
@@ -33,7 +33,7 @@ const ETKINLIK_VERI = require(veriYolu('event-data.js'));
 const MEKAN_VERI    = require(veriYolu('venue-data.js'));
 /* Sınıflandırmanın ana verisi: bölge, şehir, kategori, tema, koleksiyon,
    liste sayfası. Ürün kayıtları buna slug ile bağlanıyor
-   (docs/veri-sozlesmesi.md bölüm 5). */
+   (arsiv/klasik/docs/veri-sozlesmesi.md bölüm 5). */
 const TAKSONOMI     = require(veriYolu('taxonomy-data.js'));
 
 /* ---------------- rapor ----------------
@@ -104,7 +104,7 @@ async function medyaAktar(c) {
   /* Anasayfa kart görselleri app.js içinde bir sözlükte; o dosya modül
      olmadığı için METİN olarak okunuyor — mevcut testler de aynı yolu
      izliyor (tests/icerik.test.js). */
-  const app = readFileSync(path.join(KOK, 'assets/js/app.js'), 'utf8');
+  const app = readFileSync(path.join(KOK, 'arsiv/klasik/assets/js/app.js'), 'utf8');
   const blok = app.match(/const cardImages = \{([\s\S]*?)\n\};/);
   if (blok) {
     for (const m of blok[1].matchAll(/"([^"]+)":\s*"([^"]+)"/g)) {

@@ -259,7 +259,7 @@ describe('içerik bütünlüğü', () => {
 });
 
 /* 019: sınıflandırma. Buradaki kurallar ön yüzün veri sözleşmesinde
-   (docs/veri-sozlesmesi.md bölüm 5) yazılı; veritabanı da aynı şeyi
+   (arsiv/klasik/docs/veri-sozlesmesi.md bölüm 5) yazılı; veritabanı da aynı şeyi
    zorluyor ki panel ya da bir betik onları delemesin. */
 describe('sınıflandırma kısıtları', () => {
   async function kategori(tip, slug) {
