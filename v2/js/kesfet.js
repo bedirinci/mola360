@@ -93,7 +93,6 @@ function nearGps(){
 $('nearCities').innerHTML=CITIES.map(id=>'<button type="button" data-city="'+id+'">'+getDestination(id).name+'</button>').join('');
 nGo.addEventListener('click',nearGps);
 $('nearCities').addEventListener('click',e=>{const b=e.target.closest('[data-city]');if(b)nearCity(b.dataset.city)});
-$('nearOff').addEventListener('click',()=>{nearOff();nGo.focus({preventScroll:true})});
 /* açılışta: şehir seçildiyse hemen, konum izni verildiyse yeniden sormadan */
 function nearStart(){
   const v=nGet();

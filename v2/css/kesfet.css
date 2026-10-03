@@ -81,6 +81,11 @@
 .near-c button{min-height:40px;padding:0 14px;border-radius:var(--r-pill);background:rgba(255,255,255,.1);color:#fff;font-weight:var(--fw-semi);font-size:var(--fs-md);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
 .near-loc{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 10px 4px 8px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink);font-size:var(--fs-sm);font-weight:var(--fw-bold)}
 .near-loc svg{width:14px;height:14px;stroke-width:2.4}
+/* konum etiketi başlığın sağında; dar ekranda başlık değil etiket kısalır */
+.near-hd h2{flex:0 0 auto}
+.near-hd .near-loc{flex:0 1 auto;min-width:0;margin:0 0 0 10px}
+.near-hd .near-loc span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.near-hd .more-l{margin-left:auto}
 
 /* Arama çekmeceleri: nereye (yazdıkça öneri), ne zaman, kaç kişi */
 .fld span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
