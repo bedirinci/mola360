@@ -108,7 +108,8 @@ Notlar:
   değerlendirmelerden gelecek.
 - Beğen, takip et, kaydet yalnızca ekranda değişir; kaydedilmez.
 - Molapuan ve seviye indirimi ÖNERİ kurallarıyla gösteriliyor: 100 TL = 1
-  puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15.
+  puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15. Seviye son 24 aydaki
+  rezervasyon sayısıyla: Gezgin 1, Kâşif 3, Mola Ustası 6.
 - Keşfet'in altındaki "Görünüm: Misafir / Gezgin / Kâşif" düğmeleri
   önizleme içindir.
 

@@ -1109,3 +1109,25 @@ güncellenecek yaşayan proje dokümanıdır.
   Odak "Konumumu kullan" düğmesine geçer. Raylar eski sırasına döner.
 - **UX sonucu:** Kullanıcı konumu tek dokunuşla kapatıyor. Başlık tek
   satırda kalıyor, dar ekranda etiket metni kısalıyor.
+
+### 2026-10-03 — Profilde Molapuan kartı: puan, sıradaki hedef, seviye yolu
+
+- **Karar (Bedir):** Molapuan, Bedir'in gönderdiği bir sadakat kartı
+  örneğine benzer bir kartla gösteriliyor. Kartın üstünde puan, seviye
+  rozeti ve "Nasıl kazanırım?" yer alıyor. Altında sıradaki hedef bir
+  cümleyle yazıyor ve bir ok düğmesi var. En altta açılıp kapanan bir
+  seviye yolu bulunuyor.
+- **Neden:** Kullanıcı ne kadar puanı olduğunu, sıradaki ödülü ve oraya ne
+  kadar kaldığını tek bakışta görmeli.
+- **Etkilediği alanlar:** Profil sayfası.
+- **Teknik sonuç:** Örnekteki kupon ödülleri yerine mevcut kurallar
+  kullanılıyor (ÖNERİ): 1 puan = 1 TL; seviye son 24 aydaki rezervasyon
+  sayısıyla belirleniyor (Gezgin 1, Kâşif 3, Mola Ustası 6).
+  - Seviye yolunda üç durak var. Her durakta gereken rezervasyon sayısı,
+    seviyenin adı ve avantajı yazıyor.
+  - Çubuk, ulaşılan durağa kadar dolu.
+  - Okuyuculara ilerleme çubuğu olarak bildiriliyor.
+  - Eski "ÖRNEK" etiketi karttan kalktı.
+- **UX sonucu:** Sıradaki hedef somut bir cümle (ör. "3 rezervasyon daha
+  yap, Mola Ustası ol, %15 indirim kazan!"). Ok düğmesi Keşfet'e götürüyor.
+  Kart 320px genişlikte de taşmadan sığıyor.
