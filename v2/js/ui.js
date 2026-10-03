@@ -1,12 +1,14 @@
 /* Ortak arayüz yardımcıları: biçimlendirme, bildirim (toast), yatay raylar, dokunma ayarları. */
 import { chevL, chevR } from './icons.js';
+import { ROOT } from './root.js';
+import { productUrl } from './api.js';
 
 export const tl=n=>n.toLocaleString('tr-TR')+' TL';
 export const word=s=>s>=9.5?'Olağanüstü':s>=9?'Harika':s>=8.5?'Çok iyi':'İyi';
 export const sc=(s,c)=>'<span class="score"><b>'+s.toFixed(1).replace('.',',')+'</b>'+word(s)+'</span>';
 export const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-/* Ürün sayfaları yeni sitede henüz yok; kart dokununca "hazırlanıyor" bildirimi çıkar. */
-export const ttl=t=>'<a class="lk" href="#yakinda" title="'+t.replace(/"/g,'&quot;')+'">'+t+'</a>';
+/* Kart başlığı ürün sayfasına bağlanır; bağın ::after'ı kartın tamamını kaplar */
+export const ttl=t=>'<a class="lk" href="'+productUrl(ROOT,t)+'" title="'+t.replace(/"/g,'&quot;')+'">'+t+'</a>';
 export const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
 
 /* Kart bilgi satırı: sığmayan çipler gizlenir, sayısı "+n" olarak yazılır */

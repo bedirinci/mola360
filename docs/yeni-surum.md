@@ -49,24 +49,48 @@ Otomatik kontroller `tests/v2.test.js`'te.
 
 ## Şu an ne var
 
-`v2/index.html`: Keşfet (anasayfa) ve tam ekran menü, tek dosya.
+v2 çok sayfalı bir arayüz iskeleti. Her sayfa kendi klasöründe, derleme
+yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
-- Veriler sayfanın içinde ve ÖRNEK: ürün adları ve fiyatlar örnek
-  katalogdan alındı; kalkış tarihleri, etkinlik saatleri ve yedi yurt
-  dışı turu uydurma.
+| Sayfa | Adres | Ne var |
+|---|---|---|
+| Keşfet | `v2/` | Arama, "Ne kadar molan var?", raylar, Bağlan önizlemesi |
+| Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
+| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, iptal ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
+| Liste | `v2/liste/?tur=otel&sure=hs` | Kategori satırı (`tur`) ve filtre satırı (`sure`) ayrı |
+| Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
+| Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan ve geçmiş; geçmişte "Deneyimini paylaş" |
+| Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
+
+Kod düzeni:
+
+- `css/tokens.css` (tasarım tokenları), `base.css`, `components.css`
+  (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
+- `js/shell.js`: her sayfada aynı olan alt menü, tam ekran menü, bildirim.
+- `js/api.js`: yeni sayfaların okuduğu tek veri katmanı. Bugün `js/data.js`
+  içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
+  türeyen `slug`. Backend gelince yalnızca içi değişecek.
+- `js/cards.js`: ürün kartı, paylaşım kartı, paylaşıma bağlı ürün.
+- Her sayfanın kendi modülü: `kesfet.js`, `baglan.js`, `urun.js` …
+
+Notlar:
+
+- Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
+  katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
+  paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
 - Favoriler yalnızca tarayıcıda (`localStorage`, `m360-fav`).
+- Beğen, takip et, kaydet yalnızca ekranda değişir; kaydedilmez.
 - Molapuan ve seviye indirimi ÖNERİ kurallarıyla gösteriliyor: 100 TL = 1
-  puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15. v2'nin kuralları
-  kesinleşince burada yazılacak.
-- Alttaki "Görünüm: Misafir / Gezgin / Kâşif" düğmeleri önizleme içindir.
+  puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15.
+- Keşfet'in altındaki "Görünüm: Misafir / Gezgin / Kâşif" düğmeleri
+  önizleme içindir.
 
 ## Sıradaki adımlar
 
-PROJE.md §18 Faz 1 (Foundation) ile başlıyor:
-
-1. `v2/index.html`'i görünümü değiştirmeden `css/` ve `js/` dosyalarına
-   bölmek; bugünkü CSS değişkenleri `tokens.css` olur.
-2. v2'nin kendi veri katmanı (`js/api.js`): bugün örnek veriyi döndürür,
-   alan adları backend şemasına (`content`) göre seçilir.
-3. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
-4. Liste, ürün, seçim ve ödeme, hesap sayfaları; masaüstü düzeni.
+1. Tasarım sistemi: tokenları tamamlamak (tip ölçeği, boşluk ölçeği) ve
+   bileşenleri tek bir vitrin sayfasında toplamak.
+2. Keşfet'in de veriyi `api.js`'ten okuması (bugün `data.js`'i doğrudan
+   okuyor).
+3. Tarih/kişi seçimi → ödeme akışı; giriş ve kayıt; paylaşım oluşturma.
+4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
+5. Masaüstü düzeni.

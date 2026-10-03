@@ -1,11 +1,9 @@
-/* "Planlarken yanındayız": çevrimiçi göstergesi, beni ara formu, saat seçme çekmecesi */
+/* "Planlarken yanındayız": beni ara formu ve saat seçme çekmecesi. Çevrimiçi göstergesi shell.js'te. */
+import { isLive } from './shell.js';
 export function initHelp(){
-/* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
-function liveNow(){
-  let h;try{h=+new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Europe/Istanbul'}).format(new Date())}catch(e){h=new Date().getHours()}
-  const on=h>=9&&h<24;
-  document.querySelectorAll('[data-live]').forEach(x=>{x.classList.toggle('off',!on);x.querySelector('[data-live-t]').textContent=on?'Çevrimiçi':'Çevrimdışı · 09:00\'da'});
-  document.querySelectorAll('[data-live-dot]').forEach(x=>x.classList.toggle('off',!on));
+/* aranma saatleri: çevrimiçiyse "Hemen", sonra henüz başlamamış ilk üç aralık */
+function callSlots(){
+  const on=isLive();
   const sel=document.getElementById('cWhen'),prev=sel.value;
   /* aralıklar tarayıcı saatine göre: henüz başlamamış ilk üç aralık */
   const SL=[['sabah',9,12],['öğlen',12,17],['akşam',17,22]],bh=new Date().getHours(),p2=n=>String(n).padStart(2,'0')+':00',nx=[];
@@ -14,7 +12,7 @@ function liveNow(){
   const v=opts.includes(prev)?prev:opts[0];sel.value=v;document.getElementById('cWhenTxt').textContent=v;
   document.getElementById('whenList').innerHTML=opts.map(o=>{const m=o.match(/^(.*?) \((.*)\)$/);return '<button type="button" class="opt" role="radio" aria-checked="'+(o===v)+'" data-v="'+o+'"><span>'+(m?m[1]+'<small>'+m[2]+'</small>':o+'<small>Birkaç dakika içinde</small>')+'</span><i aria-hidden="true"></i></button>'}).join('');
 }
-liveNow();setInterval(liveNow,60000);
+callSlots();setInterval(callSlots,60000);
 
 /* beni ara */
 const cb=document.getElementById('callBtn'),cf=document.getElementById('callForm'),ok=document.getElementById('callOk');

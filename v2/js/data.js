@@ -86,3 +86,27 @@ export const TRUST={iptal:['Ücretsiz iptal','Çoğu tur, otel, etkinlik ve akti
  taksit:['3 taksit, vade farksız','Anlaşmalı kredi kartlarıyla 3 taksite kadar vade farkı yok. Kartına göre diğer taksit seçenekleri ödeme adımında listelenir.'],
  kapora:['%20 kaporayla yer ayırt','Turlarda tutarın %20\'sini ödeyip yerini ayırtırsın, kalanını kalkıştan önce ödersin. Örneğin 8.990 TL\'lik Kapadokya turunda 1.798 TL.'],
  puan:['Molapuan · her rezervasyonda kazan','Her rezervasyonda puan kazanırsın; 1 puan = 1 TL olarak sonraki rezervasyonunda kullanılır. Gezgin, Kâşif ve Mola Ustası seviyelerinde avantajların artar.']};
+
+/* Bağlan: ÖRNEK paylaşımlar. Kullanıcılar ve metinler uydurma; her paylaşım
+   Mola360'daki bir ürüne (ürün adıyla) bağlı. "gitti": paylaşan kişi bu
+   deneyimi Mola360'tan rezerve edip yaşamış (doğrulanmış katılımcı). */
+export const USERS={
+ deniz:{ad:'Deniz Aksoy',kul:'deniz.yolda',ini:'DA',renk:'#3A6FA5'},
+ selin:{ad:'Selin ve Can',kul:'selinilecan',ini:'SC',renk:'#B0764A'},
+ mert:{ad:'Mert Kaya',kul:'mertkampta',ini:'MK',renk:'#3E7A55'},
+ elif:{ad:'Elif Demir',kul:'elif.mola',ini:'ED',renk:'#8A4F7A'},
+ kaan:{ad:'Kaan Öztürk',kul:'kaanrota',ini:'KÖ',renk:'#2F8F86'},
+ zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#C0704A'}};
+export const POSTS=[
+ {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',urun:'Kapadokya Turu',gitti:1,
+  metin:'Gün doğumunda balonlar havalanırken terastaydık. Hayatımın en güzel sabahlarından biri.',beg:248,yor:31},
+ {u:'mert',yer:'Fethiye, Muğla',ne:'5 saat önce',g:'parasut',urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,
+  metin:'Babadağ\'dan atladık, 20 dakika boyunca altımızda Ölüdeniz. Korkuyordum, bir daha yaparım.',beg:412,yor:58},
+ {u:'elif',yer:'Alsancak, İzmir',ne:'Dün',g:'caz',urun:'Kordon Caz Akşamları',gitti:1,
+  metin:'Kordon\'da gün batımı ve canlı caz. İzmir\'de cumartesi akşamı için daha iyisi yok.',beg:96,yor:12},
+ {u:'deniz',yer:'Selçuk, İzmir',ne:'3 gün önce',g:'efes',urun:'Efes ve Şirince Turu',gitti:1,
+  metin:'Rehberimiz Celsus Kütüphanesi\'ni öyle anlattı ki bir saat ayrılamadık. Şirince şarabı da bonus.',beg:173,yor:19},
+ {u:'kaan',yer:'Manavgat, Antalya',ne:'1 hafta önce',g:'rafting',urun:'Köprülü Kanyon Rafting',gitti:0,
+  metin:'Arkadaş grubuyla rafting, sonra nehir kenarında alabalık. Hafta sonu için birebir.',beg:134,yor:22},
+ {u:'zeynep',yer:'Kemer, Antalya',ne:'4 gün önce',g:'sealight',urun:'Sealight Resort',gitti:1,
+  metin:'Ekim\'de deniz hâlâ sıcak. Çocuklar havuzdan, biz plajdan çıkmadık.',beg:88,yor:9}];

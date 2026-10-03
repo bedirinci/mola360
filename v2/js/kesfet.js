@@ -1,12 +1,15 @@
 /* Keşfet (anasayfa) */
 import { ITEMS, BUCKETS, PL, EV, HT, VN, ABO, TABS, POP, TRUST, G } from './data.js';
 import { I, PIN } from './icons.js';
-import { tl, ttl, scoreOrNew, fitFacts, makeScroll, initGestures, initKeyboardFocus } from './ui.js';
+import { tl, ttl, scoreOrNew, fitFacts, makeScroll, toast } from './ui.js';
 import { getLevel, setLevel, lvOn, lvPrice, lvb, initLevelInfo } from './level.js';
 import { heartBtn, favSync, initFavorites } from './favorites.js';
-import { card } from './cards.js';
-import { initMenu } from './menu.js';
+import { card, postMini, initPostActions } from './cards.js';
+import { renderShell } from './shell.js';
+import { listPosts } from './api.js';
 import { initHelp } from './help.js';
+
+renderShell('kesfet');
 
 const tEl=document.getElementById('time'),rail=document.getElementById('timeRail'),rt=document.getElementById('railTitle');
 tEl.innerHTML=BUCKETS.map(b=>{const n=ITEMS.filter(x=>x.b===b[0]).length;return '<button class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="n">'+b[1]+'</span><span class="l">'+b[2]+'</span><span class="c">'+n+' seçenek</span></button>'}).join('');
@@ -14,7 +17,7 @@ let shown=new Set();
 let curB='hs',curF='all';
 function pick(b){curB=b;
   tEl.querySelectorAll('.tt').forEach(e=>e.setAttribute('aria-pressed',e.dataset.b===b));
-  rt.textContent=BUCKETS.find(x=>x[0]===b)[3];
+  rt.textContent=BUCKETS.find(x=>x[0]===b)[3];document.getElementById('railAll').href='liste/?sure='+b;
   const list=ITEMS.filter(x=>x.b===b);
   const ks=[...new Set(list.map(x=>PL[x.k]))].map((k,i)=>i?k.toLocaleLowerCase('tr'):k);
   document.getElementById('railSub').textContent=ks.length>1?ks.slice(0,-1).join(', ')+' ve '+ks[ks.length-1]:ks[0];
@@ -48,7 +51,6 @@ function renderAbroad(f){curF=f;ab.innerHTML=ABO.map(t=>ITEMS.find(x=>x.t===t)).
 document.querySelector('.fchips').addEventListener('click',e=>{const b=e.target.closest('.fc');if(!b)return;document.querySelectorAll('.fc').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAbroad(b.dataset.f)});
 renderAbroad('all');
 
-initGestures();
 
 /* taslak: misafir / üye görünümü */
 document.querySelector('.demo').addEventListener('click',e=>{const b=e.target.closest('.dm');if(!b)return;setLevel(b.dataset.v);const m=getLevel()!=='guest';
@@ -84,8 +86,12 @@ document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.cl
   const v=TABS[t.dataset.tab];['f1','f2','f3'].forEach((id,i)=>{const f=document.getElementById(id);f.querySelector('small').textContent=v[i*2];f.querySelector('span').textContent=v[i*2+1]});
   document.getElementById('go').textContent=v[6];f1().classList.add('hint');renderPop();});
 
-initKeyboardFocus();
-initMenu();
+/* Bağlan önizlemesi: paylaşımlar bağlı oldukları ürünle */
+document.getElementById('postRail').innerHTML=listPosts().map(postMini).join('');
+initPostActions(toast);
+
+/* Arama: seçili ürün türünün listesine gider */
+document.getElementById('search').addEventListener('submit',()=>{location.href='liste/?tur='+curTab});
 
 document.querySelectorAll('.rail').forEach(el=>makeScroll(el,true));
 document.querySelectorAll('.tabs,.promise,.fchips,.trust,.pchips').forEach(el=>makeScroll(el,false));
