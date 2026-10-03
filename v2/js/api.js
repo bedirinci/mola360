@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -80,6 +80,14 @@ export function listProducts({type,sure,kimle,tema,yer,ara,tarih}={}){
   const th=tema&&getTheme(tema);
   return [...all.values()].filter(p=>(!type||typeKey(p.type)===type)&&(!sure||p.b===sure)&&(!kimle||p.with.includes(kimle))&&(!th||th.ids.includes(p.id))
     &&(!yer||p.dest.includes(yer))&&(!ara||hit(haystack(p),ara))&&(!tarih||availableIn(p,tarih)));
+}
+
+/* Popüler aramalar (sekmeye göre): yer adıysa yer, değilse metin; o sekmede
+   sonucu olmayanlar çıkarılır ki dokunan boş listeye düşmesin */
+export function listPopular(type){
+  return (POP[type]||[]).map(label=>{const d=listDestinations().find(d=>norm(d.name)===norm(label));
+    return d?{label,yer:d.id,ara:''}:{label,yer:'',ara:label}})
+    .filter(x=>listProducts({type,yer:x.yer,ara:x.ara}).length);
 }
 
 /* Arama önerileri: önce adı yazılanla başlayan yerler ve deneyimler */
