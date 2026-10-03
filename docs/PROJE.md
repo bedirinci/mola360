@@ -842,3 +842,35 @@ güncellenecek yaşayan proje dokümanıdır.
   kategoride bulamadığını diğer kategorilerde buluyor. Seçtiği tarih ve
   kişi sayısını bir daha girmiyor. İptal koşulu ödeme öncesinde tarihle
   birlikte netleşiyor; süresi geçmiş ücretsiz iptal gizlenmiyor (§20).
+
+### 2026-10-03 — Yüzen alt menü, Planlarım ve Paylaş
+
+- **Karar:** Alt menü dört sekmeli yüzen bir hap oldu: Keşfet · Bağlan ·
+  Planlarım · Profil. Menüde arama yok; arama Keşfet'in en üstünde ve
+  Keşfet'teyken Keşfet'e yeniden dokunmak sayfayı başa alıp aramayı
+  açıyor. Menünün yanında yuvarlak bir **Paylaş** düğmesi var: Bağlan'a
+  gerçek bir deneyime bağlı paylaşım ekliyor (fotoğraf/video, bağlı
+  deneyim, kiminle, kısa not). Favoriler ve Rezervasyonlar, Planlarım'ın
+  içinde Yaklaşan · Geçmiş · Favoriler sekmeleri oldu.
+- **Neden:** Bedir İnci 2026'nın son çeyreğindeki alt menü eğilimlerini
+  sordu ("Mantıklı. Hadi bunu yapalım"). Arama zaten Keşfet'in üstünde
+  olduğu için menüde ikinci kez durması fazlalıktı. Döngünün en zayıf
+  halkası "yaşa → paylaş" adımıydı; düğme onu her sayfada elin altına
+  getiriyor.
+- **Etkilediği alanlar:** `v2/js/shell.js` (alt menü, kaydırınca küçülme,
+  Paylaş giriş noktaları), `v2/js/paylas.js` (yeni), `v2/js/planlarim.js`
+  ve `v2/planlarim/` (yeni), `v2/js/api.js` (`ME`, `listPastBookings`,
+  `createPost`, `listMyPosts`), `v2/js/cards.js`, `v2/js/baglan.js`,
+  `v2/css/components.css`. Eski `favoriler/` ve `rezervasyonlar/`
+  adresleri Planlarım'a yönleniyor.
+- **Teknik sonuç:** Paylaşım çekmecesi ilk dokunuşta yükleniyor ve her
+  sayfadan açılabiliyor: menüdeki düğme, `data-paylas="ürün id"` taşıyan
+  öğe ya da adresteki `?paylas=ürün id`. Taslakta paylaşım yalnızca bu
+  cihazda (localStorage `m360-paylas`, küçültülmüş önizlemeyle) tutuluyor;
+  backend gelince yükleme `api.js`'in içinden değişecek.
+- **UX sonucu:** İçerik ekranın tamamını kullanıyor: aşağı kaydırınca menü
+  yalnızca ikonlara iniyor, yukarı kaydırınca geri geliyor. "Mola360 ile
+  gitti" rozeti yalnızca Mola360'tan rezerve edip yaşanmış deneyime
+  bağlanan paylaşımda çıkıyor; başka bir deneyime bağlanan paylaşım
+  rozetsiz (dark pattern yok, §20). Geçmiş rezervasyondaki "Paylaş"
+  çekmeceyi o deneyim seçili açıyor.
