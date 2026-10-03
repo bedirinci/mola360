@@ -18,7 +18,7 @@
 
 <header class="top">
   <div class="bar">
-    <a class="logo" href="./" aria-label="mola360 anasayfa"><img src="logo.png" alt="mola360" width="97" height="40"></a>
+    <a class="logo" href="./" aria-label="mola360 anasayfa"><img src="logo.webp" alt="mola360" width="97" height="40"></a>
     <div class="bar-i">
       <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
       <button class="ib" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
@@ -26,14 +26,15 @@
   </div>
   <h1 class="hello">Bir molayı hak ettin.<br><span>Nereye gidiyoruz?</span></h1>
   <div class="tabs" role="tablist" aria-label="Ürün türü">
-    <button class="tab" role="tab" aria-selected="true" data-tab="tur"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Turlar</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="otel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20v-7.5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2V20M4 10.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5M12 4v6.5M2 17h20"/></svg>Oteller</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="etkinlik"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M14 5v2M14 11v2M14 17v2"/></svg>Etkinlikler</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="aktivite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7 7 0 0 0-7 7c0 3.4 2.6 5.8 4 7.5h6c1.4-1.7 4-4.1 4-7.5a7 7 0 0 0-7-7z"/><path d="M12 2.5c-1.9 2-2.9 4.3-2.9 7 0 2.7 1 5.2 1.4 7.5M12 2.5c1.9 2 2.9 4.3 2.9 7 0 2.7-1 5.2-1.4 7.5"/><rect x="10" y="19.2" width="4" height="2.6" rx=".6"/></svg>Aktiviteler</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="mekan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.4-4.4A2 2 0 0 1 7.8 2h8.4a2 2 0 0 1 1.4.6L22 7M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4M2 7h20M22 7v3a2 2 0 0 1-2 2 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg>Mekânlar</button>
+    <button class="tab" role="tab" id="tab-tur" aria-controls="searchPanel" aria-selected="true" data-tab="tur"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>Turlar</button>
+    <button class="tab" role="tab" id="tab-otel" aria-controls="searchPanel" aria-selected="false" tabindex="-1" data-tab="otel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20v-7.5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2V20M4 10.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5M12 4v6.5M2 17h20"/></svg>Oteller</button>
+    <button class="tab" role="tab" id="tab-etkinlik" aria-controls="searchPanel" aria-selected="false" tabindex="-1" data-tab="etkinlik"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M14 5v2M14 11v2M14 17v2"/></svg>Etkinlikler</button>
+    <button class="tab" role="tab" id="tab-aktivite" aria-controls="searchPanel" aria-selected="false" tabindex="-1" data-tab="aktivite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7 7 0 0 0-7 7c0 3.4 2.6 5.8 4 7.5h6c1.4-1.7 4-4.1 4-7.5a7 7 0 0 0-7-7z"/><path d="M12 2.5c-1.9 2-2.9 4.3-2.9 7 0 2.7 1 5.2 1.4 7.5M12 2.5c1.9 2 2.9 4.3 2.9 7 0 2.7-1 5.2-1.4 7.5"/><rect x="10" y="19.2" width="4" height="2.6" rx=".6"/></svg>Aktiviteler</button>
+    <button class="tab" role="tab" id="tab-mekan" aria-controls="searchPanel" aria-selected="false" tabindex="-1" data-tab="mekan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.4-4.4A2 2 0 0 1 7.8 2h8.4a2 2 0 0 1 1.4.6L22 7M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4M2 7h20M22 7v3a2 2 0 0 1-2 2 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8 2.7 2.7 0 0 1-2 .8 2.7 2.7 0 0 1-2-.8A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg>Mekânlar</button>
   </div>
 </header>
 
+<div role="search" aria-label="Deneyim ara"><div id="searchPanel" role="tabpanel" aria-labelledby="tab-tur">
 <form class="search" id="search" onsubmit="event.preventDefault()">
   <button type="button" class="fld" id="f1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><div><small>NEREYE</small><span class="hint">Şehir, bölge veya tur adı</span></div></button>
   <div class="split">
@@ -42,6 +43,7 @@
   </div>
   <button class="go" id="go" type="submit">Molamı bul</button>
 </form>
+</div></div>
 
 <main>
 <section id="recent" aria-labelledby="h-rc" hidden>

@@ -123,9 +123,19 @@ function draw(push){
   main.innerHTML=st.step===1?step1():st.step===2?step2():st.step===3?step3():done(last);
   if(st.step===1)refresh();else drawCta();
   if(push)history.pushState({s:st.step},'');
+  save();
   window.scrollTo(0,0);
 }
-history.replaceState({s:1},'');
+/* yenilemede akış kaybolmasın: seçimler ve form bu sekmede (sessionStorage)
+   tutulur, adım geçmişteki kayıttan gelir; rezervasyon bitince silinir */
+const KEY='m360bk:'+p.id;
+const save=()=>{try{st.step<4?sessionStorage.setItem(KEY,JSON.stringify(st)):sessionStorage.removeItem(KEY)}catch(e){}};
+const was=history.state&&history.state.s;
+if(was===4){location.replace(ROOT+'planlarim/');return}
+let restored=false;
+try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
+  if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1}}catch(e){}
+if(!restored)history.replaceState({s:1},'');
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
 back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}});
@@ -161,7 +171,7 @@ function refresh(){
   const q=document.getElementById('qty');if(q)q.textContent=st.qty;
   const d=document.getElementById('depNow');if(d)d.textContent=tl(Math.round(total()*S.deposit));
   main.querySelectorAll('[data-q]').forEach(b=>b.disabled=+b.dataset.q<0?st.qty<=S.qty.min:st.qty>=S.qty.max);
-  drawCta();
+  drawCta();save();
 }
 main.addEventListener('click',e=>{
   const d=e.target.closest('[data-tarih]');if(d){st.date=d.dataset.tarih;radio('[data-tarih]',d);show('dateErr','');refresh();return}
@@ -173,8 +183,8 @@ main.addEventListener('click',e=>{
     if(navigator.share)navigator.share({title:p.title,text:when()+' · '+p.title+' için yerimizi ayırttım.',url:new URL(productUrl,location.href).href}).catch(()=>{});
     else toast('Paylaşım bu tarayıcıda yok; bağlantıyı kopyalayıp gönderebilirsin.','Tamam',()=>{},3500);return}
 });
-main.addEventListener('change',e=>{if(e.target.id==='okBox'){st.ok=e.target.checked;if(st.ok)show('okErr','')}});
-main.addEventListener('input',e=>{if(st.step===2&&['name','phone','email'].includes(e.target.id))st[e.target.id]=e.target.value});
+main.addEventListener('change',e=>{if(e.target.id==='okBox'){st.ok=e.target.checked;if(st.ok)show('okErr','')}save()});
+main.addEventListener('input',e=>{if(st.step===2&&['name','phone','email'].includes(e.target.id)){st[e.target.id]=e.target.value;save()}});
 
 renderShell('kesfet',{nav:false});
 draw(false);

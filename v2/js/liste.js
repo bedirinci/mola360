@@ -31,7 +31,7 @@ const CATS=th?TYPES.filter(t=>th.types.includes(t[1])):TYPES;
 const themePosts=()=>th?listPosts().filter(x=>x.product&&th.ids.includes(x.product.id)&&(!tur||typeKey(x.product.type)===tur)):[];
 
 /* Süre ve kiminle filtreleri örnek veride çalışıyor; diğerleri gerçek veriyle gelecek */
-const SURE=[['saat','Birkaç saat'],['gun','Günübirlik'],['hs','Hafta sonu'],['uzun','4 gün +']];
+const SURE=BUCKETS; /* süre adları tek yerden (Keşfet ile aynı) */
 const OTHER=['Yakınımda','Fiyat aralığı'];
 const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 const h=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

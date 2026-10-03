@@ -17,7 +17,7 @@
 <body>
 <header class="pg-top slim">
   <div class="bar">
-    <div class="bar-l"><a class="ib back" href="../" data-back aria-label="Geri"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></a><a class="logo" href="../" aria-label="mola360 anasayfa"><img src="../logo.png" alt="mola360" width="97" height="40"></a></div>
+    <div class="bar-l"><a class="ib back" href="../" data-back aria-label="Geri"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></a><a class="logo" href="../" aria-label="mola360 anasayfa"><img src="../logo.webp" alt="mola360" width="97" height="40"></a></div>
     <div class="bar-i">
       <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
       <button class="ib" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
@@ -27,9 +27,12 @@
   <p id="lsSub"></p>
 </header>
 <nav class="cats" aria-label="Kategori" id="cats"></nav>
+<main>
 <div class="filters" role="group" aria-label="Filtre" id="filters"></div>
 <div class="ls-bar"><span id="lsCount"></span><button type="button" class="sort" data-soon-sort>Önerilen sıralama<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
-<main class="stack" id="list"></main>
+<h2 class="sr">Sonuçlar</h2>
+<div class="stack" id="list"></div>
+</main>
 
 <script type="module" src="../js/liste.js"></script>
 </body>

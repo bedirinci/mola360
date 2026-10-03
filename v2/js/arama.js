@@ -92,7 +92,8 @@ function fields(){
   $('go').textContent=v[4];
   const W=WITH.find(w=>w[0]===st.kimle);ctx.hidden=!W;
   if(W)ctx.innerHTML='<button type="button" class="ctx-c" data-ctx aria-label="'+W[1]+' seçimini kaldır">'+IC.users+'<span>'+W[1]+'</span>'+X+'</button>';
-  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.tab===st.tur));
+  document.querySelectorAll('.tab').forEach(x=>{const on=x.dataset.tab===st.tur;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;
+    if(on)$('searchPanel').setAttribute('aria-labelledby',x.id)});
 }
 
 /* Nereye: yazdıkça yerler ve deneyimler; boşken son aramalar ve yerler */
@@ -184,7 +185,13 @@ $('whoList').addEventListener('click',e=>{const b=e.target.closest('[data-who]')
 function fit(){WHO[st.tur].forEach(([k,,,lo,hi])=>{n[k]=Math.max(lo,Math.min(hi,n[k]))});
   if(st.tur==='otel')n.o=Math.max(n.o,Math.ceil(n.y/2));
   if(st.tur==='tur')n.c=Math.min(n.c,9-n.y)}
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;st.tur=t.dataset.tab;fit();fields();remember()});
+function pick(t){st.tur=t.dataset.tab;fit();fields();remember()}
+const tabs=document.querySelector('.tabs');
+tabs.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)pick(t)});
+/* sekme kalıbı: oklar, Home ve End sekmeler arasında gezer ve seçer */
+tabs.addEventListener('keydown',e=>{const all=[...tabs.querySelectorAll('.tab')],i=all.indexOf(document.activeElement);if(i<0)return;
+  const j={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:all.length-1}[e.key];if(j===undefined)return;e.preventDefault();
+  const t=all[(j+all.length)%all.length];pick(t);t.focus();t.scrollIntoView({block:'nearest',inline:'nearest'})});
 
 /* Molamı bul: liste sayfasına; yer ya da metin varsa son aramalara yazılır */
 $('search').addEventListener('submit',e=>{e.preventDefault();

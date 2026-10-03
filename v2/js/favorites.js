@@ -13,6 +13,8 @@ function favSave(){try{localStorage.setItem('m360-fav',JSON.stringify([...FAV]))
 export function favSync(){
   document.querySelectorAll('[data-fav]').forEach(h=>{const t=h.dataset.fav,on=FAV.has(t);h.setAttribute('aria-pressed',on);h.setAttribute('aria-label',t+(on?' favorilerden çıkar':' favorilere ekle'))});
   const n=FAV.size,bd=document.getElementById('favCount');if(bd){bd.textContent=n;bd.hidden=!n}
+  /* Planlarım'daki "N deneyim": çıkarılan kart Geri al için kalır, sayı hemen değişir */
+  document.querySelectorAll('[data-fav-n]').forEach(x=>x.textContent=n+' deneyim');
 }
 export function favToggle(t){
   const on=!FAV.has(t);on?FAV.add(t):FAV.delete(t);favSave();favSync();

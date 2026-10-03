@@ -126,11 +126,11 @@ export const THEMES=[
    "img": paylaşımın fotoğrafı (v2/img/ altında; yoksa renk geçişi). */
 export const USERS={
  deniz:{ad:'Deniz Aksoy',kul:'deniz.yolda',ini:'DA',renk:'#3A6FA5'},
- selin:{ad:'Selin ve Can',kul:'selinilecan',ini:'SC',renk:'#B0764A'},
+ selin:{ad:'Selin ve Can',kul:'selinilecan',ini:'SC',renk:'#8C5A34'},
  mert:{ad:'Mert Kaya',kul:'mertkampta',ini:'MK',renk:'#3E7A55'},
  elif:{ad:'Elif Demir',kul:'elif.mola',ini:'ED',renk:'#8A4F7A'},
- kaan:{ad:'Kaan Öztürk',kul:'kaanrota',ini:'KÖ',renk:'#2F8F86'},
- zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#C0704A'}};
+ kaan:{ad:'Kaan Öztürk',kul:'kaanrota',ini:'KÖ',renk:'#216B64'},
+ zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#9A4F2E'}};
 export const POSTS=[
  {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',urun:'Kapadokya Turu',gitti:1,
   metin:'Gün doğumunda balonlar havalanırken terastaydık. Hayatımın en güzel sabahlarından biri.',beg:248,yor:31},

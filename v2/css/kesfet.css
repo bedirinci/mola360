@@ -37,7 +37,7 @@
 .demo{display:flex;align-items:center;gap:6px;margin-top:10px;font-weight:var(--fw-semi)}
 .dm{min-height:36px;padding:0 12px;border-radius:var(--r-pill);border:1px solid var(--line);font-weight:var(--fw-semi);font-size:var(--fs-sm)}
 .dm[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
-.foot a{text-decoration:underline;text-underline-offset:2px}
+.foot a{display:inline-block;padding:4px 0;margin:-2px 0;text-decoration:underline;text-underline-offset:2px}
 .foot .ornek{margin-top:6px}
 .tabs{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 .tabs.end{-webkit-mask-image:none;mask-image:none}

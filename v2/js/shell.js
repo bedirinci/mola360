@@ -24,7 +24,7 @@ const navHtml=page=>'<div class="dock" id="dock"><nav class="nav" aria-label="Al
 
 const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
   <div class="m-bar">
-    <a class="logo" href="${R}" aria-label="mola360 anasayfa"><img src="${R}logo.png" alt="mola360" width="97" height="40"></a>
+    <a class="logo" href="${R}" aria-label="mola360 anasayfa"><img src="${R}logo.webp" alt="mola360" width="97" height="40"></a>
     <div class="bar-i">
       <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
       <button class="ib" id="menuClose" aria-label="Menüyü kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
@@ -49,7 +49,7 @@ const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria
 
     <div class="m-h">NE KADAR VAKTİN VAR?</div>
     <div class="chips">
-      <a href="${R}liste/?sure=saat" class="chip">Birkaç saat</a><a href="${R}liste/?sure=gun" class="chip">Günübirlik</a><a href="${R}liste/?sure=hs" class="chip">Hafta sonu</a><a href="${R}liste/?sure=uzun" class="chip">4 gün +</a>
+      <a href="${R}liste/?sure=saat" class="chip">Birkaç saat</a><a href="${R}liste/?sure=gun" class="chip">Bir gün</a><a href="${R}liste/?sure=hs" class="chip">Hafta sonu</a><a href="${R}liste/?sure=uzun" class="chip">4 gün +</a>
     </div>
 
     <div class="m-h">TEMALAR</div>

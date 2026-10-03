@@ -436,6 +436,15 @@ p{text-wrap:pretty}
   .btn:hover,.go:hover{filter:brightness(1.06)}
   .fc:hover:not([aria-pressed="true"]),.tt:hover:not([aria-pressed="true"]){border-color:var(--navy)}
   .sr-row:hover,.opt:hover:not([aria-checked="true"]){background:var(--soft)}
+  /* fareyle kullanılan ekranlarda dokunulabilir her öğe üstüne gelince belli olsun */
+  .ib:hover{background:rgba(128,134,160,.18)}
+  .cb:hover{background:#fff}
+  .chip:hover,.btn.ghost:hover{box-shadow:inset 0 0 0 1px var(--navy)}
+  .tab:hover:not([aria-selected="true"]){background:rgba(255,255,255,.1);color:#fff}
+  .seg button:hover:not([aria-pressed="true"]),.dm:hover:not([aria-pressed="true"]){background:var(--soft)}
+  .cats a:hover:not([aria-current]){color:var(--navy)}
+  .all:hover,.foot a:hover{color:var(--navy);text-decoration:underline}
+  .m-link:hover{text-decoration:underline;text-underline-offset:3px}
 }
 
 /* Paylaş çekmecesi (paylas.js): medya, bağlı deneyim, kiminle, not */

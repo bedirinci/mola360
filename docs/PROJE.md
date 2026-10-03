@@ -1014,3 +1014,23 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Başlık, fiyat ve seçili durum öne çıkıyor; çipler,
   etiketler ve meta bilgi bir kademe geride. Okuma metni daha hafif ve
   rahat.
+
+### 2026-10-03 — Süre adı "Bir gün"; rezervasyon yenilemede korunuyor
+
+- **Karar:** Süre filtresinin adı her yerde "Bir gün" (Keşfet, Liste,
+  menü); Liste kendi listesini tutmuyor, `BUCKETS`'tan okuyor. Ürün
+  kartındaki "Günübirlik" bilgisi (turun kendisi) olduğu gibi kalıyor.
+  Rezervasyon akışı (seçimler ve iletişim formu) sekme kapanana kadar
+  `sessionStorage`'da tutuluyor; rezervasyon tamamlanınca siliniyor.
+- **Neden:** QA'da kalan 10 P3 hatası (BUG-015…024) Bedir İnci'nin
+  isteğiyle düzeltildi. Aynı filtre iki ekranda iki adla görünüyordu;
+  2. ya da 3. adımda sayfa yenilenince her şey siliniyordu.
+- **Etkilediği alanlar:** `v2/js/liste.js`, `v2/js/shell.js`,
+  `v2/js/rezervasyon.js`.
+- **Teknik sonuç:** Yenilemede adım tarayıcı geçmişindeki kayıttan,
+  seçimler sessionStorage'dan geliyor; onay ekranında yenileme
+  Planlarım'a götürüyor. Veri yalnızca o sekmede, başka sekme ya da
+  oturumda görünmüyor.
+- **UX sonucu:** Yenileme ya da kısa bir uygulama değişiminden sonra
+  kullanıcı kaldığı adımda, yazdığı bilgilerle devam ediyor; geri tuşu
+  önceki adımlara seçimleriyle dönüyor.
