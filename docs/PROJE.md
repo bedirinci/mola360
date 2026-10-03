@@ -1096,3 +1096,16 @@ güncellenecek yaşayan proje dokümanıdır.
   Dokunulan terim "Nereye"ye yazılıyor, yeniden dokununca kalkıyor.
 - **UX sonucu:** Arama kartı sade kalıyor. Ne arayacağını bilmeyen
   kullanıcı tek dokunuşla bir aramaya başlayabiliyor.
+
+### 2026-10-03 — Yakınımda: konum etiketi sağda, x ile kapanıyor
+
+- **Karar (Bedir):** "Yakınımda ne var?" açıkken konum etiketi (ör.
+  "Bursa çevresi") başlık satırının sağına yaslanıyor. Etiketin sonunda
+  bir x var.
+- **Neden:** Bölümü kapatmanın görünür ve tek dokunuşluk bir yolu olmalı.
+  Ayrı bir "Kapat" düğmesi satırı kalabalıklaştırıyordu.
+- **Etkilediği alanlar:** Keşfet ana sayfası, Yakınımda bölümü.
+- **Teknik sonuç:** x, kayıtlı konumu siler ve davet kartını geri getirir.
+  Odak "Konumumu kullan" düğmesine geçer. Raylar eski sırasına döner.
+- **UX sonucu:** Kullanıcı konumu tek dokunuşla kapatıyor. Başlık tek
+  satırda kalıyor, dar ekranda etiket metni kısalıyor.

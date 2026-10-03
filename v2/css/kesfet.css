@@ -83,9 +83,13 @@
 .near-loc svg{width:14px;height:14px;stroke-width:2.4}
 /* konum etiketi başlığın sağında; dar ekranda başlık değil etiket kısalır */
 .near-hd h2{flex:0 0 auto}
-.near-hd .near-loc{flex:0 1 auto;min-width:0;margin:0 0 0 10px}
+.near-hd .near-loc{flex:0 1 auto;min-width:0;margin:0 0 0 auto;padding-right:2px}
 .near-hd .near-loc span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.near-hd .more-l{margin-left:auto}
+.near-hd .more-l{display:none}
+@media (hover:hover) and (pointer:fine){.near-hd .more-l{display:flex}}
+.near-x{position:relative;display:grid;place-items:center;width:22px;height:22px;margin-left:1px;border-radius:50%;color:var(--green-ink)}
+.near-x::after{content:"";position:absolute;inset:-11px}
+.near-x svg{width:14px;height:14px;stroke-width:2.4}
 
 /* Arama çekmeceleri: nereye (yazdıkça öneri), ne zaman, kaç kişi */
 .fld span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
