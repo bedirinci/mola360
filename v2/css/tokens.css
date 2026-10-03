@@ -13,7 +13,7 @@
   --fs-base:15px;  /* gövde (okuma), kart başlığı, düğme */
   --fs-lg:16px;    /* bölüm içi başlık */
   --fs-xl:18px;    /* bölüm başlığı, fiyat */
-  --fs-2xl:22px;   /* sayfa başlığı */
+  --fs-2xl:24px;   /* sayfa başlığı */
   --fs-3xl:26px;   /* büyük sayı */
   --fs-input:16px; /* giriş alanı: 16'nın altında iOS sayfayı yakınlaştırır */
   /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */

@@ -112,4 +112,4 @@
 .who-r b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi)}
 .who-r small{display:block;font-size:var(--fs-sm);color:var(--mute)}
 .who-ok{width:100%;justify-content:center;margin-top:12px;padding:14px;font-size:var(--fs-base)}
-@media (max-width:374px){.hello{font-size:clamp(19px,5.6vw,22px)}}
+@media (max-width:374px){.hello{font-size:clamp(20px,6.1vw,24px)}}
