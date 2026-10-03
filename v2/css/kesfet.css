@@ -82,7 +82,7 @@
 .sh-top{touch-action:none;margin:0 -16px;padding:0 16px 12px;border-bottom:1px solid var(--line)}
 .sr-in{display:flex;align-items:center;gap:10px;margin-top:6px;padding:0 4px 0 14px;min-height:52px;border-radius:var(--r-md);border:1.5px solid var(--navy);background:var(--card)}
 .sr-in svg{width:20px;height:20px;color:var(--navy)}
-.sr-in input{flex:1;min-width:0;height:48px;border:0;outline:0;background:none;font:inherit;font-size:var(--fs-base);font-weight:var(--fw-medium);color:var(--ink);-webkit-appearance:none;appearance:none}
+.sr-in input{flex:1;min-width:0;height:48px;border:0;outline:0;background:none;font:inherit;font-size:var(--fs-input);font-weight:var(--fw-medium);color:var(--ink);-webkit-appearance:none;appearance:none}
 .sr-in input::placeholder{color:var(--mute);font-weight:var(--fw-medium)}
 .sr-in input::-webkit-search-cancel-button{display:none}
 .sr-clr{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--mute)}
@@ -113,4 +113,4 @@
 .who-r b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi)}
 .who-r small{display:block;font-size:var(--fs-sm);color:var(--mute)}
 .who-ok{width:100%;justify-content:center;margin-top:12px;padding:14px;font-size:var(--fs-base)}
-@media (max-width:374px){.hello{font-size:clamp(22px,6.6vw,26px)}}
+@media (max-width:374px){.hello{font-size:clamp(19px,5.6vw,22px)}}

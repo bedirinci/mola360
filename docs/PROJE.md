@@ -1034,3 +1034,19 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Yenileme ya da kısa bir uygulama değişiminden sonra
   kullanıcı kaldığı adımda, yazdığı bilgilerle devam ediyor; geri tuşu
   önceki adımlara seçimleriyle dönüyor.
+
+### 2026-10-03 — Yazı ölçeği bir kademe küçüldü
+
+- **Karar:** Yazı boyutu tokenları küçültüldü: yardımcı 13→12, gövde
+  (kart içi, çip, sekme) 14→13, okuma ve kart başlığı 16→15, bölüm içi
+  başlık 18→16, bölüm başlığı ve fiyat 21→18, sayfa başlığı 26→22, büyük
+  sayı 30→26 px. Etiket boyutu (11) aynı. Giriş alanları ayrı bir tokenla
+  (`--fs-input`) 16 px'te kaldı. Sayfanın varsayılan yazısı da artık 15 px.
+- **Neden:** Bedir İnci sitedeki yazıların hepsinin gereğinden büyük
+  olduğunu söyledi.
+- **Etkilediği alanlar:** `v2/css/tokens.css`, giriş alanları, Keşfet
+  selamlama ve ızgara başlıkları (`clamp` değerleri), `base.css`.
+- **Teknik sonuç:** Tüm ekran yeni ölçeği tokenlardan alıyor, ayrı ayrı
+  bileşen değişikliği gerekmedi.
+- **UX sonucu:** Ekrana daha çok içerik sığıyor, hiyerarşi (kalınlık
+  kademeleri) korunuyor.

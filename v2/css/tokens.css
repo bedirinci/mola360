@@ -6,18 +6,19 @@
   --gold:#C98A00;
   --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 
-  /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları en az --fs-base (iOS yakınlaştırmasın) */
+  /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları --fs-input */
   --fs-xs:11px;    /* etiket, rozet, büyük harfli üst satır */
-  --fs-sm:13px;    /* yardımcı bilgi, birim */
-  --fs-md:14px;    /* gövde (kart içi, liste) */
-  --fs-base:16px;  /* gövde (okuma), giriş alanı, kart başlığı */
-  --fs-lg:18px;    /* bölüm içi başlık */
-  --fs-xl:21px;    /* bölüm başlığı, fiyat */
-  --fs-2xl:26px;   /* sayfa başlığı */
-  --fs-3xl:30px;   /* büyük sayı */
+  --fs-sm:12px;    /* yardımcı bilgi, birim */
+  --fs-md:13px;    /* gövde (kart içi, liste), çip, sekme */
+  --fs-base:15px;  /* gövde (okuma), kart başlığı, düğme */
+  --fs-lg:16px;    /* bölüm içi başlık */
+  --fs-xl:18px;    /* bölüm başlığı, fiyat */
+  --fs-2xl:22px;   /* sayfa başlığı */
+  --fs-3xl:26px;   /* büyük sayı */
+  --fs-input:16px; /* giriş alanı: 16'nın altında iOS sayfayı yakınlaştırır */
   /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */
-  --fs-h2:clamp(16px,5.1vw,21px);  /* bölüm başlığı (en çok --fs-xl) */
-  --fs-h3:clamp(15px,4.6vw,18px);  /* bölüm içi başlık (en çok --fs-lg) */
+  --fs-h2:clamp(15px,4.6vw,18px);  /* bölüm başlığı (en çok --fs-xl) */
+  --fs-h3:clamp(14px,4.1vw,16px);  /* bölüm içi başlık (en çok --fs-lg) */
 
   /* kalınlık: görevine göre beş adım. Kalın yalnızca hiyerarşi için;
      her şey kalın olunca hiçbir şey öne çıkmaz.
