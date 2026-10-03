@@ -1,33 +1,28 @@
-/* Kartlar: ortak ürün kartı ve ulaşım etiketi */
+/* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
-import { I, TRI } from './icons.js';
-import { tl, ttl, scoreOrNew } from './ui.js';
-import { lvOn, lvPrice, lvb } from './level.js';
+import { STAR, IC } from './icons.js';
+import { tl, ttl, sc as scoreBadge } from './ui.js';
+import { lvOn, lvPrice } from './level.js';
 import { heartBtn } from './favorites.js';
-import { IC } from './icons.js';
 import { ROOT } from './root.js';
-import { sc as scoreBadge } from './ui.js';
 
-/* Ulaşım etiketi: görselin sol üstünde, tür etiketinin yanında */
-export const trTag=k=>k?'<span class="tag tr-tag"><svg viewBox="0 0 24 24" aria-hidden="true">'+TRI[k][1]+'</svg>'+TRI[k][0]+'</span>':'';
-
-/* Tek kart düzeni: görsel (tür + favori) · başlık · konum · bilgi satırı · alt satırda puan solda, fiyat sağda */
+/* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
+   Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
+   Tarihler, vize, ulaşım ve seviye indirimi ürün sayfasında. */
+const placeOf=x=>x.a.split(' · ')[0];
+/* Otelde tarih zaten seçili hafta sonu; onun yerine pansiyon tipi (kahvaltı dahil …) */
+const durOf=x=>x.info||(x.facts&&(x.k==='Otel'?x.facts[1]:x.facts[0]))||'';
+const unitOf=u=>u==='kişi başı'?'kişi başı':u;
 export function card(x){
-  const row=x.dates
-    ?'<div class="lbl">YAKLAŞAN KALKIŞLAR</div><div class="dates" data-fit data-base="'+parseInt(x.more)+'">'+x.dates.map((d,i)=>'<span class="d'+(i?'':' first')+'">'+d[0]+'<b>'+d[1]+'</b></span>').join('')+'<span class="d more">'+x.more+'</span></div>'
-    :'<div class="lbl">ÖNE ÇIKANLAR</div><div class="dates" data-fit>'+x.facts.map(f=>'<span class="f">'+f+'</span>').join('')+'</div>';
-  return '<article class="cd"><div class="ph" style="--g:'+(x.gbg||G[x.g])+'"><div class="tags"><span class="type">'+x.k+'</span>'+trTag(x.tr)+'</div>'+lvb(x.t)
-  +''+heartBtn(x.t)+'</div>'
-  +'<div class="bd"><h3>'+ttl(x.t)+'</h3><div class="meta">'+I.pin+'<span>'+x.a+'</span></div>'
-  +(x.info?'<div class="info"><span class="it">'+x.info+'</span>'+(x.visa?'<span class="visa'+(x.visaReq?' req':'')+'">'+x.visa+'</span>':'')+'</div>':'')
-  +'<div class="dep">'+row+'</div>'
-  +'<div class="pr">'+scoreOrNew(x.s,x.c)+'<div class="price">'+(lvOn(x.t)?'<span class="old">'+tl(x.p)+'</span>':(x.old?'<span class="old">'+tl(x.old)+'</span>':''))
-  +'<span class="unit">'+(x.u||'kişi başı')+'</span><span class="now">'+tl(lvPrice(x.t,x.p))+'</span>'+'</div></div></div></article>';
+  const unit=x.u||'kişi başı',lv=lvOn(x.t);
+  return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><span class="type">'+x.k+'</span>'+heartBtn(x.t)
+  +'<div class="vk-b"><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
+  +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
+  +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
 }
 
 /* Veri katmanındaki ürünü (api.js) kart biçimine çevirip çizer */
-export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,old:x.old,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,
-  facts:x.facts,dates:x.dates.length?x.dates:null,more:x.more,info:x.info,tr:x.tr,visa:x.visa});
+export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,facts:x.facts,info:x.info});
 
 /* ---- Bağlan bileşenleri ---- */
 

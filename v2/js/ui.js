@@ -11,20 +11,6 @@ export const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 export const ttl=t=>'<a class="lk" href="'+productUrl(ROOT,t)+'" title="'+t.replace(/"/g,'&quot;')+'">'+t+'</a>';
 export const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
 
-/* Kart bilgi satırı: sığmayan çipler gizlenir, sayısı "+n" olarak yazılır */
-export function fitFacts(root){
-  root.querySelectorAll('.dates[data-fit]').forEach(row=>{
-    const chips=[...row.children].filter(c=>!c.classList.contains('more'));chips.forEach(c=>c.hidden=false);
-    let more=row.querySelector('.more');const base=+(row.dataset.base||0);
-    if(more&&!base)more.remove(),more=null;
-    if(more)more.textContent='+'+base;
-    const fits=()=>row.scrollWidth<=row.clientWidth;
-    if(fits())return;
-    if(!more){more=document.createElement('span');more.className='d more';row.appendChild(more)}
-    for(let n=chips.length-1;n>0;n--){chips[n].hidden=true;more.textContent='+'+(base+chips.length-n);if(fits())break;}
-  });
-}
-
 let toastT;
 export function toast(msg,act,fn,ms){const el=document.getElementById('toast');el.querySelector('span').textContent=msg;const b=el.querySelector('button');b.textContent=act;b.onclick=()=>{fn();el.classList.remove('show')};
   el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),ms||3500)}
@@ -53,13 +39,13 @@ export function initGestures(){
 /* Hızlı çift dokunma: aynı aç/kapa düğmesine 350 ms içinde gelen ikinci
    dokunuş yok sayılır (favori ekle-çıkar, açıklama aç-kapa gibi). */
 (function(){const son=new WeakMap();
-  document.addEventListener('click',e=>{const t=e.target.closest('.heart,.tr,#callBtn,.lvb,.tt,.fc,.pc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
+  document.addEventListener('click',e=>{const t=e.target.closest('.heart,#callBtn,.lvb,.tt,.fc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
     const now=Date.now(),prev=son.get(t)||0;son.set(t,now);
     if(now-prev<350){e.preventDefault();e.stopImmediatePropagation();}},true);})();
-document.addEventListener('dblclick',e=>{if(e.target.closest('button,a,.cd,.tk,.hc,.th,.tt,.tr'))e.preventDefault()},{passive:false});
+document.addEventListener('dblclick',e=>{if(e.target.closest('button,a,.vk,.tk,.th,.tt'))e.preventDefault()},{passive:false});
 
 /* Seçilen çip, sekme ya da güven kutusu kenardaki solmada kalmasın */
-document.addEventListener('click',e=>{const c=e.target.closest('.pc,.fc,.tab,.tr');if(!c)return;
+document.addEventListener('click',e=>{const c=e.target.closest('.fc,.tab');if(!c)return;
   const sc=c.parentElement,r=c.getBoundingClientRect(),R=sc.getBoundingClientRect(),pad=48;
   if(r.right>R.right-pad)sc.scrollBy({left:r.right-R.right+pad,behavior:'smooth'});
   else if(r.left<R.left+16)sc.scrollBy({left:r.left-R.left-16,behavior:'smooth'});});

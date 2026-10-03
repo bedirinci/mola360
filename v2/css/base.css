@@ -8,13 +8,13 @@ a{color:inherit;text-decoration:none}
 :focus,:focus-visible{outline:none}
 html.kb :focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:8px}
 html.kb .m-top :focus-visible,html.kb .top :focus-visible{outline-color:#fff}
-html.kb .tk:has(.lk:focus-visible),html.kb .hc:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
+html.kb .tk:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 body.locked{overflow:hidden}
 [hidden]{display:none!important}
 html{touch-action:manipulation}
-a,button,select,input,label,.cd,.tk,.hc,.th,.tt,.tr,.chip,.fc,.tab,.nav a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-button,.opt,.pick,.tab,.tt,.tr,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.d,.f,.tag,.type,.score,.pill,.visa,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+a,button,select,input,label,.tk,.th,.tt,.chip,.fc,.tab,.nav a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,.opt,.pick,.tab,.tt,.fc,.chip,.dm,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.type,.score,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nw{white-space:nowrap}
 body{line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:optimizeLegibility}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}

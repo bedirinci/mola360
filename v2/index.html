@@ -41,18 +41,7 @@
     <button type="button" class="fld" id="f3"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><div><small>KİŞİ</small><span>2 yetişkin</span></div></button>
   </div>
   <button class="go" id="go" type="submit">Molamı bul</button>
-  <div class="popular">
-  <div class="pop-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Popüler aramalar</div>
-  <div class="pchips" id="pchips" role="group" aria-label="Popüler aramalar"></div>
-</div>
 </form>
-<div class="trust" role="group" aria-label="Neden mola360">
-  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="iptal"><span class="ti gi"><img src="g-iptal.webp" alt="" width="38" height="38" decoding="async"></span><span class="tx"><b>Ücretsiz iptal</b><small>çoğu üründe</small></span></button>
-  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="taksit"><span class="ti gi"><img src="g-taksit.webp" alt="" width="38" height="38" decoding="async"></span><span class="tx"><b>3 taksit</b><small>vade farksız</small></span></button>
-  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="kapora"><span class="ti gi"><img src="g-kapora.webp" alt="" width="38" height="38" decoding="async"></span><span class="tx"><b>%20 kapora</b><small>ile yer ayırt</small></span></button>
-  <button type="button" class="tr" aria-expanded="false" aria-controls="trustInfo" data-t="puan"><span class="ti gi"><img src="g-puan.webp" alt="" width="38" height="38" decoding="async"></span><span class="tx"><b>Molapuan</b><small>her rezervasyonda kazan</small></span></button>
-</div>
-<div class="trust-info" id="trustInfo" role="region" aria-live="polite" hidden></div>
 
 <section class="sec" aria-labelledby="h-time">
   <div class="hd"><h2 id="h-time">Ne kadar molan var?</h2></div>
@@ -67,25 +56,15 @@
   <div class="rail" id="postRail"></div>
 </section>
 
+<section aria-labelledby="h-wk">
+  <div class="sec"><div class="hd"><h2 id="h-wk">Bu hafta sonu için</h2><div class="more-l"><a href="liste/?sure=hs" class="all" id="wkAll">Tümü →</a><div class="arrows" data-for="wkRail"></div></div></div><p class="sub">Kalacak yer, mola verecek mekân ya da yurt dışına kısa bir kaçış.</p></div>
+  <div class="fchips" role="group" aria-label="Bu hafta sonu için"><button class="fc" aria-pressed="true" data-w="otel">Oteller</button><button class="fc" aria-pressed="false" data-w="mekan">Mekânlar</button><button class="fc" aria-pressed="false" data-w="yurtdisi">Yurt dışı</button></div>
+  <div class="rail" id="wkRail"></div>
+</section>
+
 <section aria-labelledby="h-ev">
   <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sonu sahnede</h2><a href="liste/?tur=etkinlik" class="all">Takvim →</a></div><p class="sub">2 – 4 Ekim · konser, festival, sahne</p></div>
   <div class="ev" id="events"></div>
-</section>
-
-<section aria-labelledby="h-vn" id="secVn">
-  <div class="sec"><div class="hd"><h2 id="h-vn">Mekânlarda bir mola</h2><a href="liste/?tur=mekan" class="all">Tümü →</a></div><p class="sub">Randevulu spa, masa ve şezlong rezervasyonu</p></div>
-  <div class="rail" id="venues"></div>
-</section>
-
-<section aria-labelledby="h-ht">
-  <div class="sec"><div class="hd"><h2 id="h-ht">Hafta sonu için oteller</h2><a href="liste/?tur=otel" class="all">Tümü →</a></div><p class="sub">2 – 4 Ekim · 2 gece · 2 yetişkin, toplam fiyat</p></div>
-  <div class="hl" id="hotels"></div>
-</section>
-
-<section aria-labelledby="h-yd">
-  <div class="sec"><div class="hd"><h2 id="h-yd">Yurt dışı</h2><div class="more-l"><a href="liste/?tur=tur" class="all">Tümü →</a><div class="arrows" data-for="abroad"></div></div></div><p class="sub">Vizesiz kaçamaklardan Avrupa ve uzak rotalara</p></div>
-  <div class="fchips" role="group" aria-label="Yurt dışı filtresi"><button class="fc" aria-pressed="true" data-f="all">Tümü</button><button class="fc" aria-pressed="false" data-f="kolay">Kolay vize</button><button class="fc" aria-pressed="false" data-f="avrupa">Avrupa</button><button class="fc" aria-pressed="false" data-f="uzak">Uzak rotalar</button></div>
-  <div class="rail" id="abroad"></div>
 </section>
 
 <section aria-labelledby="h-th">
@@ -93,39 +72,11 @@
   <div class="rail themes" id="themeRail"><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)"><b>Doğa ve yayla</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)"><b>Deniz ve tekne</b><span>Tur · Otel · Aktivite · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)"><b>Kültür ve tarih</b><span>Tur · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)"><b>Kış ve kayak</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)"><b>Termal ve spa</b><span>Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)"><b>Macera ve spor</b><span>Aktivite · Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)"><b>Konser ve festival</b><span>Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)"><b>Sahne ve gösteri</b><span>Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)"><b>Yeme içme</b><span>Tur · Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)"><b>Balayı</b><span>Tur · Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F4E3A6,#E0A04A 50%,#4E7A9A)"><b>Ailece</b><span>Tur · Otel · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)"><b>Gece hayatı</b><span>Etkinlik · Mekân</span></a></div>
 </section>
 
-<section class="help" aria-labelledby="h-help">
-  <div class="help-hd"><h2 id="h-help">Planlarken yanındayız</h2><i class="live dark" data-live><em></em><span data-live-t>Çevrimiçi</span></i></div>
-  <p>Seyahat uzmanlarımız her gün <span class="nw">09:00 – 23:59</span> arası <b class="tel">0850 000 00 00</b>'da. Aklına takılanı sor, <span class="nw">birlikte planlayalım.</span></p>
-  <div class="acts">
-    <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="btn wa"><svg class="wa-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>WhatsApp'tan yaz<em class="wa-dot light" data-live-dot aria-hidden="true"></em></a>
-    <button type="button" class="btn ghost" id="callBtn" aria-expanded="false" aria-controls="callForm"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Beni ara</button>
-  </div>
-  <form class="call" id="callForm" hidden novalidate>
-    <label for="cName">Adın</label><input id="cName" autocomplete="given-name" placeholder="Örn. Ayşe" required>
-    <label for="cTel">Telefon numaran</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required aria-describedby="telErr"><p class="err" id="telErr" hidden>Cep telefonunu 05 ile başlayan 11 hane olarak yaz, örneğin 0532 123 45 67.</p>
-    <label for="cWhenBtn" id="cWhenLbl">Ne zaman arayalım?</label>
-    <button type="button" class="pick" id="cWhenBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="whenSheet"><span id="cWhenTxt">Hemen</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
-    <input type="hidden" id="cWhen" value="Hemen">
-    <button class="btn" type="submit">Aranma talebi gönder</button>
-    <p class="call-note">Taslakta talep gönderilmiyor; gerçek sitede uzmanımız seçtiğin saatte arar.</p>
-  </form>
-  <p class="call-ok" id="callOk" hidden role="status"></p>
-</section>
-
 <footer class="foot">
   <a href="#yakinda">Hakkımızda</a> · <a href="#yakinda">Sıkça sorulan sorular</a> · <a href="#yakinda">Gizlilik</a> · <a href="#yakinda">Çerezler</a> · <a href="#yakinda">Kullanım koşulları</a><br>© 2026 Mola360. Tüm hakları saklıdır.
   <br><span class="draft">Tasarım taslağı · veriler örnek katalogdan</span>
   <div class="demo" role="group" aria-label="Taslak görünümü">Görünüm: <button type="button" class="dm" aria-pressed="true" data-v="guest">Misafir</button><button type="button" class="dm" aria-pressed="false" data-v="gezgin">Gezgin</button><button type="button" class="dm" aria-pressed="false" data-v="kasif">Kâşif</button></div>
 </footer>
-
-
-<div class="sh-bg" id="whenBg" aria-hidden="true"></div>
-<div class="sheet" id="whenSheet" role="dialog" aria-modal="true" aria-labelledby="whenTtl">
-  <div class="sh-grab" aria-hidden="true"></div>
-  <div class="sh-hd"><h3 id="whenTtl">Ne zaman arayalım?</h3><button type="button" class="sh-x" id="whenX" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-  <div class="sh-list" id="whenList" role="radiogroup" aria-labelledby="whenTtl"></div>
-</div>
-
 
 <script type="module" src="js/kesfet.js"></script>
 </body>
