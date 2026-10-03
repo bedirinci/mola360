@@ -1,9 +1,31 @@
-/* Tasarım tokenları: renk, yazı, köşe, gölge. Tasarım sisteminin tohumu (PROJE.md §14). */
+/* Tasarım tokenları (PROJE.md §14). Yeni stil yazarken ham değer yerine
+   bunları kullan: yazı boyutu, köşe, boşluk, gölge ve hareket tek ölçekte. */
 :root{--navy:#152048; --navy-2:#223066; --navy-ink:#C7CDE4;
   --green:#8CC63F; --green-ink:#3F6512; --green-soft:#EEF6E2;
   --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
   --gold:#C98A00;
   --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --r-card:18px; --r-sm:10px;
+
+  /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları en az --fs-base (iOS yakınlaştırmasın) */
+  --fs-xs:11px;    /* etiket, rozet, büyük harfli üst satır */
+  --fs-sm:12.5px;  /* yardımcı bilgi, birim */
+  --fs-md:14px;    /* gövde (kart içi, liste) */
+  --fs-base:16px;  /* gövde (okuma), giriş alanı, kart başlığı */
+  --fs-lg:18px;    /* bölüm içi başlık */
+  --fs-xl:21px;    /* bölüm başlığı, fiyat */
+  --fs-2xl:26px;   /* sayfa başlığı */
+  --fs-3xl:30px;   /* büyük sayı */
+
+  /* köşe ölçeği */
+  --r-xs:6px; --r-sm:10px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-pill:999px;
+  --r-card:var(--r-lg);
+
+  /* boşluk ölçeği (4'ün katları) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px; --s-10:40px;
+
   --shadow:0 1px 2px rgba(20,26,46,.06),0 8px 22px rgba(20,26,46,.08);
+  --shadow-lg:0 2px 6px rgba(20,26,46,.08),0 18px 40px rgba(20,26,46,.14);
+
+  /* hareket */
+  --ease:cubic-bezier(.2,.7,.2,1); --t-fast:120ms; --t:200ms; --t-slow:320ms;
   color-scheme:light;}

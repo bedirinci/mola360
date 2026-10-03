@@ -65,6 +65,14 @@ describe('v2', () => {
     });
   });
 
+  it('yazı boyutu ve köşe yuvarlaklığı tasarım tokenlarından geliyor', () => {
+    /* ham px değeri yalnızca tokens.css'te; başka yerde var(--fs-…) / var(--r-…) */
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f) && !f.endsWith('tokens.css')).forEach(f => {
+      const ham = oku(f).match(/(font-size|border-radius):[^;}"']*\d+(\.\d+)?px/g) || [];
+      expect(ham.filter(x => !x.includes('clamp(')), relative(V2, f)).toEqual([]);
+    });
+  });
+
   it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
     ['baglan', 'urun', 'liste', 'rezervasyonlar', 'profil'].forEach(s =>

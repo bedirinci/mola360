@@ -779,3 +779,27 @@ güncellenecek yaşayan proje dokümanıdır.
   işaretsiz geliyor. Onay ekranı kullanıcıyı Rezervasyonlar'a ve
   döndükten sonra paylaşmaya yönlendiriyor; "Birlikte gideceklere gönder"
   ile deneyim paylaşılabiliyor.
+
+### 2026-10-03 — Tasarım sistemi ölçekleri bağlayıcı
+
+- **Karar:** Yazı boyutu 8 adımlı bir ölçekte (`--fs-xs` 11px …
+  `--fs-3xl` 30px), köşe yuvarlaklığı 6 adımda (`--r-xs` … `--r-pill`).
+  Boşluk, gölge ve hareket de token oldu. v2'de bu değerler ham px ile
+  yazılmıyor; `tests/v2.test.js` yakalıyor. Liste ve favorilerde kart
+  yatay ve sık; raylardaki ilerleme çubukları kalktı; dokunma ve fareyle
+  üstüne gelme tepkileri eklendi.
+- **Neden:** Bedir İnci arayüz kalitesinin yükseltilmesini istedi.
+  İncelemede CSS'te 24 farklı yazı boyutu ve 13 farklı köşe değeri
+  çıktı; göz bunu düzensizlik olarak okuyordu. Liste sayfasında 15 turu
+  görmek beş ekran kaydırma istiyordu. Tasarım sistemi önce yapıldı,
+  çünkü sıradaki işler (gerçek etkileşimler, masaüstü düzeni) aynı
+  ölçekleri kullanacak.
+- **Etkilediği alanlar:** `v2/css/` (hepsi), `v2/js/ui.js` (ilerleme
+  çubuğu kodu silindi), `v2/index.html`, `tests/v2.test.js`.
+- **Teknik sonuç:** Yeni stil yazan herkes token kullanır; ölçek
+  değişecekse yalnızca `tokens.css` değişir. Hareketler
+  `prefers-reduced-motion` ayarına uyuyor.
+- **UX sonucu:** Başlık ve metin hiyerarşisi tutarlı. Kartlar basınca
+  hafifçe çöküyor, böylece dokunuşun alındığı görülüyor. Liste bir
+  ekranda iki kat fazla deneyim gösteriyor. Görsel solda, karşılaştırma
+  bilgisi sağda.

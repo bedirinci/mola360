@@ -65,7 +65,10 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 Kod düzeni:
 
-- `css/tokens.css` (tasarım tokenları), `base.css`, `components.css`
+- `css/tokens.css` (tasarım tokenları: renk, 8 adımlı yazı ölçeği
+  `--fs-*`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
+  köşe için ham px yalnızca burada; test başka yerde yakalar.
+- `base.css`, `components.css`
   (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
 - `js/shell.js`: her sayfada aynı olan alt menü, tam ekran menü, bildirim.
 - `js/api.js`: bütün sayfaların okuduğu tek veri katmanı (ürünler,
@@ -95,8 +98,8 @@ Notlar:
 
 ## Sıradaki adımlar
 
-1. Tasarım sistemi: tokenları tamamlamak (tip ölçeği, boşluk ölçeği) ve
-   bileşenleri tek bir vitrin sayfasında toplamak.
+1. Tasarım sistemi: bileşenleri tek bir vitrin sayfasında toplamak; koyu
+   tema.
 2. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
 3. Kalan filtreler: "Yakınımda" (konum izni) ve fiyat aralığı; sıralama.
 4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).

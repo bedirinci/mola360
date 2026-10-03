@@ -91,5 +91,5 @@ document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.cl
 /* Arama: seçili ürün türünün listesine gider */
 document.getElementById('search').addEventListener('submit',()=>{location.href='liste/?tur='+curTab});
 
-document.querySelectorAll('.rail').forEach(el=>makeScroll(el,true));
-document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el,false));
+document.querySelectorAll('.rail').forEach(el=>makeScroll(el));
+document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el));

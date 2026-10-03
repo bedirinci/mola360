@@ -92,5 +92,5 @@ initLevelInfo();
 favSync();
 const fb=document.getElementById('favP');
 fb.addEventListener('click',()=>{favToggle(p.title);fb.setAttribute('aria-pressed',isFav(p.title))});
-document.querySelectorAll('.rail').forEach(el=>{makeScroll(el,true)});
+document.querySelectorAll('.rail').forEach(el=>{makeScroll(el)});
 }
