@@ -991,3 +991,26 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** 360 – 414 px telefonlarda Keşfet başlıkları ve süre
   kartları tek satırda; dört süre seçeneği bir bakışta görünüyor.
 
+
+### 2026-10-03 — Yazı kalınlığı görevine göre; yardımcı yazı 13 px
+
+- **Karar:** Yazı kalınlığı beş tokenla verilir (`--fw-regular` 400,
+  `--fw-medium` 500, `--fw-semi` 600, `--fw-bold` 700, `--fw-black` 800)
+  ve her biri bir göreve ayrılır. En kalın (800) yalnızca sayfa başlığı,
+  fiyat ve büyük sayılarda. Bölüm, kutu ve kart başlıkları ile düğmeler
+  700. Çip, sekme, alt menü, form etiketi ve vurgulu meta bilgi 600.
+  Birim, sayaç altı ve alan değeri gibi yardımcı yazı 500. Okuma metni
+  400 (yazı tipi artık 400'ü de yüklüyor). Yardımcı yazı boyutu
+  (`--fs-sm`) 12,5 px'ten 13 px'e çıktı.
+- **Neden:** Bedir İnci yazı boyutları ve kalınlıklarının daha iyi
+  olabileceğini söyledi. Ölçümde CSS'te 93 yerde 800 kullanıldığı
+  görüldü: başlık, çip, etiket ve rozet aynı kalınlıktaydı, bu yüzden
+  hiyerarşi kayboluyordu. 12,5 px meta yazılar küçük kalıyordu.
+- **Etkilediği alanlar:** `v2/css/*.css`, tüm sayfaların yazı tipi bağı,
+  `tests/v2.test.js` (kalınlık yalnızca tokenlardan).
+- **Teknik sonuç:** `font-weight` sayısı yalnızca `tokens.css`'te; test
+  bunu denetliyor. 360 px altında Profil sekmelerindeki ikonlar
+  gizleniyor ki üç sekme yazısıyla sığsın.
+- **UX sonucu:** Başlık, fiyat ve seçili durum öne çıkıyor; çipler,
+  etiketler ve meta bilgi bir kademe geride. Okuma metni daha hafif ve
+  rahat.

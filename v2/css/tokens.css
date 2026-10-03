@@ -8,7 +8,7 @@
 
   /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları en az --fs-base (iOS yakınlaştırmasın) */
   --fs-xs:11px;    /* etiket, rozet, büyük harfli üst satır */
-  --fs-sm:12.5px;  /* yardımcı bilgi, birim */
+  --fs-sm:13px;    /* yardımcı bilgi, birim */
   --fs-md:14px;    /* gövde (kart içi, liste) */
   --fs-base:16px;  /* gövde (okuma), giriş alanı, kart başlığı */
   --fs-lg:18px;    /* bölüm içi başlık */
@@ -16,8 +16,15 @@
   --fs-2xl:26px;   /* sayfa başlığı */
   --fs-3xl:30px;   /* büyük sayı */
   /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */
-  --fs-h2:clamp(17px,5.1vw,21px);  /* bölüm başlığı (en çok --fs-xl) */
+  --fs-h2:clamp(16px,5.1vw,21px);  /* bölüm başlığı (en çok --fs-xl) */
   --fs-h3:clamp(15px,4.6vw,18px);  /* bölüm içi başlık (en çok --fs-lg) */
+
+  /* kalınlık: görevine göre beş adım. Kalın yalnızca hiyerarşi için;
+     her şey kalın olunca hiçbir şey öne çıkmaz.
+     black: sayfa başlığı, fiyat, büyük sayı · bold: bölüm, kutu ve kart
+     başlığı, düğme · semi: çip, sekme, menü, etiket, vurgulu meta ·
+     medium: yardımcı bilgi, birim, alan değeri · regular: okuma metni */
+  --fw-regular:400; --fw-medium:500; --fw-semi:600; --fw-bold:700; --fw-black:800;
 
   /* köşe ölçeği */
   --r-xs:6px; --r-sm:10px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-pill:999px;

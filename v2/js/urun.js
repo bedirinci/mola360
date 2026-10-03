@@ -2,8 +2,8 @@
 import { renderShell } from './shell.js';
 import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
-import { tl, sc, word, toast, makeScroll } from './ui.js';
-import { favToggle, isFav, initFavorites, favSync } from './favorites.js';
+import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
+import { isFav, initFavorites, favSync } from './favorites.js';
 import { initLevelInfo, lvb } from './level.js';
 import { renderHelp } from './help.js';
 import { TRUST } from './data.js';
@@ -42,7 +42,7 @@ document.getElementById('urun').innerHTML=
  '<div class="ug" style="background:'+p.bg+'">'
  +'<div class="ug-top"><a class="cb" href="'+ROOT+'" data-back aria-label="Geri">'+IC.back+'</a><span class="sp"></span>'
  +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
- +'<button type="button" class="cb" id="favP" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
+ +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
  +'<button type="button" class="cb" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div>'
  +'<span class="ug-n">1 / 8 · Görseller <span class="ornek">ÖRNEK</span></span></div>'
  +'<section class="u-hd"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
@@ -118,8 +118,6 @@ initPostActions(toast);
 initFavorites();
 initLevelInfo();
 favSync();
-const fb=document.getElementById('favP');
-fb.addEventListener('click',()=>{favToggle(p.title);fb.setAttribute('aria-pressed',isFav(p.title))});
 document.querySelectorAll('.rail').forEach(el=>{makeScroll(el)});
 /* adresteki bölüm (kartlardaki "N paylaşım" → #paylasimlar) sayfa çizildikten sonra açılır */
 const at=location.hash.length>1&&document.getElementById(location.hash.slice(1));

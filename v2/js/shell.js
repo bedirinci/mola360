@@ -4,7 +4,7 @@
 import { MENU } from './data.js';
 import { listThemes } from './api.js';
 import { I } from './icons.js';
-import { initGestures, initKeyboardFocus } from './ui.js';
+import { initGestures, initKeyboardFocus, backLayer, toast } from './ui.js';
 
 import { ROOT } from './root.js';
 export { ROOT };
@@ -115,6 +115,8 @@ export function renderShell(page,{nav=true}={}){
   initMenu();
   if(nav)initDock(page);
   initShare();
+  /* bildirimler henüz yok */
+  document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Bildirimler yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000)});
   liveNow();setInterval(liveNow,60000);
   /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
   document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;
@@ -154,12 +156,19 @@ function initShare(){
 function initMenu(){
 document.getElementById('mMain').innerHTML=MENU.map(m=>'<a href="'+menuLink(m)+'" class="m-link"><span class="ico"><img src="'+R+'m-'+m[1]+'.webp" alt="" width="30" height="30" decoding="async"></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
 const menu=document.getElementById('menu'),btn=document.getElementById('menuBtn');
-const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.tagName!=='SCRIPT');
-function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);setTimeout(()=>document.getElementById('menuClose').focus(),50)}
-function closeM(){menu.classList.remove('open');document.body.classList.remove('locked');btn.setAttribute('aria-expanded','false');behind().forEach(el=>el.inert=false);btn.focus()}
+const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.id!=='toast'&&el.tagName!=='SCRIPT');
+/* geri tuşu menüyü kapatır (ui.js backLayer) */
+const layer=backLayer(hideM);
+function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);layer.push();setTimeout(()=>document.getElementById('menuClose').focus(),50)}
+function hideM(){if(!menu.classList.contains('open'))return;menu.classList.remove('open');document.body.classList.remove('locked');btn.setAttribute('aria-expanded','false');behind().forEach(el=>el.inert=false);btn.focus({preventScroll:true})}
+function closeM(){hideM();layer.pop()}
 menu.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const f=[...menu.querySelectorAll('a,button,select')].filter(x=>x.offsetParent);const a=f[0],z=f[f.length-1];
   if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
-menu.addEventListener('click',e=>{const l=e.target.closest('a');if(!l)return;if(l.getAttribute('href')==='#')e.preventDefault();closeM()});
+/* menüdeki bağ: menünün geçmiş adımının yerine geçer (yeni sekmede açılanlar ve "yakında" bağları hariç) */
+menu.addEventListener('click',e=>{const l=e.target.closest('a');if(!l)return;const h=l.getAttribute('href');
+  if(h==='#')e.preventDefault();
+  if(e.defaultPrevented||l.target==='_blank'||h.startsWith('#')){closeM();return}
+  e.preventDefault();layer.leave(l.href)});
 btn.addEventListener('click',openM);
 (()=>{const mb=menu.querySelector('.m-body'),rest=document.getElementById('mRest');let sy=null,pull=0;
   const back=()=>{if(sy==null&&!pull)return;sy=null;pull=0;rest.style.transition='transform .32s cubic-bezier(.2,.8,.2,1)';rest.style.transform=''};

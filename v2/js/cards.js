@@ -91,6 +91,6 @@ export function initPostActions(toast){
       return}
     const s=e.target.closest('[data-share]');
     if(s){const url=location.href;if(navigator.share){navigator.share({title:'mola360',url}).catch(()=>{})}else toast('Paylaşım bağlantısı hazırlanıyor.','Tamam',()=>{},3000);return}
-    if(e.target.closest('[data-soon]'))toast('Yorumlar yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000);
+    if(e.target.closest('.act[data-soon]'))toast('Yorumlar yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000);
   });
 }

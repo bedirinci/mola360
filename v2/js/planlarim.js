@@ -55,3 +55,5 @@ el.addEventListener('click',e=>{const c=e.target.closest('[data-cancel]');
 document.addEventListener('m360:paylasildi',()=>{if(cur==='gecmis')show('gecmis')});
 const h=location.hash.slice(1);
 show(TABS[h]?h:'yaklasan');
+/* aynı sayfadayken menüden gelen #favoriler ya da #yaklasan sekmeyi değiştirir */
+addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(TABS[k]&&k!==cur)show(k)});

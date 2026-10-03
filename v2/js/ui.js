@@ -31,17 +31,33 @@ export function makeScroll(el){
   el.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);upd();
 }
 
+/* Geri tuşu açık katmanı (menü, çekmece) kapatır, sayfadan çıkmaz: açılınca
+   geçmişe bir adım eklenir, kapanınca o adım geri alınır. Katmanın içindeki
+   bir bağ o adımın yerine geçer (leave), geçmişte ölü adım kalmaz. */
+export function backLayer(hide){
+  let on=false;
+  const mine=()=>!!(history.state&&history.state.m360ov);
+  addEventListener('popstate',()=>{if(on&&!mine()){on=false;hide()}});
+  return {
+    push(){if(on)return;on=true;history.pushState({...(history.state||{}),m360ov:1},'')},
+    pop(){if(!on)return;on=false;if(mine())history.back()},
+    leave(url){hide();if(on&&mine()){on=false;location.replace(url)}else{on=false;location.href=url}}};
+}
+
 /* Alttan açılan çekmece: arkası kilitlenir ve dokunulmaz olur, odak içeride
    döner, Esc ya da arkaya dokunmak kapatır, tutamaçtan aşağı çekince kapanır.
-   open(açan düğme, odaklanacak öğe); kapanınca odak açan düğmeye döner. */
+   open(açan düğme, odaklanacak öğe); kapanınca odak açan düğmeye döner.
+   Geri tuşu da kapatır; bildirim (toast) çekmecenin üstünde ve dokunulur kalır. */
 export function makeSheet(sh,bg,{drag=sh}={}){
   let opener=null;
-  const behind=()=>[...document.body.children].filter(el=>el!==sh&&el!==bg&&el.tagName!=='SCRIPT');
+  const behind=()=>[...document.body.children].filter(el=>el!==sh&&el!==bg&&el.id!=='toast'&&el.tagName!=='SCRIPT');
   const exp=v=>{if(opener&&opener.hasAttribute('aria-expanded'))opener.setAttribute('aria-expanded',v)};
-  function open(from,focus){opener=from||null;bg.classList.add('open');sh.classList.add('open');document.body.classList.add('locked');exp('true');behind().forEach(el=>el.inert=true);
+  const layer=backLayer(hide);
+  function open(from,focus){opener=from||null;layer.push();bg.classList.add('open');sh.classList.add('open');document.body.classList.add('locked');exp('true');behind().forEach(el=>el.inert=true);
     setTimeout(()=>(focus||sh.querySelector('[aria-checked="true"]')||sh.querySelector('button')).focus({preventScroll:true}),60)}
-  function close(){if(!sh.classList.contains('open'))return;sh.style.transform='';bg.style.opacity='';bg.classList.remove('open');sh.classList.remove('open');document.body.classList.remove('locked');
+  function hide(){if(!sh.classList.contains('open'))return;sh.style.transform='';bg.style.opacity='';bg.classList.remove('open');sh.classList.remove('open');document.body.classList.remove('locked');
     behind().forEach(el=>el.inert=false);exp('false');if(opener)opener.focus({preventScroll:true})}
+  function close(){hide();layer.pop()}
   bg.addEventListener('click',close);
   sh.querySelectorAll('[data-x]').forEach(b=>b.addEventListener('click',close));
   sh.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();return}
@@ -54,7 +70,8 @@ export function makeSheet(sh,bg,{drag=sh}={}){
   drag.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>0)e.preventDefault();sh.style.transform='translateY('+dy+'px)';bg.style.opacity=String(Math.max(0,1-dy/sh.offsetHeight))},{passive:false});
   drag.addEventListener('touchend',()=>{if(y0==null)return;const v=dy/Math.max(1,Date.now()-t0);if(dy>sh.offsetHeight*.3||(dy>30&&v>.5)){y0=null;sh.classList.remove('drag');bg.classList.remove('drag');close()}else reset()});
   drag.addEventListener('touchcancel',reset);
-  return {open,close};
+  /* çekmecedeki bir bağdan başka sayfaya geçiş */
+  return {open,close,go:url=>layer.leave(url)};
 }
 
 /* Sayfa genelinde dokunma ve klavye davranışları */
@@ -62,7 +79,7 @@ export function initGestures(){
 /* Hızlı çift dokunma: aynı aç/kapa düğmesine 350 ms içinde gelen ikinci
    dokunuş yok sayılır (favori ekle-çıkar, açıklama aç-kapa gibi). */
 (function(){const son=new WeakMap();
-  document.addEventListener('click',e=>{const t=e.target.closest('.heart,#callBtn,.lvb,.tt,.fc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
+  document.addEventListener('click',e=>{const t=e.target.closest('.heart,[data-fav],#callBtn,.lvb,.tt,.fc,.dm,.tab,#menuBtn,#menuClose,.toast button,a[href="#yakinda"]');if(!t)return;
     const now=Date.now(),prev=son.get(t)||0;son.set(t,now);
     if(now-prev<350){e.preventDefault();e.stopImmediatePropagation();}},true);})();
 document.addEventListener('dblclick',e=>{if(e.target.closest('button,a,.vk,.tk,.th,.tt'))e.preventDefault()},{passive:false});
