@@ -1066,3 +1066,14 @@ güncellenecek yaşayan proje dokümanıdır.
   her sayfada aynı tokenı kullanıyor.
 - **UX sonucu:** Küçük yazılar daha rahat okunuyor; sayfalar arasında
   başlık boyutu değişmiyor.
+
+### 2026-10-03 — Etiket 11,5 px, yardımcı yazı 12,5 px
+
+- **Karar:** `--fs-xs` 11,5 px, `--fs-sm` 12,5 px (bir önceki kayıttaki 12
+  ve 13 px'in yerine).
+- **Neden:** Bedir İnci 12 ve 13 px'i büyük buldu, bu ara değerleri seçti.
+- **Etkilediği alanlar:** `v2/css/tokens.css`, `kesfet.css` (süre kartı
+  alt yazısı).
+- **Teknik sonuç:** Yalnızca iki token değişti.
+- **UX sonucu:** Etiket ve yardımcı yazı gövde metninin bir kademe altında
+  kalıyor.
