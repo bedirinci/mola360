@@ -222,7 +222,37 @@ export const DETAY={
   program:[['Alan','Şezlong, sedir ya da loca','Seçtiğin alan tam gün senin.'],['Yeme içme','Restoran ve bar','Harcaman minimum tutardan düşülür.'],['Plaj','Duş, soyunma kabini, havlu','']],
   yer:['Alaçatı, Çeşme','Alaçatı merkeze 4 km; otopark var.'],
   dahil:['Seçtiğin alan, tam gün','Havlu ve duş'],haric:['Minimum harcamayı aşan tutar'],
-  bilgi:['Fiyat seçtiğin alanın minimum harcaması; yediğin içtiğin bundan düşülür.']}
+  bilgi:['Fiyat seçtiğin alanın minimum harcaması; yediğin içtiğin bundan düşülür.']},
+
+ 'Ayder Yayla Evi':{about:'Kaçkarlar\'ın eteğinde ahşap bir yayla evi. Sabah sisin içinden yayla, akşam şöminenin başında Karadeniz sofrası.',
+  program:[['Oda','Ahşap oda, yayla manzarası','Çift kişilik ya da aile odası; balkonlu.'],['Kahvaltı','Karadeniz kahvaltısı','Muhlama, yayla tereyağı ve köy yumurtası.'],['Çevre','Ayder kaplıcası 300 m','Gelin Tülü Şelalesi\'ne yürüyerek 15 dakika.']],
+  yer:['Ayder, Çamlıhemşin, Rize','Rize-Artvin Havalimanı\'na 85 km; otopark var.'],
+  dahil:['2 gece konaklama','Kahvaltı'],haric:['Akşam yemeği','Kaplıca girişi'],
+  bilgi:['Yaylada akşamlar serin; kalın bir şey getir.','Giriş 14:00, çıkış 12:00.']},
+
+ 'Maşukiye Dere Evi':{about:'Maşukiye\'de dere kenarında, ağaçların altında serpme kahvaltı ya da mangal. Şehirden kaçmak için kısa bir mola.',
+  program:[['Kahvaltı','Serpme kahvaltı','Köy peyniri, bal-kaymak, gözleme; sınırsız çay.'],['Öğle ve akşam','Mangal menüsü','Köfte, tavuk şiş, közde sebze.'],['Bahçe','Dere kenarı masalar','Çocuklar için oyun alanı.']],
+  yer:['Maşukiye, Kartepe, Kocaeli','Sapanca Gölü\'ne 10 km; otopark var.'],
+  dahil:['Seçtiğin menü','Sınırsız çay'],haric:['Diğer içecekler'],
+  bilgi:['Hafta sonu dere kenarı masalar erken doluyor; saatinde gel.']},
+
+ 'Kaleiçi Konak Restoran':{about:'Kaleiçi\'nde 19. yüzyıldan kalma bir konağın avlusunda Akdeniz mutfağı. Akşam yemeği limana bakan terasta.',
+  program:[['Başlangıç','Mezeler','Zeytinyağlılar ve sıcak başlangıçlar.'],['Ana yemek','Günün balığı ya da kuzu','Yerel üreticiden mevsim ürünleriyle.'],['Tatlı','Ev yapımı tatlı','İsteyene şarap eşleşmesi.']],
+  yer:['Kaleiçi, Muratpaşa, Antalya','Hadrian Kapısı\'na 5 dakika yürüme; araç girişi yok.'],
+  dahil:['Seçtiğin menü, kişi başı'],haric:['Menü dışı içecekler','Servis ücreti'],
+  bilgi:['Teras masaları rezervasyonla; 19:00 ve 21:00 oturumları var.']},
+
+ 'Erciyes Dağ Evi':{about:'Erciyes\'in eteğinde şömineli bir dağ evi. Pistten iner inmez fondü, sabahları dağ kahvaltısı.',
+  program:[['Akşam','Fondü menüsü','Peynir fondü, sıcak şarap ya da sahlep.'],['Sabah','Dağ kahvaltısı','Pastırmalı yumurta ve Kayseri mantısı.'],['Salon','Şömine başı masalar','Pist manzaralı pencere kenarı.']],
+  yer:['Tekir Kapı, Erciyes, Kayseri','Kayseri merkeze 25 km; teleferik istasyonuna 200 m.'],
+  dahil:['Seçtiğin menü'],haric:['Diğer içecekler'],
+  bilgi:['Kış sezonunda yol için zincir bulundur.']},
+
+ 'Kadıköy Akustik Sahne':{about:'Kadıköy\'de küçük bir sahne: her akşam canlı akustik müzik, masada yemek ve içki.',
+  program:[['20:30','Kapı açılışı','Masana geç, menüden seç.'],['21:30','Canlı müzik','İki set; araya 15 dakika mola.'],['00:00','Kapanış','']],
+  yer:['Moda, Kadıköy, İstanbul','Kadıköy iskelesine 10 dakika yürüme.'],
+  dahil:['Seçtiğin masa, akşam boyunca'],haric:['Minimum harcamayı aşan tutar'],
+  bilgi:['18 yaş sınırı var.','Fiyat masanın minimum harcaması; yediğin içtiğin bundan düşülür.']}
 };
 
 /* Ürün türüne göre bölüm başlıkları: program ve konum */

@@ -2,6 +2,7 @@
    bildirim (toast) ve sayfa genelindeki dokunma/klavye davranışları.
    Sayfalar ayrı klasörlerde (baglan/, urun/ …); bağlar kök adrese göre kurulur. */
 import { MENU } from './data.js';
+import { listThemes } from './api.js';
 import { I } from './icons.js';
 import { initGestures, initKeyboardFocus } from './ui.js';
 
@@ -51,12 +52,10 @@ const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria
       <a href="${R}liste/?sure=saat" class="chip">Birkaç saat</a><a href="${R}liste/?sure=gun" class="chip">Günübirlik</a><a href="${R}liste/?sure=hs" class="chip">Hafta sonu</a><a href="${R}liste/?sure=uzun" class="chip">4 gün +</a>
     </div>
 
-    <div class="m-h">TEMALAR <span class="ornek">ÖRNEK</span></div>
-    <p class="m-note">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte listeler.</p>
-    <div class="m-themes"><a href="#yakinda" class="m-theme"><b>Doğa ve yayla</b><small>64 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Deniz ve tekne</b><small>82 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Kültür ve tarih</b><small>71 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Kış ve kayak</b><small>23 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Termal ve spa</b><small>38 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Macera ve spor</b><small>45 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Konser ve festival</b><small>57 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Sahne ve gösteri</b><small>29 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Yeme içme</b><small>41 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Balayı</b><small>26 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Ailece</b><small>93 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Gece hayatı</b><small>34 seçenek</small></a></div>
+    <div class="m-h">TEMALAR</div>
+    <div class="m-themes">${listThemes().map(t=>'<a href="'+R+'liste/?tema='+t.id+'" class="m-theme"><b>'+t.name+'</b></a>').join('')}</div>
 
     <div class="m-h">BÖLGELER</div>
-    <p class="m-note">Seçtiğin yerdeki turlar, oteller, etkinlikler, aktiviteler ve mekânlar birlikte gelir.</p>
     <div class="chips"><a href="#yakinda" class="chip">Marmara</a><a href="#yakinda" class="chip">Ege</a><a href="#yakinda" class="chip">Akdeniz</a><a href="#yakinda" class="chip">Karadeniz</a><a href="#yakinda" class="chip">İç Anadolu</a><a href="#yakinda" class="chip">Doğu Anadolu</a><a href="#yakinda" class="chip">Güneydoğu</a><a href="#yakinda" class="chip">Yurt dışı</a></div>
 
     <div data-member hidden>

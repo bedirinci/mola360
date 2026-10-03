@@ -151,9 +151,8 @@ Filtre ise kullanıcının keşif kriteridir.
 - Yakınımda
 - Fiyat aralığı
 - Popüler
-- Çocuklu
-- Çiftler
-- Arkadaşlarla
+- Kiminle: Tek başıma, Sevgilimle, Arkadaşlarla, Ailemle, Çocuklarla,
+  İş arkadaşlarımla
 
 Kategori ve filtre sistemi birbirine karıştırılmayacaktır.
 
@@ -842,6 +841,56 @@ güncellenecek yaşayan proje dokümanıdır.
   kategoride bulamadığını diğer kategorilerde buluyor. Seçtiği tarih ve
   kişi sayısını bir daha girmiyor. İptal koşulu ödeme öncesinde tarihle
   birlikte netleşiyor; süresi geçmiş ücretsiz iptal gizlenmiyor (§20).
+
+### 2026-10-03 — Keşfet sadeleşti, kartlar yenilendi, "Yakınımda ne var?" geldi
+
+- **Karar:** "Kiminle?" seçenekleri Tek başıma, Sevgilimle, Arkadaşlarla,
+  Ailemle, Çocuklarla ve İş arkadaşlarımla oldu (adres anahtarları
+  `yalniz`, `sevgili`, `arkadas`, `aile`, `cocuk`, `is`). "Ne kadar molan
+  var?" dört eşit seçenek (Birkaç saat, Bir gün, Hafta sonu, 4 gün +):
+  ikon, ad ve o seçimde kaç deneyim olduğu. "Bu hafta sonu için" artık
+  bütün kategorileri kapsıyor (Tümü, Turlar, Oteller, Etkinlikler,
+  Aktiviteler, Mekânlar) ve yalnızca 2 – 4 Ekim'de yapılabilecekleri
+  gösteriyor; "Yurt dışı" seçeneği kalktı, çünkü bir kategori değil
+  filtre (kural 3). "Bu hafta sonu sahnede" başlığı her hafta geçerli
+  olsun diye "Bu hafta sahnede" oldu; önümüzdeki 7 günün etkinlikleri
+  bilet kartında. Tema kartlarında yalnızca tema adı var; her tema tur,
+  otel, etkinlik, aktivite ve mekânı birlikte getiriyor. Keşfet'e
+  "Yakınımda ne var?" kartı eklendi: konum yalnızca kullanıcı "Konumumu
+  kullan"a dokununca istenir; izin yoksa şehir seçilir. Örnek veriyi
+  anlatan açıklama cümleleri ve gereksiz alt satırlar kaldırıldı; ÖRNEK
+  etiketleri yerinde (kural 4). Kartlar yenilendi: paylaşımdaki deneyim,
+  listedeki yatay kart, "Kaldığın yerden", bilet ve Keşfet'teki küçük
+  paylaşım kartı. Katalogda mekân ve otel az olduğu için beş ÖRNEK ürün
+  eklendi (Maşukiye Dere Evi, Kaleiçi Konak Restoran, Erciyes Dağ Evi,
+  Kadıköy Akustik Sahne, Ayder Yayla Evi). Menüdeki temalar da gerçek
+  tema listelerine gidiyor; uydurma sayılar ve açıklama satırları kalktı.
+- **Neden:** Bedir İnci Keşfet'i madde madde inceledi: sığması gereken
+  başlıklar ikinci satıra kayıyordu, örnek açıklamaları ve alt metinler
+  kalabalık yapıyordu, paylaşım kartındaki yazı ve ürün etiketi ortada
+  kalıyordu, "Bu hafta sonu için" yalnızca üç seçenek sunuyordu,
+  temalar çoğunlukla turdan oluşuyordu. Kiminle seçeneklerini kendisi
+  belirledi ve yakındaki deneyimleri kullanıcının kendi isteğiyle
+  açabileceği bir kart istedi.
+- **Etkilediği alanlar:** `v2/index.html`, `v2/js/kesfet.js`,
+  `v2/js/cards.js` (`recentCard`, `ticket`, `plink`, `postMini`, kartta
+  uzaklık), `v2/js/api.js` (`listEvents` 7 günlük, `listNearby`,
+  `nearestPlace`, `placePos`; mekânda kendi saatleri), `v2/js/data.js`
+  (`WITH`, `KIMLE`, `THEMES`, `BUCKETS`, `GEO`, yeni ÖRNEK ürünler),
+  `v2/js/icerik.js`, `v2/js/liste.js`, `v2/js/urun.js`, `v2/js/arama.js`,
+  `v2/js/favoriler.js`, `v2/js/shell.js` (menüdeki temalar),
+  `v2/baglan/index.html`, `v2/css/`.
+- **Teknik sonuç:** Konum tarayıcıdan gelir ve saklanmaz; cihazda yalnızca
+  seçim tutulur (`localStorage`, `m360-yakin`: `gps` ya da `yer:izmir`).
+  İzin daha önce verildiyse sonraki açılışta yeniden sorulmadan kullanılır.
+  Ürünün konumu adında ya da yerinde geçen yer adından (`GEO`, ÖRNEK);
+  backend gelince her ürünün kendi koordinatı olacak. Eski `kimle=cift`
+  adresleri artık filtre uygulamıyor.
+- **UX sonucu:** Keşfet her bölümde tek bir soruya cevap veriyor ve
+  okunurken takılmıyor: başlıklar tek satır (dar ekranda küçülüyor),
+  fiyat ve birim taşmıyor, kartın tamamı ürüne gidiyor. Konum izni
+  istemek kullanıcının kararı; izin vermeyen de şehir seçerek aynı
+  sonuca ulaşıyor (karanlık örüntü yok, §20).
 
 ### 2026-10-03 — Yüzen alt menü, Planlarım ve Paylaş
 

@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 
 /* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil) */
@@ -19,13 +19,13 @@ export const TYPES=[['tur','Tur','Turlar'],['otel','Otel','Oteller'],['etkinlik'
 export const typeKey=k=>(TYPES.find(t=>t[1]===k)||TYPES[0])[0];
 
 const fromItem=x=>({id:slug(x.t),type:x.k,title:x.t,place:x.a,price:x.p,old:x.old,unit:x.u||'kişi başı',score:x.s||0,count:x.c||0,
-  bg:G[x.g],facts:x.facts||[],dates:x.dates||[],more:x.more,info:x.info,tr:x.tr,visa:x.visa,b:x.b,abroad:!!x.abroad,sample:true});
+  bg:G[x.g],facts:x.facts||[],dates:x.dates||[],more:x.more,info:x.info,tr:x.tr,visa:x.visa,b:x.b,abroad:!!x.abroad,cat:x.cat,sample:true});
 const all=new Map();
 ITEMS.forEach(x=>all.set(slug(x.t),fromItem(x)));
 const evDay=e=>e[0][0]+e[0].slice(1).toLocaleLowerCase('tr')+' '+e[1]+' Eki';
-EV.forEach(e=>{const id=slug(e[3]),[time,place]=e[4].split(' · ');if(!all.has(id))all.set(id,{id,type:'Etkinlik',title:e[3],place,price:e[5],unit:'bilet',score:0,count:0,bg:G[e[6]],facts:[evDay(e)+' · '+time,e[2]],dates:[],b:'saat',sample:true})});
+EV.forEach(e=>{const id=slug(e[3]),[time,place]=e[4].split(' · ');if(!all.has(id))all.set(id,{id,type:'Etkinlik',title:e[3],place,price:e[5],unit:'bilet',score:0,count:0,bg:G[e[6]],facts:[evDay(e)+' · '+time,e[2]],cat:e[2],dates:[],b:'saat',sample:true})});
 HT.forEach(h=>{const id=slug(h[1]),p=all.get(id);const o={id,type:'Otel',title:h[1],place:h[2],price:h[6]*2,unit:'2 gece toplam',score:h[3],count:h[4],bg:G[h[7]],facts:['2 – 4 Eki · 2 gece',h[5]],dates:[],stars:h[0],b:'hs',sample:true};all.set(id,p?{...o,...p,stars:h[0]}:o)});
-VN.forEach(v=>{const id=slug(v.t),p=all.get(id);const o={id,type:'Mekân',title:v.t,place:v.a,price:v.opts[0][1],unit:'seans',score:v.s,count:v.c,bg:G[v.g],facts:v.opts.map(o=>o[0]),dates:[],b:'saat',sample:true};all.set(id,{...o,...(p||{}),opts:v.opts,mode:v.mode})});
+VN.forEach(v=>{const id=slug(v.t),p=all.get(id);const o={id,type:'Mekân',title:v.t,place:v.a,price:v.opts[0][1],unit:v.u||(v.slots?'kişi başı':'seans'),slots:v.slots,score:v.s,count:v.c,bg:G[v.g],facts:v.opts.map(o=>o[0]),dates:[],b:'saat',sample:true};all.set(id,{...o,...(p||{}),opts:v.opts,mode:v.mode})});
 
 all.forEach(p=>{p.with=(KIMLE[p.title]||'').split(' ').filter(Boolean)});
 
@@ -96,8 +96,36 @@ export function listSearches(){try{return JSON.parse(localStorage.getItem(AK))||
 export function saveSearch(s){try{localStorage.setItem(AK,JSON.stringify([s,...listSearches().filter(x=>x.url!==s.url)].slice(0,4)))}catch(e){}}
 export function clearSearches(){try{localStorage.removeItem(AK)}catch(e){}}
 
-/* Etkinlik takvimi: bilet görünümü için gün ve saat ayrı */
-export const listEvents=()=>EV.map(e=>{const [time,place]=e[4].split(' · ');return {id:slug(e[3]),title:e[3],dw:e[0],dn:e[1],month:'EKİM',cat:e[2],time,place,price:e[5],bg:G[e[6]],sample:true}});
+/* Sahnede: bugünden itibaren birkaç gün içindeki etkinlikler, gün ve saat
+   sırasıyla; bilet görünümü için gün, ay ve saat ayrı */
+const DW=['PAZ','PZT','SAL','ÇAR','PER','CUM','CMT'];
+export function listEvents({days=7}={}){
+  const end=new Date(TODAY);end.setDate(end.getDate()+days);
+  return [...all.values()].filter(p=>typeKey(p.type)==='etkinlik').map(p=>{const d=parseDay(p.facts[0]),t=p.facts[0].split(' · ')[1]||'';
+    return {...p,day:d,dw:d&&DW[d.getDay()],dn:d&&String(d.getDate()),month:d&&d.toLocaleDateString('tr-TR',{month:'short'}).toLocaleUpperCase('tr'),
+      time:t.charAt(0).toLocaleUpperCase('tr')+t.slice(1),cat:p.cat||p.type}})
+   .filter(e=>e.day&&e.day>=TODAY&&e.day<end).sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time));
+}
+
+/* Yakınımda: ürünün yaklaşık konumu (data.js GEO, ÖRNEK) ve kuş uçuşu
+   uzaklık. Konum yalnızca kullanıcı isteyince, tarayıcıdan gelir; burada
+   saklanmaz. */
+const geoKeys=Object.keys(GEO).map(k=>[' '+norm(k),GEO[k]]);
+all.forEach(p=>{const h=' '+norm(p.title+' '+where(p));const g=geoKeys.find(([k])=>h.includes(k));p.geo=g?g[1]:null});
+const dist=(a,b)=>{const r=Math.PI/180,x=Math.sin((b[0]-a[0])*r/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin((b[1]-a[1])*r/2)**2;return 12742*Math.asin(Math.sqrt(x))};
+/* Yakındakiler (varsayılan 200 km); azsa en yakın birkaç deneyim */
+export function listNearby(pos,{within=200,min=6}={}){
+  const l=[...all.values()].filter(p=>p.geo).map(p=>({...p,km:dist(pos,p.geo)})).sort((a,b)=>a.km-b.km);
+  const near=l.filter(p=>p.km<=within);
+  return near.length>=min?near:l.slice(0,min);
+}
+/* Konuma en yakın yer: yerin adı ya da eş adlarından en yakını (Bodrum → Muğla) */
+export function nearestPlace(pos){
+  return DESTS.map(([id,name,,al])=>({id,name,km:Math.min(...[name,...al].filter(k=>GEO[k]).map(k=>dist(pos,GEO[k])))}))
+    .filter(d=>d.km<Infinity).sort((a,b)=>a.km-b.km)[0]||null;
+}
+/* Konum izni yoksa seçilebilecek şehirler */
+export const placePos=id=>{const d=getDestination(id);return d&&GEO[d.name]||null};
 
 /* Son bakılanlar: yalnızca bu cihazda tutulur; backend gelince kullanıcı
    geçmişinden okunacak */
@@ -164,7 +192,7 @@ export function bookingSpec(p){
   const fixed=p.unit==='min. harcama';
   return {
     dates,fixed,
-    slots:(t==='aktivite'||t==='mekan')&&!fixed?['10:00','12:00','14:00','16:00']:[],
+    slots:p.slots||((t==='aktivite'||t==='mekan')&&!fixed?['10:00','12:00','14:00','16:00']:[]),
     opts:p.opts||[],
     qty:fixed?null:t==='otel'?{label:'Oda',min:1,max:3,start:1,note:'Oda başına 2 yetişkin.'}:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
     deposit:t==='tur'?.2:0,

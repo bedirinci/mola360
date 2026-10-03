@@ -60,7 +60,7 @@ document.getElementById('urun').innerHTML=
    +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>'+p.more+' tarih</span></button></div></section>':'')
 
  +(info.about?'<section class="box"><h2>Hakkında <span class="ornek">ÖRNEK İÇERİK</span></h2><p class="u-about">'+info.about+'</p>'
-   +'<p class="u-note">Açıklama, program, dahil olanlar ve buluşma bilgisi örnek; işletme girdikçe gerçeği gelecek.</p></section>':'')
+   +'</section>':'')
 
  +(info.program.length?'<section class="box"><h2>'+info.progTitle+'</h2><ol class="u-prog">'
    +info.program.map((x,i)=>'<li'+(cut&&i>2?' hidden':'')+'><span class="k">'+x[0]+'</span><span class="dot" aria-hidden="true"></span><div class="c"><b>'+x[1]+'</b>'+(x[2]?'<p>'+x[2]+'</p>':'')+'</div></li>').join('')+'</ol>'
