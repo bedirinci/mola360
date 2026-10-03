@@ -1,5 +1,6 @@
 /* "Planlarken yanındayız": beni ara formu ve saat seçme çekmecesi. Çevrimiçi göstergesi shell.js'te. */
 import { isLive } from './shell.js';
+import { makeSheet } from './ui.js';
 const HELP=`<section class="help" aria-labelledby="h-help">
   <div class="help-hd"><h2 id="h-help">Planlarken yanındayız</h2><i class="live dark" data-live><em></em><span data-live-t>Çevrimiçi</span></i></div>
   <p>Seyahat uzmanlarımız her gün <span class="nw">09:00 – 23:59</span> arası <b class="tel">0850 000 00 00</b>'da. Aklına takılanı sor, <span class="nw">birlikte planlayalım.</span></p>
@@ -21,7 +22,7 @@ const HELP=`<section class="help" aria-labelledby="h-help">
 const SHEET=`<div class="sh-bg" id="whenBg" aria-hidden="true"></div>
 <div class="sheet" id="whenSheet" role="dialog" aria-modal="true" aria-labelledby="whenTtl">
   <div class="sh-grab" aria-hidden="true"></div>
-  <div class="sh-hd"><h3 id="whenTtl">Ne zaman arayalım?</h3><button type="button" class="sh-x" id="whenX" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sh-hd"><h3 id="whenTtl">Ne zaman arayalım?</h3><button type="button" class="sh-x" data-x aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="sh-list" id="whenList" role="radiogroup" aria-labelledby="whenTtl"></div>
 </div>`;
 
@@ -50,24 +51,12 @@ callSlots();setInterval(callSlots,60000);
 const cb=document.getElementById('callBtn'),cf=document.getElementById('callForm'),ok=document.getElementById('callOk');
 cb.addEventListener('click',()=>{const o=cf.hidden;cf.hidden=!o;ok.hidden=true;cb.setAttribute('aria-expanded',o);if(o)document.getElementById('cName').focus()});
 /* ne zaman arayalım: alttan çekmece */
-const wb=document.getElementById('cWhenBtn'),sh=document.getElementById('whenSheet'),bg=document.getElementById('whenBg');
-const shBehind=()=>[...document.body.children].filter(el=>el!==sh&&el!==bg&&el.tagName!=='SCRIPT');
-function openSh(){bg.classList.add('open');sh.classList.add('open');document.body.classList.add('locked');wb.setAttribute('aria-expanded','true');shBehind().forEach(el=>el.inert=true);
-  setTimeout(()=>(sh.querySelector('.opt[aria-checked="true"]')||document.getElementById('whenX')).focus({preventScroll:true}),60)}
-function closeSh(){if(!sh.classList.contains('open'))return;sh.style.transform='';bg.style.opacity='';bg.classList.remove('open');sh.classList.remove('open');document.body.classList.remove('locked');wb.setAttribute('aria-expanded','false');shBehind().forEach(el=>el.inert=false);wb.focus({preventScroll:true})}
-wb.addEventListener('click',openSh);bg.addEventListener('click',closeSh);document.getElementById('whenX').addEventListener('click',closeSh);
+const wb=document.getElementById('cWhenBtn'),sh=document.getElementById('whenSheet');
+const when=makeSheet(sh,document.getElementById('whenBg'));
+wb.addEventListener('click',()=>when.open(wb));
 document.getElementById('whenList').addEventListener('click',e=>{const o=e.target.closest('.opt');if(!o)return;
   sh.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-checked',x===o));
-  document.getElementById('cWhen').value=o.dataset.v;document.getElementById('cWhenTxt').textContent=o.dataset.v;setTimeout(closeSh,140)});
-sh.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeSh();return}
-  if(e.key==='Tab'){const f=[...sh.querySelectorAll('button')],a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
-/* aşağı kaydırınca kapanır */
-let y0=null,dy=0,t0=0;
-sh.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;t0=Date.now();sh.classList.add('drag')},{passive:true});
-sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>0)e.preventDefault();sh.style.transform='translateY('+dy+'px)';bg.style.opacity=String(Math.max(0,1-dy/sh.offsetHeight))},{passive:false});
-sh.addEventListener('touchend',()=>{if(y0==null)return;sh.classList.remove('drag');const v=dy/Math.max(1,Date.now()-t0);y0=null;
-  if(dy>sh.offsetHeight*.3||(dy>30&&v>.5))closeSh();else{sh.style.transform='';bg.style.opacity=''}});
-sh.addEventListener('touchcancel',()=>{y0=null;sh.classList.remove('drag');sh.style.transform='';bg.style.opacity=''});
+  document.getElementById('cWhen').value=o.dataset.v;document.getElementById('cWhenTxt').textContent=o.dataset.v;setTimeout(when.close,140)});
 const tel=document.getElementById('cTel'),telErr=document.getElementById('telErr');
 const telOk=v=>{const d=v.replace(/\D/g,'').replace(/^90/,'').replace(/^(?=5)/,'0');return /^05\d{9}$/.test(d)};
 tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true'&&telOk(tel.value)){tel.removeAttribute('aria-invalid');telErr.hidden=true}});

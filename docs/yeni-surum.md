@@ -54,25 +54,35 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama, "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
+| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar; ne zaman; kaç kişi), "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
 | Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
-| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, iptal ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
+| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, hakkında, program, dahil/hariç, buluşma noktası ve bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
 | Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet, kapora) → iletişim bilgileri → özet, iptal ve ödeme → onay. Taslakta ödeme alınmaz, kart bilgisi istenmez |
-| Liste | `v2/liste/?tur=otel&sure=hs&kimle=cift&tema=doga` | Kategori satırı (`tur`), filtre satırı (`sure`, `kimle`) ve tema (`tema`) ayrı parametreler |
+| Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=cift&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar |
 | Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
 | Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan (akıştan yapılan taslak rezervasyonlar en üstte) ve geçmiş; geçmişte "Deneyimini paylaş" |
 | Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
 
 Kod düzeni:
 
-- `css/tokens.css` (tasarım tokenları), `base.css`, `components.css`
+- `css/tokens.css` (tasarım tokenları: renk, 8 adımlı yazı ölçeği
+  `--fs-*`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
+  köşe için ham px yalnızca burada; test başka yerde yakalar.
+- `base.css`, `components.css`
   (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
 - `js/shell.js`: her sayfada aynı olan alt menü, tam ekran menü, bildirim.
 - `js/api.js`: bütün sayfaların okuduğu tek veri katmanı (ürünler,
-  etkinlikler, temalar, paylaşımlar, son bakılanlar). Bugün `js/data.js`
+  etkinlikler, temalar, yerler, arama önerileri, tarih penceresi,
+  paylaşımlar, son bakılanlar, ürün içeriği). Bugün `js/data.js`
   içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
   türeyen `slug`. Backend gelince yalnızca içi değişecek.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında), paylaşım kartı, paylaşıma bağlı ürün.
+- `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,
+  dahil/hariç, buluşma noktası, örnek değerlendirmeler); sayfalar
+  `api.js` üzerinden okur.
+- `js/arama.js`: Keşfet'teki arama çekmeceleri. Çekmece davranışı
+  (odak, Esc, aşağı çekip kapatma) `ui.js`'teki `makeSheet`'te; yardım
+  kutusunun saat çekmecesi de onu kullanıyor.
 - Her sayfanın kendi modülü: `kesfet.js`, `baglan.js`, `urun.js` …
 
 Notlar:
@@ -80,10 +90,16 @@ Notlar:
 - Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
-- Favoriler, son bakılanlar ve taslak rezervasyonlar yalnızca tarayıcıda
-  (`localStorage`, `m360-fav`, `m360-son`, `m360-rez`). İletişim bilgileri
+- Favoriler, son bakılanlar, son aramalar ve taslak rezervasyonlar
+  yalnızca tarayıcıda (`localStorage`, `m360-fav`, `m360-son`,
+  `m360-aramalar`, `m360-rez`). Aramadaki tarih ve kişi sayısı sekme
+  açık kaldıkça (`sessionStorage`, `m360-arama`) liste, ürün ve
+  rezervasyon sayfalarına taşınır. İletişim bilgileri
   saklanmaz. "Kaldığın yerden" bölümündeki "Temizle" son
   bakılanları siler.
+- Örnek takvim 1 Ekim 2026'da yaşıyor: "Bu hafta sonu" 2 – 4 Ekim, son
+  ücretsiz iptal günü bu tarihe göre hesaplanıyor. Yerler (`DESTS`) ve
+  ürün içeriği ÖRNEK.
 - Hangi ürünün kime uygun olduğu (çiftler, arkadaşlarla, çocuklu) ve hangi
   temada olduğu ÖRNEK; gerçekte işletme bilgisinden ve değerlendirmelerden
   gelecek.
@@ -95,9 +111,10 @@ Notlar:
 
 ## Sıradaki adımlar
 
-1. Tasarım sistemi: tokenları tamamlamak (tip ölçeği, boşluk ölçeği) ve
-   bileşenleri tek bir vitrin sayfasında toplamak.
+1. Tasarım sistemi: bileşenleri tek bir vitrin sayfasında toplamak; koyu
+   tema.
 2. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
-3. Kalan filtreler: "Yakınımda" (konum izni) ve fiyat aralığı; sıralama.
+3. Kalan filtreler: "Yakınımda" (konum izni) ve fiyat aralığı; sıralama;
+   aramada gerçek takvim (gün seçimi).
 4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
 5. Masaüstü düzeni.

@@ -1,4 +1,4 @@
-/* Keşfet (anasayfa): arama, kaldığın yerden, "Ne kadar molan var?" +
+/* Keşfet (anasayfa): arama (arama.js), kaldığın yerden, "Ne kadar molan var?" +
    kiminle, Bağlan önizlemesi, "Bu hafta sonu için", sahnede, temalar.
    Bölümler bilerek az: her biri tek bir soruya cevap veriyor. Veri
    yalnızca api.js'ten okunur. */
@@ -8,6 +8,7 @@ import { getLevel, setLevel } from './level.js';
 import { favSync, initFavorites } from './favorites.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { renderShell } from './shell.js';
+import { initSearch } from './arama.js';
 import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, BUCKETS, WITH, TYPES, typeKey } from './api.js';
 
 renderShell('kesfet');
@@ -76,20 +77,8 @@ week('otel');
 initFavorites();
 favSync();
 
-/* sekmeye göre arama kutusu (arayüz metni) */
-const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','Ekim, esnek','KİŞİ','2 yetişkin','Molamı bul'],
- otel:['NEREYE','Şehir, bölge veya otel adı','GİRİŞ – ÇIKIŞ','2 – 4 Eki · 2 gece','ODA · KİŞİ','1 oda · 2 yetişkin','Otel bul'],
- etkinlik:['ŞEHİR','Tüm şehirler','NE ZAMAN','Bu hafta sonu','BİLET','2 bilet','Etkinlik bul'],
- aktivite:['NEREYE','Şehir veya aktivite','NE ZAMAN','Bu hafta sonu','KİŞİ','2 kişi','Aktivite bul'],
- mekan:['NEREYE','Şehir veya mekân adı','NE ZAMAN','Bugün','KİŞİ','2 kişi','Mekân bul']};
-const f1=()=>document.querySelector('#f1 span');
-let curTab='tur';
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;curTab=t.dataset.tab;
-  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
-  const v=TABS[t.dataset.tab];['f1','f2','f3'].forEach((id,i)=>{const f=document.getElementById(id);f.querySelector('small').textContent=v[i*2];f.querySelector('span').textContent=v[i*2+1]});
-  document.getElementById('go').textContent=v[6];f1().classList.add('hint');});
-/* Arama: seçili ürün türünün listesine gider */
-document.getElementById('search').addEventListener('submit',()=>{location.href='liste/?tur='+curTab});
+/* Arama: nereye, ne zaman, kaç kişi (arama.js) */
+initSearch();
 
-document.querySelectorAll('.rail').forEach(el=>makeScroll(el,true));
-document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el,false));
+document.querySelectorAll('.rail').forEach(el=>makeScroll(el));
+document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el));

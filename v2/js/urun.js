@@ -1,6 +1,6 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
 import { renderShell } from './shell.js';
-import { getProduct, listProducts, listPosts, typeKey, markViewed } from './api.js';
+import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll } from './ui.js';
 import { favToggle, isFav, initFavorites, favSync } from './favorites.js';
@@ -26,6 +26,13 @@ document.title='mola360 — '+p.title;
 markViewed(p.id);
 
 const tick=(b,t)=>'<li>'+IC.check+'<div><b>'+b+'</b>'+(t?' <span>'+t+'</span>':'')+'</div></li>';
+const NO='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+const info=productDetails(p),S=bookingSpec(p);
+/* program uzunsa ilk üç adım, gerisi "tamamını gör" ile */
+const cut=info.program.length>4;
+const unitOf=k=>/gün$/.test(k)?'gün':'adım';
+/* Keşfet'teki aramada seçilen tarih penceresindeki ilk kalkış hazır seçili gelir */
+let picked=firstDateIn(p,getSearch().tarih);
 const posts=listPosts({productId:p.id});
 const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
@@ -49,27 +56,45 @@ document.getElementById('urun').innerHTML=
    :'<div class="u-first">'+IC.users+'<p><b>Henüz paylaşım yok.</b> Bu deneyimi yaşayınca ilk paylaşan sen ol; paylaşımın bu sayfada görünsün.</p></div></section>')
 
  +(p.dates.length?'<section class="box" id="tarihler"><h2>Tarih seç</h2><p>Yaklaşan kalkışlar. Kontenjan ve fiyat tarih seçince netleşir.</p><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
-   +p.dates.map((d,i)=>'<button type="button" role="radio" aria-checked="false" data-d="'+d[0]+' '+d[1]+'"><small>'+d[0]+'</small><b>'+d[1]+'</b></button>').join('')
+   +p.dates.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')
    +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>'+p.more+' tarih</span></button></div></section>':'')
 
- +'<section class="box"><h2>Öne çıkanlar</h2><ul class="ticks">'+chips.slice(0,4).map(c=>tick(c)).join('')+'</ul>'
- +'<div class="sk-wrap" aria-hidden="true"><i class="sk" style="width:92%"></i><i class="sk" style="width:76%"></i><i class="sk" style="width:84%"></i></div><p class="sk-note">Program ve açıklama ürün verisiyle gelecek.</p></section>'
+ +(info.about?'<section class="box"><h2>Hakkında <span class="ornek">ÖRNEK İÇERİK</span></h2><p class="u-about">'+info.about+'</p>'
+   +'<p class="u-note">Açıklama, program, dahil olanlar ve buluşma bilgisi örnek; işletme girdikçe gerçeği gelecek.</p></section>':'')
+
+ +(info.program.length?'<section class="box"><h2>'+info.progTitle+'</h2><ol class="u-prog">'
+   +info.program.map((x,i)=>'<li'+(cut&&i>2?' hidden':'')+'><span class="k">'+x[0]+'</span><span class="dot" aria-hidden="true"></span><div class="c"><b>'+x[1]+'</b>'+(x[2]?'<p>'+x[2]+'</p>':'')+'</div></li>').join('')+'</ol>'
+   +(cut?'<button type="button" class="u-more" data-prog aria-expanded="false">Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0])+'</button>':'')+'</section>':'')
+
+ +(info.dahil.length?'<section class="box"><h2>Fiyata neler dahil?</h2><div class="u-inc"><h3>Dahil</h3><ul class="ticks">'+info.dahil.map(x=>'<li>'+IC.check+'<div>'+x+'</div></li>').join('')+'</ul>'
+   +(info.haric.length?'<h3>Dahil değil</h3><ul class="ticks no">'+info.haric.map(x=>'<li>'+NO+'<div>'+x+'</div></li>').join('')+'</ul>':'')+'</div></section>':'')
+
+ +'<section class="box"><h2>'+info.placeTitle+'</h2><div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>'
+ +(info.bilgi.length?'<h3 class="u-h3">Bilmen gerekenler</h3><ul class="u-info">'+info.bilgi.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</section>'
 
  +'<section class="box"><h2>İptal ve ödeme <span class="ornek">ÖRNEK KURAL</span></h2><ul class="ticks">'
- +tick(TRUST.iptal[0],'Son ücretsiz iptal tarihi, tarih seçince burada yazar.')
+ +'<li>'+IC.check+'<div><b>'+S.cancel+'</b> <span id="cxl"></span></div></li>'
  +(deposit?tick('%20 kaporayla yer ayırt','Bugün '+tl(deposit)+' öde, kalanını kalkıştan önce.'):'')
  +tick(TRUST.taksit[0],'Anlaşmalı kartlarla.')
  +tick('Toplam fiyat şeffaf','Ödeme adımında sonradan eklenen ücret yok.')+'</ul></section>'
 
- +'<section class="box" id="yorumlar"><h2>Değerlendirmeler</h2>'
- +(p.count?'<div class="u-rev"><span class="big">'+p.score.toFixed(1).replace('.',',')+'</span><div><b>'+word(p.score)+'</b><span>'+p.count.toLocaleString('tr-TR')+' değerlendirme · yalnızca rezervasyonu tamamlayanlar yazabilir</span></div></div>':'<p>Bu deneyimi Mola360\'tan yaşayanlar değerlendirdikçe burada görünecek.</p>')
- +'<div class="sk-wrap" aria-hidden="true"><i class="sk" style="width:88%"></i><i class="sk" style="width:64%"></i></div></section>'
+ +'<section class="box" id="yorumlar"><h2>Değerlendirmeler'+(info.reviews.length?' <span class="ornek">ÖRNEK</span>':'')+'</h2>'
+ +(p.count?'<div class="u-rev"><span class="big">'+p.score.toFixed(1).replace('.',',')+'</span><div><b>'+word(p.score)+'</b><span>'+p.count.toLocaleString('tr-TR')+' değerlendirme · yalnızca rezervasyonu tamamlayanlar yazabilir</span></div></div>'
+   +'<div class="u-revs">'+info.reviews.map(r=>'<article class="rv"><div class="rv-h"><span class="ava s" style="--c:'+r.user.renk+'" aria-hidden="true">'+r.user.ini+'</span><div class="x"><b>'+r.user.ad+'</b><small>Rezervasyonla gitti</small></div><span class="rv-s">'+r.score.toFixed(1).replace('.',',')+'</span></div><p>'+r.text+'</p></article>').join('')+'</div>'
+   :'<p>Bu deneyimi Mola360\'tan yaşayanlar değerlendirdikçe burada görünecek.</p>')+'</section>'
 
  +(similar.length?'<section class="u-sec"><div class="hd"><h2>Benzer deneyimler</h2><a href="'+ROOT+'liste/?tur='+typeKey(p.type)+'" class="all">Tümü →</a></div></section><div class="rail" id="uSim">'+similar.map(x=>productCard(x)).join('')+'</div>':'');
 
 
 const cta=document.getElementById('ctaBar');
-let picked=null;
+/* son ücretsiz iptal günü: seçilen ya da tek tarihe göre */
+function cxl(){
+  const when=picked||(S.dates.length===1?S.dates[0].join(' '):'');
+  const c=when&&cancelBy(p,when);
+  document.getElementById('cxl').textContent=!c?(p.dates.length?'Tarih seçince son ücretsiz iptal günü burada yazar.':'Son ücretsiz iptal günü rezervasyonda, tarih seçince yazar.')
+    :c.past?'Bu tarihte ücretsiz iptal süresi doldu; iptal edersen ödediğin tutar iade edilmez.':'Bu tarih için son gün: '+c.date+'.';
+}
+cxl();
 function drawCta(){
   cta.innerHTML='<div class="pp"><small>'+(picked?picked+' · ':'')+p.unit+'</small>'+(p.old?'<s>'+tl(p.old)+'</s>':'')+'<strong>'+tl(p.price)+'</strong></div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
@@ -80,7 +105,10 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const d=e.target.closest('[data-d]');
-  if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;drawCta();return}
+  if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;drawCta();cxl();return}
+  const m=e.target.closest('[data-prog]');
+  if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);
+    m.textContent=open?'Daha az göster':'Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0]);return}
   if(e.target.closest('[data-soon-cal]'))toast('Takvim yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000);
 });
 
@@ -92,5 +120,5 @@ initLevelInfo();
 favSync();
 const fb=document.getElementById('favP');
 fb.addEventListener('click',()=>{favToggle(p.title);fb.setAttribute('aria-pressed',isFav(p.title))});
-document.querySelectorAll('.rail').forEach(el=>{makeScroll(el,true)});
+document.querySelectorAll('.rail').forEach(el=>{makeScroll(el)});
 }
