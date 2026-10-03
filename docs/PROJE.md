@@ -923,3 +923,71 @@ güncellenecek yaşayan proje dokümanıdır.
   bağlanan paylaşımda çıkıyor; başka bir deneyime bağlanan paylaşım
   rozetsiz (dark pattern yok, §20). Geçmiş rezervasyondaki "Paylaş"
   çekmeceyi o deneyim seçili açıyor.
+
+### 2026-10-03 — Keşfet seni hatırlıyor, tema vitrini, paylaşımdan ürüne bağ, fotoğraf kuralı
+
+- **Karar:** Keşfet süre ve kiminle seçimini bu cihazda hatırlıyor.
+  Kiminle seçimi arama kutusuna biniyor: formda kaldırılabilir bir çip,
+  listede `kimle` filtresi ve kişi sayısının başlangıcı (tek başıma 1,
+  sevgilimle 2, çocuklarla 2 yetişkin + 1 çocuk; kullanıcı sayaca
+  dokunursa onunki geçerli). "Yakınımda" açıksa o yer "Nereye?"nin en
+  başında öneriliyor. Bölümlerin sırası değişmiyor; içlerindeki
+  deneyimler önce kiminle seçimine uyanlar, sonra yakında olanlar (60 km,
+  300 km, ötesi) diye sıralanıyor. Tema sayfası bir vitrin oldu: kapak,
+  iki cümlelik giriş, yalnızca temada olan kategoriler, temanın kendi
+  sırası ve araya "Bu temada paylaşılanlar". Ürün kartında, o deneyimin
+  paylaşımı varsa paylaşanların küçük resimleri ve "N paylaşım" var;
+  dokununca ürün sayfasındaki paylaşımlara gidiyor. Fotoğraf için bir
+  kural yazıldı (docs/yeni-surum.md "Fotoğraf kuralı") ve kartlar
+  fotoğrafı ayrıca bir şey yapmadan gösterecek hale geldi. Bağlan'a altı
+  ÖRNEK paylaşım eklendi; her tema en az bir paylaşım taşıyor.
+- **Neden:** Bedir İnci Keşfet önerilerinden 1 – 4'ün uygulanmasını
+  istedi; masaüstü düzeni (5) bilerek en sona kaldı. Keşfet her
+  açılışta aynı soruları yeniden sormamalı; temadan gelen kullanıcı ilk
+  dokunuşta düz bir listede kaybolmamalı; paylaşım ile ürün arasındaki
+  bağ iki yönlü olmalı ki "Mola360 ile gitti" rozeti güvene dönüşsün.
+- **Etkilediği alanlar:** `v2/js/kesfet.js`, `v2/js/arama.js`,
+  `v2/js/liste.js`, `v2/js/cards.js` (`vk-pp`), `v2/js/urun.js`
+  (`#paylasimlar`), `v2/js/api.js` (`photo`, `kmTo`, temada `intro`),
+  `v2/js/data.js` (`IMG`, `THEMES` girişleri, yeni `POSTS`),
+  `v2/img/KAYNAK.md`, `v2/css/`, `docs/yeni-surum.md`.
+- **Teknik sonuç:** Seçim `localStorage` `m360-kesfet` ({b, k}); konumun
+  kendisi de konumdan çıkan yer de saklanmıyor (yer önerisi yalnızca o
+  açılışta). Fotoğraf `bg` değerinin ilk katmanı
+  (`url(...) center/cover, <geçiş>`), bu yüzden kart, ray, bilet ve ürün
+  sayfası değişmeden gösteriyor. Henüz fotoğraf yok: bu ortamdan stok
+  fotoğraf sitelerine erişilemiyor ve kaynak kararı bekleniyor.
+  Rezervasyon sonrası "Paylaş" çağrısı Planlarım'da (yukarıdaki karar);
+  orada yapılan paylaşım da kartlardaki "N paylaşım"a ve tema vitrinine
+  giriyor.
+- **UX sonucu:** Geri dönen kullanıcı Keşfet'i bıraktığı gibi buluyor ve
+  aramaya her şeyi yeniden girmiyor. Kişiselleştirme görünür ve geri
+  alınabilir: hangi seçimin aramaya bindiği formda yazıyor, çipin
+  çarpısıyla kalkıyor (karanlık örüntü yok, §20). Tema sayfası neyin
+  neden bir arada olduğunu iki cümleyle anlatıyor. Paylaşımı okuyan
+  ürüne, ürüne bakan paylaşımlara tek dokunuşla geçiyor.
+
+### 2026-10-03 — "Ne kadar molan var?" tek sırada; başlıklar tek satır
+
+- **Karar:** "Ne kadar molan var?" seçenekleri 2×2 değil, tek sırada dört
+  kart: ikon, ad ve deneyim sayısı alt alta. Bölüm başlıkları her zaman
+  tek satır; dar ekranda biraz küçülüyor (`--fs-h2`, `--fs-h3`). Süre
+  rayının başlığında kiminle seçimi tekrar edilmiyor, çünkü hemen
+  üstündeki çipte görünüyor. Alttan açılan çekmecelerin arkasında
+  bulanıklık yok; yalnızca karartma var ve çekmece aşağı çekildikçe
+  parmağı gecikmesiz izleyerek azalıyor (Bedir İnci yavaşça kapatırken
+  bulanıklığın kötü göründüğünü gösterdi).
+- **Neden:** Bedir İnci iPhone'da "Bir molayı hak ettin." ve "Ne kadar
+  molan var?" başlıklarının ikinci satıra kaydığını gösterdi ve süre
+  seçeneklerini tek sırada istedi. Başlıklar ölçüldüğünde rahatça
+  sığıyordu; kaymanın sebebi büyük olasılıkla başlıklardaki
+  `text-wrap: balance`'ın Safari'deki davranışı. Bu ortamda Safari yok;
+  kontroller gerçek yazı tipiyle (Plus Jakarta Sans) Chromium'da yapıldı.
+- **Etkilediği alanlar:** `v2/css/components.css`, `v2/css/kesfet.css`,
+  `v2/css/sayfalar.css`, `v2/css/tokens.css`, `v2/js/kesfet.js`.
+- **Teknik sonuç:** Başlıklarda `text-wrap: balance` yok. `.hd h2` tek
+  satır; sığmazsa (yalnızca 320 px gibi çok dar ekranda) sonu üç noktayla
+  kısalıyor. Süre kartlarında yazı boyutu ekrana göre (`clamp`).
+- **UX sonucu:** 360 – 414 px telefonlarda Keşfet başlıkları ve süre
+  kartları tek satırda; dört süre seçeneği bir bakışta görünüyor.
+

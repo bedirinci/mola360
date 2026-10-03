@@ -51,7 +51,7 @@ document.getElementById('urun').innerHTML=
  +lvb(p.title,'in')+'<div class="u-chips">'+chips.map(c=>'<span>'+c+'</span>').join('')+'</div></section>'
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
- +'<section class="u-sec"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
+ +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
  +(posts.length?'<p class="sub">'+posts.length+' paylaşım <span class="ornek">ÖRNEK</span></p></section><div class="rail" id="uPosts">'+posts.map(postMini).join('')+'</div>'
    :'<div class="u-first">'+IC.users+'<p><b>Henüz paylaşım yok.</b> Bu deneyimi yaşayınca ilk paylaşan sen ol; paylaşımın bu sayfada görünsün.</p></div></section>')
 
@@ -121,4 +121,7 @@ favSync();
 const fb=document.getElementById('favP');
 fb.addEventListener('click',()=>{favToggle(p.title);fb.setAttribute('aria-pressed',isFav(p.title))});
 document.querySelectorAll('.rail').forEach(el=>{makeScroll(el)});
+/* adresteki bölüm (kartlardaki "N paylaşım" → #paylasimlar) sayfa çizildikten sonra açılır */
+const at=location.hash.length>1&&document.getElementById(location.hash.slice(1));
+if(at)at.scrollIntoView({block:'start'});
 }

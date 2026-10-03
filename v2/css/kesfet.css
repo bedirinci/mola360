@@ -1,5 +1,5 @@
 /* Keşfet (anasayfa): üst bant, sekmeler, arama, "Ne kadar molan var?", alt bilgi. */
-.hello{margin:12px 0 14px;font-size:var(--fs-2xl);line-height:1.18;font-weight:800;letter-spacing:-.6px}
+.hello{white-space:nowrap;margin:12px 0 14px;font-size:var(--fs-2xl);line-height:1.18;font-weight:800;letter-spacing:-.6px}
 .hello span{color:var(--green)}
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
@@ -15,14 +15,20 @@
 .fld span.hint{color:var(--mute);font-weight:500}
 .split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
 .split .fld+.fld{border-left:1px solid var(--line);border-radius:0 var(--r-md) var(--r-md) 0}
+/* Keşfet'in hatırladığı kiminle: aramaya biner, dokununca kalkar */
+.ctx{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;border-top:1px solid var(--line)}
+.ctx-c{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px 0 12px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink);font-size:var(--fs-md);font-weight:700}
+.ctx-c svg{width:17px;height:17px}
+.ctx-c svg:last-child{width:14px;height:14px;opacity:.75}
 .go{display:block;width:100%;margin-top:6px;background:var(--green);color:var(--navy);border-radius:var(--r-md);font-weight:800;font-size:var(--fs-base);padding:14px}
-.time{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-2);margin-top:14px}
-.tt{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 12px 10px 10px;border-radius:var(--r-md);background:var(--soft);text-align:left;color:var(--ink)}
-.tt .i{width:40px;height:40px;border-radius:var(--r-sm);background:var(--card);display:grid;place-items:center;color:var(--navy);flex:none;transition:background-color var(--t) var(--ease),color var(--t) var(--ease)}
-.tt .i svg{width:21px;height:21px;stroke-width:2}
-.tt .x{min-width:0}
-.tt b{display:block;font-size:var(--fs-base);font-weight:800;letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
-.tt small{display:block;margin-top:1px;font-size:var(--fs-sm);font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.time{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+/* tek sırada dört seçenek: ikon, ad, deneyim sayısı alt alta */
+.tt{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--soft);text-align:center;color:var(--ink)}
+.tt .i{width:38px;height:38px;border-radius:var(--r-sm);background:var(--card);display:grid;place-items:center;color:var(--navy);flex:none;transition:background-color var(--t) var(--ease),color var(--t) var(--ease)}
+.tt .i svg{width:20px;height:20px;stroke-width:2}
+.tt .x{min-width:0;max-width:100%}
+.tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:800;letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
+.tt small{display:block;margin-top:2px;font-size:clamp(9.5px,2.9vw,11px);font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt[aria-pressed="true"]{background:var(--navy);color:#fff}
 .tt[aria-pressed="true"] .i{background:var(--green);color:var(--navy)}
 .tt[aria-pressed="true"] small{color:var(--navy-ink)}
@@ -49,7 +55,7 @@
 .rail.recent{gap:10px;padding-top:12px}
 /* "Ne kadar molan var?" seçiminin sonucu: ana başlığın altında ikincil başlık */
 .sub-sec{padding-top:var(--s-4)}
-.sub-sec .hd h2{font-size:var(--fs-lg)}
+.sub-sec .hd h2{font-size:var(--fs-h3)}
 .empty-r{margin:14px 16px 0;padding:16px;border-radius:var(--r-md);background:var(--soft);font-size:var(--fs-md);color:var(--mute);line-height:1.5}
 .empty-r b{display:block;color:var(--ink);font-weight:800}
 
@@ -58,7 +64,7 @@
 .near::before{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border-radius:50%;background:repeating-radial-gradient(circle,rgba(140,198,63,.30) 0 1.5px,transparent 2px 26px)}
 .near-ic{position:absolute;right:20px;top:20px;width:40px;height:40px;border-radius:50%;background:var(--green);color:var(--navy);display:grid;place-items:center;box-shadow:0 0 0 8px rgba(140,198,63,.18)}
 .near-ic svg{width:21px;height:21px;stroke-width:2.2}
-.near h2{position:relative;font-size:var(--fs-xl);font-weight:800;letter-spacing:-.01em;line-height:1.25;padding-right:72px}
+.near h2{position:relative;font-size:var(--fs-h2);font-weight:800;letter-spacing:-.01em;line-height:1.25;padding-right:72px}
 .near p{position:relative;margin-top:6px;font-size:var(--fs-md);line-height:1.5;color:var(--navy-ink);padding-right:56px}
 .near-go{position:relative;display:inline-flex;align-items:center;gap:7px;margin-top:14px;min-height:44px;padding:0 16px;border-radius:var(--r-md);background:var(--green);color:var(--navy);font-weight:800;font-size:var(--fs-md)}
 .near-go svg{width:18px;height:18px;stroke-width:2.2}

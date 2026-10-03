@@ -1,7 +1,10 @@
 /* Keşfet (anasayfa): arama (arama.js), kaldığın yerden, "Ne kadar molan var?" +
    kiminle, yakınımda, Bağlan önizlemesi, "Bu hafta sonu için", sahnede,
    temalar. Bölümler bilerek az: her biri tek bir soruya cevap veriyor. Veri
-   yalnızca api.js'ten okunur. */
+   yalnızca api.js'ten okunur.
+   Keşfet seni hatırlar: süre ve kiminle seçimi bu cihazda saklanır, arama
+   kutusuna biner; bölümlerin sırası değişmez, içlerindeki deneyimler
+   kiminle seçimine ve yakınlığa göre sıralanır. */
 import { CLOCK } from './icons.js';
 import { makeScroll, toast } from './ui.js';
 import { getLevel, setLevel } from './level.js';
@@ -9,12 +12,28 @@ import { favSync, initFavorites } from './favorites.js';
 import { productCard, recentCard, ticket, postMini, initPostActions } from './cards.js';
 import { renderShell } from './shell.js';
 import { initSearch } from './arama.js';
-import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, listNearby, nearestPlace, placePos, getDestination, BUCKETS, WITH, TYPES, typeKey } from './api.js';
+import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, listNearby, nearestPlace, placePos, getDestination, kmTo, BUCKETS, WITH, TYPES, typeKey } from './api.js';
 
 renderShell('kesfet');
 
 const $=id=>document.getElementById(id);
 const fill=(el,html)=>{el.innerHTML=html;el.scrollLeft=0;el.dispatchEvent(new Event('scroll'))};
+
+/* Hatırlanan seçim (m360-kesfet: {b, k}); konum burada tutulmaz */
+const MK='m360-kesfet';
+const mem=(()=>{try{return JSON.parse(localStorage.getItem(MK))||{}}catch(e){return {}}})();
+const keep=()=>{try{localStorage.setItem(MK,JSON.stringify({b:curB,k:curK}))}catch(e){}};
+let curB=BUCKETS.some(b=>b[0]===mem.b)?mem.b:'hs',curK=WITH.some(w=>w[0]===mem.k)?mem.k:'',curW='',nearAt=null;
+
+/* Arama: nereye, ne zaman, kaç kişi (arama.js). Kiminle iki yönlü: formdaki
+   çip kalkınca Keşfet'teki seçim de kalkar */
+const srch=initSearch({kimle:curK,onWith:k=>{curK=k;keep();pick();personal()}});
+
+/* Kişiye göre sıra: kiminle seçimine uyanlar, sonra yakında olanlar öne
+   (60 km, 300 km, ötesi); aynı derecedekiler kendi sırasında kalır */
+const ring=p=>{const d=kmTo(nearAt&&nearAt[0],p);return d==null?2:d<=60?0:d<=300?1:2};
+const score=p=>(curK&&p&&!p.with.includes(curK)?3:0)+(nearAt&&p?ring(p):0);
+const rank=(l,of=x=>x)=>l.map((x,i)=>[x,score(of(x)),i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(a=>a[0]);
 const svg=p=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>';
 
 /* Kaldığın yerden: yalnızca bakılmış ürün varsa görünür */
@@ -28,23 +47,22 @@ const ICON={saat:CLOCK,
   hs:svg('<path d="M2.5 20h19M4.5 20 12 5l7.5 15"/><path d="m10 20 2-4 2 4"/>'),
   uzun:svg('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4.5h6V7M3 13h18"/>')};
 const tEl=$('time'),rail=$('timeRail'),wEl=$('withChips');
-let curB='hs',curK='',curW='',nearAt=null;
 const q=(k,v)=>k&&v?k+'='+v:'';
 tEl.innerHTML=BUCKETS.map(b=>'<button type="button" class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="i">'+ICON[b[0]]+'</span><span class="x"><b>'+b[1]+'</b><small></small></span></button>').join('');
 wEl.innerHTML=WITH.map(w=>'<button type="button" class="fc" aria-pressed="false" data-k="'+w[0]+'">'+w[1]+'</button>').join('');
 function pick(){
   tEl.querySelectorAll('.tt').forEach(e=>{e.setAttribute('aria-pressed',e.dataset.b===curB);e.querySelector('small').textContent=listProducts({sure:e.dataset.b,kimle:curK}).length+' deneyim'});
   wEl.querySelectorAll('[data-k]').forEach(e=>e.setAttribute('aria-pressed',e.dataset.k===curK));
-  const W=WITH.find(w=>w[0]===curK);
-  $('railTitle').textContent=BUCKETS.find(x=>x[0]===curB)[2]+(W?' · '+W[1].toLocaleLowerCase('tr'):'');
+  /* kiminle seçimi hemen üstteki çipte görünüyor; başlık tek satırda kalsın diye yalnızca süre */
+  $('railTitle').textContent=BUCKETS.find(x=>x[0]===curB)[2];
   $('railAll').href='liste/?'+[q('sure',curB),q('kimle',curK)].filter(Boolean).join('&');
-  const list=listProducts({sure:curB,kimle:curK});
+  const list=rank(listProducts({sure:curB,kimle:curK}));
   fill(rail,list.length?list.map(productCard).join('')
     :'<div class="empty-r"><b>Bu seçimde deneyim yok</b>Başka bir süre seç ya da kiminle seçimini kaldır.</div>');
   favSync();
 }
-tEl.addEventListener('click',e=>{const t=e.target.closest('.tt');if(t){curB=t.dataset.b;pick()}});
-wEl.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t){curK=t.dataset.k===curK?'':t.dataset.k;pick()}});
+tEl.addEventListener('click',e=>{const t=e.target.closest('.tt');if(t){curB=t.dataset.b;keep();pick()}});
+wEl.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t){curK=t.dataset.k===curK?'':t.dataset.k;keep();srch.setWith(curK);pick();personal()}});
 
 /* Yakınımda ne var? Konum yalnızca kullanıcı dokununca istenir. Seçim bu
    cihazda hatırlanır ("gps" ya da "yer:izmir"); konumun kendisi saklanmaz.
@@ -53,14 +71,14 @@ const NK='m360-yakin',CITIES=['istanbul','izmir','ankara','antalya'];
 const nGo=$('nearGo'),nCard=$('nearCard'),nOn=$('nearOn'),nAlt=$('nearAlt');
 const nGet=()=>{try{return localStorage.getItem(NK)||''}catch(e){return ''}};
 const nSet=v=>{try{v?localStorage.setItem(NK,v):localStorage.removeItem(NK)}catch(e){}};
-function nearShow(pos,label){
-  nearAt=[pos,label];nCard.hidden=true;nOn.hidden=false;
+function nearShow(pos,label,place){
+  nearAt=[pos,label,place];nCard.hidden=true;nOn.hidden=false;
   $('nearLoc').textContent=label;
   fill($('nearRail'),listNearby(pos).map(productCard).join(''));
-  favSync();
+  srch.setNear(place);pick();personal();
 }
-function nearOff(){nSet('');nearAt=null;nOn.hidden=true;nCard.hidden=false;nAlt.hidden=true;nGo.disabled=false;nGo.querySelector('span').textContent='Konumumu kullan'}
-function nearCity(id){const d=getDestination(id),pos=placePos(id);if(!d||!pos)return nearOff();nSet('yer:'+id);nearShow(pos,d.name+' çevresi')}
+function nearOff(){nSet('');nearAt=null;srch.setNear(null);pick();personal();nOn.hidden=true;nCard.hidden=false;nAlt.hidden=true;nGo.disabled=false;nGo.querySelector('span').textContent='Konumumu kullan'}
+function nearCity(id){const d=getDestination(id),pos=placePos(id);if(!d||!pos)return nearOff();nSet('yer:'+id);nearShow(pos,d.name+' çevresi',id)}
 function nearFail(msg){nGo.disabled=false;nGo.querySelector('span').textContent='Tekrar dene';nAlt.hidden=false;$('nearMsg').textContent=msg}
 function nearGps(){
   if(!navigator.geolocation)return nearFail('Tarayıcın konum paylaşmıyor. Bir şehir seç:');
@@ -69,18 +87,20 @@ function nearGps(){
   const late=setTimeout(()=>nearFail('Konumun alınamadı. İstersen bir şehir seç:'),15000);
   navigator.geolocation.getCurrentPosition(p=>{clearTimeout(late);
     const pos=[p.coords.latitude,p.coords.longitude],n=nearestPlace(pos);
-    nSet('gps');nGo.disabled=false;nearShow(pos,n&&n.km<=60?n.name+' çevresi':'Konumuna göre');
+    const ok=n&&n.km<=60;nSet('gps');nGo.disabled=false;nearShow(pos,ok?n.name+' çevresi':'Konumuna göre',ok?n.id:null);
   },e=>{clearTimeout(late);nearFail(e.code===1?'Konum izni verilmedi. İstersen bir şehir seç:':'Konumun alınamadı. İstersen bir şehir seç:')},{timeout:10000,maximumAge:600000});
 }
 $('nearCities').innerHTML=CITIES.map(id=>'<button type="button" data-city="'+id+'">'+getDestination(id).name+'</button>').join('');
 nGo.addEventListener('click',nearGps);
 $('nearCities').addEventListener('click',e=>{const b=e.target.closest('[data-city]');if(b)nearCity(b.dataset.city)});
 $('nearOff').addEventListener('click',()=>{nearOff();nGo.focus({preventScroll:true})});
-(function nearStart(){
+/* açılışta: şehir seçildiyse hemen, konum izni verildiyse yeniden sormadan */
+function nearStart(){
   const v=nGet();
-  if(v.startsWith('yer:'))return nearCity(v.slice(4));
+  if(v.startsWith('yer:')){nearCity(v.slice(4));return true}
   if(v==='gps'&&navigator.permissions)navigator.permissions.query({name:'geolocation'}).then(r=>{if(r.state==='granted')nearGps()}).catch(()=>{});
-})();
+  return false;
+}
 
 /* Bu hafta sonu için: bu hafta sonu yapılabilecekler, kategoriye göre.
    Tümü'nde türler karışık sıralanır. */
@@ -90,38 +110,38 @@ wkC.innerHTML=[['','Tümü'],...TYPES.map(t=>[t[0],t[2]])].map(t=>'<button type=
 function week(w){curW=w;
   wkC.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.w===w));
   $('wkAll').href='liste/?'+[q('tur',w),'tarih=bu-hs'].filter(Boolean).join('&');
-  const l=listProducts({type:w,tarih:'bu-hs'});
+  const l=rank(listProducts({type:w,tarih:'bu-hs'}));
   fill(wk,(w?l:mix(l)).map(productCard).join(''));
   favSync();
 }
 wkC.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)week(b.dataset.w)});
 
-/* Bu hafta sahnede: önümüzdeki 7 günün etkinlikleri, bilet görünümünde */
-$('events').innerHTML=listEvents().slice(0,4).map(ticket).join('');
+/* Bu hafta sahnede: önümüzdeki 7 günün etkinlikleri, bilet görünümünde;
+   sana en uygun dördü, gün ve saat sırasıyla */
+const events=()=>{$('events').innerHTML=rank(listEvents()).slice(0,4).sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time)).map(ticket).join('')};
 
 /* Temaya göre keşfet: yalnızca tema adı; her tema tur, otel, etkinlik,
    aktivite ve mekânı birlikte getirir */
 $('themeRail').innerHTML=listThemes().map(t=>'<a href="liste/?tema='+t.id+'" class="th" style="background:'+t.bg+'"><b>'+t.name+'</b></a>').join('');
 
 /* Bağlan önizlemesi: paylaşımlar bağlı oldukları ürünle */
-$('postRail').innerHTML=listPosts().map(postMini).join('');
+const posts=()=>fill($('postRail'),rank(listPosts(),x=>x.product).map(postMini).join(''));
 initPostActions(toast);
+
+/* kiminle ya da yakınlık değişince sıralanan bölümler */
+function personal(){week(curW);events();posts();favSync()}
 
 /* taslak: misafir / üye görünümü */
 document.querySelector('.demo').addEventListener('click',e=>{const b=e.target.closest('.dm');if(!b)return;setLevel(b.dataset.v);const m=getLevel()!=='guest';
   document.querySelectorAll('.dm').forEach(x=>x.setAttribute('aria-pressed',x===b));
   document.querySelectorAll('[data-member]').forEach(x=>x.hidden=!m);document.querySelectorAll('[data-guest]').forEach(x=>x.hidden=m);
   document.getElementById('lvlTxt').textContent=getLevel()==='kasif'?'Kâşif · 1.240 Molapuan':'Gezgin · 320 Molapuan';
-  pick();week(curW);recent();if(nearAt)nearShow(...nearAt);favSync()});
+  recent();if(nearAt)nearShow(...nearAt);else{pick();personal()}});
 
 recent();
-pick();
-week('');
+if(!nearStart()){pick();personal()}
 initFavorites();
 favSync();
-
-/* Arama: nereye, ne zaman, kaç kişi (arama.js) */
-initSearch();
 
 document.querySelectorAll('.rail').forEach(el=>makeScroll(el));
 document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el));

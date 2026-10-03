@@ -10,7 +10,7 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .ib .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--navy)}
 .sec{padding:30px 16px 0}
 .hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.hd h2{font-size:var(--fs-xl);font-weight:800;letter-spacing:-.4px;flex:1 1 0%;min-width:0}
+.hd h2{font-size:var(--fs-h2);font-weight:800;letter-spacing:-.4px;flex:1 1 0%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hd a{font-size:var(--fs-md);font-weight:700;color:var(--green-ink);white-space:nowrap;flex:none}
 .sub{font-size:var(--fs-md);color:var(--mute);margin-top:3px}
 .rail{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none;padding:14px 16px 8px}
@@ -61,8 +61,10 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .th{height:96px;border-radius:var(--r-lg);padding:12px 14px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;position:relative;overflow:hidden}
 .th::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,14,30,.6),transparent 75%)}
 .th b{position:relative;font-size:var(--fs-base);font-weight:800;line-height:1.25;letter-spacing:-.005em}
-.sh-bg{position:fixed;inset:0;z-index:60;background:rgba(12,18,40,.32);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
+/* çekmece arkası: bulanıklık yok (aşağı çekerken Safari'de kirli görünüyordu); karartma çekmeceyle birlikte azalır */
+.sh-bg{position:fixed;inset:0;z-index:60;background:rgba(12,18,40,.48);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
 .sh-bg.open{opacity:1;visibility:visible;transition:opacity .24s ease}
+.sh-bg.drag{transition:none}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:440px;margin:0 auto;background:var(--card);color:var(--ink);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(12,18,40,.18);transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s;touch-action:none;overscroll-behavior:contain}
 .sheet.open{transform:translateY(0);visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 .sheet.drag{transition:none}
@@ -201,7 +203,7 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .pg-top h1{font-size:var(--fs-2xl);font-weight:800;line-height:1.22;letter-spacing:-.015em;margin-top:10px}
 .pg-top h1 span{color:var(--green)}
 /* dar ekranda (≤374 px) başlıklar tek satıra sığsın */
-@media (max-width:374px){.hd h2{font-size:var(--fs-lg)}.pg-top h1{font-size:clamp(22px,6.6vw,26px)}}
+@media (max-width:374px){.pg-top h1{font-size:clamp(22px,6.6vw,26px)}}
 .pg-top p{font-size:var(--fs-md);line-height:1.45;color:var(--navy-ink);margin-top:4px}
 .pg-top.slim{padding-bottom:14px}
 .pg-top.slim h1{font-size:var(--fs-xl);margin-top:4px}
@@ -326,6 +328,12 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .vk-p b{font-size:var(--fs-base);font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .vk-p small{font-size:var(--fs-xs);font-weight:600;color:var(--mute)}
 .vk-p s{font-size:var(--fs-xs);color:var(--mute)}
+/* deneyimi yaşayanların paylaşımları (ürün sayfasına, #paylasimlar) */
+.vk-pp{position:relative;z-index:2;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:3px 10px 3px 3px;border-radius:var(--r-pill);
+  background:rgba(10,14,30,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font-size:var(--fs-xs);font-weight:700;text-decoration:none;white-space:nowrap}
+.vk-pp .avs{display:flex}
+.vk-pp .ava{width:20px;height:20px;font-size:var(--fs-xs);letter-spacing:-.04em;box-shadow:0 0 0 1.5px #fff}
+.vk-pp .ava+.ava{margin-left:-6px}
 /* Liste ve favoriler: karşılaştırmak için yatay, sık kart (görsel solda) */
 .stack{gap:var(--s-3)}
 .stack .vk{width:auto;aspect-ratio:auto;min-height:124px;flex-direction:row;justify-content:flex-start;padding:10px 12px 10px 128px;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
@@ -342,6 +350,8 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .stack .vk .type{left:128px;top:12px;padding:0;background:none;color:var(--green-ink)}
 .stack .vk .heart{left:78px;right:auto;top:16px;width:30px;height:30px}
 .stack .vk .heart svg{width:15px;height:15px}
+.stack .vk-pp{order:1;margin:7px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.stack .vk-r{order:2}
 @media (hover:hover){.stack .vk:hover{box-shadow:0 0 0 1px var(--line),var(--shadow)}}
 html.kb .vk:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
 /* Yakınımda: kartta uzaklık */
@@ -413,7 +423,7 @@ html.kb .rc:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:
 
 /* Cila: tipografi ve dokunma tepkisi. Basınca hafifçe içeri çöker,
    fareyle üstüne gelince gölgesi büyür; hareket azaltılmışsa çökme olmaz. */
-h1,h2,h3{text-wrap:balance}
+/* başlıklarda text-wrap:balance yok: Safari sığan başlığı da ikinci satıra atıyordu */
 p{text-wrap:pretty}
 .vk,.tk,.th,.rc,.plink,.pmini,.post,.rz,.btn,.go,.fc,.tt,.tab,.cb,.ib,.dm,.stp button,.bk-opts button,.u-dates button,.arr,.nav a{transition:transform var(--t-fast) var(--ease),background-color var(--t) var(--ease),box-shadow var(--t) var(--ease),color var(--t) var(--ease),border-color var(--t) var(--ease)}
 @media (prefers-reduced-motion:no-preference){

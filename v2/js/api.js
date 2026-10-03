@@ -3,8 +3,9 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
+import { ROOT } from './root.js';
 
 /* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil) */
 export { BUCKETS, WITH, WHEN };
@@ -29,6 +30,11 @@ VN.forEach(v=>{const id=slug(v.t),p=all.get(id);const o={id,type:'Mekân',title:
 
 all.forEach(p=>{p.with=(KIMLE[p.title]||'').split(' ').filter(Boolean)});
 
+/* Fotoğraf: bg tek bir CSS arka planı. Fotoğraf varsa geçişin üstünde
+   durur; kartlar, raylar ve ürün sayfası ayrıca bir şey yapmadan gösterir */
+export const photo=(f,bg)=>f?'url('+ROOT+'img/'+f+') center/cover no-repeat,'+bg:bg;
+all.forEach(p=>{p.bg=photo(IMG[p.title],p.bg)});
+
 /* Yer: ürünün adı ya da bulunduğu yer (kalkış şehri sayılmaz) bir yerin
    eş adlarından birini içeriyorsa ürün o yerdedir */
 const where=p=>p.place.split(' · ').filter(x=>!x.includes('çıkışlı')).join(' ');
@@ -43,9 +49,9 @@ export const listDestinations=({type}={})=>dests.map(d=>({id:d.id,name:d.name,su
 export const productUrl=(root,t)=>root+'urun/?id='+slug(t);
 export const getProduct=id=>all.get(id)||null;
 export const findByTitle=t=>all.get(slug(t))||null;
-/* Tema: tür karışık koleksiyon */
-const themes=THEMES.map(([id,name,bg,titles])=>{const ids=titles.map(slug).filter(i=>all.has(i));
-  return {id,name,bg,ids,types:TYPES.filter(t=>ids.some(i=>typeKey(all.get(i).type)===t[0])).map(t=>t[1])}});
+/* Tema: tür karışık koleksiyon; tema sayfasında kapak ve iki cümlelik giriş */
+const themes=THEMES.map(([id,name,bg,titles,intro])=>{const ids=titles.map(slug).filter(i=>all.has(i));
+  return {id,name,intro,bg:photo(IMG['tema:'+id],bg),ids,types:TYPES.filter(t=>ids.some(i=>typeKey(all.get(i).type)===t[0])).map(t=>t[1])}});
 export const listThemes=()=>themes;
 export const getTheme=id=>themes.find(t=>t.id===id)||null;
 
@@ -113,6 +119,8 @@ export function listEvents({days=7}={}){
 const geoKeys=Object.keys(GEO).map(k=>[' '+norm(k),GEO[k]]);
 all.forEach(p=>{const h=' '+norm(p.title+' '+where(p));const g=geoKeys.find(([k])=>h.includes(k));p.geo=g?g[1]:null});
 const dist=(a,b)=>{const r=Math.PI/180,x=Math.sin((b[0]-a[0])*r/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin((b[1]-a[1])*r/2)**2;return 12742*Math.asin(Math.sqrt(x))};
+/* Ürünün konuma uzaklığı (km); konumu bilinmeyen ürün için null */
+export const kmTo=(pos,p)=>pos&&p&&p.geo?dist(pos,p.geo):null;
 /* Yakındakiler (varsayılan 200 km); azsa en yakın birkaç deneyim */
 export function listNearby(pos,{within=200,min=6}={}){
   const l=[...all.values()].filter(p=>p.geo).map(p=>({...p,km:dist(pos,p.geo)})).sort((a,b)=>a.km-b.km);
@@ -135,7 +143,7 @@ export function markViewed(id){if(!all.has(id))return;try{localStorage.setItem(R
 export const listRecent=()=>readRecent().map(getProduct).filter(Boolean);
 export function clearRecent(){try{localStorage.removeItem(RK)}catch(e){}}
 
-const post=(p,i)=>({id:'p'+(i+1),user:USERS[p.u],place:p.yer,when:p.ne,bg:G[p.g],text:p.metin,likes:p.beg,comments:p.yor,verified:!!p.gitti,product:findByTitle(p.urun),sample:true});
+const post=(p,i)=>({id:'p'+(i+1),user:USERS[p.u],place:p.yer,when:p.ne,bg:photo(p.img,G[p.g]),text:p.metin,likes:p.beg,comments:p.yor,verified:!!p.gitti,product:findByTitle(p.urun),sample:true});
 const posts=POSTS.map(post);
 /* Akış: önce bu cihazda paylaştıkların, sonra örnek paylaşımlar */
 export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];return productId?l.filter(p=>p.product&&p.product.id===productId):l};

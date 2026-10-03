@@ -5,6 +5,7 @@ import { tl, ttl } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn } from './favorites.js';
 import { ROOT } from './root.js';
+import { listPosts } from './api.js';
 
 /* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
    Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
@@ -15,16 +16,20 @@ const durOf=x=>x.info||(x.facts&&(x.k==='Otel'?x.facts[1]:x.facts[0]))||'';
 const unitOf=u=>u==='kişi başı'?'kişi başı':u;
 /* Yakınımda: kuş uçuşu uzaklık, yuvarlanmış */
 export const km=d=>(d<1?'1':d<100?String(Math.round(d)):(Math.round(d/10)*10).toLocaleString('tr-TR'))+' km';
+/* Bağlan döngüsü: deneyimi yaşayanların paylaşımları kartın üstünde;
+   dokununca ürün sayfasındaki paylaşımlara gider */
+const pp=(id,l)=>l&&l.length?'<a class="vk-pp" href="'+ROOT+'urun/?id='+id+'#paylasimlar" aria-label="Bu deneyimin '+l.length+' paylaşımı"><span class="avs">'
+  +l.slice(0,3).map(p=>ava(p.user,'xs')).join('')+'</span>'+l.length+' paylaşım</a>':'';
 export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
   return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><span class="type">'+x.k+'</span>'+heartBtn(x.t)
-  +'<div class="vk-b"><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
+  +'<div class="vk-b">'+pp(x.id,x.pp)+'<h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
   +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
   +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
 }
 
 /* Veri katmanındaki ürünü (api.js) kart biçimine çevirip çizer */
-export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,facts:x.facts,info:x.info,km:x.km});
+export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,facts:x.facts,info:x.info,km:x.km,id:x.id,pp:listPosts({productId:x.id})});
 
 /* Kaldığın yerden: hatırlatma kartı (küçük görsel, ad, tür ve fiyat) */
 export const recentCard=p=>'<article class="rc"><span class="rc-i" style="background:'+p.bg+'"></span><div class="rc-x"><h3>'+ttl(p.title)+'</h3>'

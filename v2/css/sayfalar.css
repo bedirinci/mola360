@@ -16,6 +16,15 @@ body{min-height:100vh;min-height:100dvh}
 .filters::-webkit-scrollbar{display:none}
 .fc.off{display:inline-flex;align-items:center;gap:6px;padding-right:10px}
 .fc.off svg{width:16px;height:16px;stroke-width:2.2}
+/* Tema vitrini: kapak görseli üstünde ad ve giriş */
+.pg-top.cover{position:relative;min-height:288px;display:flex;flex-direction:column;padding-bottom:22px;
+  background:linear-gradient(180deg,rgba(10,14,30,.5),rgba(10,14,30,0) 34%,rgba(10,14,30,.2) 52%,rgba(10,14,30,.86)),var(--g)}
+.pg-top.cover h1{margin-top:auto;font-size:var(--fs-2xl)}
+.pg-top.cover p{color:rgba(255,255,255,.92);font-size:var(--fs-md);line-height:1.5;margin-top:6px;max-width:34em}
+.ls-posts{margin:6px -16px 4px}
+.ls-posts .hd{padding:0 16px}
+.ls-posts .hd h2{font-size:var(--fs-h3)}
+.ls-posts .rail{padding-top:10px}
 .ls-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 0;font-size:var(--fs-sm);font-weight:700;color:var(--mute)}
 .sort{display:inline-flex;align-items:center;gap:4px;min-height:36px;font-size:var(--fs-sm);font-weight:800;color:var(--navy)}
 .sort svg{width:16px;height:16px}
@@ -36,7 +45,8 @@ body{min-height:100vh;min-height:100dvh}
 .u-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
 .u-chips span{border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 10px;font-size:var(--fs-sm);font-weight:700}
 .u-sec{padding:28px 16px 0}
-.u-sec .hd h2{font-size:var(--fs-lg)}
+#paylasimlar{scroll-margin-top:8px}
+.u-sec .hd h2{font-size:var(--fs-h3)}
 .u-first{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:14px;border-radius:var(--r-md);background:var(--green-soft);color:var(--green-ink)}
 .u-first svg{width:24px;height:24px;flex:none}
 .u-first p{font-size:var(--fs-md);line-height:1.5;color:var(--ink)}

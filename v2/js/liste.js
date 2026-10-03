@@ -1,10 +1,11 @@
 /* Liste: kategori (ürün ne?), filtreler (keşif kriteri), arama (yer ya da
    metin) ve tema ayrı satırlarda ve ayrı adres parametrelerinde:
-   ?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=cift&tema=doga
-   (docs/yeni-surum.md kural 3). */
+   ?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga
+   (docs/yeni-surum.md kural 3). Tema seçiliyse sayfa temanın vitrini olur:
+   kapak, iki cümlelik giriş, temadaki kategoriler ve paylaşımlar. */
 import { renderShell } from './shell.js';
-import { listProducts, getTheme, getDestination, getSearch, TYPES, BUCKETS, WITH, WHEN } from './api.js';
-import { productCard } from './cards.js';
+import { listProducts, listPosts, getTheme, getDestination, getSearch, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
+import { productCard, postMini } from './cards.js';
 import { toast } from './ui.js';
 import { initFavorites, favSync } from './favorites.js';
 
@@ -21,6 +22,13 @@ let tarih=WHEN.some(w=>w[0]===q.get('tarih'))?q.get('tarih'):'';
 const th=getTheme(q.get('tema'));
 /* Keşfet'teki aramada seçilen kişi sayısı (yalnızca bu sekmede) */
 const s=getSearch();
+
+/* Tema vitrini: kapakta temanın görseli, adı ve girişi; sekmelerde yalnızca
+   temada olan kategoriler */
+if(th){const top=document.querySelector('.pg-top');top.classList.add('cover');top.style.setProperty('--g',th.bg)}
+const CATS=th?TYPES.filter(t=>th.types.includes(t[1])):TYPES;
+/* Bu temada paylaşılanlar: temadaki (sekme seçiliyse o kategorideki) deneyimlerin paylaşımları */
+const themePosts=()=>th?listPosts().filter(x=>x.product&&th.ids.includes(x.product.id)&&(!tur||typeKey(x.product.type)===tur)):[];
 
 /* Süre ve kiminle filtreleri örnek veride çalışıyor; diğerleri gerçek veriyle gelecek */
 const SURE=[['saat','Birkaç saat'],['gun','Günübirlik'],['hs','Hafta sonu'],['uzun','4 gün +']];
@@ -44,21 +52,28 @@ function draw(){
   const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
   const lead=D?D.name:ara?'“'+ara+'”':'';
-  const title=lead||(th?th.name:T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
-  const rest=[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
+  const title=th?th.name:lead||(T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
+  /* temada seçimler filtre satırında görünür; alt satır temanın girişi */
+  const rest=th?th.intro:[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
   document.getElementById('lsTitle').textContent=title;
   const sub=document.getElementById('lsSub');sub.textContent=rest;sub.hidden=!rest;
   document.getElementById('cats').innerHTML='<a href="'+href('',sure)+'"'+(tur?'':' aria-current="true"')+'>Tümü</a>'
-    +TYPES.map(t=>'<a href="'+href(t[0],sure)+'"'+(t[0]===tur?' aria-current="true"':'')+'>'+t[2]+'</a>').join('');
+    +CATS.map(t=>'<a href="'+href(t[0],sure)+'"'+(t[0]===tur?' aria-current="true"':'')+'>'+t[2]+'</a>').join('');
   document.querySelectorAll('[data-sure]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sure===sure));
   document.querySelectorAll('[data-kimle]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kimle===kimle));
   const f={sure,kimle,tema:th&&th.id,yer,ara,tarih};
   const list=listProducts({type:tur,...f});
+  /* tema vitrini temanın kendi sırasıyla */
+  if(th)list.sort((a,b)=>th.ids.indexOf(a.id)-th.ids.indexOf(b.id));
   document.getElementById('lsCount').innerHTML=list.length+' deneyim <span class="ornek">ÖRNEK</span>';
   const el=document.getElementById('list');
   /* boşsa: aynı arama başka kategoride sonuç veriyorsa oraya yönlendir */
   const other=!list.length&&tur?listProducts(f).length:0;
-  el.innerHTML=list.length?list.map(x=>productCard(x)).join('')
+  const ps=list.length?themePosts():[];
+  const cards=list.map(x=>productCard(x));
+  if(ps.length)cards.splice(Math.min(4,cards.length),0,'<section class="ls-posts" aria-labelledby="h-tp"><div class="hd"><h2 id="h-tp">Bu temada paylaşılanlar</h2><a class="all" href="../baglan/">Bağlan →</a></div>'
+    +'<div class="rail">'+ps.map(postMini).join('')+'</div></section>');
+  el.innerHTML=list.length?cards.join('')
     :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>'+(other?'Aynı seçimle başka kategorilerde '+other+' deneyim var.':'Filtreleri kaldırmayı ya da başka bir kategoriye bakmayı dene.')+'</p>'
      +(other?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&')+'">Filtreleri kaldır</a>')+'</div>';
   favSync();

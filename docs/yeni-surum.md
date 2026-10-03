@@ -54,11 +54,11 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar; ne zaman; kaç kişi), "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", "Yakınımda ne var?" (konum ya da şehir), Bağlan önizlemesi, "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar |
+| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar; ne zaman; kaç kişi), "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", "Yakınımda ne var?" (konum ya da şehir), Bağlan önizlemesi, "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar; kiminle aramaya biner (formda kaldırılabilir çip, kişi sayısının başlangıcı, listede `kimle`), yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit; içlerindeki deneyimler kiminle seçimine ve yakınlığa göre sıralanır |
 | Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
-| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, hakkında, program, dahil/hariç, buluşma noktası ve bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
+| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, hakkında, program, dahil/hariç, buluşma noktası ve bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" (`#paylasimlar`) |
 | Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet, kapora) → iletişim bilgileri → özet, iptal ve ödeme → onay. Taslakta ödeme alınmaz, kart bilgisi istenmez |
-| Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar |
+| Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar. `tema` seçiliyse sayfa temanın vitrini: kapak, iki cümlelik giriş, yalnızca temada olan kategoriler, temanın sırasıyla deneyimler ve araya "Bu temada paylaşılanlar" |
 | Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
 | Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan (akıştan yapılan taslak rezervasyonlar en üstte) ve geçmiş; geçmişte "Deneyimini paylaş" |
 | Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
@@ -66,7 +66,7 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 Kod düzeni:
 
 - `css/tokens.css` (tasarım tokenları: renk, 8 adımlı yazı ölçeği
-  `--fs-*`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
+  `--fs-*` ve ekranla küçülen bölüm başlıkları `--fs-h2`, `--fs-h3`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
   köşe için ham px yalnızca burada; test başka yerde yakalar.
 - `base.css`, `components.css`
   (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
@@ -76,7 +76,7 @@ Kod düzeni:
   paylaşımlar, son bakılanlar, ürün içeriği). Bugün `js/data.js`
   içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
   türeyen `slug`. Backend gelince yalnızca içi değişecek.
-- `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
+- `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay; deneyimin paylaşımı varsa "N paylaşım", ürün sayfasındaki paylaşımlara gider), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
 - `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,
   dahil/hariç, buluşma noktası, örnek değerlendirmeler); sayfalar
   `api.js` üzerinden okur.
@@ -90,9 +90,10 @@ Notlar:
 - Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
-- Favoriler, son bakılanlar, son aramalar, "Yakınımda" seçimi ve taslak
-  rezervasyonlar yalnızca tarayıcıda (`localStorage`, `m360-fav`,
-  `m360-son`, `m360-aramalar`, `m360-yakin`, `m360-rez`). Konumun kendisi
+- Favoriler, son bakılanlar, son aramalar, "Yakınımda" seçimi, Keşfet'teki
+  süre ve kiminle seçimi ve taslak rezervasyonlar yalnızca tarayıcıda
+  (`localStorage`, `m360-fav`, `m360-son`, `m360-aramalar`, `m360-yakin`,
+  `m360-kesfet`, `m360-rez`). Konumun kendisi ve konumdan çıkan yer
   saklanmaz. Aramadaki tarih ve kişi sayısı sekme
   açık kaldıkça (`sessionStorage`, `m360-arama`) liste, ürün ve
   rezervasyon sayfalarına taşınır. İletişim bilgileri
@@ -111,12 +112,37 @@ Notlar:
 - Keşfet'in altındaki "Görünüm: Misafir / Gezgin / Kâşif" düğmeleri
   önizleme içindir.
 
+## Fotoğraf kuralı
+
+Kartlar, raylar ve ürün sayfası görseli tek bir `bg` değerinden okur:
+fotoğraf varsa renk geçişinin üstüne biner, yoksa ya da yüklenemezse
+geçiş görünür. Fotoğraf eklemek için dosya `v2/img/` altına konur ve
+`js/data.js` içindeki `IMG` haritasına yazılır (ürün adı ya da
+`tema:<id>` → dosya adı); paylaşımın fotoğrafı `POSTS` içinde `img`.
+
+- **Oran ve boyut:** 4:5 dikey, en az 1200×1500 px; webp (olmazsa jpg),
+  en çok 200 KB. Test boyutu ve dosyanın varlığını denetler.
+- **Kırpma:** kartta 3:4, listede kare, ürün sayfasında geniş görünür;
+  konu ortada durur, kenarlar kırpılabilir.
+- **Okunurluk:** alt üçte bir sakin (gökyüzü, su, düz zemin); yazı oraya
+  biner ve altına koyu bir geçiş konur. Fotoğrafta yazı, logo, filigran
+  olmaz; yüzü tanınan kişi yalnızca izinle.
+- **Doğruluk:** fotoğraf o deneyimin kendisini ya da gerçekleştiği yeri
+  gösterir; başka bir yerin fotoğrafı kullanılmaz (kural 4).
+- **Ad:** ürünün adresteki adı (`kapadokya-turu.webp`), tema için
+  `tema-doga.webp`. Fotoğraf değişince yeni ad verilir (`-2`), çünkü
+  dosyalar tarayıcıda önbelleğe alınır.
+- **Lisans:** her dosyanın kaynağı, lisansı ve çekeni `v2/img/KAYNAK.md`
+  içinde. Lisansı belirsiz fotoğraf eklenmez.
+
 ## Sıradaki adımlar
 
-1. Tasarım sistemi: bileşenleri tek bir vitrin sayfasında toplamak; koyu
+1. Gerçek fotoğraflar: kural ve altyapı hazır; kaynak (kendi çekimimiz ya
+   da ücretsiz lisanslı stok) kararı bekleniyor.
+2. Tasarım sistemi: bileşenleri tek bir vitrin sayfasında toplamak; koyu
    tema.
-2. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
-3. Kalan filtreler: listede "Yakınımda" ve fiyat aralığı; sıralama;
+3. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
+4. Kalan filtreler: listede "Yakınımda" ve fiyat aralığı; sıralama;
    aramada gerçek takvim (gün seçimi).
-4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
-5. Masaüstü düzeni.
+5. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
+6. Masaüstü düzeni (bilerek en son; önce mobil).

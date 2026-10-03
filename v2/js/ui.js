@@ -48,10 +48,11 @@ export function makeSheet(sh,bg,{drag=sh}={}){
     if(e.key!=='Tab')return;const f=[...sh.querySelectorAll('button,input,a[href]')].filter(x=>!x.disabled&&x.getClientRects().length),a=f[0],z=f[f.length-1];
     if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
   let y0=null,dy=0,t0=0;
-  const reset=()=>{y0=null;sh.classList.remove('drag');sh.style.transform='';bg.style.opacity=''};
-  drag.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;t0=Date.now();sh.classList.add('drag')},{passive:true});
+  /* sürüklerken karartma parmağı gecikmesiz izler (geçiş kapalı) */
+  const reset=()=>{y0=null;sh.classList.remove('drag');bg.classList.remove('drag');sh.style.transform='';bg.style.opacity=''};
+  drag.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;t0=Date.now();sh.classList.add('drag');bg.classList.add('drag')},{passive:true});
   drag.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(dy>0)e.preventDefault();sh.style.transform='translateY('+dy+'px)';bg.style.opacity=String(Math.max(0,1-dy/sh.offsetHeight))},{passive:false});
-  drag.addEventListener('touchend',()=>{if(y0==null)return;const v=dy/Math.max(1,Date.now()-t0);if(dy>sh.offsetHeight*.3||(dy>30&&v>.5)){y0=null;sh.classList.remove('drag');close()}else reset()});
+  drag.addEventListener('touchend',()=>{if(y0==null)return;const v=dy/Math.max(1,Date.now()-t0);if(dy>sh.offsetHeight*.3||(dy>30&&v>.5)){y0=null;sh.classList.remove('drag');bg.classList.remove('drag');close()}else reset()});
   drag.addEventListener('touchcancel',reset);
   return {open,close};
 }
