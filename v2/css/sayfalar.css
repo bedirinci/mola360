@@ -179,7 +179,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-qty p{margin-top:2px}
 .bk-form{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .bk-form label{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);margin-top:6px}
-.bk-form input{font:inherit;font-size:var(--fs-base);padding:12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.bk-form input{font:inherit;font-size:var(--fs-input);padding:12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .bk-form input[aria-invalid="true"]{border-color:#B42318}
 .bk-login{font-size:var(--fs-md)!important;margin-top:14px!important}
 .bk-login a,.bk-ok a{color:var(--navy);font-weight:var(--fw-bold);text-decoration:underline;text-underline-offset:2px}

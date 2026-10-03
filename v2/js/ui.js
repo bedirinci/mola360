@@ -56,7 +56,10 @@ export function makeSheet(sh,bg,{drag=sh}={}){
   function open(from,focus){opener=from||null;layer.push();bg.classList.add('open');sh.classList.add('open');document.body.classList.add('locked');exp('true');behind().forEach(el=>el.inert=true);
     setTimeout(()=>(focus||sh.querySelector('[aria-checked="true"]')||sh.querySelector('button')).focus({preventScroll:true}),60)}
   function hide(){if(!sh.classList.contains('open'))return;sh.style.transform='';bg.style.opacity='';bg.classList.remove('open');sh.classList.remove('open');document.body.classList.remove('locked');
-    behind().forEach(el=>el.inert=false);exp('false');if(opener)opener.focus({preventScroll:true})}
+    behind().forEach(el=>el.inert=false);exp('false');
+    /* açan düğme yoksa (adresten açıldıysa) odak sayfanın başlığına döner, body'ye düşmez */
+    const back=opener&&opener.isConnected?opener:document.querySelector('h1')||document.querySelector('main');
+    if(back){if(back!==opener&&!back.hasAttribute('tabindex'))back.tabIndex=-1;back.focus({preventScroll:true})}}
   function close(){hide();layer.pop()}
   bg.addEventListener('click',close);
   sh.querySelectorAll('[data-x]').forEach(b=>b.addEventListener('click',close));

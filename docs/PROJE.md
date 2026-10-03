@@ -1014,3 +1014,39 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Başlık, fiyat ve seçili durum öne çıkıyor; çipler,
   etiketler ve meta bilgi bir kademe geride. Okuma metni daha hafif ve
   rahat.
+
+### 2026-10-03 — Süre adı "Bir gün"; rezervasyon yenilemede korunuyor
+
+- **Karar:** Süre filtresinin adı her yerde "Bir gün" (Keşfet, Liste,
+  menü); Liste kendi listesini tutmuyor, `BUCKETS`'tan okuyor. Ürün
+  kartındaki "Günübirlik" bilgisi (turun kendisi) olduğu gibi kalıyor.
+  Rezervasyon akışı (seçimler ve iletişim formu) sekme kapanana kadar
+  `sessionStorage`'da tutuluyor; rezervasyon tamamlanınca siliniyor.
+- **Neden:** QA'da kalan 10 P3 hatası (BUG-015…024) Bedir İnci'nin
+  isteğiyle düzeltildi. Aynı filtre iki ekranda iki adla görünüyordu;
+  2. ya da 3. adımda sayfa yenilenince her şey siliniyordu.
+- **Etkilediği alanlar:** `v2/js/liste.js`, `v2/js/shell.js`,
+  `v2/js/rezervasyon.js`.
+- **Teknik sonuç:** Yenilemede adım tarayıcı geçmişindeki kayıttan,
+  seçimler sessionStorage'dan geliyor; onay ekranında yenileme
+  Planlarım'a götürüyor. Veri yalnızca o sekmede, başka sekme ya da
+  oturumda görünmüyor.
+- **UX sonucu:** Yenileme ya da kısa bir uygulama değişiminden sonra
+  kullanıcı kaldığı adımda, yazdığı bilgilerle devam ediyor; geri tuşu
+  önceki adımlara seçimleriyle dönüyor.
+
+### 2026-10-03 — Yazı ölçeği bir kademe küçüldü
+
+- **Karar:** Yazı boyutu tokenları küçültüldü: yardımcı 13→12, gövde
+  (kart içi, çip, sekme) 14→13, okuma ve kart başlığı 16→15, bölüm içi
+  başlık 18→16, bölüm başlığı ve fiyat 21→18, sayfa başlığı 26→22, büyük
+  sayı 30→26 px. Etiket boyutu (11) aynı. Giriş alanları ayrı bir tokenla
+  (`--fs-input`) 16 px'te kaldı. Sayfanın varsayılan yazısı da artık 15 px.
+- **Neden:** Bedir İnci sitedeki yazıların hepsinin gereğinden büyük
+  olduğunu söyledi.
+- **Etkilediği alanlar:** `v2/css/tokens.css`, giriş alanları, Keşfet
+  selamlama ve ızgara başlıkları (`clamp` değerleri), `base.css`.
+- **Teknik sonuç:** Tüm ekran yeni ölçeği tokenlardan alıyor, ayrı ayrı
+  bileşen değişikliği gerekmedi.
+- **UX sonucu:** Ekrana daha çok içerik sığıyor, hiyerarşi (kalınlık
+  kademeleri) korunuyor.
