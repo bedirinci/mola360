@@ -64,17 +64,6 @@ export const VN=[{t:'Kordon Spa & Masaj',a:'Alsancak, İzmir · Masaj salonu',s:
 export const ABO=['Ege Adaları Balayı Kaçamağı','İtalya: Roma, Floransa ve Venedik','Dubai Turu','Balkanlar: Saraybosna ve Mostar','İspanya: Barselona ve Madrid','Midilli Adası Kaçamağı','Fransa: Paris ve Loire Şatoları','Batum ve Acara Turu'];
 
 /* Arama kutusu: sekmeye göre alan adları */
-export const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','Ekim, esnek','KİŞİ','2 yetişkin','Molamı bul'],
- otel:['NEREYE','Şehir, bölge veya otel adı','GİRİŞ – ÇIKIŞ','2 – 4 Eki · 2 gece','ODA · KİŞİ','1 oda · 2 yetişkin','Otel bul'],
- etkinlik:['ŞEHİR','Tüm şehirler','NE ZAMAN','Bu hafta sonu','BİLET','2 bilet','Etkinlik bul'],
- aktivite:['NEREYE','Şehir veya aktivite','NE ZAMAN','Bu hafta sonu','KİŞİ','2 kişi','Aktivite bul'],
- mekan:['NEREYE','Şehir veya mekân adı','NE ZAMAN','Bugün','KİŞİ','2 kişi','Mekân bul']};
-/* Popüler aramalar: seçili sekmeye göre değişir; dokununca "Nereye" alanına yazılır. */
-export const POP={tur:['Yurt dışı','Güneydoğu','Karadeniz','Antalya','Kapadokya','Ege adaları','Balkanlar','Dubai'],
- otel:['Antalya','Bodrum','Kapadokya','Termal oteller','Sapanca','Çeşme','Kemer'],
- etkinlik:['İstanbul','İzmir','Konser','Festival','Tiyatro','Stand-up'],
- aktivite:['Yamaç paraşütü','Rafting','Tekne turu','Balon turu','Dalış','Kayak'],
- mekan:['Spa ve masaj','Beach club','Hamam','Brunch','Çeşme','Bodrum']};
 
 /* Tam ekran menü: ürün türleri */
 export const MENU=[['Turlar','tur','Günübirlik, hafta sonu, uzun'],['Oteller','otel','Butik, termal, resort'],
@@ -86,6 +75,34 @@ export const TRUST={iptal:['Ücretsiz iptal','Çoğu tur, otel, etkinlik ve akti
  taksit:['3 taksit, vade farksız','Anlaşmalı kredi kartlarıyla 3 taksite kadar vade farkı yok. Kartına göre diğer taksit seçenekleri ödeme adımında listelenir.'],
  kapora:['%20 kaporayla yer ayırt','Turlarda tutarın %20\'sini ödeyip yerini ayırtırsın, kalanını kalkıştan önce ödersin. Örneğin 8.990 TL\'lik Kapadokya turunda 1.798 TL.'],
  puan:['Molapuan · her rezervasyonda kazan','Her rezervasyonda puan kazanırsın; 1 puan = 1 TL olarak sonraki rezervasyonunda kullanılır. Gezgin, Kâşif ve Mola Ustası seviyelerinde avantajların artar.']};
+
+/* Kiminle: keşif filtresi (kategori değil). Hangi ürünün kime uygun olduğu
+   ÖRNEK; gerçekte işletme ve değerlendirmelerden gelecek. */
+export const WITH=[['cift','Çiftler'],['arkadas','Arkadaşlarla'],['aile','Çocuklu']];
+export const KIMLE={'İstanbul Boğaz Turu':'cift arkadas aile','Kordon Spa & Masaj':'cift','Kordon Caz Akşamları':'cift arkadas',
+ 'Ölüdeniz Yamaç Paraşütü':'arkadas cift','Stand Up Gecesi':'arkadas cift','Uludağ Kayak Dersi':'aile arkadas','Efes ve Şirince Turu':'aile cift arkadas',
+ 'Kum Beach Club':'arkadas cift','Bodrum Tekne Turu':'arkadas aile','Çeşme Yaz Festivali':'arkadas','Sapanca ve Maşukiye Turu':'aile cift',
+ 'Köprülü Kanyon Rafting':'arkadas','Pamukkale ve Hierapolis':'aile cift','Ege Adaları Balayı Kaçamağı':'cift','Göreme Mağara Otel':'cift',
+ 'Sealight Resort':'aile cift','Midilli Adası Kaçamağı':'cift arkadas','Batum ve Acara Turu':'arkadas','Balkanlar: Saraybosna ve Mostar':'cift arkadas',
+ 'Dubai Turu':'aile cift','İtalya: Roma, Floransa ve Venedik':'cift','İspanya: Barselona ve Madrid':'arkadas cift','Fransa: Paris ve Loire Şatoları':'cift',
+ 'Kapadokya Turu':'cift aile','Karadeniz Yaylaları Turu':'aile arkadas','Turistik Doğu Ekspresi':'arkadas cift','Erciyes Kayak Haftası':'arkadas aile',
+ 'Harbiye Açıkhava Konserleri':'arkadas cift','Aspendos Opera ve Bale Festivali':'cift aile','İstanbul Kahve Festivali':'arkadas',
+ 'Kordon Butik Otel':'cift','Termal Vadi Resort':'aile cift'};
+
+/* Temalar: tür karışık koleksiyonlar (kategori de filtre de değil). Hangi
+   ürünün hangi temada olduğu ÖRNEK. */
+export const THEMES=[
+ ['doga','Doğa ve yayla','linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)',['Sapanca ve Maşukiye Turu','Karadeniz Yaylaları Turu','Pamukkale ve Hierapolis','Köprülü Kanyon Rafting','Turistik Doğu Ekspresi','Göreme Mağara Otel']],
+ ['deniz','Deniz ve tekne','linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)',['Bodrum Tekne Turu','İstanbul Boğaz Turu','Ege Adaları Balayı Kaçamağı','Midilli Adası Kaçamağı','Sealight Resort','Kum Beach Club']],
+ ['kultur','Kültür ve tarih','linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)',['Efes ve Şirince Turu','Kapadokya Turu','Pamukkale ve Hierapolis','Balkanlar: Saraybosna ve Mostar','İtalya: Roma, Floransa ve Venedik','Fransa: Paris ve Loire Şatoları','İspanya: Barselona ve Madrid','Aspendos Opera ve Bale Festivali']],
+ ['kis','Kış ve kayak','linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)',['Erciyes Kayak Haftası','Uludağ Kayak Dersi','Turistik Doğu Ekspresi']],
+ ['termal','Termal ve spa','linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',['Termal Vadi Resort','Kordon Spa & Masaj']],
+ ['macera','Macera ve spor','linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)',['Ölüdeniz Yamaç Paraşütü','Köprülü Kanyon Rafting','Uludağ Kayak Dersi','Erciyes Kayak Haftası']],
+ ['festival','Konser ve festival','linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)',['Harbiye Açıkhava Konserleri','Kordon Caz Akşamları','Çeşme Yaz Festivali','İstanbul Kahve Festivali']],
+ ['sahne','Sahne ve gösteri','linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)',['Stand Up Gecesi','Aspendos Opera ve Bale Festivali']],
+ ['lezzet','Yeme içme','linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)',['İstanbul Kahve Festivali','Efes ve Şirince Turu','Kum Beach Club']],
+ ['balayi','Balayı','linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)',['Ege Adaları Balayı Kaçamağı','Göreme Mağara Otel','Kapadokya Turu','İtalya: Roma, Floransa ve Venedik','Kordon Butik Otel','Kordon Spa & Masaj']],
+ ['gece','Gece hayatı','linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)',['Stand Up Gecesi','Kordon Caz Akşamları','Harbiye Açıkhava Konserleri','Kum Beach Club']]];
 
 /* Bağlan: ÖRNEK paylaşımlar. Kullanıcılar ve metinler uydurma; her paylaşım
    Mola360'daki bir ürüne (ürün adıyla) bağlı. "gitti": paylaşan kişi bu

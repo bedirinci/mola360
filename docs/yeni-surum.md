@@ -54,10 +54,10 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | 6 bölüm: arama, "Ne kadar molan var?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
+| Keşfet | `v2/` | Arama, "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
 | Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
 | Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, iptal ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
-| Liste | `v2/liste/?tur=otel&sure=hs` | Kategori satırı (`tur`) ve filtre satırı (`sure`) ayrı |
+| Liste | `v2/liste/?tur=otel&sure=hs&kimle=cift&tema=doga` | Kategori satırı (`tur`), filtre satırı (`sure`, `kimle`) ve tema (`tema`) ayrı parametreler |
 | Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
 | Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan ve geçmiş; geçmişte "Deneyimini paylaş" |
 | Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
@@ -67,7 +67,8 @@ Kod düzeni:
 - `css/tokens.css` (tasarım tokenları), `base.css`, `components.css`
   (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
 - `js/shell.js`: her sayfada aynı olan alt menü, tam ekran menü, bildirim.
-- `js/api.js`: yeni sayfaların okuduğu tek veri katmanı. Bugün `js/data.js`
+- `js/api.js`: bütün sayfaların okuduğu tek veri katmanı (ürünler,
+  etkinlikler, temalar, paylaşımlar, son bakılanlar). Bugün `js/data.js`
   içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
   türeyen `slug`. Backend gelince yalnızca içi değişecek.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında), paylaşım kartı, paylaşıma bağlı ürün.
@@ -78,7 +79,12 @@ Notlar:
 - Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
-- Favoriler yalnızca tarayıcıda (`localStorage`, `m360-fav`).
+- Favoriler ve son bakılanlar yalnızca tarayıcıda (`localStorage`,
+  `m360-fav`, `m360-son`). "Kaldığın yerden" bölümündeki "Temizle" son
+  bakılanları siler.
+- Hangi ürünün kime uygun olduğu (çiftler, arkadaşlarla, çocuklu) ve hangi
+  temada olduğu ÖRNEK; gerçekte işletme bilgisinden ve değerlendirmelerden
+  gelecek.
 - Beğen, takip et, kaydet yalnızca ekranda değişir; kaydedilmez.
 - Molapuan ve seviye indirimi ÖNERİ kurallarıyla gösteriliyor: 100 TL = 1
   puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15.
@@ -89,8 +95,7 @@ Notlar:
 
 1. Tasarım sistemi: tokenları tamamlamak (tip ölçeği, boşluk ölçeği) ve
    bileşenleri tek bir vitrin sayfasında toplamak.
-2. Keşfet'in de veriyi `api.js`'ten okuması (bugün `data.js`'i doğrudan
-   okuyor).
-3. Tarih/kişi seçimi → ödeme akışı; giriş ve kayıt; paylaşım oluşturma.
+2. Tarih/kişi seçimi → ödeme akışı; giriş ve kayıt; paylaşım oluşturma.
+3. Kalan filtreler: "Yakınımda" (konum izni) ve fiyat aralığı; sıralama.
 4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
 5. Masaüstü düzeni.

@@ -1,6 +1,6 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
 import { renderShell } from './shell.js';
-import { getProduct, listProducts, listPosts, typeKey } from './api.js';
+import { getProduct, listProducts, listPosts, typeKey, markViewed } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll } from './ui.js';
 import { favToggle, isFav, initFavorites, favSync } from './favorites.js';
@@ -23,6 +23,7 @@ else{
 
 function render(p){
 document.title='mola360 — '+p.title;
+markViewed(p.id);
 
 const tick=(b,t)=>'<li>'+IC.check+'<div><b>'+b+'</b>'+(t?' <span>'+t+'</span>':'')+'</div></li>';
 const posts=listPosts({productId:p.id});
