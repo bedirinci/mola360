@@ -103,9 +103,9 @@ function done(r){
   +'<p class="no">Rezervasyon no <b>'+r.no+'</b> <span class="ornek">TASLAK · ödeme alınmadı</span></p></div>'
   +'<section class="box"><h2>Sırada ne var?</h2><ul class="ticks">'
   +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider. Taslakta e-posta gönderilmez.</span></div></li>'
-  +(st.pay==='kapora'?'<li>'+IC.check+'<div><b>Kalan '+tl(total()-now())+'</b> <span>Kalkıştan 7 gün önce hatırlatırız; Rezervasyonlar\'dan ödeyebilirsin.</span></div></li>':'')
+  +(st.pay==='kapora'?'<li>'+IC.check+'<div><b>Kalan '+tl(total()-now())+'</b> <span>Kalkıştan 7 gün önce hatırlatırız; Planlarım\'dan ödeyebilirsin.</span></div></li>':'')
   +'<li>'+IC.check+'<div><b>Döndükten sonra paylaş</b> <span>Paylaşımın bu deneyimin sayfasında ve Bağlan\'da "Mola360 ile gitti" rozetiyle görünür.</span></div></li></ul></section>'
-  +'<div class="bk-acts"><a class="btn" href="'+ROOT+'rezervasyonlar/">Rezervasyonlarım</a><button type="button" class="btn ghost" data-invite>'+IC.share+'Birlikte gideceklere gönder</button></div>';
+  +'<div class="bk-acts"><a class="btn" href="'+ROOT+'planlarim/">Planlarım</a><button type="button" class="btn ghost" data-invite>'+IC.share+'Birlikte gideceklere gönder</button></div>';
 }
 
 const LABEL={1:'Devam et',2:'Ödemeye geç'};
@@ -126,7 +126,7 @@ function draw(push){
   window.scrollTo(0,0);
 }
 history.replaceState({s:1},'');
-window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(st.step===4){location.href=ROOT+'rezervasyonlar/';return}st.step=s;draw(false)});
+window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
 back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}});
 
 const show=(id,msg)=>{const el=document.getElementById(id);if(!el)return;el.hidden=!msg;if(msg)el.textContent=msg};

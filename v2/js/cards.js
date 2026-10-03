@@ -61,13 +61,14 @@ export function plink(p){
 export function postCard(x){
   const u=x.user;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.ad+'</b><small>@'+u.kul+' · '+x.place+' · '+x.when+'</small></div><button type="button" class="follow" aria-pressed="false">Takip et</button></div>'
-   +'<div class="media" style="background:'+x.bg+'"><span class="ornek">ÖRNEK</span>'+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')+'</div>'
+   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.ad+'</b><small>@'+u.kul+' · '+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
+   +'<div class="media" style="background:'+x.bg+'">'+(x.sample?'<span class="ornek">ÖRNEK</span>':'')+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
+   +(x.media>1?'<span class="m-count">1/'+x.media+'</span>':'')+(x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')+'</div>'
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
    +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
    +'<button type="button" class="act" aria-label="Paylaş" data-share>'+IC.share+'</button>'
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
-   +'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>'
+   +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
    +plink(x.product)+'</article>';
 }
 

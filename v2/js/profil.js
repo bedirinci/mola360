@@ -1,6 +1,6 @@
 /* Profil: sosyal kimlik + deneyim geçmişi + Molapuan (PROJE.md §10) */
 import { renderShell } from './shell.js';
-import { listPosts, findByTitle } from './api.js';
+import { listPosts, findByTitle, ME } from './api.js';
 import { postMini, plink, ava, initPostActions } from './cards.js';
 import { toast } from './ui.js';
 import { IC } from './icons.js';
@@ -9,8 +9,7 @@ import { ROOT } from './root.js';
 renderShell('profil');
 initPostActions(toast);
 
-/* ÖRNEK profil */
-const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
+/* ÖRNEK profil (api.js ME) */
 const mine=listPosts().slice(0,4).map(p=>({...p,user:ME}));
 const went=['Kapadokya Turu','Kordon Caz Akşamları','Köprülü Kanyon Rafting'].map(findByTitle);
 
@@ -24,7 +23,7 @@ const el=document.getElementById('pf');
 const TABS={
   pay:()=>'<div class="pf-grid">'+mine.map(postMini).join('')+'</div>',
   den:()=>'<div class="pf-went">'+went.map(plink).join('')+'</div>',
-  kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin ayrıca Favoriler\'de.</p><a class="btn" href="'+ROOT+'favoriler/">Favorilere git</a></div>'};
+  kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin Planlarım\'da.</p><a class="btn" href="'+ROOT+'planlarim/#favoriler">Favorilere git</a></div>'};
 el.innerHTML='<section class="pf-pts"><div class="x"><small>MOLAPUAN <span class="ornek">ÖRNEK</span></small><b>1.240 puan</b><span>Mola Ustası\'na 1 deneyim kaldı</span></div><div class="bar-p" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="3" aria-label="Seviye ilerlemesi"><i style="width:66%"></i></div></section>'
  +'<div class="seg light" role="group" aria-label="Profil" id="pfTabs"><button type="button" aria-pressed="true" data-t="pay">'+IC.grid+'Paylaşımlar</button><button type="button" aria-pressed="false" data-t="den">'+IC.bag+'Deneyimler</button><button type="button" aria-pressed="false" data-t="kay">'+IC.save+'Kaydedilenler</button></div>'
  +'<div id="pfBody"></div>';

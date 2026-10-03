@@ -31,4 +31,8 @@ export const IC={
  bag:s('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>'),
  grid:s('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
  bell:s('<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'),
- menu:s('<path d="M4 7h16M4 12h16M4 17h10"/>')};
+ menu:s('<path d="M4 7h16M4 12h16M4 17h10"/>'),
+ image:s('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'),
+ play:s('<path d="M8 5.5v13l11-6.5z"/>'),
+ search:s('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
+ close:s('<path d="M6 6l12 12M18 6 6 18"/>')};

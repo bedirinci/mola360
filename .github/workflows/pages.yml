@@ -62,6 +62,7 @@ jobs:
               sed -E -i 's#(href|src)="((\.\./)*(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
             done
           sed -E -i "s#(from *')(\./[a-z0-9-]+\.js)'#\1\2?v=$VER'#g" v2/js/*.js
+          sed -E -i "s#(import\(')(\./[a-z0-9-]+\.js)'#\1\2?v=$VER'#g" v2/js/*.js
           echo "--- damgasiz kalan v2 baglari (bos olmali):"
           grep -rnE "(href|src)=\"(\.\./)*(css|js)/[^\"?]+\"" v2 --include=*.html || true
           grep -nE "from *'\./[^'?]+'" v2/js/*.js || true
