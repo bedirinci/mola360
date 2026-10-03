@@ -47,9 +47,8 @@
 .fld span{letter-spacing:0}
 .foot{line-height:1.8;word-spacing:.04em}
 
-/* Kiminle? (keşif filtresi): sürenin altında ikinci soru */
-.q{margin-top:18px;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--ink)}
-.with{padding-top:10px}
+/* Kiminle çipleri (keşif filtresi): sürenin hemen altında, başlıksız */
+.with{padding-top:14px}
 .clr{font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--ink);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 4px}
 /* son bakılanlar: kart dar ve alçak (cards.js recentCard) */
 .rail.recent{gap:10px;padding-top:12px}
