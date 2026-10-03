@@ -43,13 +43,12 @@ const SHEETS=`<div class="sh-bg" id="whereBg" aria-hidden="true"></div>
   <div class="sh-grab" aria-hidden="true"></div>
   <div class="sh-hd"><h3 id="dateTtl">Ne zaman?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${X}</button></div>
   <div class="sh-list" id="dateList" role="radiogroup" aria-labelledby="dateTtl"></div>
-  <p class="sh-note">Sayılar örnek takvimden. Gerçek uygunluk ve takvim backend ile gelecek. <span class="ornek">ÖRNEK</span></p>
 </div>
 <div class="sh-bg" id="whoBg" aria-hidden="true"></div>
 <div class="sheet" id="whoSheet" role="dialog" aria-modal="true" aria-labelledby="whoTtl">
   <div class="sh-grab" aria-hidden="true"></div>
   <div class="sh-hd"><h3 id="whoTtl">Kaç kişi?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${X}</button></div>
-  <div class="who" id="whoList"></div>
+  <div class="who-l" id="whoList"></div>
   <button type="button" class="btn who-ok" data-x>Tamam</button>
 </div>`;
 

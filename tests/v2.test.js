@@ -96,6 +96,21 @@ describe('v2', () => {
     expect(api.cancelBy(k, 'Pzt 5 Eki').past).toBe(true);
   });
 
+  it('keşfet: kiminle seçenekleri, tür karışık temalar, sahnede ve yakınımda', async () => {
+    const api = await import('../v2/js/api.js');
+    expect(api.WITH.map(w => w[1])).toEqual(['Tek başıma', 'Sevgilimle', 'Arkadaşlarla', 'Ailemle', 'Çocuklarla', 'İş arkadaşlarımla']);
+    api.WITH.forEach(w => expect(api.listProducts({ kimle: w[0] }).length, w[1]).toBeGreaterThan(0));
+    api.listThemes().forEach(t => expect(t.types.length, t.name).toBeGreaterThan(1));
+    const ev = api.listEvents();
+    expect(ev.length).toBeGreaterThan(0);
+    ev.forEach((e, i) => { expect(e.type).toBe('Etkinlik'); if (i) expect(ev[i - 1].day <= e.day).toBe(true); });
+    /* İzmir'de: en yakın deneyimler İzmir'de, uzaklığa göre sıralı */
+    const yakin = api.listNearby([38.43, 27.14]);
+    expect(yakin[0].km).toBeLessThan(5);
+    expect(yakin.every((p, i) => !i || yakin[i - 1].km <= p.km)).toBe(true);
+    expect(api.nearestPlace([38.43, 27.14]).id).toBe('izmir');
+  });
+
   it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
     expect(oku(join(V2, 'js/icerik.js'))).toMatch(/ÖRNEK/);

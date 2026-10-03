@@ -44,43 +44,59 @@
 </form>
 
 <section id="recent" aria-labelledby="h-rc" hidden>
-  <div class="sec"><div class="hd"><h2 id="h-rc">Kaldığın yerden</h2><div class="more-l"><button type="button" class="clr" id="rcClear">Temizle</button><div class="arrows" data-for="rcRail"></div></div></div><p class="sub">Son baktığın deneyimler; yalnızca bu cihazda tutulur.</p></div>
-  <div class="rail compact" id="rcRail"></div>
+  <div class="sec"><div class="hd"><h2 id="h-rc">Kaldığın yerden</h2><div class="more-l"><button type="button" class="clr" id="rcClear">Temizle</button><div class="arrows" data-for="rcRail"></div></div></div></div>
+  <div class="rail recent" id="rcRail"></div>
 </section>
 
-<section class="sec" aria-labelledby="h-time">
-  <div class="hd"><h2 id="h-time">Ne kadar molan var?</h2></div>
-  <p class="sub">Vaktine göre seçelim, gerisini biz sıralayalım.</p>
-  <div class="time" id="time"></div>
+<section aria-labelledby="h-time">
+  <div class="sec">
+    <div class="hd"><h2 id="h-time">Ne kadar molan var?</h2></div>
+    <div class="time" id="time" role="group" aria-labelledby="h-time"></div>
+    <p class="q" id="h-with">Kiminle?</p>
+  </div>
+  <div class="fchips with" id="withChips" role="group" aria-labelledby="h-with"></div>
+  <div class="sec sub-sec"><div class="hd"><h2 id="railTitle">Hafta sonuna sığanlar</h2><div class="more-l"><a href="liste/?sure=hs" class="all" id="railAll">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div></div>
+  <div class="rail" id="timeRail"></div>
 </section>
-<div class="fchips with" id="withChips" role="group" aria-label="Kiminle gidiyorsun?"></div>
-<div class="sec sub-sec"><div class="hd"><h2 id="railTitle">Hafta sonuna sığanlar</h2><div class="more-l"><a href="liste/?sure=hs" class="all" id="railAll">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div><p class="sub" id="railSub"></p></div>
-<div class="rail" id="timeRail"></div>
+
+<section id="near" aria-labelledby="h-near">
+  <div class="near" id="nearCard">
+    <span class="near-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg></span>
+    <h2 id="h-near">Yakınımda ne var?</h2>
+    <p>Çevrendeki deneyimleri uzaklığıyla gösterelim. Konumun kaydedilmez.</p>
+    <button type="button" class="near-go" id="nearGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg><span>Konumumu kullan</span></button>
+    <div class="near-alt" id="nearAlt" hidden><p id="nearMsg"></p><div class="near-c" id="nearCities"></div></div>
+  </div>
+  <div id="nearOn" hidden>
+    <div class="sec"><div class="hd"><h2>Yakınımda ne var?</h2><div class="more-l"><button type="button" class="clr" id="nearOff">Kapat</button><div class="arrows" data-for="nearRail"></div></div></div><p class="near-loc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg><span id="nearLoc"></span></p></div>
+    <div class="rail" id="nearRail"></div>
+  </div>
+</section>
 
 <section aria-labelledby="h-bg">
-  <div class="sec"><div class="hd"><h2 id="h-bg">İnsanlar bu hafta ne yaptı?</h2><div class="more-l"><a href="baglan/" class="all">Bağlan →</a><div class="arrows" data-for="postRail"></div></div></div><p class="sub">Gerçek deneyimler, bağlı oldukları turla, etkinlikle, mekânla. <span class="ornek">ÖRNEK</span></p></div>
+  <div class="sec"><div class="hd"><h2 id="h-bg">İnsanlar bu hafta ne yaptı?</h2><div class="more-l"><a href="baglan/" class="all">Bağlan →</a><div class="arrows" data-for="postRail"></div></div></div></div>
   <div class="rail" id="postRail"></div>
 </section>
 
 <section aria-labelledby="h-wk">
-  <div class="sec"><div class="hd"><h2 id="h-wk">Bu hafta sonu için</h2><div class="more-l"><a href="liste/?sure=hs" class="all" id="wkAll">Tümü →</a><div class="arrows" data-for="wkRail"></div></div></div><p class="sub">Kalacak yer, mola verecek mekân ya da yurt dışına kısa bir kaçış.</p></div>
-  <div class="fchips" role="group" aria-label="Bu hafta sonu için"><button class="fc" aria-pressed="true" data-w="otel">Oteller</button><button class="fc" aria-pressed="false" data-w="mekan">Mekânlar</button><button class="fc" aria-pressed="false" data-w="yurtdisi">Yurt dışı</button></div>
+  <div class="sec"><div class="hd"><h2 id="h-wk">Bu hafta sonu için</h2><div class="more-l"><a href="liste/?tarih=bu-hs" class="all" id="wkAll">Tümü →</a><div class="arrows" data-for="wkRail"></div></div></div></div>
+  <div class="fchips" id="wkChips" role="group" aria-label="Kategori"></div>
   <div class="rail" id="wkRail"></div>
 </section>
 
 <section aria-labelledby="h-ev">
-  <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sonu sahnede</h2><a href="liste/?tur=etkinlik" class="all">Takvim →</a></div><p class="sub">2 – 4 Ekim · konser, festival, sahne</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-ev">Bu hafta sahnede</h2><a href="liste/?tur=etkinlik" class="all">Tümü →</a></div></div>
   <div class="ev" id="events"></div>
 </section>
 
 <section aria-labelledby="h-th">
-  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="arrows" data-for="themeRail"></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
+  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="arrows" data-for="themeRail"></div></div></div>
   <div class="rail themes" id="themeRail"></div>
 </section>
 
 <footer class="foot">
   <a href="#yakinda">Hakkımızda</a> · <a href="#yakinda">Sıkça sorulan sorular</a> · <a href="#yakinda">Gizlilik</a> · <a href="#yakinda">Çerezler</a> · <a href="#yakinda">Kullanım koşulları</a><br>© 2026 Mola360. Tüm hakları saklıdır.
-  <br><span class="draft">Tasarım taslağı · veriler örnek katalogdan</span>
+  <br><span class="ornek">ÖRNEK VERİ</span>
   <div class="demo" role="group" aria-label="Taslak görünümü">Görünüm: <button type="button" class="dm" aria-pressed="true" data-v="guest">Misafir</button><button type="button" class="dm" aria-pressed="false" data-v="gezgin">Gezgin</button><button type="button" class="dm" aria-pressed="false" data-v="kasif">Kâşif</button></div>
 </footer>
 

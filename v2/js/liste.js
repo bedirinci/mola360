@@ -44,10 +44,10 @@ function draw(){
   const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
   const lead=D?D.name:ara?'“'+ara+'”':'';
-  const title=lead||(th?th.name:T?T[2]:B?B[3]:W?W[1]:'Tüm deneyimler');
-  const rest=[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[3],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
+  const title=lead||(th?th.name:T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
+  const rest=[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
   document.getElementById('lsTitle').textContent=title;
-  document.getElementById('lsSub').textContent=rest||(th?th.types.join(', ')+' birlikte':T?'Süreye ya da kiminle gideceğine göre daraltabilirsin':'Tur, otel, etkinlik, aktivite ve mekân birlikte');
+  const sub=document.getElementById('lsSub');sub.textContent=rest;sub.hidden=!rest;
   document.getElementById('cats').innerHTML='<a href="'+href('',sure)+'"'+(tur?'':' aria-current="true"')+'>Tümü</a>'
     +TYPES.map(t=>'<a href="'+href(t[0],sure)+'"'+(t[0]===tur?' aria-current="true"':'')+'>'+t[2]+'</a>').join('');
   document.querySelectorAll('[data-sure]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sure===sure));
