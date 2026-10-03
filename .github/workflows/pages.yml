@@ -49,6 +49,23 @@ jobs:
               grep -nE '(\.\./)*assets/(css|js)/' "$SAYFA" || true
             done
 
+      # v2 de ayni sorunu yasar: sayfalar css/ ve js/ altindaki sabit adli
+      # dosyalara baglanir, js modulleri de birbirini './api.js' gibi sabit
+      # adlarla yukler. Bir kismi onbellekten eski, bir kismi yeni gelirse
+      # moduller uyusmaz ve sayfa bozulur. HTML'deki baglar ve modullerin
+      # birbirini yukledigi adresler ayni damgayi alir.
+      - name: v2 dosyalarina surum damgasi ekle
+        run: |
+          VER="${GITHUB_SHA::8}"
+          find v2 -name '*.html' -print0 \
+          | while IFS= read -r -d '' SAYFA; do
+              sed -E -i 's#(href|src)="((\.\./)*(css|js)/[^"?]+\.(css|js))"#\1="\2?v='"$VER"'"#g' "$SAYFA"
+            done
+          sed -E -i "s#(from *')(\./[a-z0-9-]+\.js)'#\1\2?v=$VER'#g" v2/js/*.js
+          echo "--- damgasiz kalan v2 baglari (bos olmali):"
+          grep -rnE "(href|src)=\"(\.\./)*(css|js)/[^\"?]+\"" v2 --include=*.html || true
+          grep -nE "from *'\./[^'?]+'" v2/js/*.js || true
+
       # Backend yayina CIKMAZ. Statik sitenin yaninda sunucu kaynagi
       # sunmanin faydasi yok; ayrica yerelde olusturulan bir .env
       # yanlislikla commit edilirse yayina cikmasin diye.
