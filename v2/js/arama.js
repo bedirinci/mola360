@@ -141,7 +141,9 @@ list.addEventListener('click',e=>{
   const y=e.target.closest('[data-yer]');if(y){pickWhere(y.dataset.yer,'');return}
   if(e.target.closest('[data-all]')){pickWhere('',inp.value.trim());return}
   if(e.target.closest('[data-clear-recent]')){clearSearches();drawWhere();inp.focus();return}
-  const r=e.target.closest('[data-recent]');if(r){const s=listSearches()[+r.dataset.recent];setSearch(s.state);location.href=s.url}
+  const r=e.target.closest('[data-recent]');if(r){const s=listSearches()[+r.dataset.recent];setSearch(s.state);where.go(s.url);return}
+  /* deneyim bağı: çekmecenin geçmiş adımı yerine ürün sayfası */
+  const a=e.target.closest('a[href]');if(a){e.preventDefault();where.go(a.href)}
 });
 
 /* Ne zaman: her seçenekte bu yer ve kategoride kaç deneyim olduğu */
@@ -177,8 +179,12 @@ $('whoList').addEventListener('click',e=>{const b=e.target.closest('[data-who]')
   drawWho();fields();remember();
   const same=$('whoList').querySelector('[data-who="'+k+'"][data-d="'+d+'"]');(same.disabled?$('whoList').querySelector('[data-who="'+k+'"]:not(:disabled)')||$('whoSheet').querySelector('.who-ok'):same).focus()});
 
-/* sekme: alan adları değişir, seçimler kalır */
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;st.tur=t.dataset.tab;fields();remember()});
+/* sekme: alan adları değişir, seçimler kalır; sayaçlar yeni sekmenin
+   sınırlarına çekilir (otelde odaya en çok 2 yetişkin) */
+function fit(){WHO[st.tur].forEach(([k,,,lo,hi])=>{n[k]=Math.max(lo,Math.min(hi,n[k]))});
+  if(st.tur==='otel')n.o=Math.max(n.o,Math.ceil(n.y/2));
+  if(st.tur==='tur')n.c=Math.min(n.c,9-n.y)}
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;st.tur=t.dataset.tab;fit();fields();remember()});
 
 /* Molamı bul: liste sayfasına; yer ya da metin varsa son aramalara yazılır */
 $('search').addEventListener('submit',e=>{e.preventDefault();

@@ -99,7 +99,7 @@ function cxl(){const c=cancelBy(p,st.date);
   return !c?'Sonrasında iptal edersen ödediğin tutar iade edilmez.':c.past?'Bu tarihte ücretsiz iptal süresi doldu; iptal edersen ödediğin tutar iade edilmez.':'Bu rezervasyon için son gün '+c.date+'; sonrasında iptalde ödeme iade edilmez.'}
 
 function done(r){
-  return '<div class="bk-done"><span class="ei">'+IC.check+'</span><h1>Rezervasyonun alındı</h1><p>'+p.title+'<br>'+when()+(S.qty?' · '+qtyTxt():'')+'</p>'
+  return '<div class="bk-done"><span class="ei">'+IC.check+'</span><h2>Rezervasyonun alındı</h2><p>'+p.title+'<br>'+when()+(S.qty?' · '+qtyTxt():'')+'</p>'
   +'<p class="no">Rezervasyon no <b>'+r.no+'</b> <span class="ornek">TASLAK · ödeme alınmadı</span></p></div>'
   +'<section class="box"><h2>Sırada ne var?</h2><ul class="ticks">'
   +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider. Taslakta e-posta gönderilmez.</span></div></li>'
@@ -116,7 +116,7 @@ function drawCta(){
   cta.innerHTML='<div class="pp"><small>'+small+'</small><strong>'+tl(st.step===3?now():total())+'</strong></div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(LABEL[st.step]||tl(now())+' öde')+'</button>';
 }
-let last=null;
+let last=null,calm=0;
 function draw(push){
   document.querySelectorAll('#steps li').forEach((li,i)=>{li.classList.toggle('on',i+1===st.step);li.classList.toggle('ok',i+1<st.step);if(i+1===st.step)li.setAttribute('aria-current','step');else li.removeAttribute('aria-current')});
   document.getElementById('steps').hidden=st.step===4;
@@ -126,7 +126,8 @@ function draw(push){
   window.scrollTo(0,0);
 }
 history.replaceState({s:1},'');
-window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
+/* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
+window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
 back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}});
 
 const show=(id,msg)=>{const el=document.getElementById(id);if(!el)return;el.hidden=!msg;if(msg)el.textContent=msg};
@@ -139,7 +140,7 @@ function check2(){
   const bad=Object.keys(e).find(k=>e[k]);if(bad)document.getElementById(bad).focus();
   return !bad;
 }
-cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
+cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm)return;
   if(st.step===1){
     if(!st.date){show('dateErr','Devam etmek için bir tarih seç.');document.getElementById('bkDate').scrollIntoView({behavior:'smooth',block:'center'});return}
     if(S.slots.length&&!st.slot){show('slotErr','Bir saat seç.');document.getElementById('bkSlot').scrollIntoView({behavior:'smooth',block:'center'});return}
@@ -150,7 +151,9 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
     last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay});
     st.step=4;history.replaceState({s:4},'');draw(false);return;
   }
-  st.step++;draw(true);
+  /* sonraki adımın düğmesi kısa bir süre dokunuş almaz: "Devam et"e çift
+     dokunuş boş formu gönderip hata göstermesin */
+  calm=Date.now()+450;st.step++;draw(true);
 });
 /* adım içindeki seçimler sayfayı yeniden çizmez: odak ve kaydırma yerinde kalır */
 const radio=(sel,el)=>main.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-checked',x===el));
