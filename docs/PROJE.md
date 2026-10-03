@@ -803,3 +803,42 @@ güncellenecek yaşayan proje dokümanıdır.
   hafifçe çöküyor, böylece dokunuşun alındığı görülüyor. Liste bir
   ekranda iki kat fazla deneyim gösteriyor. Görsel solda, karşılaştırma
   bilgisi sağda.
+
+### 2026-10-03 — Arama çalışıyor, ürün sayfası içerikle doldu
+
+- **Karar:** Keşfet'teki arama kutusunun üç alanı da alttan açılan bir
+  çekmece. "Nereye" yazdıkça yer ve deneyim önerir (yer adı, ilçe ya da
+  bölgeyle; Türkçe harf farkı yok sayılır), boşken son aramaları ve o
+  kategoride deneyimi olan yerleri sayısıyla gösterir. "Ne zaman" bu hafta
+  sonu, gelecek hafta sonu, ekim, kasım ya da esnek; her seçeneğin yanında
+  kaç deneyim olduğu yazar. "Kaç kişi" sekmeye göre yetişkin ve çocuk, oda
+  ya da bilet sayar; otelde odaya sığmayan yetişkin için oda kendiliğinden
+  artar. Arama listeye `yer`, `ara` ve `tarih` parametreleriyle gider; tarih
+  ve kişi sayısı sekme açık kaldıkça ürün sayfasına (tarih hazır seçili)
+  ve rezervasyona (adet hazır) taşınır. Ürün sayfasındaki iskelet çizgiler
+  yerine açıklama, program, dahil/hariç, buluşma noktası, bilmen
+  gerekenler ve örnek değerlendirmeler geldi; iptal kutusu seçilen tarihe
+  göre son ücretsiz iptal gününü yazıyor, süre dolduysa bunu açıkça
+  söylüyor.
+- **Neden:** Bedir İnci arayüz kalitesinin yükseltilmesini istedi;
+  tasarım sisteminden sonra sıradaki paket olarak önerilen "gerçek
+  etkileşimler" için "devam et" dedi. İncelemede arama alanları dokununca hiçbir şey yapmıyor,
+  ürün sayfası en çok merak edilen bilgiler (ne dahil, nerede buluşuyoruz)
+  yerine gri çizgiler gösteriyordu. Kullanıcı yolculuğunun değerlendirme
+  aşaması (§9) bu bilgilerle karar veriyor.
+- **Etkilediği alanlar:** `v2/js/arama.js` (yeni), `v2/js/icerik.js`
+  (yeni, ÖRNEK içerik), `v2/js/api.js` (yerler, öneri, tarih penceresi,
+  iptal günü, ürün içeriği, arama durumu), `v2/js/data.js` (`DESTS`,
+  `WHEN`), `v2/js/liste.js`, `v2/js/urun.js`, `v2/js/rezervasyon.js`,
+  `v2/js/ui.js` (`makeSheet`), `v2/js/help.js`, `v2/css/`.
+- **Teknik sonuç:** Kategori ≠ filtre korunuyor: tarih bir filtre, yer ve
+  metin arama; kategori ayrı satırda. Tarihi olan ürün (tur kalkışı,
+  etkinlik) pencereye düşmeli; otel, aktivite ve mekân her gün açık sayılıyor
+  (ÖRNEK). Örnek takvim 1 Ekim 2026'da yaşıyor; backend gelince gerçek gün
+  ve uygunluk `api.js`'in içinden gelecek. Çekmece davranışı tek yerde
+  (`makeSheet`).
+- **UX sonucu:** Arama artık bir karar aracı: kullanıcı yazmadan önce nerede
+  ne olduğunu görüyor, sonuç vermeyecek seçimi baştan fark ediyor, bir
+  kategoride bulamadığını diğer kategorilerde buluyor. Seçtiği tarih ve
+  kişi sayısını bir daha girmiyor. İptal koşulu ödeme öncesinde tarihle
+  birlikte netleşiyor; süresi geçmiş ücretsiz iptal gizlenmiyor (§20).

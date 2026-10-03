@@ -127,3 +127,36 @@ export const POSTS=[
   metin:'Arkadaş grubuyla rafting, sonra nehir kenarında alabalık. Hafta sonu için birebir.',beg:134,yor:22},
  {u:'zeynep',yer:'Kemer, Antalya',ne:'4 gün önce',g:'sealight',urun:'Sealight Resort',gitti:1,
   metin:'Ekim\'de deniz hâlâ sıcak. Çocuklar havuzdan, biz plajdan çıkmadık.',beg:88,yor:9}];
+
+/* Yerler: arama önerileri için. Bir ürün, adında ya da yerinde (kalkış
+   şehri sayılmaz) bu adlardan biri geçiyorsa o yerdedir. Liste ÖRNEK;
+   gerçekte ürünün konum verisinden gelecek. [adres anahtarı, ad, alt satır, eş adlar] */
+export const DESTS=[
+ ['istanbul','İstanbul','Marmara',['İstanbul','Eminönü','Harbiye','Maçka']],
+ ['izmir','İzmir','Ege · Alsancak, Çeşme, Efes',['İzmir','Alsancak','Çeşme','Alaçatı','Efes','Şirince']],
+ ['kapadokya','Kapadokya','Nevşehir · Göreme',['Kapadokya','Göreme','Nevşehir']],
+ ['antalya','Antalya','Akdeniz · Kemer, Manavgat',['Antalya','Kemer','Manavgat','Aspendos']],
+ ['mugla','Muğla','Ege · Bodrum, Fethiye',['Muğla','Bodrum','Fethiye','Ölüdeniz']],
+ ['pamukkale','Pamukkale','Denizli',['Pamukkale','Hierapolis','Denizli']],
+ ['sapanca','Sapanca','Sakarya · Maşukiye',['Sapanca','Maşukiye']],
+ ['bursa','Bursa','Uludağ',['Bursa','Uludağ']],
+ ['yalova','Yalova','Marmara · termal',['Yalova']],
+ ['ankara','Ankara','İç Anadolu',['Ankara']],
+ ['kayseri','Kayseri','İç Anadolu · Erciyes',['Kayseri','Erciyes']],
+ ['karadeniz','Karadeniz','Rize · Ayder, Uzungöl',['Karadeniz','Rize','Ayder']],
+ ['kars','Kars','Doğu Anadolu',['Kars','Doğu Ekspresi']],
+ ['yunan-adalari','Yunan adaları','Yurt dışı · Sakız, Midilli',['Sakız','Midilli']],
+ ['gurcistan','Gürcistan','Yurt dışı · Batum',['Gürcistan','Batum']],
+ ['balkanlar','Balkanlar','Yurt dışı · Saraybosna, Mostar',['Balkanlar','Bosna','Saraybosna']],
+ ['dubai','Dubai','Yurt dışı · Birleşik Arap Emirlikleri',['Dubai']],
+ ['italya','İtalya','Yurt dışı · Roma, Floransa, Venedik',['İtalya']],
+ ['ispanya','İspanya','Yurt dışı · Barselona, Madrid',['İspanya']],
+ ['fransa','Fransa','Yurt dışı · Paris, Loire',['Fransa']]];
+
+/* Ne zaman: arama penceresi. Örnek takvim 3 Ekim 2026'da yaşıyor.
+   [adres anahtarı, ad, alt satır, başlangıç, bitiş] (ay 0'dan) */
+export const WHEN=[
+ ['bu-hs','Bu hafta sonu','2 – 4 Ekim',[2026,9,2],[2026,9,4]],
+ ['gelecek-hs','Gelecek hafta sonu','9 – 11 Ekim',[2026,9,9],[2026,9,11]],
+ ['ekim','Ekim içinde','1 – 31 Ekim',[2026,9,1],[2026,9,31]],
+ ['kasim','Kasım içinde','1 – 30 Kasım',[2026,10,1],[2026,10,30]]];

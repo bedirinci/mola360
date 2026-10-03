@@ -1,8 +1,9 @@
-/* Liste: kategori (ürün ne?), filtreler (keşif kriteri) ve tema ayrı
-   satırlarda ve ayrı adres parametrelerinde: ?tur=otel&sure=hs&kimle=cift
-   &tema=doga (docs/yeni-surum.md kural 3). */
+/* Liste: kategori (ürün ne?), filtreler (keşif kriteri), arama (yer ya da
+   metin) ve tema ayrı satırlarda ve ayrı adres parametrelerinde:
+   ?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=cift&tema=doga
+   (docs/yeni-surum.md kural 3). */
 import { renderShell } from './shell.js';
-import { listProducts, getTheme, TYPES, BUCKETS, WITH } from './api.js';
+import { listProducts, getTheme, getDestination, getSearch, TYPES, BUCKETS, WITH, WHEN } from './api.js';
 import { productCard } from './cards.js';
 import { toast } from './ui.js';
 import { initFavorites, favSync } from './favorites.js';
@@ -14,42 +15,65 @@ const q=new URLSearchParams(location.search);
 let tur=TYPES.some(t=>t[0]===q.get('tur'))?q.get('tur'):'';
 let sure=BUCKETS.some(b=>b[0]===q.get('sure'))?q.get('sure'):'';
 let kimle=WITH.some(w=>w[0]===q.get('kimle'))?q.get('kimle'):'';
+let yer=getDestination(q.get('yer'))?q.get('yer'):'';
+let ara=(q.get('ara')||'').trim().slice(0,60);
+let tarih=WHEN.some(w=>w[0]===q.get('tarih'))?q.get('tarih'):'';
 const th=getTheme(q.get('tema'));
+/* Keşfet'teki aramada seçilen kişi sayısı (yalnızca bu sekmede) */
+const s=getSearch();
 
 /* Süre ve kiminle filtreleri örnek veride çalışıyor; diğerleri gerçek veriyle gelecek */
 const SURE=[['saat','Birkaç saat'],['gun','Günübirlik'],['hs','Hafta sonu'],['uzun','4 gün +']];
 const OTHER=['Yakınımda','Fiyat aralığı'];
+const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+const h=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const href=(t,s,k=kimle)=>'?'+[th&&'tema='+th.id,t&&'tur='+t,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
+const href=(t,s,k=kimle)=>'?'+[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
+const go=()=>{history.replaceState(null,'',href(tur,sure)==='?'?location.pathname:href(tur,sure));draw()};
 
-document.getElementById('filters').innerHTML=SURE.map(s=>'<button type="button" class="fc" aria-pressed="false" data-sure="'+s[0]+'">'+s[1]+'</button>').join('')
-  +WITH.map(w=>'<button type="button" class="fc" aria-pressed="false" data-kimle="'+w[0]+'">'+w[1]+'</button>').join('')
-  +OTHER.map(o=>'<button type="button" class="fc" aria-pressed="false" data-soon-f>'+o+'</button>').join('');
+/* aramadan gelen seçimler (yer, metin, tarih) en başta; dokununca kalkar */
+function filters(){
+  const D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
+  const off=(k,label)=>'<button type="button" class="fc off" aria-pressed="true" data-off="'+k+'" aria-label="'+h(label)+' seçimini kaldır">'+h(label)+X+'</button>';
+  document.getElementById('filters').innerHTML=(D?off('yer',D.name):'')+(ara?off('ara','“'+ara+'”'):'')+(WH?off('tarih',WH[2]):'')
+    +SURE.map(x=>'<button type="button" class="fc" aria-pressed="false" data-sure="'+x[0]+'">'+x[1]+'</button>').join('')
+    +WITH.map(w=>'<button type="button" class="fc" aria-pressed="false" data-kimle="'+w[0]+'">'+w[1]+'</button>').join('')
+    +OTHER.map(o=>'<button type="button" class="fc" aria-pressed="false" data-soon-f>'+o+'</button>').join('');
+}
 function draw(){
-  const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle);
+  const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
-  const title=th?th.name:T?T[2]:B?B[3]:W?W[1]:'Tüm deneyimler';
-  const rest=[th&&T&&T[2],(th||T)&&B&&B[3],(th||T||B)&&W&&W[1]].filter(Boolean).join(' · ');
+  const lead=D?D.name:ara?'“'+ara+'”':'';
+  const title=lead||(th?th.name:T?T[2]:B?B[3]:W?W[1]:'Tüm deneyimler');
+  const rest=[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[3],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
   document.getElementById('lsTitle').textContent=title;
   document.getElementById('lsSub').textContent=rest||(th?th.types.join(', ')+' birlikte':T?'Süreye ya da kiminle gideceğine göre daraltabilirsin':'Tur, otel, etkinlik, aktivite ve mekân birlikte');
   document.getElementById('cats').innerHTML='<a href="'+href('',sure)+'"'+(tur?'':' aria-current="true"')+'>Tümü</a>'
     +TYPES.map(t=>'<a href="'+href(t[0],sure)+'"'+(t[0]===tur?' aria-current="true"':'')+'>'+t[2]+'</a>').join('');
   document.querySelectorAll('[data-sure]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sure===sure));
   document.querySelectorAll('[data-kimle]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kimle===kimle));
-  const list=listProducts({type:tur,sure,kimle,tema:th&&th.id});
+  const f={sure,kimle,tema:th&&th.id,yer,ara,tarih};
+  const list=listProducts({type:tur,...f});
   document.getElementById('lsCount').innerHTML=list.length+' deneyim <span class="ornek">ÖRNEK</span>';
   const el=document.getElementById('list');
+  /* boşsa: aynı arama başka kategoride sonuç veriyorsa oraya yönlendir */
+  const other=!list.length&&tur?listProducts(f).length:0;
   el.innerHTML=list.length?list.map(x=>productCard(x)).join('')
-    :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>Filtreleri kaldırmayı ya da başka bir kategoriye bakmayı dene.</p><a class="btn" href="'+(href(tur,'','')||'?')+'">Filtreleri kaldır</a></div>';
+    :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>'+(other?'Aynı seçimle başka kategorilerde '+other+' deneyim var.':'Filtreleri kaldırmayı ya da başka bir kategoriye bakmayı dene.')+'</p>'
+     +(other?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&')+'">Filtreleri kaldır</a>')+'</div>';
   favSync();
-  document.title='mola360 — '+document.getElementById('lsTitle').textContent;
+  document.title='mola360 — '+title;
 }
 document.getElementById('filters').addEventListener('click',e=>{
+  const o=e.target.closest('[data-off]');
+  if(o){({yer:()=>yer='',ara:()=>ara='',tarih:()=>tarih=''})[o.dataset.off]();filters();go();
+    document.querySelector('#filters .fc').focus({preventScroll:true});return}
   const b=e.target.closest('[data-sure]');
-  if(b){sure=b.dataset.sure===sure?'':b.dataset.sure;history.replaceState(null,'',href(tur,sure)||location.pathname);draw();return}
+  if(b){sure=b.dataset.sure===sure?'':b.dataset.sure;go();return}
   const k=e.target.closest('[data-kimle]');
-  if(k){kimle=k.dataset.kimle===kimle?'':k.dataset.kimle;history.replaceState(null,'',href(tur,sure)||location.pathname);draw();return}
+  if(k){kimle=k.dataset.kimle===kimle?'':k.dataset.kimle;go();return}
   if(e.target.closest('[data-soon-f]'))toast('Bu filtre gerçek veriyle çalışacak.','Tamam',()=>{},3000);
 });
 document.querySelector('[data-soon-sort]').addEventListener('click',()=>toast('Sıralama seçenekleri yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000));
+filters();
 draw();

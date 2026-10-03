@@ -3,7 +3,7 @@
    ödeme alınmaz ve kart bilgisi istenmez; rezervasyon yalnızca bu cihazda
    tutulur. Toplam fiyat baştan sona aynı: sonradan eklenen ücret yok. */
 import { renderShell } from './shell.js';
-import { getProduct, bookingSpec, createBooking } from './api.js';
+import { getProduct, bookingSpec, createBooking, cancelBy, getSearch, typeKey } from './api.js';
 import { tl, esc, toast } from './ui.js';
 import { lvOn, lvPrice, getLevel } from './level.js';
 import { IC } from './icons.js';
@@ -25,11 +25,13 @@ const productUrl=ROOT+'urun/?id='+p.id;
 back.href=productUrl;
 document.title='mola360 — Rezervasyon · '+p.title;
 
+/* başlangıç adedi: Keşfet'te aynı türde arandıysa oradaki kişi, oda ya da bilet sayısı */
+function startQty(){const s=getSearch(),n=s.tur===typeKey(p.type)&&+s.adet;return n?Math.max(S.qty.min,Math.min(S.qty.max,n)):S.qty.start||2}
 /* seçim durumu; adresten gelen tarih (ürün sayfasında seçildiyse) */
 const dateKey=d=>d[0]+' '+d[1];
 const st={step:1,
   date:S.dates.length===1?dateKey(S.dates[0]):(S.dates.map(dateKey).find(k=>k===q.get('tarih'))||''),
-  slot:'',opt:S.opts.length?0:-1,qty:S.qty?(S.qty.start||2):1,pay:S.deposit?'kapora':'tam',
+  slot:'',opt:S.opts.length?0:-1,qty:S.qty?startQty():1,pay:S.deposit?'kapora':'tam',
   name:'',phone:'',email:'',ok:false};
 
 const unit=()=>lvPrice(p.title,st.opt>=0?S.opts[st.opt][1]:p.price);
@@ -85,12 +87,16 @@ function step3(){
   +'<div class="tot"><dt>Toplam</dt><dd>'+tl(total())+'</dd></div>'
   +(st.pay==='kapora'?'<div class="now"><dt>Bugün ödenecek (%20 kapora)</dt><dd>'+tl(now())+'</dd></div><div><dt>Kalan, kalkıştan 7 gün önce</dt><dd>'+tl(total()-now())+'</dd></div>':'')
   +'</dl><p>Gördüğün toplam, ödeyeceğin toplam: sonradan eklenen ücret yok.</p></section>'
-  +'<section class="box"><h2>İptal <span class="ornek">ÖRNEK KURAL</span></h2><ul class="ticks"><li>'+IC.check+'<div><b>'+S.cancel+'.</b> <span>Sonrasında iptal edersen ödediğin tutar iade edilmez.</span></div></li></ul></section>'
+  +'<section class="box"><h2>İptal <span class="ornek">ÖRNEK KURAL</span></h2><ul class="ticks"><li>'+IC.check+'<div><b>'+S.cancel+'.</b> <span>'+cxl()+'</span></div></li></ul></section>'
   +'<section class="box"><h2>Ödeme</h2><div class="bk-pay">'+IC.shield+'<p><b>Kartla güvenli ödeme (3D Secure)</b> ödeme altyapısıyla gelecek. Bu taslakta kart bilgisi istenmez ve ödeme alınmaz.</p></div>'
   +'<ul class="ticks"><li>'+IC.check+'<div><b>3 taksit, vade farksız</b> <span>Anlaşmalı kartlarla. <span class="ornek">ÖRNEK</span></span></div></li>'
   +'<li>'+IC.check+'<div><b>'+(getLevel()==='guest'?'Üyeler bu rezervasyondan '+pts+' Molapuan kazanır':'Bu rezervasyondan '+pts+' Molapuan kazanırsın')+'</b> <span>100 TL = 1 puan. <span class="ornek">ÖNERİ</span></span></div></li></ul>'
   +'<label class="bk-ok"><input type="checkbox" id="okBox"'+(st.ok?' checked':'')+'><span><a href="#yakinda">Ön bilgilendirme formunu</a> ve <a href="#yakinda">mesafeli satış sözleşmesini</a> okudum, onaylıyorum.</span></label><p class="err" id="okErr" hidden>Devam etmek için sözleşmeyi onaylaman gerekiyor.</p></section>';
 }
+
+/* seçilen tarihe göre son ücretsiz iptal günü */
+function cxl(){const c=cancelBy(p,st.date);
+  return !c?'Sonrasında iptal edersen ödediğin tutar iade edilmez.':c.past?'Bu tarihte ücretsiz iptal süresi doldu; iptal edersen ödediğin tutar iade edilmez.':'Bu rezervasyon için son gün '+c.date+'; sonrasında iptalde ödeme iade edilmez.'}
 
 function done(r){
   return '<div class="bk-done"><span class="ei">'+IC.check+'</span><h1>Rezervasyonun alındı</h1><p>'+p.title+'<br>'+when()+(S.qty?' · '+qtyTxt():'')+'</p>'

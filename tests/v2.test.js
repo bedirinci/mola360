@@ -73,8 +73,32 @@ describe('v2', () => {
     });
   });
 
+  it('arama yer, metin ve tarihle süzüyor; kategori ayrı kalıyor (kural 3)', async () => {
+    const api = await import('../v2/js/api.js');
+    expect(api.suggest('kapa').dests.map(d => d.id)).toContain('kapadokya');
+    expect(api.suggest('goreme').products.map(p => p.id)).toContain('kapadokya-turu');
+    const kap = api.listProducts({ yer: 'kapadokya' });
+    expect(kap.length).toBeGreaterThan(0);
+    expect(api.listProducts({ type: 'tur', yer: 'kapadokya' }).every(p => p.type === 'Tur')).toBe(true);
+    /* tarihi olan ürün pencereye düşmeli: Kapadokya Turu kasımda kalkmıyor */
+    expect(api.listProducts({ yer: 'kapadokya', type: 'tur', tarih: 'kasim' })).toEqual([]);
+    expect(api.firstDateIn(api.getProduct('kapadokya-turu'), 'gelecek-hs')).toBe('Cum 9 Eki');
+  });
+
+  it('ürün sayfasında her deneyimin içeriği var, iptal günü tarihe göre', async () => {
+    const api = await import('../v2/js/api.js');
+    api.listProducts().forEach(p => {
+      const d = api.productDetails(p);
+      expect(d.about && d.program.length && d.dahil.length && d.place[0], p.title).toBeTruthy();
+    });
+    const k = api.getProduct('kapadokya-turu');
+    expect(api.cancelBy(k, 'Pzt 12 Eki')).toEqual({ date: '5 Ekim Pazartesi', past: false });
+    expect(api.cancelBy(k, 'Pzt 5 Eki').past).toBe(true);
+  });
+
   it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
+    expect(oku(join(V2, 'js/icerik.js'))).toMatch(/ÖRNEK/);
     ['baglan', 'urun', 'liste', 'rezervasyonlar', 'profil'].forEach(s =>
       expect(oku(join(V2, 'js', s + '.js')), s).toMatch(/ÖRNEK/));
   });
