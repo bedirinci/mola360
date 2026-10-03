@@ -61,8 +61,10 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .th{height:96px;border-radius:var(--r-lg);padding:12px 14px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;position:relative;overflow:hidden}
 .th::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,14,30,.6),transparent 75%)}
 .th b{position:relative;font-size:var(--fs-base);font-weight:800;line-height:1.25;letter-spacing:-.005em}
-.sh-bg{position:fixed;inset:0;z-index:60;background:rgba(12,18,40,.32);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
+/* çekmece arkası: bulanıklık yok (aşağı çekerken Safari'de kirli görünüyordu); karartma çekmeceyle birlikte azalır */
+.sh-bg{position:fixed;inset:0;z-index:60;background:rgba(12,18,40,.48);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
 .sh-bg.open{opacity:1;visibility:visible;transition:opacity .24s ease}
+.sh-bg.drag{transition:none}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:440px;margin:0 auto;background:var(--card);color:var(--ink);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(12,18,40,.18);transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s;touch-action:none;overscroll-behavior:contain}
 .sheet.open{transform:translateY(0);visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 .sheet.drag{transition:none}

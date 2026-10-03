@@ -973,7 +973,10 @@ güncellenecek yaşayan proje dokümanıdır.
   kart: ikon, ad ve deneyim sayısı alt alta. Bölüm başlıkları her zaman
   tek satır; dar ekranda biraz küçülüyor (`--fs-h2`, `--fs-h3`). Süre
   rayının başlığında kiminle seçimi tekrar edilmiyor, çünkü hemen
-  üstündeki çipte görünüyor.
+  üstündeki çipte görünüyor. Alttan açılan çekmecelerin arkasında
+  bulanıklık yok; yalnızca karartma var ve çekmece aşağı çekildikçe
+  parmağı gecikmesiz izleyerek azalıyor (Bedir İnci yavaşça kapatırken
+  bulanıklığın kötü göründüğünü gösterdi).
 - **Neden:** Bedir İnci iPhone'da "Bir molayı hak ettin." ve "Ne kadar
   molan var?" başlıklarının ikinci satıra kaydığını gösterdi ve süre
   seçeneklerini tek sırada istedi. Başlıklar ölçüldüğünde rahatça
