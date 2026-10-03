@@ -15,6 +15,9 @@
   --fs-xl:21px;    /* bölüm başlığı, fiyat */
   --fs-2xl:26px;   /* sayfa başlığı */
   --fs-3xl:30px;   /* büyük sayı */
+  /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */
+  --fs-h2:clamp(17px,5.1vw,21px);  /* bölüm başlığı (en çok --fs-xl) */
+  --fs-h3:clamp(15px,4.6vw,18px);  /* bölüm içi başlık (en çok --fs-lg) */
 
   /* köşe ölçeği */
   --r-xs:6px; --r-sm:10px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-pill:999px;

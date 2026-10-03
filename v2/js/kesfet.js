@@ -53,8 +53,8 @@ wEl.innerHTML=WITH.map(w=>'<button type="button" class="fc" aria-pressed="false"
 function pick(){
   tEl.querySelectorAll('.tt').forEach(e=>{e.setAttribute('aria-pressed',e.dataset.b===curB);e.querySelector('small').textContent=listProducts({sure:e.dataset.b,kimle:curK}).length+' deneyim'});
   wEl.querySelectorAll('[data-k]').forEach(e=>e.setAttribute('aria-pressed',e.dataset.k===curK));
-  const W=WITH.find(w=>w[0]===curK);
-  $('railTitle').textContent=BUCKETS.find(x=>x[0]===curB)[2]+(W?' · '+W[1].toLocaleLowerCase('tr'):'');
+  /* kiminle seçimi hemen üstteki çipte görünüyor; başlık tek satırda kalsın diye yalnızca süre */
+  $('railTitle').textContent=BUCKETS.find(x=>x[0]===curB)[2];
   $('railAll').href='liste/?'+[q('sure',curB),q('kimle',curK)].filter(Boolean).join('&');
   const list=rank(listProducts({sure:curB,kimle:curK}));
   fill(rail,list.length?list.map(productCard).join('')

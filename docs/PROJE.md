@@ -966,3 +966,25 @@ güncellenecek yaşayan proje dokümanıdır.
   çarpısıyla kalkıyor (karanlık örüntü yok, §20). Tema sayfası neyin
   neden bir arada olduğunu iki cümleyle anlatıyor. Paylaşımı okuyan
   ürüne, ürüne bakan paylaşımlara tek dokunuşla geçiyor.
+
+### 2026-10-03 — "Ne kadar molan var?" tek sırada; başlıklar tek satır
+
+- **Karar:** "Ne kadar molan var?" seçenekleri 2×2 değil, tek sırada dört
+  kart: ikon, ad ve deneyim sayısı alt alta. Bölüm başlıkları her zaman
+  tek satır; dar ekranda biraz küçülüyor (`--fs-h2`, `--fs-h3`). Süre
+  rayının başlığında kiminle seçimi tekrar edilmiyor, çünkü hemen
+  üstündeki çipte görünüyor.
+- **Neden:** Bedir İnci iPhone'da "Bir molayı hak ettin." ve "Ne kadar
+  molan var?" başlıklarının ikinci satıra kaydığını gösterdi ve süre
+  seçeneklerini tek sırada istedi. Başlıklar ölçüldüğünde rahatça
+  sığıyordu; kaymanın sebebi büyük olasılıkla başlıklardaki
+  `text-wrap: balance`'ın Safari'deki davranışı. Bu ortamda Safari yok;
+  kontroller gerçek yazı tipiyle (Plus Jakarta Sans) Chromium'da yapıldı.
+- **Etkilediği alanlar:** `v2/css/components.css`, `v2/css/kesfet.css`,
+  `v2/css/sayfalar.css`, `v2/css/tokens.css`, `v2/js/kesfet.js`.
+- **Teknik sonuç:** Başlıklarda `text-wrap: balance` yok. `.hd h2` tek
+  satır; sığmazsa (yalnızca 320 px gibi çok dar ekranda) sonu üç noktayla
+  kısalıyor. Süre kartlarında yazı boyutu ekrana göre (`clamp`).
+- **UX sonucu:** 360 – 414 px telefonlarda Keşfet başlıkları ve süre
+  kartları tek satırda; dört süre seçeneği bir bakışta görünüyor.
+
