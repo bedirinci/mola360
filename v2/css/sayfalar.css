@@ -23,7 +23,6 @@ body{min-height:100vh;min-height:100dvh}
 .pg-top.cover p{color:rgba(255,255,255,.92);font-size:var(--fs-md);line-height:1.5;margin-top:6px;max-width:34em}
 .ls-posts{margin:6px -16px 4px}
 .ls-posts .hd{padding:0 16px}
-.ls-posts .hd h2{font-size:var(--fs-h3)}
 .ls-posts .rail{padding-top:10px}
 .ls-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 0;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
 .sort{display:inline-flex;align-items:center;gap:4px;min-height:36px;font-size:var(--fs-sm);font-weight:var(--fw-bold);color:var(--navy)}
@@ -46,7 +45,6 @@ body{min-height:100vh;min-height:100dvh}
 .u-chips span{border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 10px;font-size:var(--fs-sm);font-weight:var(--fw-semi)}
 .u-sec{padding:28px 16px 0}
 #paylasimlar{scroll-margin-top:8px}
-.u-sec .hd h2{font-size:var(--fs-h3)}
 .u-first{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:14px;border-radius:var(--r-md);background:var(--green-soft);color:var(--green-ink)}
 .u-first svg{width:24px;height:24px;flex:none}
 .u-first p{font-size:var(--fs-md);line-height:1.5;color:var(--ink)}
