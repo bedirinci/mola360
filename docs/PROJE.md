@@ -722,3 +722,60 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Keşfet yaklaşık yarı boyuna indi; kartta en fazla iki
   satır metin ve tek fiyat var. Karar için gereken ayrıntı (tarih, vize,
   arama, WhatsApp) ürün sayfasında, "Tarih seç" düğmesinin yanında.
+
+### 2026-10-03 — Keşfet tamamlandı: kiminle filtresi, kaldığın yerden, tema listeleri
+
+- **Karar:** Keşfet'e "Kiminle?" filtresi (Çiftler · Arkadaşlarla ·
+  Çocuklu) "Ne kadar molan var?" ile birlikte çalışacak şekilde eklendi;
+  aynı filtre listede de var. Daha önce ürüne bakan kullanıcıya en üstte
+  küçük kartlı "Kaldığın yerden" rayı çıkıyor. Tema kartları artık kendi
+  listesine gidiyor (`liste/?tema=`). "Ailece" teması kaldırıldı, çünkü
+  artık bir filtre. Keşfet veriyi yalnızca `api.js`'ten okuyor.
+- **Neden:** Bedir İnci Keşfet'in yeterli olup olmadığını sordu;
+  değerlendirmede §6.1'deki keşif filtrelerinin (Çiftler, Arkadaşlarla,
+  Çocuklu) eksik olduğu, geri dönen kullanıcıya bir şey sunulmadığı,
+  temaların "hazırlanıyor"a çıktığı ve Keşfet'in kural 6'ya uymadığı
+  görüldü. Bedir önce Keşfet'in tamamlanmasını, sonra rezervasyon akışını
+  seçti.
+- **Etkilediği alanlar:** `v2/index.html`, `v2/js/kesfet.js`,
+  `v2/js/liste.js`, `v2/js/urun.js` (bakılan ürünü kaydeder),
+  `v2/js/api.js` (`listEvents`, `listThemes`, `getTheme`, `listRecent`,
+  `markViewed`, `clearRecent`; `listProducts` artık `kimle` ve `tema`
+  alıyor), `v2/js/data.js` (ÖRNEK kiminle ve tema eşlemeleri; kullanılmayan
+  popüler aramalar silindi), `v2/css/kesfet.css`.
+- **Teknik sonuç:** Kategori, filtre ve tema ayrı adres parametreleri
+  (kural 3). Son bakılanlar yalnızca bu cihazda tutuluyor (`m360-son`, en
+  fazla 12). Backend gelince kullanıcı geçmişinden okunacak.
+- **UX sonucu:** Yeni kullanıcı aynı sade Keşfet'i görüyor. Geri dönen
+  kullanıcı baktığı ürüne tek dokunuşla dönüyor ve listeyi "Temizle" ile
+  silebiliyor. Süre ve kiminle seçilince sayılar ve ray birlikte
+  daralıyor; "Tümü" iki filtreyi de listeye taşıyor. Sahte sayı ya da
+  sıkıştırma yok; sayılar gerçek (örnek) katalogdan sayılıyor.
+
+### 2026-10-03 — Rezervasyon akışının arayüzü
+
+- **Karar:** Ürün sayfasındaki "Devam et" / "Rezervasyon yap" artık
+  `rezervasyon/?id=` sayfasına gidiyor. Akış üç adım ve bir onay ekranı:
+  seçim (tarih, saat, seçenek, adet, turda %20 kapora ya da tam ödeme),
+  iletişim bilgileri, özet + fiyat dökümü + iptal + ödeme. Ödeme
+  altyapısı gelene kadar kart bilgisi istenmiyor ve ödeme alınmıyor;
+  rezervasyon "TASLAK" olarak yalnızca bu cihazda tutuluyor ve
+  Rezervasyonlar'da görünüyor.
+- **Neden:** Bedir İnci Keşfet'ten sonra rezervasyon akışını seçti.
+  Keşif → rezervasyon → deneyim → paylaşım döngüsünün (§8, §13) en büyük
+  boşluğu buydu; ürün sayfası "hazırlanıyor" bildiriminde bitiyordu.
+- **Etkilediği alanlar:** yeni `v2/rezervasyon/` ve `v2/js/rezervasyon.js`;
+  `v2/js/api.js` (`bookingSpec`, `createBooking`, `listBookings`,
+  `cancelBooking`), `v2/js/urun.js`, `v2/js/rezervasyonlar.js`,
+  `v2/css/sayfalar.css`.
+- **Teknik sonuç:** Türüne göre kurallar tek yerde (`bookingSpec`): tur
+  kalkış tarihleri ve kapora, otelde oda, etkinlikte bilet, aktivite ve
+  mekânda saat, min. harcamalı mekânda alan. Kapora oranı, iptal süreleri,
+  saatler ve adet sınırları ÖRNEK KURAL; v2'nin kuralları yazılınca bu
+  fonksiyon değişecek. Adımlar tarayıcı geçmişine yazılıyor, geri tuşu
+  önceki adıma dönüyor.
+- **UX sonucu:** Toplam ilk adımdan son adıma aynı; hizmet bedeli 0 TL ve
+  "sonradan eklenen ücret yok" açıkça yazıyor (§20). Sözleşme onayı
+  işaretsiz geliyor. Onay ekranı kullanıcıyı Rezervasyonlar'a ve
+  döndükten sonra paylaşmaya yönlendiriyor; "Birlikte gideceklere gönder"
+  ile deneyim paylaşılabiliyor.

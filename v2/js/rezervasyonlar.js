@@ -1,6 +1,6 @@
 /* Rezervasyonlar: yaklaşan ve geçmiş. Geçmiş deneyim, döngünün kapandığı yer: paylaş. */
 import { renderShell } from './shell.js';
-import { findByTitle } from './api.js';
+import { findByTitle, listBookings, cancelBooking } from './api.js';
 import { toast, tl } from './ui.js';
 import { IC, I } from './icons.js';
 import { ROOT } from './root.js';
@@ -21,11 +21,20 @@ const past=r=>{const p=findByTitle(r.t);return '<article class="rz">'+head(p,r.w
    :'<div class="rz-share"><b>Nasıldı?</b><p>Bir fotoğraf ve birkaç cümleyle paylaş; deneyim sayfasında ve Bağlan\'da "Mola360 ile gitti" rozetiyle görünsün.</p><div class="rz-acts"><button type="button" class="btn green" data-soon>'+IC.plus+'Deneyimini paylaş</button><button type="button" class="btn ghost" data-soon>Değerlendir</button></div></div>')
   +'</article>'};
 
+/* Bu cihazda yapılan taslak rezervasyonlar (rezervasyon akışından) */
+const mine=b=>'<article class="rz">'+head(b.product,[b.date,b.slot].filter(Boolean).join(' · '))
+  +'<div class="rz-rows"><div><small>Seçim</small><b>'+[b.opt,b.qty].filter(Boolean).join(' · ')+'</b></div>'
+  +'<div><small>Durum</small><b class="ok">'+(b.pay==='kapora'?'Kapora':'Tamamı')+' · taslak</b></div><div><small>'+(b.total>b.paid?'Kalan':'Toplam')+'</small><b>'+tl(b.total>b.paid?b.total-b.paid:b.total)+'</b></div></div>'
+  +'<div class="rz-acts"><button type="button" class="btn ghost" data-soon>Biletim</button><button type="button" class="btn ghost" data-cancel="'+b.no+'">İptal et</button></div>'
+  +'<p class="rz-no">Rezervasyon no '+b.no+' · ödeme alınmadı</p></article>';
+
 const el=document.getElementById('rez');
 function show(k){
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===k));
-  el.innerHTML='<p class="feed-note">Rezervasyonlar <span class="ornek">ÖRNEK</span></p><div class="rz-list">'+(k==='yakin'?UP.map(up):PAST.map(past)).join('')+'</div>';
+  el.innerHTML='<p class="feed-note">Rezervasyonlar <span class="ornek">ÖRNEK</span></p><div class="rz-list">'+(k==='yakin'?listBookings().map(mine).concat(UP.map(up)):PAST.map(past)).join('')+'</div>';
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
-el.addEventListener('click',e=>{if(e.target.closest('[data-soon]'))toast('Bu adım yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000)});
+el.addEventListener('click',e=>{const c=e.target.closest('[data-cancel]');
+  if(c){cancelBooking(c.dataset.cancel);show('yakin');toast('Taslak rezervasyon silindi.','Tamam',()=>{},3000);return}
+  if(e.target.closest('[data-soon]'))toast('Bu adım yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000)});
 show(location.hash==='#gecmis'?'gecmis':'yakin');

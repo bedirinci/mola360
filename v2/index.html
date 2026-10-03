@@ -43,11 +43,17 @@
   <button class="go" id="go" type="submit">Molamı bul</button>
 </form>
 
+<section id="recent" aria-labelledby="h-rc" hidden>
+  <div class="sec"><div class="hd"><h2 id="h-rc">Kaldığın yerden</h2><div class="more-l"><button type="button" class="clr" id="rcClear">Temizle</button><div class="arrows" data-for="rcRail"></div></div></div><p class="sub">Son baktığın deneyimler; yalnızca bu cihazda tutulur.</p></div>
+  <div class="rail compact" id="rcRail"></div>
+</section>
+
 <section class="sec" aria-labelledby="h-time">
   <div class="hd"><h2 id="h-time">Ne kadar molan var?</h2></div>
   <p class="sub">Vaktine göre seçelim, gerisini biz sıralayalım.</p>
   <div class="time" id="time"></div>
 </section>
+<div class="fchips with" id="withChips" role="group" aria-label="Kiminle gidiyorsun?"></div>
 <div class="sec" style="padding-top:18px"><div class="hd"><h2 id="railTitle" style="font-size:17px">Hafta sonuna sığanlar</h2><div class="more-l"><a href="liste/?sure=hs" class="all" id="railAll">Tümü →</a><div class="arrows" data-for="timeRail"></div></div></div><p class="sub" id="railSub"></p></div>
 <div class="rail" id="timeRail"></div>
 
@@ -68,8 +74,8 @@
 </section>
 
 <section aria-labelledby="h-th">
-  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="more-l"><a href="#yakinda" class="all">Tümü →</a><div class="arrows" data-for="themeRail"></div></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
-  <div class="rail themes" id="themeRail"><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)"><b>Doğa ve yayla</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)"><b>Deniz ve tekne</b><span>Tur · Otel · Aktivite · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)"><b>Kültür ve tarih</b><span>Tur · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)"><b>Kış ve kayak</b><span>Tur · Otel · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)"><b>Termal ve spa</b><span>Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)"><b>Macera ve spor</b><span>Aktivite · Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)"><b>Konser ve festival</b><span>Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)"><b>Sahne ve gösteri</b><span>Etkinlik</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)"><b>Yeme içme</b><span>Tur · Etkinlik · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)"><b>Balayı</b><span>Tur · Otel · Mekân</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#F4E3A6,#E0A04A 50%,#4E7A9A)"><b>Ailece</b><span>Tur · Otel · Etkinlik · Aktivite</span></a><a href="#yakinda" class="th" style="background:linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)"><b>Gece hayatı</b><span>Etkinlik · Mekân</span></a></div>
+  <div class="sec"><div class="hd"><h2 id="h-th">Temaya göre keşfet</h2><div class="arrows" data-for="themeRail"></div></div><p class="sub">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte getirir.</p></div>
+  <div class="rail themes" id="themeRail"></div>
 </section>
 
 <footer class="foot">
