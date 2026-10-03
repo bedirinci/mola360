@@ -1050,3 +1050,19 @@ güncellenecek yaşayan proje dokümanıdır.
   bileşen değişikliği gerekmedi.
 - **UX sonucu:** Ekrana daha çok içerik sığıyor, hiyerarşi (kalınlık
   kademeleri) korunuyor.
+
+### 2026-10-03 — Etiket 12 px, yardımcı yazı 13 px; başlıklar her sayfada aynı
+
+- **Karar:** Etiket ve rozet (`--fs-xs`) 11→12 px, yardımcı yazı
+  (`--fs-sm`) 12→13 px. Sayfa başlığı her sayfada 22 px (Liste ve
+  Rezervasyon'un ince üst alanı dahil); "Tümü →" bağlı bölüm başlıkları
+  her sayfada 18 px (dar ekranda küçülür).
+- **Neden:** Bedir İnci yazı kurallarının bütün sayfalara uygulanmasını,
+  ardından etiket ve yardımcı yazının 1 px büyütülmesini istedi.
+- **Etkilediği alanlar:** `v2/css/tokens.css`, `components.css`
+  (`.pg-top.slim h1`), `sayfalar.css` (ürün ve tema bölüm başlıkları),
+  `kesfet.css` (süre kartı alt yazısı).
+- **Teknik sonuç:** Sayfaya özel boyutlar kaldırıldı; aynı görevdeki yazı
+  her sayfada aynı tokenı kullanıyor.
+- **UX sonucu:** Küçük yazılar daha rahat okunuyor; sayfalar arasında
+  başlık boyutu değişmiyor.
