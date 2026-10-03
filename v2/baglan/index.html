@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#152048">
+<title>mola360 — Bağlan</title>
+<meta name="description" content="Gerçek insanların deneyimleri, bağlı oldukları turla, etkinlikle, mekânla. Önizleme.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/sayfalar.css">
+</head>
+<body>
+<header class="pg-top">
+  <div class="bar">
+    <div class="bar-l"><a class="logo" href="../" aria-label="mola360 anasayfa"><img src="../logo.png" alt="mola360" width="97" height="40"></a></div>
+    <div class="bar-i">
+      <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+      <button class="ib" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    </div>
+  </div>
+  <h1>İnsanlar ne yapıyor?<br><span>Gör, ilham al, sen de git.</span></h1>
+  <div class="seg" role="group" aria-label="Akış">
+    <button type="button" aria-pressed="true" data-feed="sen">Senin için</button><button type="button" aria-pressed="false" data-feed="takip">Takip ettiklerin</button><button type="button" aria-pressed="false" data-feed="yakin">Yakınında</button>
+  </div>
+</header>
+<main>
+  <p class="feed-note">Paylaşımlar ve kullanıcılar <span class="ornek">ÖRNEK</span>. "Mola360 ile gitti" rozeti yalnızca deneyimi Mola360'tan rezerve edip yaşayanlarda görünür.</p>
+  <div class="feed" id="feed"></div>
+</main>
+<a href="#yakinda" class="fab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Paylaş</a>
+
+<script type="module" src="../js/baglan.js"></script>
+</body>
+</html>

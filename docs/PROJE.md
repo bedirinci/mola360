@@ -674,3 +674,29 @@ güncellenecek yaşayan proje dokümanıdır.
   duruyor; kod v2'ye kopyalanmıyor.
 - **UX sonucu:** Ziyaretçi her zaman v2'yi görüyor. v2'de henüz
   yapılmamış sayfalar "hazırlanıyor" bildirimi gösteriyor.
+
+### 2026-10-03 — v2 arayüz iskeleti: çok sayfa, alt menüde Bağlan
+
+- **Karar:** v2 tek dosyadan çok sayfalı bir iskelete geçti: Keşfet,
+  Bağlan, ürün, liste, favoriler, rezervasyonlar, profil. Alt menü
+  Keşfet · Bağlan · Favoriler · Rezervasyonlar · Profil oldu ("Hesabım"
+  yerine "Profil", §10). Keşfet'e Bağlan önizleme rayı, ürün sayfasına
+  "Bu deneyimi yaşayanlar" bölümü eklendi.
+- **Neden:** Bedir İnci'nin kararıyla bu aşamada öncelik arayüz
+  iskeleti. İki kalbin (§6, §7) ve aradaki döngünün (§8) ekranda
+  görünmesi gerekiyordu; önceki v2'de Bağlan yoktu ve her kart
+  "hazırlanıyor" bildirimine çıkıyordu.
+- **Etkilediği alanlar:** `v2/` klasör yapısı (her sayfa kendi
+  klasöründe), `v2/css/`, `v2/js/`, `tests/v2.test.js` (artık tüm
+  sayfaları tarıyor). §15'teki hedef yapı uygulandı; `components/`
+  klasörü yerine bileşenler `js/cards.js` ve `js/shell.js`'te fonksiyon.
+- **Teknik sonuç:** Derleme yok, ES modülleri; GitHub Pages'te olduğu
+  gibi çalışıyor. Yeni sayfalar veriyi yalnızca `js/api.js`'ten okuyor
+  (kural 6); ürün adresi `urun/?id=<slug>`, backend'in `content.slug`
+  alanına karşılık geliyor. Framework kararı hâlâ verilmedi (kural 7).
+- **UX sonucu:** Kart dokununca ürün sayfası açılıyor; arama ve "Tümü"
+  bağları listeye gidiyor. Paylaşımlar bağlı oldukları ürünü puan ve
+  fiyatla gösteriyor ("Mola360 ile gitti" rozeti yalnızca deneyimi
+  Mola360'tan yaşayanlarda). Ödeme, giriş, paylaşım oluşturma henüz
+  "hazırlanıyor".
+

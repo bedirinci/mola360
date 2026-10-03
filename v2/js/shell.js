@@ -1,0 +1,140 @@
+/* Ortak kabuk: her sayfada aynı olan parçalar. Tam ekran menü, alt menü,
+   bildirim (toast) ve sayfa genelindeki dokunma/klavye davranışları.
+   Sayfalar ayrı klasörlerde (baglan/, urun/ …); bağlar kök adrese göre kurulur. */
+import { MENU } from './data.js';
+import { I } from './icons.js';
+import { initGestures, initKeyboardFocus } from './ui.js';
+
+import { ROOT } from './root.js';
+export { ROOT };
+const R=ROOT;
+
+/* Alt menü: iki kalp (Keşfet, Bağlan) + kullanıcının alanı */
+const NAV=[
+ ['kesfet','','Keşfet','<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'],
+ ['baglan','baglan/','Bağlan','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.6a6.5 6.5 0 0 1 3.5 6.4"/>'],
+ ['favoriler','favoriler/','Favoriler','<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>','<span class="badge" id="favCount" hidden>0</span>'],
+ ['rezervasyonlar','rezervasyonlar/','Rezervasyonlar','<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>','<span class="badge" data-member hidden>1</span>'],
+ ['profil','profil/','Profil','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>']];
+
+const navHtml=page=>'<nav class="nav" aria-label="Alt menü">'+NAV.map(n=>'<a href="'+R+n[1]+'"'+(n[0]===page?' aria-current="page"':'')+'><svg viewBox="0 0 24 24">'+n[3]+'</svg>'+(n[4]||'')+n[2]+'</a>').join('')+'</nav>';
+
+const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
+  <div class="m-bar">
+    <a class="logo" href="${R}" aria-label="mola360 anasayfa"><img src="${R}logo.png" alt="mola360" width="97" height="40"></a>
+    <div class="bar-i">
+      <button class="ib" aria-label="Bildirimler"><svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+      <button class="ib" id="menuClose" aria-label="Menüyü kapat"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="m-body">
+    <div class="m-top">
+    <div class="m-user" data-guest>
+      <div class="av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+      <div class="x"><b>Hoş geldin</b><span>İlk rezervasyonda %15 indirim</span></div>
+      <a href="#yakinda" class="btn">Giriş yap</a>
+    </div>
+    <div class="m-user" data-member hidden>
+      <div class="av ini">AY</div>
+      <div class="x"><b>Merhaba, Ayşe</b><span class="lvl"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg><em id="lvlTxt">Kâşif · 1.240 Molapuan</em></span></div>
+      <a href="${R}profil/" class="btn">Hesabım</a>
+    </div>
+    </div>
+
+    <div class="m-rest" id="mRest">
+    <nav class="m-main" aria-label="Ürünler" id="mMain"></nav>
+
+    <div class="m-h">NE KADAR VAKTİN VAR?</div>
+    <div class="chips">
+      <a href="${R}liste/?sure=saat" class="chip">Birkaç saat</a><a href="${R}liste/?sure=gun" class="chip">Günübirlik</a><a href="${R}liste/?sure=hs" class="chip">Hafta sonu</a><a href="${R}liste/?sure=uzun" class="chip">4 gün +</a>
+    </div>
+
+    <div class="m-h">TEMALAR <span class="ornek">ÖRNEK</span></div>
+    <p class="m-note">Her tema turları, otelleri, etkinlikleri, aktiviteleri ve mekânları birlikte listeler.</p>
+    <div class="m-themes"><a href="#yakinda" class="m-theme"><b>Doğa ve yayla</b><small>64 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Deniz ve tekne</b><small>82 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Kültür ve tarih</b><small>71 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Kış ve kayak</b><small>23 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Termal ve spa</b><small>38 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Macera ve spor</b><small>45 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Konser ve festival</b><small>57 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Sahne ve gösteri</b><small>29 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Yeme içme</b><small>41 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Balayı</b><small>26 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Ailece</b><small>93 seçenek</small></a><a href="#yakinda" class="m-theme"><b>Gece hayatı</b><small>34 seçenek</small></a></div>
+
+    <div class="m-h">BÖLGELER</div>
+    <p class="m-note">Seçtiğin yerdeki turlar, oteller, etkinlikler, aktiviteler ve mekânlar birlikte gelir.</p>
+    <div class="chips"><a href="#yakinda" class="chip">Marmara</a><a href="#yakinda" class="chip">Ege</a><a href="#yakinda" class="chip">Akdeniz</a><a href="#yakinda" class="chip">Karadeniz</a><a href="#yakinda" class="chip">İç Anadolu</a><a href="#yakinda" class="chip">Doğu Anadolu</a><a href="#yakinda" class="chip">Güneydoğu</a><a href="#yakinda" class="chip">Yurt dışı</a></div>
+
+    <div data-member hidden>
+      <div class="m-h">HESABIM</div>
+      <div class="m-grid">
+        <a href="${R}rezervasyonlar/" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım</a>
+        <a href="${R}favoriler/" class="m-tile"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorilerim</a>
+        <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım</a>
+        <a href="${R}profil/" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>Molapuanlarım</a>
+      </div>
+    </div>
+
+    <div class="m-h">YARDIM</div>
+    <div class="m-contact">
+      <div><span class="hours">Her gün 09:00 – 23:59<i class="live" data-live><em></em><span data-live-t>Çevrimiçi</span></i></span><b>0850 000 00 00</b></div>
+      <a href="https://wa.me/900000000000" target="_blank" rel="noopener" class="btn wa"><svg class="wa-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>WhatsApp<em class="wa-dot" data-live-dot aria-hidden="true"></em></a>
+    </div>
+    <div class="chips">
+      <a href="#yakinda" class="chip">Yardım merkezi</a><a href="#yakinda" class="chip">Sıkça sorulan sorular</a><a href="#yakinda" class="chip">İptal ve iade</a>
+    </div>
+
+    <div class="m-foot">
+      <div class="lang">
+        <label class="sel"><span class="sr">Dil</span><select id="langSel" aria-label="Dil"><option>Türkçe</option><option>English</option><option>Deutsch</option><option>Русский</option></select></label>
+        <label class="sel"><span class="sr">Para birimi</span><select id="curSel" aria-label="Para birimi"><option>₺ TL</option><option>€ EUR</option><option>$ USD</option><option>£ GBP</option></select></label>
+      </div>
+      <span class="copy">© 2026 Mola360. Tüm hakları saklıdır.</span>
+    </div>
+    </div>
+  </div>
+</div>`;
+
+const toastHtml='<div class="toast" id="toast" role="status" aria-live="polite"><span></span><button type="button"></button></div>';
+
+/* Menüdeki ürün türleri listeye gider (Fırsatlar henüz yok) */
+const menuLink=m=>m[1]==='firsat'?'#yakinda':R+'liste/?tur='+m[1];
+
+/* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
+export function isLive(){
+  let h;try{h=+new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Europe/Istanbul'}).format(new Date())}catch(e){h=new Date().getHours()}
+  return h>=9&&h<24;
+}
+function liveNow(){const on=isLive();
+  document.querySelectorAll('[data-live]').forEach(x=>{x.classList.toggle('off',!on);x.querySelector('[data-live-t]').textContent=on?'Çevrimiçi':'Çevrimdışı · 09:00\'da'});
+  document.querySelectorAll('[data-live-dot]').forEach(x=>x.classList.toggle('off',!on));
+}
+
+/* page: alt menüde seçili sekme. nav:false → alt menü yok (ürün sayfasındaki gibi kendi alt çubuğu olan sayfalar) */
+export function renderShell(page,{nav=true}={}){
+  const anchor=document.querySelector('script[type="module"]');
+  const tpl=document.createElement('template');
+  tpl.innerHTML=toastHtml+(nav?navHtml(page):'')+menuHtml;
+  document.body.insertBefore(tpl.content,anchor);
+  if(!nav)document.body.classList.add('no-nav');
+  initGestures();
+  initKeyboardFocus();
+  initMenu();
+  liveNow();setInterval(liveNow,60000);
+  /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
+  document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;
+    if(document.referrer.startsWith(R)&&history.length>1){e.preventDefault();history.back()}});
+}
+
+function initMenu(){
+document.getElementById('mMain').innerHTML=MENU.map(m=>'<a href="'+menuLink(m)+'" class="m-link"><span class="ico"><img src="'+R+'m-'+m[1]+'.webp" alt="" width="30" height="30" decoding="async"></span><b>'+m[0]+'</b><em>'+m[2]+'</em>'+I.chev+'</a>').join('');
+const menu=document.getElementById('menu'),btn=document.getElementById('menuBtn');
+const behind=()=>[...document.body.children].filter(el=>el!==menu&&el.tagName!=='SCRIPT');
+function openM(){menu.classList.add('open');document.body.classList.add('locked');btn.setAttribute('aria-expanded','true');behind().forEach(el=>el.inert=true);setTimeout(()=>document.getElementById('menuClose').focus(),50)}
+function closeM(){menu.classList.remove('open');document.body.classList.remove('locked');btn.setAttribute('aria-expanded','false');behind().forEach(el=>el.inert=false);btn.focus()}
+menu.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const f=[...menu.querySelectorAll('a,button,select')].filter(x=>x.offsetParent);const a=f[0],z=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
+menu.addEventListener('click',e=>{const l=e.target.closest('a');if(!l)return;if(l.getAttribute('href')==='#')e.preventDefault();closeM()});
+btn.addEventListener('click',openM);
+(()=>{const mb=menu.querySelector('.m-body'),rest=document.getElementById('mRest');let sy=null,pull=0;
+  const back=()=>{if(sy==null&&!pull)return;sy=null;pull=0;rest.style.transition='transform .32s cubic-bezier(.2,.8,.2,1)';rest.style.transform=''};
+  mb.addEventListener('touchstart',e=>{sy=mb.scrollTop<=0?e.touches[0].clientY:null;rest.style.transition='none'},{passive:true});
+  mb.addEventListener('touchmove',e=>{if(sy==null)return;const dy=e.touches[0].clientY-sy;
+    if(dy>0&&mb.scrollTop<=0){e.preventDefault();pull=Math.min(140,dy*.45);rest.style.transform='translateY('+pull+'px)'}
+    else if(pull){pull=0;rest.style.transform='';sy=null}},{passive:false});
+  mb.addEventListener('touchend',back);mb.addEventListener('touchcancel',back);})();document.getElementById('menuClose').addEventListener('click',closeM);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open'))closeM()});
+if(location.hash==='#menu')openM();
+}
