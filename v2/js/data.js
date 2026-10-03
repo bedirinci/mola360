@@ -182,6 +182,14 @@ export const DESTS=[
  ['ispanya','İspanya','Yurt dışı · Barselona, Madrid',['İspanya']],
  ['fransa','Fransa','Yurt dışı · Paris, Loire',['Fransa']]];
 
+/* Popüler aramalar: sekmeye göre. ÖRNEK; gerçekte arama verisinden gelecek.
+   Yer adıysa yer seçilir, değilse metinle aranır; sonucu olmayan gösterilmez. */
+export const POP={tur:['Kapadokya','Karadeniz','Yunan adaları','Balkanlar','Dubai','İtalya','Pamukkale'],
+ otel:['Antalya','Kapadokya','İzmir','Termal','Karadeniz','Butik'],
+ etkinlik:['İstanbul','İzmir','Konser','Festival','Stand up'],
+ aktivite:['Yamaç paraşütü','Tekne turu','Rafting','Kayak','Boğaz'],
+ mekan:['Spa','Beach club','Restoran','Akustik','Dağ evi']};
+
 /* Yakınımda: yer adlarının yaklaşık koordinatları [enlem, boylam]. Ürünün
    konumu adında ya da yerinde geçen ilk addan (özelden genele sıralı).
    ÖRNEK; gerçekte her ürünün kendi konumu olacak. */

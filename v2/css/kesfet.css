@@ -16,10 +16,17 @@
 .split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
 .split .fld+.fld{border-left:1px solid var(--line);border-radius:0 var(--r-md) var(--r-md) 0}
 /* Keşfet'in hatırladığı kiminle: aramaya biner, dokununca kalkar */
-.ctx{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;border-top:1px solid var(--line)}
-.ctx-c{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px 0 12px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink);font-size:var(--fs-md);font-weight:var(--fw-semi)}
-.ctx-c svg{width:17px;height:17px}
-.ctx-c svg:last-child{width:14px;height:14px;opacity:.75}
+/* Popüler aramalar: formun altında, sekmeye göre (arama.js) */
+.popular{padding:12px 0 2px;margin:0 -6px}
+.pop-h{display:flex;align-items:center;gap:6px;padding:0 12px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
+.pop-h svg{width:15px;height:15px;color:var(--green-ink);stroke-width:2.2}
+.pchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding:8px 12px 6px;scroll-padding-inline:12px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.pchips.end{-webkit-mask-image:none;mask-image:none}
+.pchips::-webkit-scrollbar{display:none}
+.pc{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px 0 11px;border-radius:var(--r-pill);background:var(--card);border:1px solid var(--line);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--ink);white-space:nowrap}
+.pc svg{width:15px;height:15px;color:var(--mute)}
+.pc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.pc[aria-pressed="true"] svg{color:var(--green)}
 .go{display:block;width:100%;margin-top:6px;background:var(--green);color:var(--navy);border-radius:var(--r-md);font-weight:var(--fw-bold);font-size:var(--fs-base);padding:14px}
 .time{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
 /* tek sırada dört seçenek: ikon, ad, deneyim sayısı alt alta */

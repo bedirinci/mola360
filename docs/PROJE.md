@@ -1079,3 +1079,20 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Teknik sonuç:** Yalnızca iki token değişti.
 - **UX sonucu:** Etiket ve yardımcı yazı gövde metninin bir kademe altında
   kalıyor.
+
+### 2026-10-03 — Kiminle aramayı etkilemiyor; popüler aramalar geri geldi
+
+- **Karar:** Keşfet'teki "Kiminle" seçimi arama kartına çip eklemiyor, kişi
+  sayısının başlangıcını değiştirmiyor ve liste adresine `kimle=` yazmıyor;
+  yalnızca Keşfet'teki rayların sırasını belirliyor. "Molamı bul"un altına
+  sekmeye göre popüler aramalar geri geldi.
+- **Neden:** Bedir İnci kiminle seçiminin arama kartını etkilemesini ve
+  orada görünmesini istemedi, popüler aramaların geri gelmesini istedi.
+- **Etkilediği alanlar:** `v2/js/arama.js`, `v2/js/kesfet.js`,
+  `v2/js/api.js` (`listPopular`), `v2/js/data.js` (`POP`, ÖRNEK),
+  `v2/css/kesfet.css`.
+- **Teknik sonuç:** Popüler terim bir yerin adıysa yer seçiliyor, değilse
+  metinle aranıyor. O sekmede sonucu olmayan terim gösterilmiyor.
+  Dokunulan terim "Nereye"ye yazılıyor, yeniden dokununca kalkıyor.
+- **UX sonucu:** Arama kartı sade kalıyor. Ne arayacağını bilmeyen
+  kullanıcı tek dokunuşla bir aramaya başlayabiliyor.

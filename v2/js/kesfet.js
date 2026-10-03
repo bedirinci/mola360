@@ -25,9 +25,9 @@ const mem=(()=>{try{return JSON.parse(localStorage.getItem(MK))||{}}catch(e){ret
 const keep=()=>{try{localStorage.setItem(MK,JSON.stringify({b:curB,k:curK}))}catch(e){}};
 let curB=BUCKETS.some(b=>b[0]===mem.b)?mem.b:'hs',curK=WITH.some(w=>w[0]===mem.k)?mem.k:'',curW='',nearAt=null;
 
-/* Arama: nereye, ne zaman, kaç kişi (arama.js). Kiminle iki yönlü: formdaki
-   çip kalkınca Keşfet'teki seçim de kalkar */
-const srch=initSearch({kimle:curK,onWith:k=>{curK=k;keep();pick();personal()}});
+/* Arama: nereye, ne zaman, kaç kişi (arama.js). Kiminle seçimi aramayı
+   etkilemez; yalnızca Keşfet'teki rayların sırasını belirler */
+const srch=initSearch();
 
 /* Kişiye göre sıra: kiminle seçimine uyanlar, sonra yakında olanlar öne
    (60 km, 300 km, ötesi); aynı derecedekiler kendi sırasında kalır */
@@ -62,7 +62,7 @@ function pick(){
   favSync();
 }
 tEl.addEventListener('click',e=>{const t=e.target.closest('.tt');if(t){curB=t.dataset.b;keep();pick()}});
-wEl.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t){curK=t.dataset.k===curK?'':t.dataset.k;keep();srch.setWith(curK);pick();personal()}});
+wEl.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t){curK=t.dataset.k===curK?'':t.dataset.k;keep();pick();personal()}});
 
 /* Yakınımda ne var? Konum yalnızca kullanıcı dokununca istenir. Seçim bu
    cihazda hatırlanır ("gps" ya da "yer:izmir"); konumun kendisi saklanmaz.
@@ -144,4 +144,4 @@ initFavorites();
 favSync();
 
 document.querySelectorAll('.rail').forEach(el=>makeScroll(el));
-document.querySelectorAll('.tabs,.fchips').forEach(el=>makeScroll(el));
+document.querySelectorAll('.tabs,.fchips,.pchips').forEach(el=>makeScroll(el));
