@@ -114,7 +114,26 @@ describe('v2', () => {
   it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
     expect(oku(join(V2, 'js/icerik.js'))).toMatch(/ÖRNEK/);
-    ['baglan', 'urun', 'liste', 'rezervasyonlar', 'profil'].forEach(s =>
+    ['baglan', 'urun', 'liste', 'planlarim', 'profil'].forEach(s =>
       expect(oku(join(V2, 'js', s + '.js')), s).toMatch(/ÖRNEK/));
   });
+
+  it('alt menü dört sekme, arama yok; Paylaş ayrı düğme', () => {
+    const shell = oku(join(V2, 'js/shell.js'));
+    const nav = shell.slice(shell.indexOf('const NAV='), shell.indexOf('const navHtml'));
+    expect([...nav.matchAll(/^ \['([a-z]+)'/gm)].map(m => m[1])).toEqual(['kesfet', 'baglan', 'planlarim', 'profil']);
+    expect(shell).toMatch(/id="shareBtn"/);
+    /* eski adresler Planlarım'a gidiyor */
+    expect(oku(join(V2, 'favoriler/index.html'))).toMatch(/planlarim\/#favoriler/);
+    expect(oku(join(V2, 'rezervasyonlar/index.html'))).toMatch(/planlarim\/#yaklasan/);
+  });
+
+  it('paylaşım rozeti yalnızca Mola360 ile yaşanmış deneyimde (kural 4)', async () => {
+    const api = await import('../v2/js/api.js');
+    const past = api.listPastBookings();
+    expect(past.length).toBeGreaterThan(0);
+    past.forEach(b => expect(b.product, b.productId).toBeTruthy());
+    expect(api.createPost({ productId: 'yok' })).toBe(null);
+  });
 });
+

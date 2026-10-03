@@ -137,7 +137,40 @@ export function clearRecent(){try{localStorage.removeItem(RK)}catch(e){}}
 
 const post=(p,i)=>({id:'p'+(i+1),user:USERS[p.u],place:p.yer,when:p.ne,bg:G[p.g],text:p.metin,likes:p.beg,comments:p.yor,verified:!!p.gitti,product:findByTitle(p.urun),sample:true});
 const posts=POSTS.map(post);
-export const listPosts=({productId}={})=>productId?posts.filter(p=>p.product&&p.product.id===productId):posts;
+/* Akış: önce bu cihazda paylaştıkların, sonra örnek paylaşımlar */
+export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];return productId?l.filter(p=>p.product&&p.product.id===productId):l};
+
+/* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
+export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
+
+/* Geçmiş rezervasyonlar (ÖRNEK): yaşanmış deneyimler. Paylaşımdaki
+   "Mola360 ile gitti" rozeti yalnızca bunlardan birine bağlanınca çıkar. */
+const PAST=[{productId:'kapadokya-turu',when:'12 – 15 Eylül',who:'2 yetişkin'},{productId:'kordon-caz-aksamlari',when:'5 Eylül',who:'2 bilet',shared:true}];
+export const listPastBookings=()=>PAST.map(b=>({...b,product:getProduct(b.productId),
+  shared:!!b.shared||listMyPosts().some(p=>p.product.id===b.productId)})).filter(b=>b.product);
+
+/* Paylaşımlar: taslakta yalnızca bu cihazda tutulur, görseller küçültülmüş
+   önizleme olarak. Backend gelince yükleme ve akış oradan. */
+const PK='m360-paylas';
+const readPs=()=>{try{return JSON.parse(localStorage.getItem(PK))||[]}catch(e){return []}};
+const hx=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const okThumb=t=>/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(t||'');
+const ago=t=>{const m=Math.floor((Date.now()-t)/60000);return m<1?'Az önce':m<60?m+' dk önce':m<1440?Math.floor(m/60)+' sa önce':Math.floor(m/1440)+' gün önce'};
+export function listMyPosts(){
+  return readPs().map(x=>{const p=getProduct(x.productId);if(!p)return null;
+    return {id:x.id,user:ME,place:p.place.split(' · ')[0],when:ago(x.created),with:hx(x.with||''),
+      bg:x.thumbs&&okThumb(x.thumbs[0])?'url('+x.thumbs[0]+') center/cover,'+p.bg:p.bg,media:x.media||1,video:!!x.video,
+      text:hx(x.text||''),likes:0,comments:0,verified:PAST.some(b=>b.productId===p.id),product:p,mine:true}}).filter(Boolean);
+}
+/* Rozet buradan değil, bağlanan deneyimin geçmiş rezervasyonlarda olmasından gelir */
+export function createPost({productId,text='',with:w='',thumbs=[],media=1,video=false}){
+  if(!getProduct(productId))return null;
+  const r={id:'m'+Date.now().toString(36),productId,text:String(text).slice(0,300),with:w,thumbs,media,video,created:Date.now()};
+  const save=l=>{try{localStorage.setItem(PK,JSON.stringify(l));return true}catch(e){return false}};
+  /* yer kalmadıysa önizlemesiz kaydet */
+  if(!save([r,...readPs()].slice(0,12))){r.thumbs=[];save([r,...readPs().map(x=>({...x,thumbs:[]}))].slice(0,12))}
+  return listMyPosts().find(p=>p.id===r.id)||null;
+}
 
 /* Rezervasyon: ürün türüne göre tarih, saat, seçenek ve adet. Kurallar
    (kapora, iptal, adet sınırları, saatler) ÖRNEK; v2'nin kuralları

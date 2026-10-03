@@ -10,15 +10,17 @@ import { ROOT } from './root.js';
 export { ROOT };
 const R=ROOT;
 
-/* Alt menü: iki kalp (Keşfet, Bağlan) + kullanıcının alanı */
+/* Alt menü: iki kalp (Keşfet, Bağlan) + kullanıcının alanı. Arama menüde
+   yok, Keşfet'in en üstünde; Keşfet'teyken Keşfet'e yeniden dokunmak oraya
+   götürür. Yanındaki yuvarlak düğme Bağlan'a paylaşım ekler (paylas.js). */
 const NAV=[
  ['kesfet','','Keşfet','<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'],
  ['baglan','baglan/','Bağlan','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.6a6.5 6.5 0 0 1 3.5 6.4"/>'],
- ['favoriler','favoriler/','Favoriler','<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>','<span class="badge" id="favCount" hidden>0</span>'],
- ['rezervasyonlar','rezervasyonlar/','Rezervasyonlar','<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>','<span class="badge" data-member hidden>1</span>'],
+ ['planlarim','planlarim/','Planlarım','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/>'],
  ['profil','profil/','Profil','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>']];
 
-const navHtml=page=>'<nav class="nav" aria-label="Alt menü">'+NAV.map(n=>'<a href="'+R+n[1]+'"'+(n[0]===page?' aria-current="page"':'')+'><svg viewBox="0 0 24 24">'+n[3]+'</svg>'+(n[4]||'')+n[2]+'</a>').join('')+'</nav>';
+const navHtml=page=>'<div class="dock" id="dock"><nav class="nav" aria-label="Alt menü">'+NAV.map(n=>'<a href="'+R+n[1]+'" data-nav="'+n[0]+'"'+(n[0]===page?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+n[3]+'</svg><span>'+n[2]+'</span></a>').join('')+'</nav>'
+ +'<button type="button" class="dock-add" id="shareBtn" aria-label="Paylaş" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>';
 
 const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menü">
   <div class="m-bar">
@@ -59,8 +61,8 @@ const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria
     <div data-member hidden>
       <div class="m-h">HESABIM</div>
       <div class="m-grid">
-        <a href="${R}rezervasyonlar/" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım</a>
-        <a href="${R}favoriler/" class="m-tile"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorilerim</a>
+        <a href="${R}planlarim/#yaklasan" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım</a>
+        <a href="${R}planlarim/#favoriler" class="m-tile"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorilerim</a>
         <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım</a>
         <a href="${R}profil/" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>Molapuanlarım</a>
       </div>
@@ -111,10 +113,42 @@ export function renderShell(page,{nav=true}={}){
   initGestures();
   initKeyboardFocus();
   initMenu();
+  if(nav)initDock(page);
+  initShare();
   liveNow();setInterval(liveNow,60000);
   /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
   document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;
     if(document.referrer.startsWith(R)&&history.length>1){e.preventDefault();history.back()}});
+}
+
+/* Yüzen alt menü: aşağı kaydırınca küçülür (yalnızca ikonlar), yukarı
+   kaydırınca ya da sayfanın başına gelince geri açılır. */
+function initDock(page){
+  const dock=document.getElementById('dock'),body=document.body;
+  let last=scrollY,acc=0;
+  const set=on=>body.classList.toggle('nav-min',on);
+  addEventListener('scroll',()=>{const y=scrollY,d=y-last;last=y;
+    if(y<80){acc=0;set(false);return}
+    if(d&&(d>0)!==(acc>0))acc=0;acc+=d;
+    if(acc>24)set(true);else if(acc<-24)set(false)},{passive:true});
+  /* klavyeyle menüye gelince açık dursun */
+  dock.addEventListener('focusin',()=>set(false));
+  /* Keşfet'teyken Keşfet: başa dön ve aramayı aç */
+  const f1=document.getElementById('f1');
+  if(page==='kesfet'&&f1)dock.querySelector('[data-nav="kesfet"]').addEventListener('click',e=>{e.preventDefault();
+    const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches&&scrollY>8;
+    scrollTo({top:0,behavior:smooth?'smooth':'auto'});setTimeout(()=>f1.click(),smooth?380:0)});
+  document.getElementById('shareBtn').addEventListener('click',e=>openShare(e.currentTarget));
+}
+
+/* Paylaş çekmecesi (paylas.js) ilk açılışta yüklenir. Her sayfadan açılır:
+   alt menüdeki düğme, data-paylas="ürün id" taşıyan bir öğe ya da adresteki
+   ?paylas=ürün id (o deneyim seçili gelir). */
+export const openShare=(from,opts)=>import('./paylas.js').then(m=>m.openShare(from,opts));
+function initShare(){
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-paylas]');if(b){e.preventDefault();openShare(b,{productId:b.dataset.paylas})}});
+  const u=new URL(location.href),id=u.searchParams.get('paylas');
+  if(id!==null){u.searchParams.delete('paylas');history.replaceState(history.state,'',u.pathname+u.search+u.hash);openShare(null,{productId:id})}
 }
 
 function initMenu(){

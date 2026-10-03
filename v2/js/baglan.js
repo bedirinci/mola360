@@ -28,3 +28,6 @@ show('sen');
 /* Keşfet'ten gelinen paylaşım (#p3) ekrana getirilir */
 const hit=location.hash&&document.querySelector('[data-post="'+location.hash.slice(1)+'"]');
 if(hit)hit.scrollIntoView({block:'start'});
+
+/* Yeni paylaşım: akışın başına gelir */
+document.addEventListener('m360:paylasildi',e=>{show('sen');const el=document.querySelector('[data-post="'+e.detail.id+'"]');if(el)el.scrollIntoView({block:'start',behavior:'smooth'})});
