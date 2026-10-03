@@ -28,7 +28,7 @@
 .tt .i svg{width:20px;height:20px;stroke-width:2}
 .tt .x{min-width:0;max-width:100%}
 .tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
-.tt small{display:block;margin-top:2px;font-size:clamp(9.5px,2.9vw,11px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tt small{display:block;margin-top:2px;font-size:clamp(10.5px,3.2vw,12px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt[aria-pressed="true"]{background:var(--navy);color:#fff}
 .tt[aria-pressed="true"] .i{background:var(--green);color:var(--navy)}
 .tt[aria-pressed="true"] small{color:var(--navy-ink)}
