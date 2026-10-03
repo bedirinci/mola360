@@ -28,7 +28,7 @@
 .tt .i svg{width:20px;height:20px;stroke-width:2}
 .tt .x{min-width:0;max-width:100%}
 .tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
-.tt small{display:block;margin-top:2px;font-size:clamp(10.5px,3.2vw,12px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tt small{display:block;margin-top:2px;font-size:clamp(10px,3.1vw,11.5px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt[aria-pressed="true"]{background:var(--navy);color:#fff}
 .tt[aria-pressed="true"] .i{background:var(--green);color:var(--navy)}
 .tt[aria-pressed="true"] small{color:var(--navy-ink)}
@@ -112,4 +112,4 @@
 .who-r b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi)}
 .who-r small{display:block;font-size:var(--fs-sm);color:var(--mute)}
 .who-ok{width:100%;justify-content:center;margin-top:12px;padding:14px;font-size:var(--fs-base)}
-@media (max-width:374px){.hello{font-size:clamp(19px,5.6vw,22px)}}
+@media (max-width:374px){.hello{font-size:clamp(20px,6.1vw,24px)}}
