@@ -751,3 +751,31 @@ güncellenecek yaşayan proje dokümanıdır.
   silebiliyor. Süre ve kiminle seçilince sayılar ve ray birlikte
   daralıyor; "Tümü" iki filtreyi de listeye taşıyor. Sahte sayı ya da
   sıkıştırma yok; sayılar gerçek (örnek) katalogdan sayılıyor.
+
+### 2026-10-03 — Rezervasyon akışının arayüzü
+
+- **Karar:** Ürün sayfasındaki "Devam et" / "Rezervasyon yap" artık
+  `rezervasyon/?id=` sayfasına gidiyor. Akış üç adım ve bir onay ekranı:
+  seçim (tarih, saat, seçenek, adet, turda %20 kapora ya da tam ödeme),
+  iletişim bilgileri, özet + fiyat dökümü + iptal + ödeme. Ödeme
+  altyapısı gelene kadar kart bilgisi istenmiyor ve ödeme alınmıyor;
+  rezervasyon "TASLAK" olarak yalnızca bu cihazda tutuluyor ve
+  Rezervasyonlar'da görünüyor.
+- **Neden:** Bedir İnci Keşfet'ten sonra rezervasyon akışını seçti.
+  Keşif → rezervasyon → deneyim → paylaşım döngüsünün (§8, §13) en büyük
+  boşluğu buydu; ürün sayfası "hazırlanıyor" bildiriminde bitiyordu.
+- **Etkilediği alanlar:** yeni `v2/rezervasyon/` ve `v2/js/rezervasyon.js`;
+  `v2/js/api.js` (`bookingSpec`, `createBooking`, `listBookings`,
+  `cancelBooking`), `v2/js/urun.js`, `v2/js/rezervasyonlar.js`,
+  `v2/css/sayfalar.css`.
+- **Teknik sonuç:** Türüne göre kurallar tek yerde (`bookingSpec`): tur
+  kalkış tarihleri ve kapora, otelde oda, etkinlikte bilet, aktivite ve
+  mekânda saat, min. harcamalı mekânda alan. Kapora oranı, iptal süreleri,
+  saatler ve adet sınırları ÖRNEK KURAL; v2'nin kuralları yazılınca bu
+  fonksiyon değişecek. Adımlar tarayıcı geçmişine yazılıyor, geri tuşu
+  önceki adıma dönüyor.
+- **UX sonucu:** Toplam ilk adımdan son adıma aynı; hizmet bedeli 0 TL ve
+  "sonradan eklenen ücret yok" açıkça yazıyor (§20). Sözleşme onayı
+  işaretsiz geliyor. Onay ekranı kullanıcıyı Rezervasyonlar'a ve
+  döndükten sonra paylaşmaya yönlendiriyor; "Birlikte gideceklere gönder"
+  ile deneyim paylaşılabiliyor.

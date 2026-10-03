@@ -56,3 +56,35 @@ export function clearRecent(){try{localStorage.removeItem(RK)}catch(e){}}
 const post=(p,i)=>({id:'p'+(i+1),user:USERS[p.u],place:p.yer,when:p.ne,bg:G[p.g],text:p.metin,likes:p.beg,comments:p.yor,verified:!!p.gitti,product:findByTitle(p.urun),sample:true});
 const posts=POSTS.map(post);
 export const listPosts=({productId}={})=>productId?posts.filter(p=>p.product&&p.product.id===productId):posts;
+
+/* Rezervasyon: ürün türüne göre tarih, saat, seçenek ve adet. Kurallar
+   (kapora, iptal, adet sınırları, saatler) ÖRNEK; v2'nin kuralları
+   yazılınca buradan değişecek. */
+const NEXT_DAYS=[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki'],['Paz','11 Eki']];
+const CANCEL={tur:'Kalkıştan 7 gün öncesine kadar ücretsiz iptal',otel:'Girişten 3 gün öncesine kadar ücretsiz iptal',etkinlik:'Etkinlikten 48 saat öncesine kadar ücretsiz iptal'};
+export function bookingSpec(p){
+  const t=typeKey(p.type);
+  const split=f=>{const i=f.indexOf(' ');return [f.slice(0,i),f.slice(i+1)]};
+  const dates=p.dates.length?p.dates:t==='otel'?[['Giriş – çıkış',p.facts[0]]]:t==='etkinlik'?[split(p.facts[0])]:NEXT_DAYS;
+  /* min. harcamalı mekânda fiyat seçilen alanın; kişi sayısı fiyatı değiştirmez */
+  const fixed=p.unit==='min. harcama';
+  return {
+    dates,fixed,
+    slots:(t==='aktivite'||t==='mekan')&&!fixed?['10:00','12:00','14:00','16:00']:[],
+    opts:p.opts||[],
+    qty:fixed?null:t==='otel'?{label:'Oda',min:1,max:3,start:1,note:'Oda başına 2 yetişkin.'}:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
+    deposit:t==='tur'?.2:0,
+    cancel:CANCEL[t]||'24 saat öncesine kadar ücretsiz iptal'
+  };
+}
+
+/* Taslak rezervasyonlar: ödeme alınmaz, yalnızca bu cihazda tutulur */
+const BK='m360-rez';
+const readBk=()=>{try{return JSON.parse(localStorage.getItem(BK))||[]}catch(e){return []}};
+const writeBk=l=>{try{localStorage.setItem(BK,JSON.stringify(l))}catch(e){}};
+export function createBooking(b){
+  const r={...b,no:'M360-T'+String(Math.floor(10000+Math.random()*90000)),created:Date.now(),draft:true};
+  writeBk([r,...readBk()]);return r;
+}
+export const listBookings=()=>readBk().map(b=>({...b,product:getProduct(b.productId)})).filter(b=>b.product);
+export function cancelBooking(no){writeBk(readBk().filter(b=>b.no!==no))}

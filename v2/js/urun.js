@@ -72,12 +72,12 @@ const cta=document.getElementById('ctaBar');
 let picked=null;
 function drawCta(){
   cta.innerHTML='<div class="pp"><small>'+(picked?picked+' · ':'')+p.unit+'</small>'+(p.old?'<s>'+tl(p.old)+'</s>':'')+'<strong>'+tl(p.price)+'</strong></div>'
-   +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Uygunluğa bak')+'</button>';
+   +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
 }
 drawCta();
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   if(p.dates.length&&!picked){document.getElementById('tarihler').scrollIntoView({behavior:'smooth',block:'center'});return}
-  toast('Seçim ve ödeme adımı yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},4000)});
+  location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const d=e.target.closest('[data-d]');
   if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;drawCta();return}

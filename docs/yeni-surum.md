@@ -57,9 +57,10 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 | Keşfet | `v2/` | Arama, "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Bağlan önizlemesi, "Bu hafta sonu için" (otel · mekân · yurt dışı), etkinlikler, temalar |
 | Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
 | Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, iptal ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" |
+| Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet, kapora) → iletişim bilgileri → özet, iptal ve ödeme → onay. Taslakta ödeme alınmaz, kart bilgisi istenmez |
 | Liste | `v2/liste/?tur=otel&sure=hs&kimle=cift&tema=doga` | Kategori satırı (`tur`), filtre satırı (`sure`, `kimle`) ve tema (`tema`) ayrı parametreler |
 | Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
-| Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan ve geçmiş; geçmişte "Deneyimini paylaş" |
+| Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan (akıştan yapılan taslak rezervasyonlar en üstte) ve geçmiş; geçmişte "Deneyimini paylaş" |
 | Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
 
 Kod düzeni:
@@ -79,8 +80,9 @@ Notlar:
 - Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
-- Favoriler ve son bakılanlar yalnızca tarayıcıda (`localStorage`,
-  `m360-fav`, `m360-son`). "Kaldığın yerden" bölümündeki "Temizle" son
+- Favoriler, son bakılanlar ve taslak rezervasyonlar yalnızca tarayıcıda
+  (`localStorage`, `m360-fav`, `m360-son`, `m360-rez`). İletişim bilgileri
+  saklanmaz. "Kaldığın yerden" bölümündeki "Temizle" son
   bakılanları siler.
 - Hangi ürünün kime uygun olduğu (çiftler, arkadaşlarla, çocuklu) ve hangi
   temada olduğu ÖRNEK; gerçekte işletme bilgisinden ve değerlendirmelerden
@@ -95,7 +97,7 @@ Notlar:
 
 1. Tasarım sistemi: tokenları tamamlamak (tip ölçeği, boşluk ölçeği) ve
    bileşenleri tek bir vitrin sayfasında toplamak.
-2. Tarih/kişi seçimi → ödeme akışı; giriş ve kayıt; paylaşım oluşturma.
+2. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
 3. Kalan filtreler: "Yakınımda" (konum izni) ve fiyat aralığı; sıralama.
 4. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).
 5. Masaüstü düzeni.
