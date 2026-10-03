@@ -73,6 +73,13 @@ describe('v2', () => {
     });
   });
 
+  it('yazı kalınlığı tasarım tokenlarından geliyor', () => {
+    /* sayı yalnızca tokens.css'te; başka yerde var(--fw-…) */
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f) && !f.endsWith('tokens.css')).forEach(f => {
+      expect(oku(f).match(/font-weight:\s*\d+/g) || [], relative(V2, f)).toEqual([]);
+    });
+  });
+
   it('arama yer, metin ve tarihle süzüyor; kategori ayrı kalıyor (kural 3)', async () => {
     const api = await import('../v2/js/api.js');
     expect(api.suggest('kapa').dests.map(d => d.id)).toContain('kapadokya');
