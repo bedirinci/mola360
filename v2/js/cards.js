@@ -1,7 +1,7 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
-import { STAR, IC } from './icons.js';
-import { tl, ttl, sc as scoreBadge } from './ui.js';
+import { STAR, IC, PIN } from './icons.js';
+import { tl, ttl } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn } from './favorites.js';
 import { ROOT } from './root.js';
@@ -13,28 +13,43 @@ const placeOf=x=>x.a.split(' · ')[0];
 /* Otelde tarih zaten seçili hafta sonu; onun yerine pansiyon tipi (kahvaltı dahil …) */
 const durOf=x=>x.info||(x.facts&&(x.k==='Otel'?x.facts[1]:x.facts[0]))||'';
 const unitOf=u=>u==='kişi başı'?'kişi başı':u;
+/* Yakınımda: kuş uçuşu uzaklık, yuvarlanmış */
+export const km=d=>(d<1?'1':d<100?String(Math.round(d)):(Math.round(d/10)*10).toLocaleString('tr-TR'))+' km';
 export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
   return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><span class="type">'+x.k+'</span>'+heartBtn(x.t)
-  +'<div class="vk-b"><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
+  +'<div class="vk-b"><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
   +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
   +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
 }
 
 /* Veri katmanındaki ürünü (api.js) kart biçimine çevirip çizer */
-export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,facts:x.facts,info:x.info});
+export const productCard=x=>card({k:x.type,t:x.title,a:x.place,p:x.price,u:x.unit==='kişi başı'?'':x.unit,s:x.score,c:x.count,gbg:x.bg,facts:x.facts,info:x.info,km:x.km});
+
+/* Kaldığın yerden: hatırlatma kartı (küçük görsel, ad, tür ve fiyat) */
+export const recentCard=p=>'<article class="rc"><span class="rc-i" style="background:'+p.bg+'"></span><div class="rc-x"><h3>'+ttl(p.title)+'</h3>'
+  +'<p>'+p.type+' · <b>'+tl(lvPrice(p.title,p.price))+'</b></p></div></article>';
+
+/* Sahnede: bilet. Solda gün, ay ve saat; sağda tür, ad, yer ve fiyat */
+export const ticket=e=>'<article class="tk" style="--g:'+e.bg+'"><div class="tk-d"><span class="dw">'+e.dw+'</span><span class="dn">'+e.dn+'</span><span class="mo">'+e.month+'</span><span class="tm">'+e.time+'</span></div>'
+  +'<span class="notch t"></span><span class="notch b"></span>'
+  +'<div class="tk-b"><span class="cat">'+e.cat+'</span><h3>'+ttl(e.title)+'</h3><p class="tk-m">'+PIN+'<span>'+e.place+'</span></p>'
+  +'<div class="tk-f"><span class="tk-p"><b>'+tl(e.price)+'</b>\'den</span><span class="tk-go">Bilet al'+IC.right+'</span></div></div></article>';
 
 /* ---- Bağlan bileşenleri ---- */
 
 const ava=(u,cls)=>'<span class="ava'+(cls?' '+cls:'')+'" style="--c:'+u.renk+'" aria-hidden="true">'+u.ini+'</span>';
 export { ava };
 
-/* Paylaşıma bağlı ürün: puan, fiyat ve "Deneyimi keşfet" */
+/* Paylaşımdaki deneyim: görsel, tür ve yer, ad, puan ve fiyat; kartın
+   tamamı ürün sayfasına gider */
 export function plink(p){
   if(!p)return '';
-  return '<div class="plink"><span class="pt" style="background:'+p.bg+'"></span><div class="x"><small>BAĞLI DENEYİM · '+p.type.toLocaleUpperCase('tr')+'</small>'
-   +'<b><a href="'+ROOT+'urun/?id='+p.id+'">'+p.title+'</a></b><div class="pm">'+(p.count?scoreBadge(p.score):'')+'<span><strong>'+tl(p.price)+'</strong> '+p.unit+'</span></div></div>'
-   +'<span class="go-p">Keşfet'+IC.right+'</span></div>';
+  return '<a class="plink" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+   +'<small><em>'+p.type+'</em> · '+placeOf({a:p.place})+'</small><b>'+p.title+'</b>'
+   +'<span class="pm">'+(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+'</span>':'<span class="st new">Yeni</span>')
+   +'<strong>'+tl(p.price)+'</strong><span class="u">'+p.unit+'</span></span></span>'
+   +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
 /* Akıştaki paylaşım kartı */
@@ -55,7 +70,7 @@ export function postCard(x){
 export function postMini(x){
   const u=x.user,p=x.product;
   return '<article class="pmini" style="background:'+x.bg+'"><div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>'
-   +'<div><p>'+x.text+'</p>'+(p?'<div class="tagp">'+IC.check+'<span>'+p.title+'</span></div>':'')+'</div>'
+   +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
    +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
 

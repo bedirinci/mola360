@@ -2,7 +2,8 @@
 body{min-height:100vh;min-height:100dvh}
 
 /* Bağlan */
-.feed{display:flex;flex-direction:column;gap:16px;padding:0 16px}
+.feed{display:flex;flex-direction:column;gap:16px;padding:16px 16px 0}
+.feed .feed-note{margin:0}
 .feed-note{margin:16px 16px 12px;font-size:var(--fs-sm);line-height:1.5;color:var(--mute)}
 .feed .empty{margin:0}
 
@@ -52,7 +53,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .u-dates .more-d svg{width:16px;height:16px}
 /* ürün içeriği: açıklama, program, dahil/hariç, konum, değerlendirmeler */
 .box .u-about{color:var(--ink);font-size:var(--fs-base);line-height:1.6;margin-top:8px}
-.box .u-note{font-size:var(--fs-sm)}
 .u-prog{list-style:none;margin-top:16px}
 .u-prog li{display:grid;grid-template-columns:52px 14px 1fr;column-gap:10px}
 .u-prog .k{font-size:var(--fs-sm);font-weight:800;color:var(--navy);padding-top:2px;font-variant-numeric:tabular-nums;line-height:1.3}
