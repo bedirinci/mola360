@@ -16,6 +16,7 @@
   --fs-2xl:24px;   /* sayfa başlığı */
   --fs-3xl:26px;   /* büyük sayı */
   --fs-input:16px; /* giriş alanı: 16'nın altında iOS sayfayı yakınlaştırır */
+  --fs-tab:14px;    /* liste sayfasındaki tür sekmeleri (Bedir: 13'ün 1px üstü) */
   --fs-mp-down:1px; /* Molapuan kartının bütün yazıları ölçeğin 1px altında (Bedir) */
   /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */
   --fs-h2:clamp(15px,4.6vw,18px);  /* bölüm başlığı (en çok --fs-xl) */

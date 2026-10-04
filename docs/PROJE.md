@@ -1262,3 +1262,22 @@ güncellenecek yaşayan proje dokümanıdır.
   - Yazılar Molapuan kartı gibi ölçeğin 1px altında (`--fs-mp-down`).
 - **UX sonucu:** İki kart Keşfet'te tutarlı. Konum açılınca öteki
   bölümlerin sırası yine değişmiyor.
+
+### 2026-10-04 — Liste sekmeleri ve indirim etiketi (Bedir)
+
+- **Karar:** Liste sayfasındaki tür sekmeleri (Tümü, Turlar, Oteller…)
+  yalnızca yatay kayar ve yazıları 1px büyür (14px, `--fs-tab`).
+  İndirimli kartlarda görselin üstünde yeşil "%10 indirim" etiketi
+  görünür.
+- **Neden:** Sekmeler yukarı aşağı da kayıyordu. İndirim ise yalnızca
+  üstü çizili fiyattan anlaşılıyordu ve gözden kaçıyordu.
+- **Etkilediği alanlar:** `v2/css/sayfalar.css` (`.cats`),
+  `v2/css/tokens.css`, `v2/js/cards.js`, `v2/css/components.css`
+  (`.vk-off`).
+- **Teknik sonuç:** `.cats` için `overflow-y:hidden` kullanıldı. Alt
+  çizgi kenarlık yerine iç gölgeyle çiziliyor, böylece eksi kenar
+  boşluğu yüzünden taşan yükseklik kalmadı. Etiket, seviye indirimi
+  (`lvOn`) olan kartlarda çıkar: rayda tür etiketinin altında, listede
+  görselin sol altında yer alır.
+- **UX sonucu:** Sekmeler parmak altında oynamıyor. Fırsat ilk bakışta
+  görülüyor.
