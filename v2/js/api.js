@@ -126,11 +126,12 @@ export function clearSearches(){try{localStorage.removeItem(AK)}catch(e){}}
    sırasıyla; bilet görünümü için gün, ay ve saat ayrı */
 const DW=['PAZ','PZT','SAL','ÇAR','PER','CUM','CMT'];
 export function listEvents({days=7}={}){
-  const end=new Date(TODAY);end.setDate(end.getDate()+days);
+  /* pencere gerçek bugünden başlar: etkinlik tarihleri de bugüne göre yürür (#152) */
+  const t0=today(),end=addDays(t0,days);
   return [...all.values()].filter(p=>typeKey(p.type)==='etkinlik').map(p=>{const d=parseDay(p.facts[0]),t=p.facts[0].split(' · ')[1]||'';
     return {...p,day:d,dw:d&&DW[d.getDay()],dn:d&&String(d.getDate()),month:d&&d.toLocaleDateString('tr-TR',{month:'short'}).toLocaleUpperCase('tr'),
       time:t.charAt(0).toLocaleUpperCase('tr')+t.slice(1),cat:p.cat||p.type}})
-   .filter(e=>e.day&&e.day>=TODAY&&e.day<end).sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time));
+   .filter(e=>e.day&&e.day>=t0&&e.day<end).sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time));
 }
 
 /* Yakınımda: ürünün yaklaşık konumu (data.js GEO, ÖRNEK) ve kuş uçuşu
