@@ -434,7 +434,8 @@ main#urun .box:first-of-type{margin-top:24px}
 .cm-in button{flex:none;min-height:42px;padding:0 6px;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy)}
 .cm-in button:disabled{color:var(--mute);opacity:.6}
 /* Başkasının profili (kisi/): Takip et yeşil eylem; takip edince sade */
-.pf-acts .k-follow{min-height:44px;padding:10px 14px;border-radius:var(--r-md);background:var(--green);color:var(--navy);font-size:var(--fs-md);box-shadow:none}
+/* kişi sayfası düğmeleri Profil'dekilerle aynı boyda (Bedir): yalnız renkler takip durumuna göre */
+.pf-acts .k-follow{border-radius:var(--r-md);background:var(--green);color:var(--navy);font-size:var(--fs-md);box-shadow:none}
 .pf-acts .k-follow[aria-pressed="true"]{background:rgba(255,255,255,.12);color:#fff}
 /* başkasının profili: kullanıcı adı üst çubukta geri ve menü düğmelerinin arasında ortalı */
 .pf-top .bar{position:relative}
@@ -464,7 +465,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .cm-at{color:var(--navy);font-weight:var(--fw-semi)}
 
 /* Kişi sayfasında Mesaj */
-.pf-acts .k-msg{flex:1;min-height:44px;font-size:var(--fs-md)}
+.pf-acts .k-msg{flex:none}
 
 /* Mesajlar listesi */
 .ms-c{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:4px;padding:0 6px;border-radius:var(--r-pill);background:var(--soft);color:var(--navy);font-size:var(--fs-xs);font-weight:var(--fw-bold)}
