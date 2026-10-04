@@ -86,7 +86,9 @@ document.getElementById('urun').innerHTML=
    +'</section>':'')
 
  +(p.dates.length?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>Tarih seç</h2></div><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
-   +ds.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')+'</div><p class="u-cx" id="cxl2"></p></section>':'')
+   /* ilk üç tarih ve "Tüm tarihler"; dokununca diğerleri açılır (seçili tarih hep görünür) */
+   +ds.map((x,i)=>{const k=x[0]+' '+x[1];return '<button type="button" role="radio" aria-checked="'+(k===picked)+'" data-d="'+k+'"'+(i>2&&k!==picked?' hidden':'')+'><small>'+x[0]+'</small><b>'+x[1]+'</b></button>'}).join('')
+   +(ds.length>3?'<button type="button" class="more-d" data-all-d aria-expanded="false">'+IC.calendar+'<span>Tüm tarihler</span></button>':'')+'</div><p class="u-cx" id="cxl2"></p></section>':'')
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -158,6 +160,7 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   if(p.dates.length&&!picked){goTo('tarihler');return}
   location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
+  const ad=e.target.closest('[data-all-d]');if(ad){ad.parentElement.querySelectorAll('[data-d][hidden]').forEach(x=>x.hidden=false);ad.remove();return}
   const d=e.target.closest('[data-d]');
   if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;history.replaceState({...history.state,tarih:picked},'');drawCta();cxl();return}
   const m=e.target.closest('[data-prog]');
