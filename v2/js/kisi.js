@@ -24,10 +24,13 @@ if(!u){
   /* yaşadığı deneyimler: Mola360 ile gittiği paylaşımların deneyimleri */
   const went=[...new Map(posts.filter(p=>p.verified&&p.product).map(p=>[p.product.id,p.product])).values()];
   const STAT=(v,t,tab)=>tab?'<button type="button" data-go="'+tab+'"><b>'+v+'</b><span>'+t+'</span></button>':'<div><b>'+v+'</b><span>'+t+'</span></div>';
+  /* takipçi ve takip: alttan çekmece (takip.js) */
+  const FSTAT=(v,t,tab)=>'<button type="button" data-flw="'+tab+'" aria-haspopup="dialog"><b>'+v+'</b><span>'+t+'</span></button>';
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-flw]');if(b)import('./takip.js').then(m=>m.openFollow(b,{who:u.key,tab:b.dataset.flw,counts:[n(u.followers),n(u.following)]}))});
   head.innerHTML='<div class="pf-id">'+ava(u,'l')+'<div class="x"><div class="pf-nm"><b>'+u.ad+'</b>'+(u.onay?VERIFIED:'')+'</div>'
    +(u.city?'<span class="pf-at">'+PIN+u.city+'</span>':'')+'</div></div>'
    +(u.bio?'<p class="pf-bio">'+u.bio+'</p>':'')
-   +'<div class="pf-stats">'+STAT(posts.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+STAT(n(u.followers),'takipçi')+STAT(n(u.following),'takip')+'</div>'
+   +'<div class="pf-stats">'+STAT(posts.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+FSTAT(n(u.followers),'takipçi','ers')+FSTAT(n(u.following),'takip','ing')+'</div>'
    +'<div class="pf-acts"><button type="button" class="btn green follow k-follow" aria-pressed="false">Takip et</button>'
    +'<a class="btn ghost-d k-msg" href="'+ROOT+'sohbet/?k='+encodeURIComponent(u.key)+'" data-mesaj>Mesaj</a>'
    +'<button type="button" class="btn ghost-d sq" data-share aria-label="Profili paylaş">'+IC.share+'</button></div>';
