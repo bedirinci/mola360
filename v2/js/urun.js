@@ -48,7 +48,20 @@ const N=5;
 const frame=i=>'radial-gradient(circle at '+[[30,25],[75,35],[50,70],[20,60],[80,80]][i].map(v=>v+'%').join(' ')+',rgba(255,255,255,.28),transparent 55%),'+p.bg;
 const short=p.place.split(' · ')[0];
 const tabs=[['genel','Genel'],p.dates.length&&['tarihler','Tarihler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
-  info.dahil.length&&['dahil','Dahil'],['yorumlar','Yorumlar']].filter(Boolean);
+  info.dahil.length&&['dahil','Dahil'],['yorumlar','Yorumlar'],['sss','SSS']].filter(Boolean);
+function faq(){const t=typeKey(p.type),q=[];
+  q.push(['Rezervasyonumu nasıl iptal ederim?',S.cancel+'. Planlarım\'da rezervasyonunu açıp "İptal et"e dokunman yeterli; iade aynı karta 3–7 iş günü içinde yapılır.']);
+  if(S.deposit)q.push(['Kaporadan sonra kalan tutarı ne zaman öderim?','Kalan tutar kalkıştan 7 gün önce ödenir. Sana hatırlatırız; Planlarım\'dan "Kalanı öde" ile kartla ödeyebilirsin.']);
+  if(S.people)q.push(['Çocuk ve bebek fiyatı nasıl hesaplanıyor?','3–11 yaş çocuklar yetişkin fiyatının %30 altında katılır. 0–2 yaş bebekler bir yetişkinin kucağında yolculuk eder'+(p.tr==='ucak'?'; uçak bileti için küçük bir ücret alınır.':' ve ücret ödemez.')]);
+  if(S.room)q.push(['Tek kişilik oda alabilir miyim?','Evet. Rezervasyonda "Oda düzeni"nden tek kişilik oda sayısını seçersin; kişi başı fark fiyata eklenir. Yalnız katılırsan oda kendiliğinden tek kişilik olur.']);
+  if(S.dep&&S.dep.stops.length>1)q.push(['Kalkış noktamı sonradan değiştirebilir miyim?','Kalkıştan 48 saat öncesine kadar Mesajlar\'dan yazman yeterli; yeni noktanın saati biletine işlenir.']);
+  if(p.visa)q.push(['Vize gerekiyor mu?',p.visa+'. '+(p.visaReq?'Başvuruyu kalkıştan en az 1 ay önce yapman gerekir; vize ücreti fiyata dahil değil.':'Pasaportunun dönüşten sonra en az 6 ay geçerli olması yeterli.')]);
+  if(t==='tur')q.push(['Tur iptal olursa ne olur?','Yeterli katılım olmazsa ya da hava koşulları nedeniyle tur iptal edilirse ödediğin tutarın tamamı iade edilir veya başka bir tarihe aktarılır.']);
+  if(t==='otel')q.push(['Giriş ve çıkış saatleri nedir?','Giriş 14:00\'ten, çıkış 12:00\'ye kadar. Erken giriş için Mesajlar\'dan otele yazabilirsin.']);
+  if(t==='etkinlik')q.push(['Biletimi nasıl gösteririm?','Biletin Planlarım\'da karekodla durur; girişte telefonundan göstermen yeterli, çıktı gerekmez.']);
+  if(t==='aktivite'||t==='mekan')q.push(['Saati değiştirebilir miyim?','Başlangıçtan 24 saat öncesine kadar Planlarım\'dan başka bir saat seçebilirsin; fark ücreti alınmaz.']);
+  q.push(['Taksitle ödeyebilir miyim?','Anlaşmalı kartlarla 3 taksit vade farksız. Ödeme bankanın güvenli 3D Secure sayfasında yapılır.']);
+  return q}
 const facts=chips.slice(0,2).map(c=>[/\d+ (Eki|Kas|Ara)/.test(c)?IC.calendar:/saat|dk|gün|gece/.test(c.toLocaleLowerCase('tr'))?I.clock:p.tr&&c===TRI[p.tr][0]?'<svg viewBox="0 0 24 24">'+TRI[p.tr][1]+'</svg>':IC.ticket,c]);
 facts.push([IC.shield,'Ücretsiz iptal']);
 const ppl=posts.slice(0,3).map(x=>'<span class="ava s" style="--c:'+x.user.renk+'" aria-hidden="true">'+x.user.ini[0]+'</span>').join('');
@@ -73,8 +86,7 @@ document.getElementById('urun').innerHTML=
    +'</section>':'')
 
  +(p.dates.length?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>Tarih seç</h2></div><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
-   +ds.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')
-   +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>'+p.more+' tarih</span></button></div><p class="u-cx" id="cxl2"></p></section>':'')
+   +ds.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')+'</div><p class="u-cx" id="cxl2"></p></section>':'')
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -98,8 +110,9 @@ document.getElementById('urun').innerHTML=
  +(S.dep&&S.dep.city
    ?'<p class="u-pp-n">'+S.dep.city+' çıkışlı · '+S.dep.how.toLocaleLowerCase('tr')+'</p><ol class="u-stops">'+S.dep.stops.map(x=>'<li><b class="t">'+x.saat+'</b><div><b>'+x.yer+'</b><span>'+x.adres+'</span></div></li>').join('')+'</ol>'
     +'<p class="u-pp-n">Kalkış noktanı rezervasyonda seçersin.</p>'
-   :'<div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>')
- +(info.bilgi.length?'<h3 class="u-h3">Bilmen gerekenler</h3><ul class="u-info">'+info.bilgi.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</section>'
+   :'<div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>')+'</section>'
+
+ +(info.bilgi.length?'<section class="box" id="bilgi"><h2>Bilmen gerekenler</h2><ul class="u-info">'+info.bilgi.map(x=>'<li>'+IC.info+'<span>'+x+'</span></li>').join('')+'</ul></section>':'')
 
  +'<section class="box"><h2>İptal ve ödeme</h2><ul class="ticks">'
  +'<li>'+IC.check+'<div><b>'+S.cancel+'</b> <span id="cxl"></span></div></li>'
@@ -114,6 +127,9 @@ document.getElementById('urun').innerHTML=
    +'<div class="u-revs">'+info.reviews.map(r=>'<article class="rv"><div class="rv-h"><span class="ava s" style="--c:'+r.user.renk+'" aria-hidden="true">'+r.user.ini+'</span><div class="x"><b>'+r.user.ad+'</b><small>Rezervasyonla gitti</small></div><span class="rv-s">'+r.score.toFixed(1).replace('.',',')+'</span></div><p>'+r.text+'</p></article>').join('')+'</div>'
    +'<button type="button" class="u-more" data-soon-rv>Tüm değerlendirmeler · '+p.count.toLocaleString('tr-TR')+'</button>'
    :'<p>Bu deneyimi Mola360\'tan yaşayanlar değerlendirdikçe burada görünecek.</p>')+'</section>'
+
+ /* sıkça sorulan sorular: türe ve ürünün kurallarına göre (açılır kapanır) */
+ +'<section class="box" id="sss"><h2>Sıkça sorulan sorular</h2><div class="u-faq">'+faq().map(([q,a])=>'<details><summary>'+q+I.chev+'</summary><p>'+a+'</p></details>').join('')+'</div></section>'
 
  +(similar.length?'<section class="u-sec"><div class="hd"><h2>Benzer deneyimler</h2><a href="'+ROOT+'liste/?tur='+typeKey(p.type)+'" class="all">Tümü →</a></div></section><div class="rail" id="uSim">'+similar.map(x=>productCard(x)).join('')+'</div>':'');
 

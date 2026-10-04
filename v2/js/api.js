@@ -19,8 +19,18 @@ export const slug=t=>t.toLocaleLowerCase('tr').replace(/[ığüşöçâîû]/g,c
 export const TYPES=[['tur','Tur','Turlar'],['otel','Otel','Oteller'],['etkinlik','Etkinlik','Etkinlikler'],['aktivite','Aktivite','Aktiviteler'],['mekan','Mekân','Mekânlar']];
 export const typeKey=k=>(TYPES.find(t=>t[1]===k)||TYPES[0])[0];
 
+/* Kalkış tarihleri: veride ilk üçü var; "+N" kadar tarih aynı haftalık düzenle
+   (ilk üçün gün sırası tekrar ederek) devam eder. Ürün sayfası hepsini gösterir. */
+function moreDates(ds,more){
+  const n=parseInt(more,10)||0,G=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],A=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const day=t=>{const m=t.match(/(\d+) (\S+)/);return m?new Date(2026,A.indexOf(m[2]),+m[1]):null};
+  const base=ds.map(x=>day(x[1]));
+  if(!n||!base.length||base.some(d=>!d))return ds;
+  const W=7*864e5,period=(Math.floor((base[base.length-1]-base[0])/W)+1)*W,out=[...ds];
+  for(let i=0;i<n;i++){const d=new Date(+base[i%base.length]+period*(Math.floor(i/base.length)+1));out.push([G[d.getDay()],d.getDate()+' '+A[d.getMonth()]])}
+  return out}
 const fromItem=x=>({id:slug(x.t),type:x.k,title:x.t,place:x.a,price:x.p,old:x.old,unit:x.u||'kişi başı',score:x.s||0,count:x.c||0,
-  bg:G[x.g],facts:x.facts||[],dates:x.dates||[],more:x.more,info:x.info,tr:x.tr,visa:x.visa,b:x.b,abroad:!!x.abroad,cat:x.cat,sample:true});
+  bg:G[x.g],facts:x.facts||[],dates:moreDates(x.dates||[],x.more),more:x.more,info:x.info,tr:x.tr,visa:x.visa,visaReq:!!x.visaReq,b:x.b,abroad:!!x.abroad,cat:x.cat,sample:true});
 const all=new Map();
 ITEMS.forEach(x=>all.set(slug(x.t),fromItem(x)));
 const evDay=e=>e[0][0]+e[0].slice(1).toLocaleLowerCase('tr')+' '+e[1]+' Eki';
