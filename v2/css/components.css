@@ -249,7 +249,7 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .pic-more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(12,18,40,.45);color:#fff;font-size:var(--fs-2xl);font-weight:var(--fw-black)}
 html.kb .pics:focus-visible{outline-offset:-2px}
 /* Mola360 ile gitti: beyaz zemin, logo */
-.post .pic .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px 5px 8px;border-radius:var(--r-pill);background:#fff;color:var(--ink);font-size:var(--fs-xs);font-weight:var(--fw-bold);line-height:16px;box-shadow:0 4px 12px rgba(12,18,40,.18)}
+.post .pic .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px 5px 8px;border-radius:var(--r-pill);background:#fff;color:var(--ink);font-size:var(--fs-xs);font-weight:var(--fw-medium);line-height:16px;box-shadow:0 4px 12px rgba(12,18,40,.18)}
 .went img{display:block;height:18px;width:auto;margin:-1px 0}
 /* onaylı kullanıcı rozeti */
 .vf{display:inline-block;width:15px;height:15px;margin-left:4px;vertical-align:-2.5px;fill:var(--blue);stroke:none}
@@ -265,15 +265,16 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .post .txt{padding:2px 16px 8px;font-size:var(--fs-md);line-height:1.5;overflow-wrap:anywhere}
 .post .txt b{font-weight:var(--fw-bold);margin-right:5px}
 /* fotoğrafın içinde, altta bağlı deneyim */
-.plo{position:absolute;left:8px;right:8px;bottom:8px;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 8px;border-radius:var(--r-md);background:rgba(255,255,255,.96);color:var(--ink);text-decoration:none;box-shadow:0 6px 18px rgba(12,18,40,.22)}
-.plo .pt{width:44px;height:44px;border-radius:var(--r-sm);flex:none}
-.plo .x{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.3}
-.plo small{font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plo{position:absolute;left:8px;right:8px;bottom:8px;display:flex;align-items:center;gap:9px;padding:5px 6px 5px 5px;border-radius:var(--r-md);background:rgba(255,255,255,.96);color:var(--ink);text-decoration:none;box-shadow:0 6px 18px rgba(12,18,40,.22)}
+.plo .pt{width:36px;height:36px;border-radius:var(--r-xs);flex:none}
+.plo .x{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;line-height:1.25}
+.plo small{display:flex;align-items:center;gap:6px;min-width:0;font-size:var(--fs-xs);font-weight:var(--fw-medium);color:var(--mute);white-space:nowrap}
+.plo small .w{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .plo b{font-size:var(--fs-md);font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plo .st{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-xs);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}
+.plo .st{flex:none;display:inline-flex;align-items:center;gap:3px;color:var(--ink);font-size:var(--fs-xs);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}
 .plo .st i{font-style:normal;font-weight:var(--fw-medium);color:var(--mute)}
 .plo .st svg{width:12px;height:12px;fill:var(--gold);stroke:none}
-.plo .go-p{width:30px;height:30px;border-radius:50%;background:var(--navy);display:grid;place-items:center;color:#fff;flex:none}
+.plo .go-p{width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);flex:none;box-shadow:0 0 0 1px var(--line)}
 .plo .go-p svg{width:15px;height:15px;stroke-width:2.4}
 
 /* paylaşıma bağlı ürün: içerik → keşif → rezervasyon köprüsü */

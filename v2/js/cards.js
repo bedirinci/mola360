@@ -66,8 +66,8 @@ const WENT='<span class="went"><img src="'+ROOT+'logo-koyu.webp" alt="Mola360" w
 function plinkOver(p){
   if(!p)return '';
   return '<a class="plo" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
-   +'<small>'+p.type+' · '+placeOf({a:p.place})+'</small><b>'+p.title+'</b>'
-   +(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'<span class="st new">Yeni</span>')+'</span>'
+   +'<b>'+p.title+'</b><small>'+(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'<span class="st new">Yeni</span>')
+   +'<span class="w">'+p.type+' · '+placeOf({a:p.place})+'</span></small></span>'
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
