@@ -554,23 +554,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .ms-m.they.last>.ava{margin-bottom:23px}
 
 /* ---- Bildirimler ---- */
-/* yaklaşan molan: üstte ince beyaz kart (Molapuan kartı dili) */
-.nt-up{margin:16px 16px 4px;padding:12px;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow)}
-.nt-up-a{display:flex;align-items:center;gap:12px;color:var(--ink)}
-.nt-up-a .pt{width:56px;height:56px;border-radius:var(--r-md);flex:none}
-.nt-up-a .x{flex:1;min-width:0;line-height:1.3}
-.nt-up-a small{display:flex;white-space:nowrap;align-items:center;gap:8px;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.06em;color:var(--mute)}
-.nt-up-a b{display:block;margin-top:2px;font-size:var(--fs-base);font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nt-up-a .x>span{font-size:var(--fs-sm);color:var(--mute)}
-.nt-up-a>svg{width:18px;height:18px;color:var(--mute);flex:none}
-.nt-up-m{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:var(--fs-sm);color:var(--mute)}
-.nt-up-m svg{width:15px;height:15px;flex:none;color:var(--navy)}
-.nt-up-m span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nt-up-m b{color:var(--ink);font-weight:var(--fw-semi)}
-.nt-up-b{display:flex;gap:8px;margin-top:10px}
-.nt-up-b .btn{flex:1;justify-content:center;min-height:40px;padding:0 10px;font-size:var(--fs-md);white-space:nowrap}
-.nt-up-b .btn svg{width:17px;height:17px}
-.nt-up-b .btn.green{flex:1.5}
+.nt-b.green{background:var(--green);box-shadow:none}
 .nt-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 16px 4px}
 .nt-h{font-size:var(--fs-lg);font-weight:var(--fw-bold)}
 .nt-hd button{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--navy);min-height:32px}
