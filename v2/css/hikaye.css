@@ -1,7 +1,7 @@
 /* Bağlan hikayeleri: akışın üstünde ince satır + tam ekran izleyici.
    Halka: görülmemiş lacivert, görülmüş açık gri. Yeşil yalnızca "Hikayen"in
    artısında (eylem), indirimde ve "Deneyimi gör"de. */
-.hk-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:14px 16px 12px;border-bottom:1px solid var(--line);overscroll-behavior-x:contain}
+.hk-row{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:14px 16px 12px;border-bottom:1px solid var(--line);overscroll-behavior-x:contain}
 .hk-row::-webkit-scrollbar{display:none}
 .hk{flex:none;width:66px;display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--ink);-webkit-tap-highlight-color:transparent}
 .hk-c{position:relative;width:66px;height:66px;border-radius:50%;padding:2.5px;box-shadow:inset 0 0 0 2px var(--navy)}
