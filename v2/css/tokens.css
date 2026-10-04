@@ -3,7 +3,7 @@
 :root{--navy:#152048; --navy-2:#223066; --navy-ink:#C7CDE4;
   --green:#8CC63F; --green-ink:#3F6512; --green-soft:#EEF6E2;
   --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
-  --gold:#C98A00;
+  --gold:#F0A81C; /* puan yıldızı (Bedir: bir ton açık) */
   --blue:#1D8CF0; /* onaylı kullanıcı rozeti */
   --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 

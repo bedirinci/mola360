@@ -1380,3 +1380,38 @@ güncellenecek yaşayan proje dokümanıdır.
   (`.went`), yeni `v2/logo-koyu.webp` (beyaz logonun lacivert yazılı hali).
 - **UX sonucu:** Etiket Bağlan akışında ve profildeki paylaşımlarda aynı;
   marka logoyla tanınıyor.
+
+### 2026-10-04 — Paylaşım seçenekleri (üç nokta) (Bedir)
+
+- **Karar:** Bağlan'daki her paylaşımın sağ üstünde, Takip et'in sağında
+  üç noktalı seçenekler düğmesi var. Menü: Kaydet, Bağlantıyı kopyala;
+  başkasının paylaşımında ayrıca İlgilenmiyorum ve Bildir. "ile gitti"
+  yazısı yarı kalın (600).
+- **Etkilediği alanlar:** `v2/js/cards.js` (`openMenu`, `menuAct`),
+  `v2/js/icons.js` (`more`, `link`, `eyeoff`, `flag`),
+  `v2/css/components.css` (`.p-more`, `.pmenu`).
+- **Teknik sonuç:** İlgilenmiyorum paylaşımı bu oturumda gizler, "Geri al"
+  ile döner; backend gelince kalıcı olur. Bildir şimdilik "Çok yakında."
+  Menü dışarı dokununca ve Esc ile kapanır.
+- **UX sonucu:** Kullanıcı akışı kendine göre ayıklayabiliyor; kaydet ve
+  bağlantı paylaşma tek yerden.
+
+### 2026-10-04 — Instagram tarzı paylaşım akışı (Bedir)
+
+- **Karar:** Paylaş'a dokununca doğrudan telefonun galerisi açılır.
+  Seçimden sonra tam ekran "Yeni paylaşım" gelir: büyük önizleme,
+  seçilenler şeridi (dokununca önizlenir, x ile çıkar, "Ekle" ile
+  galeriye döner), sağ üstte "İleri" (en az 2 görsel). Sonraki adım
+  "Bilgiler": not, bağlı deneyim, kiminle; sağ üstte "Paylaş".
+- **Neden:** Bedir Instagram'daki gibi doğrudan galeriyle başlayan bir
+  paylaşım istedi; eski çekmece önce boş bir form gösteriyordu.
+- **Etkilediği alanlar:** `v2/js/shell.js` (`pickAndShare`),
+  `v2/js/paylas.js` (yeniden yazıldı), `v2/css/components.css` (`.cmp*`).
+- **Teknik sonuç:** Web sayfası telefonun galerisini kendi içinde ızgara
+  olarak gösteremez; telefonun kendi görsel seçicisi açılır (iOS'ta
+  Fotoğraflar). Seçici dokunuşla aynı anda açılmalı, bu yüzden shell.js'te
+  ve modül yüklenmeden önce çağrılır; paylas.js boşta önceden yüklenir.
+  Adresten (`?paylas=`) gelince galeri kendiliğinden açılamaz; ekran
+  "Galeriden seç" ile gelir.
+- **UX sonucu:** Paylaşım iki dokunuşta görselle başlıyor; bilgiler
+  görselden sonra soruluyor.

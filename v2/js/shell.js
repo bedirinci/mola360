@@ -147,15 +147,28 @@ function initDock(page){
   if(page==='kesfet'&&f1)dock.querySelector('[data-nav="kesfet"]').addEventListener('click',e=>{e.preventDefault();
     const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches&&scrollY>8;
     scrollTo({top:0,behavior:smooth?'smooth':'auto'});setTimeout(()=>f1.click(),smooth?380:0)});
-  document.getElementById('shareBtn').addEventListener('click',e=>openShare(e.currentTarget));
+  document.getElementById('shareBtn').addEventListener('click',e=>pickAndShare(e.currentTarget));
 }
 
 /* Paylaş çekmecesi (paylas.js) ilk açılışta yüklenir. Her sayfadan açılır:
    alt menüdeki düğme, data-paylas="ürün id" taşıyan bir öğe ya da adresteki
    ?paylas=ürün id (o deneyim seçili gelir). */
 export const openShare=(from,opts)=>import('./paylas.js').then(m=>m.openShare(from,opts));
+/* Instagram gibi: dokununca önce telefonun galerisi açılır, seçimden sonra
+   paylaşım ekranı gelir. Galeri dokunuşla aynı anda açılmalı (yoksa tarayıcı
+   engeller), bu yüzden seçici burada, modül yüklenmeden önce. Adresten
+   (?paylas=) açılınca galeri açılamaz; ekran "Galeriden seç" ile gelir. */
+let picker,pick={};
+export function pickAndShare(from,opts={}){
+  if(!picker){picker=document.createElement('input');picker.type='file';picker.accept='image/*,video/*';picker.multiple=true;
+    picker.className='sr';picker.tabIndex=-1;picker.setAttribute('aria-hidden','true');document.body.appendChild(picker);
+    picker.addEventListener('change',()=>{const files=[...picker.files];picker.value='';if(files.length)openShare(pick.from,{...pick.opts,files})})}
+  pick={from,opts};picker.click();
+}
 function initShare(){
-  document.addEventListener('click',e=>{const b=e.target.closest('[data-paylas]');if(b){e.preventDefault();openShare(b,{productId:b.dataset.paylas})}});
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-paylas]');if(b){e.preventDefault();pickAndShare(b,{productId:b.dataset.paylas})}});
+  /* paylaşım ekranı hazır dursun: galeriden dönünce beklemeden açılır */
+  const pre=()=>import('./paylas.js');'requestIdleCallback' in window?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);
   const u=new URL(location.href),id=u.searchParams.get('paylas');
   if(id!==null){u.searchParams.delete('paylas');history.replaceState(history.state,'',u.pathname+u.search+u.hash);openShare(null,{productId:id})}
 }
