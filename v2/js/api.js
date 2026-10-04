@@ -328,7 +328,7 @@ export function payRemaining(no){const b=listUpcoming().find(x=>x.no===no);if(!b
 /* Geçmiş deneyimin değerlendirmesi: bu cihazda */
 const RVK='m360-degerlendir';
 const readRv=()=>{try{return JSON.parse(localStorage.getItem(RVK))||{}}catch(e){return {}}};
-export function rateBooking(productId,puan,metin){const r=readRv();r[productId]={puan,metin,t:Date.now()};try{localStorage.setItem(RVK,JSON.stringify(r))}catch(e){}}
+export function rateBooking(productId,puan,metin,alt){const r=readRv();r[productId]={puan,metin,alt:alt||{},t:Date.now()};try{localStorage.setItem(RVK,JSON.stringify(r))}catch(e){}}
 
 /* Ürün sayfası içeriği: açıklama, program, dahil/hariç, buluşma noktası,
    bilmen gerekenler ve örnek değerlendirmeler (ÖRNEK, icerik.js) */

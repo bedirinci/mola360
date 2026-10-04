@@ -132,12 +132,21 @@ main#urun .box:first-of-type{margin-top:24px}
 .rz-cx{font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--mute);text-decoration:underline;text-underline-offset:2px;padding:6px 0 6px 8px;min-height:32px}
 .rz-rv{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:var(--fs-sm);font-weight:var(--fw-semi)}
 .rz-rv .rz-cx{margin-left:auto}
-.rz-st{display:inline-flex;gap:2px}
-.rz-st i{width:16px;height:16px;color:#D5D9E2}
-.rz-st i.on{color:var(--gold)}
-.rz-st svg{width:16px;height:16px;fill:currentColor;stroke:none}
 /* Planlarım çekmeceleri */
-.pl-sh .pl-in{padding-top:4px}
+.pl-sh{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+.pl-sh .pl-in{padding-top:4px;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;margin:0 -16px;padding:4px 16px 0}
+.dg-h{margin-top:16px;font-size:var(--fs-sm);font-weight:var(--fw-bold)}
+.dg-h small,.dg-l small{font-weight:var(--fw-regular);color:var(--mute)}
+.dg-n{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.dg-n button{min-height:44px;border-radius:var(--r-md);border:1px solid var(--line);font-size:var(--fs-base);font-weight:var(--fw-bold);color:var(--ink);font-variant-numeric:tabular-nums}
+.dg-n button[aria-checked="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.dg-alt{display:grid;gap:4px;margin-top:6px}
+.dg-r{display:grid;grid-template-columns:118px 1fr 28px;align-items:center;gap:10px;min-height:40px}
+.dg-r label{font-size:var(--fs-md)}
+.dg-r output{text-align:right;font-size:var(--fs-md);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}
+.dg-r input{width:100%;accent-color:var(--navy);height:28px}
+.dg-r input:not([data-set]){opacity:.55}
+@media (max-width:374px){.dg-r{grid-template-columns:96px 1fr 24px;gap:8px}.dg-r label{font-size:var(--fs-sm)}}
 .tk-c{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:16px;border-radius:var(--r-lg);border:1px solid var(--line);margin-bottom:16px}
 .tk-c b{font-size:var(--fs-lg);font-weight:var(--fw-bold)}
 .tk-c span{font-size:var(--fs-sm);color:var(--mute)}
@@ -170,13 +179,8 @@ main#urun .box:first-of-type{margin-top:24px}
 .pay-h{margin-top:16px;font-size:var(--fs-sm);font-weight:var(--fw-bold);color:var(--mute)}
 .pay-b{margin-top:16px}
 .dg-t{font-size:var(--fs-md);color:var(--mute)}
-.dg-s{display:flex;justify-content:center;gap:6px;margin-top:14px}
-.dg-s button{width:48px;height:48px;display:grid;place-items:center;color:#D5D9E2}
-.dg-s button svg{width:38px;height:38px;fill:currentColor;stroke:none}
-.dg-s button.on{color:var(--gold)}
-.dg-w{text-align:center;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);min-height:20px;margin-top:4px}
+.dg-w{text-align:left;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);min-height:20px;margin-top:4px}
 .dg-l{display:block;margin-top:14px;font-size:var(--fs-sm);font-weight:var(--fw-bold)}
-.dg-l small{font-weight:var(--fw-regular);color:var(--mute)}
 .pl-sh textarea{width:100%;margin:6px 0 16px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-md);font:inherit;font-size:var(--fs-input);resize:none}
 .ex-b .btn:disabled{opacity:.45}
 

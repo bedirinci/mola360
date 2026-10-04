@@ -4,8 +4,8 @@ import { renderShell } from './shell.js';
 import { findByTitle, listUpcoming, cancelBooking, payRemaining, listPastBookings, rateBooking, parseDay, today, typeKey } from './api.js';
 import { productCard } from './cards.js';
 import { favList, initFavorites, favSync } from './favorites.js';
-import { toast, tl, makeSheet } from './ui.js';
-import { IC, I, STAR } from './icons.js';
+import { toast, tl, makeSheet, sc } from './ui.js';
+import { IC, I } from './icons.js';
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
 import { guestIntro } from './giris.js';
@@ -36,8 +36,8 @@ const up=b=>{const p=b.product,rest=due(b);
     :'<a class="btn ghost" href="'+mapsUrl(p.title+' '+p.place.split(' · ')[0])+'" target="_blank" rel="noopener">'+I.pin+'Yol tarifi</a>')+'</div>'
   +'<div class="rz-ft"><span class="rz-no">Rezervasyon no '+b.no+'</span><button type="button" class="rz-cx" data-cancel>İptal et</button></div></article>'};
 
-const stars=n=>'<span class="rz-st" aria-label="5 üzerinden '+n+'">'+[1,2,3,4,5].map(i=>'<i class="'+(i<=n?'on':'')+'">'+STAR+'</i>').join('')+'</span>';
-const rated=b=>b.review?'<div class="rz-rv"><span>Puanın</span>'+stars(b.review.puan)+'<button type="button" class="rz-cx" data-rate="'+b.productId+'">Düzenle</button></div>':'';
+/* Puan 10 üzerinden, sitedeki puanlarla aynı */
+const rated=b=>b.review?'<div class="rz-rv"><span>Puanın</span>'+sc(b.review.puan)+'<button type="button" class="rz-cx" data-rate="'+b.productId+'">Düzenle</button></div>':'';
 const past=b=>'<article class="rz">'+head(b.product,b.when+' · '+b.who)
   +(b.shared?'<p class="rz-done">'+IC.check+'Bu deneyimi paylaştın</p>'+(b.review?rated(b):'<div class="rz-acts"><button type="button" class="btn ghost" data-rate="'+b.productId+'">Değerlendir</button></div>')
    :'<div class="rz-share"><b>Nasıldı?</b><p>Paylaşımın "Mola360 ile gitti" rozetiyle Bağlan\'da görünür.</p><div class="rz-acts"><button type="button" class="btn green" data-paylas="'+b.productId+'">'+IC.plus+'Paylaş</button>'
@@ -61,10 +61,11 @@ const TABS={
 let sh=null;
 function sheet(title,body,from,ex){
   if(!sh){document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="plBg"></div><div class="sheet pl-sh" id="plSheet" role="dialog" aria-modal="true" aria-labelledby="plTtl">'
-     +'<div class="sh-grab"></div><div class="sh-hd"><h3 id="plTtl"></h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div><div class="pl-in"></div></div>');
-    sh=makeSheet(document.getElementById('plSheet'),document.getElementById('plBg'))}
+     +'<div class="pl-top"><div class="sh-grab"></div><div class="sh-hd"><h3 id="plTtl"></h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div></div><div class="pl-in"></div></div>');
+    /* içerik uzunsa kendi içinde kayar; çekerek kapatma üst şeritten */
+    const el=document.getElementById('plSheet');sh=makeSheet(el,document.getElementById('plBg'),{drag:el.querySelector('.pl-top')})}
   const el=document.getElementById('plSheet');el.classList.toggle('ex',!!ex);el.setAttribute('role',ex?'alertdialog':'dialog');
-  document.getElementById('plTtl').textContent=title;el.querySelector('.pl-in').innerHTML=body;sh.open(from);
+  document.getElementById('plTtl').textContent=title;const inn=el.querySelector('.pl-in');inn.innerHTML=body;inn.scrollTop=0;sh.open(from);
 }
 /* Çekmece kapanınca (geri tuşu dahil) iş yapılır, sonra sayfa yenilenir */
 function after(fn){let done=false;const go=()=>{if(done)return;done=true;removeEventListener('popstate',go);fn()};
@@ -87,15 +88,27 @@ function pay(b,from){
     +'<p class="pay-h">Ödeme yöntemi</p><div class="sh-list" role="radiogroup" aria-label="Ödeme yöntemi"><button type="button" class="opt" role="radio" aria-checked="true"><span>Kayıtlı kart •••• 4821<small>Son kullanma 08/28</small></span><i></i></button></div>'
     +'<div class="ex-b pay-b"><button type="button" class="btn green" data-paygo>'+tl(due(b))+' öde</button></div>',from)}
 
-let rv={id:'',n:0};
-function rate(id,from){const b=listPastBookings().find(x=>x.productId===id);if(!b)return;rv={id,n:b.review?b.review.puan:0};
-  sheet('Nasıldı?','<p class="dg-t">'+b.product.title+'</p><div class="dg-s" role="radiogroup" aria-label="Puan">'+[1,2,3,4,5].map(i=>'<button type="button" role="radio" aria-checked="'+(i===rv.n)+'" aria-label="'+i+' yıldız" data-star="'+i+'">'+STAR+'</button>').join('')+'</div>'
-    +'<p class="dg-w" aria-live="polite"></p><label class="dg-l" for="rvTxt">Neler hoşuna gitti? <small>İsteğe bağlı</small></label><textarea id="rvTxt" rows="3" maxlength="500" placeholder="Rehber, ulaşım, yemek…">'+(b.review?b.review.metin:'')+'</textarea>'
-    +'<div class="ex-b"><button type="button" class="btn green" data-rvgo'+(rv.n?'':' disabled')+'>Gönder</button></div>',from);
-  paintStars()}
-function paintStars(){document.querySelectorAll('[data-star]').forEach(s=>{s.setAttribute('aria-checked',+s.dataset.star===rv.n);s.classList.toggle('on',+s.dataset.star<=rv.n)});
-  const w=document.querySelector('.dg-w');if(w)w.textContent=rv.n?['','Kötü','İdare eder','İyi','Çok iyi','Harika'][rv.n]:'Puan vermek için yıldıza dokun.';
-  const g=document.querySelector('[data-rvgo]');if(g)g.disabled=!rv.n}
+/* Değerlendirme: genel puan 1 – 10 ve türe göre ayrıntılı puanlar */
+const ALT={tur:['Rehber','Program','Ulaşım','Fiyat/performans'],otel:['Temizlik','Konum','Personel','Fiyat/performans'],
+  etkinlik:['Organizasyon','Ses ve sahne','Giriş','Fiyat/performans'],aktivite:['Ekip','Güvenlik','Organizasyon','Fiyat/performans'],
+  mekan:['Hizmet','Ortam','Temizlik','Fiyat/performans']};
+const WORD=['','Çok kötü','Kötü','Kötü','Zayıf','Orta','Fena değil','İyi','Çok iyi','Harika','Olağanüstü'];
+let rv={id:'',n:0,alt:{}};
+function rate(id,from){const b=listPastBookings().find(x=>x.productId===id);if(!b)return;
+  const r=b.review||{},names=ALT[typeKey(b.product.type)]||ALT.tur;rv={id,n:r.puan||0,alt:{...(r.alt||{})}};
+  sheet('Nasıldı?','<p class="dg-t">'+b.product.title+'</p>'
+    +'<p class="dg-h">Genel puanın</p><div class="dg-n" role="radiogroup" aria-label="Genel puan, 10 üzerinden">'+[1,2,3,4,5,6,7,8,9,10].map(i=>'<button type="button" role="radio" aria-checked="false" data-n="'+i+'">'+i+'</button>').join('')+'</div>'
+    +'<p class="dg-w" aria-live="polite"></p>'
+    +'<p class="dg-h">Ayrıntılı puan <small>İsteğe bağlı</small></p><div class="dg-alt">'+names.map((a,k)=>'<div class="dg-r"><label for="dgA'+k+'">'+a+'</label>'
+      +'<input type="range" id="dgA'+k+'" min="1" max="10" step="1" value="'+(rv.alt[a]||rv.n||8)+'" data-alt="'+a+'"'+(rv.alt[a]?' data-set':'')+'><output for="dgA'+k+'">'+(rv.alt[a]||'–')+'</output></div>').join('')+'</div>'
+    +'<label class="dg-l" for="rvTxt">Neler hoşuna gitti? <small>İsteğe bağlı</small></label><textarea id="rvTxt" rows="3" maxlength="500" placeholder="Rehber, ulaşım, yemek…">'+(r.metin||'')+'</textarea>'
+    +'<div class="ex-b"><button type="button" class="btn green" data-rvgo>Gönder</button></div>',from);
+  paintScore()}
+function paintScore(){document.querySelectorAll('[data-n]').forEach(s=>s.setAttribute('aria-checked',+s.dataset.n===rv.n));
+  const w=document.querySelector('.dg-w');if(w)w.textContent=rv.n?rv.n+' · '+WORD[rv.n]:'Puan vermek için bir sayıya dokun.';
+  const g=document.querySelector('[data-rvgo]');if(g)g.disabled=!rv.n;
+  /* ayrıntılı puana dokunulmadıysa genel puanı izler */
+  document.querySelectorAll('[data-alt]:not([data-set])').forEach(x=>{if(rv.n)x.value=rv.n})}
 
 function askCancel(b,from){
   sheet('Rezervasyon iptal edilsin mi?','<p class="ex-t">'+b.product.title+' rezervasyonun iptal edilir. İaden, iptal koşullarına göre ödeme yöntemine yapılır.</p>'
@@ -132,14 +145,17 @@ el.addEventListener('click',e=>{const card=e.target.closest('[data-no]'),b=card&
 document.body.addEventListener('click',e=>{const t=e.target.closest('#plSheet button,#plSheet a');if(!t)return;
   const b=open&&byNo(open);
   if(t.matches('.pl-in [data-x]')){sh.close();return}
-  if(t.matches('[data-star]')){rv.n=+t.dataset.star;paintStars();return}
-  if(t.matches('[data-rvgo]')){const id=rv.id,n=rv.n,m=document.getElementById('rvTxt').value.trim();
-    after(()=>{rateBooking(id,n,m);show('gecmis');toast('Teşekkürler, değerlendirmen kaydedildi.','Tamam',()=>{},3000)});return}
+  if(t.matches('[data-n]')){rv.n=+t.dataset.n;paintScore();return}
+  if(t.matches('[data-rvgo]')){const id=rv.id,n=rv.n,m=document.getElementById('rvTxt').value.trim(),alt={};
+    document.querySelectorAll('[data-alt][data-set]').forEach(x=>{alt[x.dataset.alt]=+x.value});
+    after(()=>{rateBooking(id,n,m,alt);show('gecmis');toast('Teşekkürler, değerlendirmen kaydedildi.','Tamam',()=>{},3000)});return}
   if(t.matches('[data-ics]')&&b){ics(b);return}
   if(t.matches('[data-copy]')){if(navigator.clipboard)navigator.clipboard.writeText(t.dataset.copy).then(()=>toast('Adres kopyalandı.','Tamam',()=>{},2500),()=>{});return}
   if(t.matches('[data-paygo]')&&b){after(()=>{payRemaining(b.no);show('yaklasan');toast('Ödeme alındı. Rezervasyonun tamamen ödendi.','Tamam',()=>{},3000)});return}
   if(t.matches('[data-cxgo]')&&b){after(()=>{cancelBooking(b.no);show('yaklasan');toast('Rezervasyon iptal edildi.','Tamam',()=>{},3000)});return}
 });
+document.body.addEventListener('input',e=>{const x=e.target.closest('#plSheet [data-alt]');if(!x)return;
+  x.setAttribute('data-set','');x.nextElementSibling.textContent=x.value});
 /* Paylaşınca geçmişteki kart "paylaştın"a döner */
 document.addEventListener('m360:paylasildi',()=>{if(cur==='gecmis')show('gecmis')});
 const h=location.hash.slice(1);
