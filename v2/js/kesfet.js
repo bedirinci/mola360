@@ -8,6 +8,7 @@
 import { CLOCK } from './icons.js';
 import { makeScroll, toast } from './ui.js';
 import { getLevel, setLevel } from './level.js';
+import { molapuan, initMolapuan } from './molapuan.js';
 import { favSync, initFavorites } from './favorites.js';
 import { productCard, recentCard, ticket, postMini, initPostActions } from './cards.js';
 import { renderShell } from './shell.js';
@@ -134,14 +135,16 @@ initPostActions(toast);
 
 /* kiminle ya da yakınlık değişince sıralanan bölümler */
 function personal(){week(curW);events();posts();favSync()}
+const mpBox=document.getElementById('mpBox'),mpDraw=()=>{mpBox.innerHTML=molapuan(getLevel())};
 
 /* taslak: misafir / üye görünümü */
 document.querySelector('.demo').addEventListener('click',e=>{const b=e.target.closest('.dm');if(!b)return;setLevel(b.dataset.v);const m=getLevel()!=='guest';
   document.querySelectorAll('.dm').forEach(x=>x.setAttribute('aria-pressed',x===b));
   document.querySelectorAll('[data-member]').forEach(x=>x.hidden=!m);document.querySelectorAll('[data-guest]').forEach(x=>x.hidden=m);
   document.getElementById('lvlTxt').textContent=getLevel()==='kasif'?'Kâşif · 1.240 Molapuan':'Gezgin · 320 Molapuan';
-  recent();if(nearAt)nearShow(...nearAt);else{pick();personal()}});
+  mpDraw();recent();if(nearAt)nearShow(...nearAt);else{pick();personal()}});
 
+mpDraw();initMolapuan();
 recent();
 if(!nearStart()){pick();personal()}
 initFavorites();

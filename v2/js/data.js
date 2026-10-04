@@ -207,3 +207,8 @@ export const WHEN=[
  ['gelecek-hs','Gelecek hafta sonu','9 – 11 Ekim',[2026,9,9],[2026,9,11]],
  ['ekim','Ekim içinde','1 – 31 Ekim',[2026,9,1],[2026,9,31]],
  ['kasim','Kasım içinde','1 – 30 Kasım',[2026,10,1],[2026,10,30]]];
+
+/* ÖRNEK Molapuan durumu, taslak görünümüne göre: [puan, son 24 aydaki rezervasyon].
+   Seviye eşikleri (ÖNERİ): Gezgin 1, Kâşif 3, Mola Ustası 6 rezervasyon. */
+export const PUAN={guest:[0,0],gezgin:[320,1],kasif:[1240,3]};
+export const SEVIYE=[['Gezgin',1,'Puan kazanır','Gezgin\'e','puan kazanmaya başla'],['Kâşif',3,'%10 indirim','Kâşif\'e','%10 indirim kazan'],['Mola Ustası',6,'%15 indirim','Mola Ustası\'na','%15 indirim kazan']];

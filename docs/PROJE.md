@@ -1135,3 +1135,25 @@ güncellenecek yaşayan proje dokümanıdır.
   rezervasyon kaldı, %15 indirim seni bekliyor"). Ok düğmesi Keşfet'e
   götürüyor.
   Kart 320px genişlikte de taşmadan sığıyor.
+
+### 2026-10-04 — Molapuan kartı Keşfet'te, ince yatay kart
+
+- **Karar (Bedir):** Molapuan kartı Keşfet'te yer alıyor ve Bedir'in
+  gönderdiği örnekteki gibi ince, yatay bir kart. Bir önceki koyu ve
+  büyük tasarımın yerini alıyor.
+- **Neden:** Puan ve sıradaki hedef keşfin başında görünmeli. Kart, sayfanın
+  akışını bölmeyecek kadar ince olmalı.
+- **Etkilediği alanlar:** Keşfet (arama kartının hemen altı), Profil (aynı
+  kart), `js/molapuan.js`, `api.getPoints`, `data.js` `PUAN` ve `SEVIYE`.
+- **Teknik sonuç:**
+  - Kartın üç katı var:
+    - üstte puan, seviye rozeti ve "Nasıl kazanırım?";
+    - ortada sıradaki hedef cümlesi ve ok;
+    - altta açılıp kapanan "Seviye yolun".
+  - Yol ilk açılışta kapalı. Kullanıcının seçimi `m360-mp` anahtarında
+    saklanıyor.
+  - Kart, Misafir, Gezgin ve Kâşif önizlemesine göre değişiyor.
+  - Dar ekranda (<360px) rozet yalnızca seviye adını gösteriyor.
+- **UX sonucu:** Kart kapalıyken yaklaşık 167px yüksekliğinde. Misafir
+  "İlk rezervasyonunla Gezgin ol, puan kazanmaya başla!" görüyor.
+  Ok düğmesi tüm deneyimler listesine götürüyor.
