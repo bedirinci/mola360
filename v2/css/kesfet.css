@@ -62,20 +62,23 @@
 .empty-r b{display:block;color:var(--ink);font-weight:var(--fw-bold)}
 
 /* Yakınımda ne var? Kullanıcı isterse konum; yoksa şehir seçimi */
-/* açık yeşil davet kartı: sayfanın lacivert başlığıyla yarışmaz */
-.near{position:relative;overflow:hidden;margin:30px 16px 0;padding:18px 18px 16px;border-radius:var(--r-lg);background:var(--green-soft);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(63,101,18,.12)}
-.near::before{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border-radius:50%;background:repeating-radial-gradient(circle,rgba(140,198,63,.45) 0 1.5px,transparent 2px 26px)}
-.near-ic{position:absolute;right:20px;top:20px;width:40px;height:40px;border-radius:50%;background:var(--green);color:var(--navy);display:grid;place-items:center;box-shadow:0 0 0 8px rgba(140,198,63,.22)}
-.near-ic svg{width:21px;height:21px;stroke-width:2.2}
-.near h2{position:relative;font-size:var(--fs-h2);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;padding-right:72px}
-.near p{position:relative;margin-top:6px;font-size:var(--fs-md);line-height:1.5;color:var(--mute);padding-right:56px}
-.near-go{position:relative;display:inline-flex;align-items:center;gap:7px;margin-top:14px;min-height:44px;padding:0 16px;border-radius:var(--r-md);background:var(--navy);color:#fff;font-weight:var(--fw-bold);font-size:var(--fs-md)}
-.near-go svg{width:18px;height:18px;stroke-width:2.2;color:var(--green)}
+/* davet kartı Molapuan kartıyla aynı dilde: beyaz, ince, gölgeli */
+.near{margin:20px 16px 0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.near-top{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.near-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--navy);color:var(--green);box-shadow:0 0 0 2px var(--green)}
+.near-ic svg{width:19px;height:19px;stroke-width:2.2}
+.near-t{flex:1;min-width:0;line-height:1.3}
+.near-t h2{font-size:calc(var(--fs-lg) - var(--fs-mp-down));font-weight:var(--fw-bold)}
+.near-t p{margin-top:2px;font-size:calc(var(--fs-md) - var(--fs-mp-down));line-height:1.4;color:var(--mute)}
+.near-go{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px 10px 14px;border-top:1px solid var(--line);text-align:left;color:var(--ink)}
+.near-go>span{flex:1;font-size:calc(var(--fs-md) - var(--fs-mp-down));font-weight:var(--fw-semi)}
+.near-arr{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff}
+.near-arr svg{width:16px;height:16px;stroke-width:2.6}
 .near-go[disabled]{opacity:.7}
-.near-alt{position:relative;margin-top:14px;padding-top:14px;border-top:1px solid rgba(63,101,18,.15)}
-.near-alt p{margin-top:0;padding-right:0;color:var(--ink);font-weight:var(--fw-medium)}
+.near-alt{padding:10px 14px 14px;border-top:1px solid var(--line)}
+.near-alt p{font-size:calc(var(--fs-md) - var(--fs-mp-down));font-weight:var(--fw-medium);color:var(--ink)}
 .near-c{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.near-c button{min-height:40px;padding:0 14px;border-radius:var(--r-pill);background:var(--card);color:var(--ink);font-weight:var(--fw-semi);font-size:var(--fs-md);box-shadow:inset 0 0 0 1px var(--line)}
+.near-c button{min-height:40px;padding:0 14px;border-radius:var(--r-pill);background:var(--card);color:var(--ink);font-weight:var(--fw-semi);font-size:calc(var(--fs-md) - var(--fs-mp-down));box-shadow:inset 0 0 0 1px var(--line)}
 .near-loc{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 10px 4px 8px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink);font-size:var(--fs-sm);font-weight:var(--fw-bold)}
 .near-loc svg{width:14px;height:14px;stroke-width:2.4}
 /* konum etiketi başlığın sağında; dar ekranda başlık değil etiket kısalır */

@@ -1246,3 +1246,19 @@ güncellenecek yaşayan proje dokümanıdır.
   olarak kaydedildi (5,5 KB). Kartta 40px, menüde 20px gösteriliyor.
   Kartın eski yıldızlı lacivert kutusu kalktı.
 - **UX sonucu:** Puan her yerde aynı simgeyle tanınıyor.
+
+### 2026-10-04 — "Yakınımda ne var?" kartı Molapuan kartı stilinde
+
+- **Karar (Bedir):** Açık yeşil kart olmamış. Davet kartı Molapuan
+  kartının stilinde olacak.
+- **Neden:** Keşfet'teki iki davet kartı aynı dili konuşmalı.
+- **Etkilediği alanlar:** Keşfet `index.html` (`#nearCard`), `kesfet.css`.
+- **Teknik sonuç:** Kart, Molapuan kartı gibi beyaz, ince ve gölgeli.
+  - Üst satırda lacivert daire içinde yeşil konum ikonu, başlık ve tek
+    cümle açıklama var.
+  - Çizgiyle ayrılan alt satır "Konumumu kullan" düğmesi; sağında
+    lacivert yuvarlak ok var.
+  - Şehir seçenekleri kartın altında, ayrı bir satırda açılıyor.
+  - Yazılar Molapuan kartı gibi ölçeğin 1px altında (`--fs-mp-down`).
+- **UX sonucu:** İki kart Keşfet'te tutarlı. Konum açılınca öteki
+  bölümlerin sırası yine değişmiyor.
