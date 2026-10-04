@@ -14,11 +14,12 @@ const R=ROOT;
 /* Alt menü: iki kalp (Keşfet, Bağlan) + kullanıcının alanı. Arama menüde
    yok, Keşfet'in en üstünde; Keşfet'teyken Keşfet'e yeniden dokunmak oraya
    götürür. Yanındaki yuvarlak düğme Bağlan'a paylaşım ekler (paylas.js). */
+/* İkonlarda .f seçili sekmede dolar, .w dolgunun üstünde beyaz çizilir */
 const NAV=[
- ['kesfet','','Keşfet','<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'],
- ['baglan','baglan/','Bağlan','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.6a6.5 6.5 0 0 1 3.5 6.4"/>'],
- ['planlarim','planlarim/','Planlarım','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/>'],
- ['profil','profil/','Profil','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>']];
+ ['kesfet','','Keşfet','<circle class="f" cx="12" cy="12" r="9"/><path class="w wf" d="m15.5 8.5-2 5-5 2 2-5z"/>'],
+ ['baglan','baglan/','Bağlan','<circle class="f" cx="9" cy="8" r="3.5"/><path class="f" d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.6a6.5 6.5 0 0 1 3.5 6.4"/>'],
+ ['planlarim','planlarim/','Planlarım','<rect class="f" x="3" y="5" width="18" height="16" rx="2"/><path class="w" d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path class="w" d="m9 15 2 2 4-4"/>'],
+ ['profil','profil/','Profil','<circle class="f" cx="12" cy="8" r="4"/><path class="f" d="M4 21a8 8 0 0 1 16 0z"/>']];
 
 const navHtml=page=>'<div class="dock" id="dock"><nav class="nav" aria-label="Alt menü">'+NAV.map(n=>'<a href="'+R+n[1]+'" data-nav="'+n[0]+'"'+(n[0]===page?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+n[3]+'</svg><span>'+n[2]+'</span></a>').join('')+'</nav>'
  +'<button type="button" class="dock-add" id="shareBtn" aria-label="Paylaş" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>';
