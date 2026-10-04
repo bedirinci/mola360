@@ -150,6 +150,8 @@ export const PROFIL={
  ozan:['Trabzon','Patikalar, yaylalar, çadır.',689,144],
  irem:['İstanbul','Konser, festival, şehir kaçamağı.',455,276]};
 /* Paylaşım sayfasındaki yorumlar: kişi, yorum, ne zaman */
+/* paylaşım sahibinin ilk yoruma yanıtı (yorumlarda "Yanıtları gör") */
+export const YANITLAR=['Kesinlikle öneririm, rehberimiz çok ilgiliydi.','Teşekkürler! Bir dahakine birlikte gidelim.','Sabah erken çıkın, kalabalık olmuyor.','Çok keyifliydi, fiyatına da değdi.'];
 export const YORUMLAR=[
  ['deniz','Fotoğraflar harika! Hangi ayda gittiniz?','2 sa'],['elif','Listeme ekledim, bu yaz mutlaka.','5 sa'],
  ['kaan','Rehber kimdi? Biz de aynı turu düşünüyoruz.','1 g'],['zeynep','Çocukla gitmeye uygun mu sizce?','1 g'],
