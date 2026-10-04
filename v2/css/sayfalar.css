@@ -171,6 +171,9 @@ main#urun .box:first-of-type{margin-top:24px}
 #pfTabs{margin:16px 16px 0}
 #pfTabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:var(--fs-sm)}
 #pfTabs svg{width:16px;height:16px}
+/* seçili sekme beyaz, ikonu dolgulu (Bedir) */
+#pfTabs button[aria-pressed="true"]{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,26,46,.12)}
+#pfTabs button[aria-pressed="true"] svg{fill:currentColor}
 /* dar telefonda üç sekme yazısıyla sığsın */
 @media (max-width:359px){#pfTabs svg{display:none}}
 .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}

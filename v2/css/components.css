@@ -564,7 +564,8 @@ html.kb .ps-add:has(input:focus-visible){outline:2px solid var(--navy);outline-o
 .mp-next{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-top:1px solid var(--line);color:var(--ink)}
 .mp-next>span:first-child{flex:1;min-width:0;font-size:calc(var(--fs-md) - var(--fs-mp-down));font-weight:var(--fw-semi);line-height:1.4}
 .mp-next em{font-style:normal;color:var(--green-ink);font-weight:var(--fw-bold)}
-.mp-go{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff}
+/* beyaz ok düğmesi (Bedir) */
+.mp-go{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1px var(--line),0 1px 3px rgba(20,26,46,.1)}
 .mp-go svg{width:16px;height:16px;stroke-width:2.6}
 .mp-tg{display:flex;align-items:center;gap:8px;width:100%;min-height:40px;padding:2px 14px 10px;text-align:left;color:var(--mute)}
 .mp-tg svg{flex:none;width:18px;height:18px;stroke-width:2.4;transition:transform var(--t) var(--ease)}
