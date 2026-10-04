@@ -60,7 +60,7 @@ document.getElementById('urun').innerHTML=
  +'<button type="button" class="ib" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div></div>'
  +'</header><nav class="u-tabs" id="uTabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav>'
  +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N},(_,i)=>'<div class="ug-f" style="background:'+frame(i)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"></div>').join('')+'</div>'
- +'<span class="ug-n"><span id="ugI">1</span> / '+N+'</span><div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
+ +'<div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
  +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-proof">'+(p.count?'<button type="button" class="u-sc" data-go="yorumlar">'+sc(p.score)+'<span>'+p.count.toLocaleString('tr-TR')+' değerlendirme</span></button>':'<span class="score new"><b>Yeni</b></span><span class="u-nr">Henüz değerlendirme yok</span>')
@@ -89,8 +89,9 @@ document.getElementById('urun').innerHTML=
 
  /* turda kişi başı fiyat: yetişkin, çocuk, bebek (rezervasyondakiyle aynı) */
  +(S.people?'<section class="box"><h2>Kişi başı fiyat</h2><dl class="u-pp">'+S.people.rows.map(r=>{const f=r[3]===1?p.price:Math.round(p.price*r[3]/10)*10;
-     return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')+'</dl>'
-   +'<p class="u-pp-n">Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
+     return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')
+     +(S.room?'<div><dt>Tek kişilik oda farkı<small>Kişi başı, tüm konaklama için</small></dt><dd>+'+tl(lvPrice(p.title,S.room.single))+'</dd></div>':'')+'</dl>'
+   +'<p class="u-pp-n">'+(S.room?'Fiyatlar iki kişilik odada kişi başı. ':'')+'Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
 
  +'<section class="box"><h2>'+(S.dep&&S.dep.city?'Kalkış noktaları ve saatleri':info.placeTitle)+'</h2>'
  +(S.dep&&S.dep.city
@@ -169,7 +170,8 @@ function onScroll(){
 addEventListener('scroll',onScroll,{passive:true});onScroll();
 /* görsel sayacı ve noktalar kaydırdıkça */
 const tr=document.getElementById('ugTr');
-tr.addEventListener('scroll',()=>{const i=Math.round(tr.scrollLeft/tr.clientWidth);document.getElementById('ugI').textContent=i+1;
+/* kartlar ekrandan dar: yanındaki kartın ucu görünür; sıra kart genişliği + aralıkla bulunur */
+tr.addEventListener('scroll',()=>{const f=tr.children[1]||tr.children[0],i=Math.round(tr.scrollLeft/(f.offsetLeft-tr.children[0].offsetLeft||tr.clientWidth));
   document.querySelectorAll('.ug-dots i').forEach((d,j)=>d.classList.toggle('on',j===i))},{passive:true});
 
 renderShell('urun',{nav:false});
