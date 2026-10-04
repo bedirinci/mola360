@@ -87,8 +87,8 @@ describe('v2', () => {
     const kap = api.listProducts({ yer: 'kapadokya' });
     expect(kap.length).toBeGreaterThan(0);
     expect(api.listProducts({ type: 'tur', yer: 'kapadokya' }).every(p => p.type === 'Tur')).toBe(true);
-    /* tarihi olan ürün pencereye düşmeli: Kapadokya Turu kasımda kalkmıyor */
-    expect(api.listProducts({ yer: 'kapadokya', type: 'tur', tarih: 'kasim' })).toEqual([]);
+    /* tarihi olan ürün pencereye düşmeli: Kapadokya Turu bu hafta sonu kalkmıyor (ilk kalkış 5 Ekim) */
+    expect(api.listProducts({ yer: 'kapadokya', type: 'tur', tarih: 'bu-hs' })).toEqual([]);
     expect(api.firstDateIn(api.getProduct('kapadokya-turu'), 'gelecek-hs')).toBe('Cum 9 Eki');
   });
 
