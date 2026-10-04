@@ -37,17 +37,21 @@ const unitOf=k=>/gün$/.test(k)?'gün':'adım';
 const kept=history.state&&history.state.tarih;
 const H=S.hotel;
 /* otelde giriş günleri; turda kalkışlar (geçmiştekiler gösterilmez) */
-const ds=H?H.dates:upcoming(p.dates);
-const hasD=ds.length>0&&(p.dates.length>0||!!H);
+const ds=S.dates;
+const hasD=ds.length>0&&(p.dates.length>0||!!H||ds.length>1);
+/* paket, bilet türü ya da hizmet seçenekleri (otel dışı) */
+const OP=H?[]:S.opts;
 /* tek kalkış kaldıysa o seçili gelir */
 let picked=kept&&ds.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih)||(H?H.stay.date:ds.length===1?ds[0].join(' '):'');
 /* otel: gece sayısı ve oda tipi; seçimler sayfanın geçmiş kaydında durur */
 const hs=history.state||{};
 let nights=H?Math.min(H.maxNights,Math.max(1,+hs.gece||H.stay.nights)):0;
 let room=H?Math.min(H.rooms.length-1,Math.max(0,+hs.oda||0)):0;
+let sec=OP.length?Math.min(OP.length-1,Math.max(0,+hs.sec||0)):-1;
 const dGrid=()=>dateGrid(ds,picked);
+const optTitle={etkinlik:'Bilet türleri',aktivite:'Paketler'}[typeKey(p.type)]||(S.fixed?'Alanlar':'Seçenekler');
 const allDates=from=>openDates(ds,picked,pick,from,H?'giriş günü':'kalkış tarihi');
-const saveSel=()=>history.replaceState({...history.state,tarih:picked,...(H?{gece:nights,oda:room}:{})},'');
+const saveSel=()=>history.replaceState({...history.state,tarih:picked,...(H?{gece:nights,oda:room}:{}),...(OP.length?{sec}:{})},'');
 function pick(k){picked=k;const g=document.querySelector('#tarihler .u-dates');if(g)g.innerHTML=dGrid();saveSel();drawCta();cxl();stay()}
 /* çıkış günü ve gece düğmeleri */
 function stay(){if(!H)return;const o=document.getElementById('uOut'),n=document.getElementById('uN'),d=parseDay(picked);
@@ -67,7 +71,7 @@ const deposit=p.type==='Tur'?Math.round(lvPrice(p.title,p.price)*.2):0;
 const N=5;
 const frame=i=>'radial-gradient(circle at '+[[30,25],[75,35],[50,70],[20,60],[80,80]][i].map(v=>v+'%').join(' ')+',rgba(255,255,255,.28),transparent 55%),'+p.bg;
 const short=p.place.split(' · ')[0];
-const tabs=[['genel','Genel'],hasD&&['tarihler','Tarihler'],H&&['odalar','Odalar'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
+const tabs=[['genel','Genel'],hasD&&['tarihler','Tarihler'],H&&['odalar','Odalar'],OP.length>0&&['secenek',{etkinlik:'Biletler',aktivite:'Paketler'}[typeKey(p.type)]||'Seçenekler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
   info.dahil.length&&['dahil','Dahil'],['yorumlar','Yorumlar'],['sss','SSS']].filter(Boolean);
 function faq(){const t=typeKey(p.type),q=[];
   q.push(['Rezervasyonumu nasıl iptal ederim?',S.cancel+'. Planlarım\'da rezervasyonunu açıp "İptal et"e dokunman yeterli; iade aynı karta 3–7 iş günü içinde yapılır.']);
@@ -113,6 +117,12 @@ document.getElementById('urun').innerHTML=
    +dGrid()
    +'</div>'+(H?'<div class="bk-pr u-night"><div><b>Kaç gece?</b><small id="uOut"></small></div><div class="stp"><button type="button" data-gece="-1" aria-label="Bir gece azalt">−</button><output id="uN" aria-live="polite">'+nights+'</output><button type="button" data-gece="1" aria-label="Bir gece artır">+</button></div></div>':'')
    +'<p class="u-cx" id="cxl2"></p></section>':'')
+
+ /* paket, bilet türü ya da hizmet: seçilen rezervasyona geçer; başlangıç saatleri */
+ +(OP.length?'<section class="box" id="secenek"><h2>'+optTitle+'</h2>'+(S.slots.length&&typeKey(p.type)!=='etkinlik'?'<p class="u-pp-n">'+(S.slots.length>1?'Başlangıç saatleri: ':'Başlangıç ')+S.slots.join(' · ')+'</p>':'')
+   +'<div class="u-rooms" role="radiogroup" aria-label="'+optTitle+'">'+OP.map((o,i)=>'<button type="button" class="u-room u-opt" role="radio" aria-checked="'+(i===sec)+'" data-sec="'+i+'"><span class="u-rm-h"><b>'+o[0]+'</b><i aria-hidden="true"></i></span>'
+     +'<span class="u-rm-p">'+(lvOn(p.title)?'<s>'+tl(o[1])+'</s>':'')+'<strong>'+tl(lvPrice(p.title,o[1]))+'</strong><small>'+p.unit+'</small></span></button>').join('')+'</div>'
+   +(S.qty&&S.qty.note?'<p class="u-pp-n">'+S.qty.note+'</p>':'')+'</section>':'')
 
  /* otel: oda tipleri (gecelik oda fiyatı, Kâşif indirimi yansımış) ve olanaklar */
  +(H?'<section class="box" id="odalar"><h2>Odalar</h2><p class="u-pp-n">Fiyatlar oda başı, gecelik'+(p.facts[1]?'; '+p.facts[1].toLocaleLowerCase('tr'):'')+'.</p><div class="u-rooms" role="radiogroup" aria-label="Oda">'
@@ -181,8 +191,8 @@ cxl();stay();
 function drawCta(){
   /* kartlardaki fiyatla aynı: seviye indirimi (Kâşif %10) fiyata dahil, üstü çizili ilk fiyat */
   /* otelde seçilen odanın gecelik fiyatı × gece */
-  const base=H?H.rooms[room].fiyat*nights:p.price;
-  const now=lvPrice(p.title,base),was=H?(lvOn(p.title)?base:0):p.old||(lvOn(p.title)?p.price:0);
+  const base=H?H.rooms[room].fiyat*nights:sec>=0?OP[sec][1]:p.price;
+  const now=lvPrice(p.title,base),was=H||sec>0?(lvOn(p.title)?base:0):p.old||(lvOn(p.title)?p.price:0);
   const meta=[H?stayRange(picked,nights):picked,lvOn(p.title)&&'Kâşif fiyatı'].filter(Boolean).join(' · ');
   cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')
    +'<span class="pp-n"><strong>'+tl(now)+'</strong><small>'+(H?nights+' gece toplam':p.unit)+'</small></span>'+(meta?'<span class="pp-m">'+meta+'</span>':'')+'</div>'
@@ -191,7 +201,7 @@ function drawCta(){
 drawCta();
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   if(hasD&&!picked){goTo('tarihler');return}
-  location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')+(H?'&gece='+nights+'&oda='+room:'')});
+  location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')+(H?'&gece='+nights+'&oda='+room:'')+(sec>=0?'&sec='+sec:'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const ad=e.target.closest('[data-all-d]');if(ad){allDates(ad);return}
   const d=e.target.closest('[data-gun]');
@@ -199,6 +209,8 @@ document.getElementById('urun').addEventListener('click',e=>{
   const gc=e.target.closest('[data-gece]');
   if(gc){nights=Math.max(1,Math.min(H.maxNights,nights+ +gc.dataset.gece));saveSel();stay();drawCta();return}
   const od=e.target.closest('[data-oda]');
+  const se=e.target.closest('[data-sec]');
+  if(se){sec=+se.dataset.sec;document.querySelectorAll('[data-sec]').forEach(x=>x.setAttribute('aria-checked',x===se));saveSel();drawCta();return}
   if(od){room=+od.dataset.oda;document.querySelectorAll('[data-oda]').forEach(x=>x.setAttribute('aria-checked',x===od));saveSel();drawCta();return}
   const m=e.target.closest('[data-prog]');
   if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);

@@ -36,7 +36,7 @@ const DEP=S.dep,RM=S.room,HR=S.hotel;
 const dateKey=d=>d[0]+' '+d[1];
 const st={step:1,
   date:S.dates.length===1?dateKey(S.dates[0]):(S.dates.map(dateKey).find(k=>k===q.get('tarih'))||(HR?HR.stay.date:'')),
-  slot:'',opt:S.opts.length?0:-1,qty:S.qty?startQty(S.qty):1,pay:S.deposit?'kapora':'tam',
+  slot:S.slots.length===1?S.slots[0]:'',opt:S.opts.length?Math.max(0,Math.min(S.opts.length-1,+q.get('sec')||0)):-1,qty:S.qty?startQty(S.qty):1,pay:S.deposit?'kapora':'tam',
   ppl:PP?{yetiskin:startQty({min:1,max:PP.max,start:2}),cocuk:0,bebek:0}:null,
   stop:DEP&&DEP.stops.length===1?0:-1,
   sgl:0,pax:{},ben:true,note:'',
@@ -93,7 +93,8 @@ function step1(){
   return head
   +'<section class="box" id="bkDate"><h2>'+(S.dates.length===1?'Tarih':'Tarih seç')+'</h2>'
   +(S.dates.length===1?'<p class="bk-one">'+IC.calendar+'<b>'+st.date+'</b></p>'
-    :radios('Tarih',S.dates.map(d=>[dateKey(d),d[0],d[1]]),st.date)+'<p class="err" id="dateErr" hidden>Devam etmek için bir tarih seç.</p>')
+    /* her gün açık deneyimde (aktivite, mekân) ilk üç gün ve "Tüm tarihler" çekmecesi */
+    :(S.dates.length>12?'<div class="u-dates bk-dg" id="bkDg" role="radiogroup" aria-label="Tarih">'+dateGrid(S.dates,st.date)+'</div>':radios('Tarih',S.dates.map(d=>[dateKey(d),d[0],d[1]]),st.date))+'<p class="err" id="dateErr" hidden>Devam etmek için bir tarih seç.</p>')
   +'</section>'
   +(PP?'<section class="box" id="bkPpl"><h2>Kişi sayısı</h2><p>En fazla '+PP.max+' kişi. Her bebek bir yetişkinin kucağında yolculuk eder.</p><div class="bk-ppl">'
     +ROWS.map(r=>'<div class="bk-pr"><div><b>'+r[1]+'</b><small>'+r[2]+(r[3]?' · <i>'+tl(lvPrice(p.title,rowFull(r)))+'</i>':'')+'</small></div>'
@@ -105,8 +106,8 @@ function step1(){
     +'<div class="stp"><button type="button" data-sg="-1" aria-label="Tek kişilik oda azalt">−</button><output id="sgl" aria-live="polite">0</output><button type="button" data-sg="1" aria-label="Tek kişilik oda artır">+</button></div></div>'
     +'<p class="bk-rn" id="roomNote" hidden></p></section>':'')
   +(DEP?'<section class="box" id="bkStop">'+stopBox()+'</section>':'')
-  +(S.slots.length?'<section class="box" id="bkSlot"><h2>Saat</h2>'+radios('Saat',S.slots.map(s=>[s,'Başlangıç',s]),st.slot)+'<p class="err" id="slotErr" hidden>Bir saat seç.</p></section>':'')
-  +(S.opts.length?'<section class="box"><h2>'+(S.fixed?'Alan':'Seçenek')+'</h2><div class="bk-opts" role="radiogroup" aria-label="Seçenek">'
+  +(S.slots.length?'<section class="box" id="bkSlot"><h2>Saat</h2>'+radios('Saat',S.slots.map(s=>[s,/gün/.test(s)?'Saat':'Başlangıç',s]),st.slot)+'<p class="err" id="slotErr" hidden>Bir saat seç.</p></section>':'')
+  +(S.opts.length?'<section class="box"><h2>'+(S.fixed?'Alan':{etkinlik:'Bilet türü',aktivite:'Paket'}[typeKey(p.type)]||'Seçenek')+'</h2><div class="bk-opts" role="radiogroup" aria-label="Seçenek">'
     +S.opts.map((o,i)=>'<button type="button" role="radio" aria-checked="'+(i===st.opt)+'" data-opt="'+i+'"><span>'+o[0]+'</span><b>'+tl(lvPrice(p.title,o[1]))+'</b></button>').join('')+'</div>'
     +(S.fixed?'<p>Fiyat seçtiğin alan için minimum harcama; mekânda harcamandan düşülür.</p>':'')+'</section>':'')
   +(S.qty?'<section class="box"><div class="bk-qty"><div><h2>'+S.qty.label+'</h2>'+(S.qty.note?'<p>'+S.qty.note+'</p>':'')+'</div>'
@@ -214,7 +215,7 @@ function step3(){
   const rows=HR?[['Giriş',ci?longDate(ci)+' · '+HR.giris:st.date],['Çıkış',outDay()?longDate(outDay())+' · '+HR.cikis:''],['Konaklama',st.gece+' gece'],
     ['Oda',st.rc+' × '+RT().ad],['Misafir',guestTxt()+(st.yas.length?' <small>('+st.yas.map(a=>+a?a+' yaş':'bebek').join(', ')+')</small>':'')],['Odada kalan',names],
     st.varis&&['Varış',st.varis],st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean):[['Tarih',so?st.date:when()],RM&&['Oda',roomTxt(rooms())],so&&['Kalkış',(so.saat?so.saat+' · ':'')+so.yer],
-    S.opts.length&&[S.fixed?'Alan':'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()],
+    S.opts.length&&[S.fixed?'Alan':{etkinlik:'Bilet türü',aktivite:'Paket'}[typeKey(p.type)]||'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()],
     PP&&['Kişi',qtyTxt()],PP&&['Katılımcılar',people().map(x=>esc(meOn(x.key)?st.name:(st.pax[x.key]||{}).ad)+(x.yas?' <small>('+(+(st.pax[x.key]||{}).yas?(st.pax[x.key]||{}).yas+' yaş':'bebek')+')</small>':'')).join('<br>')],
     PP&&st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean);
   const lv=lvOn(p.title);
@@ -395,7 +396,7 @@ function refreshH(){if(!document.getElementById('bkGuest'))return;fitR();
 const regrid=()=>{const g=document.getElementById('bkDg');if(g)g.innerHTML=dateGrid(S.dates,st.date)};
 main.addEventListener('click',e=>{
   const gn=e.target.closest('[data-gun]');if(gn){st.date=gn.dataset.gun;regrid();show('dateErr','');refresh();return}
-  const al=e.target.closest('[data-all-d]');if(al){openDates(S.dates,st.date,k=>{st.date=k;regrid();show('dateErr','');refresh()},al,'giriş günü');return}
+  const al=e.target.closest('[data-all-d]');if(al){openDates(S.dates,st.date,k=>{st.date=k;regrid();show('dateErr','');refresh()},al,HR?'giriş günü':'gün');return}
   const hg=e.target.closest('[data-hg]');if(hg){st.gece=Math.max(1,Math.min(HR.maxNights,st.gece+ +hg.dataset.v));refresh();return}
   const hm=e.target.closest('[data-hm]');if(hm){const k=hm.dataset.hm;st.ms[k]=Math.max(k==='yetiskin'?1:0,st.ms[k]+ +hm.dataset.v);
     if(k==='cocuk'){st.yas=st.yas.slice(0,st.ms.cocuk);while(st.yas.length<st.ms.cocuk)st.yas.push('');document.getElementById('bkKids').innerHTML=kidBox()}

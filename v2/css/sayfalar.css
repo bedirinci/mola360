@@ -718,3 +718,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-kids:empty{display:none}
 .bk-kids .err{grid-column:1/-1}
 .bk-rc{margin-top:10px}
+.u-opt{grid-template-columns:1fr auto;align-items:center}
+.u-opt .u-rm-h{grid-column:1;grid-row:1}
+.u-opt .u-rm-p{grid-column:2;grid-row:1}
+.u-opt .u-rm-h{flex-direction:row-reverse;justify-content:flex-end}

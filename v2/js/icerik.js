@@ -258,6 +258,21 @@ export const DETAY={
 /* Tur kalkış noktaları (ÖRNEK): tur hangi şehirden çıkıyorsa o şehrin
    durakları [saat, durak, adres, not]. Burada olmayan turda tek kalkış
    noktası DETAY'daki "yer"den gelir. */
+/* Aktivite seansları ve paketleri, etkinlik bilet türleri (ÖRNEK):
+   slots başlangıç saatleri, opts [ad, kişi ya da bilet başı fiyat], not kişi/bilet notu */
+export const SEANS={
+ 'İstanbul Boğaz Turu':{slots:['11:00','14:00','17:30'],opts:[['Standart paket',650],['Kahvaltılı paket',890]],not:'Kişi başı. 0–6 yaş kucakta ücretsiz.'},
+ 'Ölüdeniz Yamaç Paraşütü':{slots:['09:00','11:00','13:00','15:00'],opts:[['Tandem uçuş',1450],['Uçuş + fotoğraf ve video',1950]],not:'7 yaş ve üzeri, en fazla 110 kg.'},
+ 'Uludağ Kayak Dersi':{slots:['09:30','13:30'],opts:[['Özel ders · 2 saat',750],['Özel ders · 4 saat',1350]],not:'5 yaş ve üzeri; ekipman kiralama fiyata dahil değil.'},
+ 'Bodrum Tekne Turu':{slots:['10:30'],opts:[],not:'Kişi başı. 0–6 yaş ücretsiz; çocuklara can yeleği verilir.'},
+ 'Köprülü Kanyon Rafting':{slots:['09:00'],opts:[['Standart paket',850],['Rafting + zipline',1150]],not:'8 yaş ve üzeri; yüzme bilmek gerekmez. Saat otelden alış saatidir.'},
+ 'Harbiye Açıkhava Konserleri':{opts:[['Tribün · numaralı',890],['Ön saha · ayakta',1450]],not:'7 yaş ve üzeri herkes bilet alır.'},
+ 'Aspendos Opera ve Bale Festivali':{opts:[['Tribün',420],['Protokol tribünü',780]],not:'7 yaş ve üzeri herkes bilet alır.'},
+ 'Kordon Caz Akşamları':{opts:[['Genel giriş',480],['Sahne önü oturma',720]],not:'12 yaş altı ücretsiz, yetişkinle girer.'},
+ 'İstanbul Kahve Festivali':{opts:[['Günlük giriş',290],['Atölye dahil giriş',490]],not:'12 yaş altı ücretsiz.'},
+ 'Stand Up Gecesi':{opts:[['Genel giriş',420],['Ön sıra',600]],not:'16 yaş ve üzeri.'},
+ 'Çeşme Yaz Festivali':{opts:[['Günlük bilet',650],['İki günlük kombine',1100]],not:'12 yaş altı ücretsiz, yetişkinle girer.'}};
+
 /* Otel odaları ve kuralları (ÖRNEK): giriş ve çıkış saati, odalar
    [ad, açıklama, en fazla kişi (2 yaş ve üzeri), gecelik oda fiyatı, öne çıkanlar],
    olanaklar, çocuk: [bu yaşa kadar ücretsiz, 12 yaşa kadar ek yatak gecelik], evcil hayvan */
