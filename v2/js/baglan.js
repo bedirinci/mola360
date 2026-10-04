@@ -28,11 +28,14 @@ const people=()=>{const l=listSuggestions();return l.length?'<section class="ppl
    İnce kart; x ile kapatılınca o hafta bir daha çıkmaz (m360-hafta). */
 const WK='m360-hafta';
 const weekOff=w=>{try{return localStorage.getItem(WK)===w.post.id}catch(e){return false}};
+const nf=n=>n.toLocaleString('tr-TR');
 const week=()=>{const w=weekTraveler();if(!w||weekOff(w))return '';const p=w.post,u=p.user;
   return '<section class="wk" aria-label="Haftanın gezgini"><a class="wk-a" href="'+postUrl(p.id)+'">'
    +'<span class="wk-av">'+ava(u)+'<i aria-hidden="true">'+STAR+'</i></span>'
    +'<span class="wk-x"><small>Haftanın gezgini</small><b>@'+u.kul+(u.onay?VERIFIED:'')+'</b>'
-   +'<span>'+w.saves+' kayıt · <em>+'+w.points+' Molapuan</em></span></span></a>'
+   +'<span>'+nf(w.total)+' etkileşim · <em>+'+w.points+' Molapuan</em></span></span>'
+   +'<span class="wk-t" style="background:'+p.bg+'" aria-hidden="true"></span></a>'
+   +'<button type="button" class="wk-q" aria-label="Haftanın gezgini nasıl seçilir?">?</button>'
    +'<button type="button" class="wk-c" aria-label="Haftanın gezgini kartını kapat">'+IC.close+'</button></section>'};
 function show(k){
   const list=FEEDS[k]();
@@ -43,6 +46,7 @@ function show(k){
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-feed]');if(b)show(b.dataset.feed)});
 feed.addEventListener('click',e=>{const b=e.target.closest('[data-feed-go]');if(b)show(b.dataset.feedGo);
+  if(e.target.closest('.wk-q')){const w=weekTraveler();toast('Her pazartesi, geçen haftanın etkileşim toplamı en yüksek paylaşımı seçilir: '+nf(w.likes)+' beğeni, '+nf(w.comments)+' yorum, '+nf(w.saves)+' kayıt, '+nf(w.shares)+' paylaşım. Sahibi '+w.points+' Molapuan kazanır.','Tamam',()=>{},7000);return}
   if(e.target.closest('.wk-c')){const w=weekTraveler();try{localStorage.setItem(WK,w.post.id)}catch(er){}e.target.closest('.wk').remove();return}
   const x=e.target.closest('.ppl-x');if(x){const s=x.closest('.ppl');x.closest('.ppl-c').remove();if(!s.querySelector('.ppl-c'))s.remove()}});
 show('sen');

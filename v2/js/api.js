@@ -209,7 +209,10 @@ export function listStories(){
 
 /* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
 /* Bağlan: haftanın gezgini */
-export const weekTraveler=()=>{const p=posts.find(x=>x.id===HAFTA.post);return p?{post:p,saves:HAFTA.kayit,points:HAFTA.puan}:null};
+export const weekTraveler=()=>{
+  const score=(p,i)=>{const r=POSTS[i];return {post:p,likes:p.likes,comments:p.comments,saves:r.kay||0,shares:r.pay||0,total:p.likes+p.comments+(r.kay||0)+(r.pay||0)}};
+  const best=posts.map(score).sort((a,b)=>b.total-a.total)[0];
+  return best?{...best,points:HAFTA.puan}:null};
 /* Bağlan: takip önerileri */
 export const listSuggestions=()=>ONERI.map(([u,why,gitti])=>({id:u,user:{...USERS[u],onay:!!gitti||ONAY.has(u)},why}));
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
