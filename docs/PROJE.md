@@ -1429,3 +1429,28 @@ güncellenecek yaşayan proje dokümanıdır.
   diğer değişiklikler yerinde kaldı.
 - **Teknik sonuç:** En az 2 görsel kuralı (`POST_MIN`) çekmecede de geçerli.
 - **UX sonucu:** Paylaşım tek ekranda, form olarak yapılıyor.
+
+### 2026-10-04 — Başlıktaki geri butonu her sayfada geldiğin yere döner (Bedir)
+
+- **Karar:** Başlıktaki geri oku her zaman bir önceki sayfaya döner.
+  Ürün → rezervasyon → geri → geri artık Keşfet'e (ya da ürüne nereden
+  gelindiyse oraya) çıkar; rezervasyon ile ürün arasında döngü kalmadı.
+  Liste'de kategori sekmeleri geçmişe yeni sayfa eklemez. Ürün sayfasında
+  seçilen tarih, rezervasyondan geri dönünce seçili kalır.
+- **Neden:** Bedir rezervasyonu açıp kapatınca ürün sayfasındaki geri
+  butonunun tekrar rezervasyonu açtığını ve döngüde kaldığını gördü.
+  Neden: rezervasyonun 1. adımındaki geri, ürün sayfasını yeni bir sayfa
+  olarak açıyordu; ürünün geri butonu da tarayıcı geçmişinde bir önceki
+  sayfaya (rezervasyona) dönüyordu.
+- **Etkilediği alanlar:** `v2/js/shell.js` (gezinme yolu, `data-back`),
+  `v2/rezervasyon/index.html`, `v2/js/rezervasyon.js`, `v2/js/liste.js`,
+  `v2/js/planlarim.js`, `v2/js/urun.js`.
+- **Teknik sonuç:** Sitede gezilen sayfalar bu sekmede bir yol olarak
+  tutulur (sessionStorage `m360-yol`), her sayfanın geçmiş kaydına sırası
+  yazılır (`history.state.m360i`). Geri bir önceki sayfaya tarayıcı
+  geçmişiyle döner, böylece telefonun geri tuşuyla aynı yere gider. Önceki
+  sayfa bu sayfanın kendisi ya da bir rezervasyon adımıysa atlanır. Siteye
+  doğrudan girildiyse bağın adresine (Keşfet ya da ürün) gider. Geçmiş
+  kaydını değiştiren kodlar (`replaceState`/`pushState`) bu sırayı korur.
+- **UX sonucu:** Geri butonu beklenen yere gider; telefonun geri tuşu ile
+  başlıktaki geri aynı davranır.

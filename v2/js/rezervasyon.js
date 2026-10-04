@@ -122,7 +122,7 @@ function draw(push){
   document.getElementById('steps').hidden=st.step===4;
   main.innerHTML=st.step===1?step1():st.step===2?step2():st.step===3?step3():done(last);
   if(st.step===1)refresh();else drawCta();
-  if(push)history.pushState({s:st.step},'');
+  if(push)history.pushState({...history.state,s:st.step},'');
   save();
   window.scrollTo(0,0);
 }
@@ -135,10 +135,12 @@ if(was===4){location.replace(ROOT+'planlarim/');return}
 let restored=false;
 try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
   if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1}}catch(e){}
-if(!restored)history.replaceState({s:1},'');
+if(!restored)history.replaceState({...history.state,s:1},'');
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
-back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}});
+/* başlıktaki geri: ara adımda bir önceki adıma; ilk adımda geldiğin sayfaya (shell.js data-back);
+   onaydan sonra deneyimin sayfasına */
+back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}else if(st.step===4){e.preventDefault();location.href=productUrl}});
 
 const show=(id,msg)=>{const el=document.getElementById(id);if(!el)return;el.hidden=!msg;if(msg)el.textContent=msg};
 function check2(){
@@ -159,7 +161,7 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm
   if(st.step===3){
     if(!st.ok){show('okErr','Devam etmek için sözleşmeyi onaylaman gerekiyor.');document.getElementById('okBox').focus();return}
     last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay});
-    st.step=4;history.replaceState({s:4},'');draw(false);return;
+    st.step=4;history.replaceState({...history.state,s:4},'');draw(false);return;
   }
   /* sonraki adımın düğmesi kısa bir süre dokunuş almaz: "Devam et"e çift
      dokunuş boş formu gönderip hata göstermesin */

@@ -125,9 +125,34 @@ export function renderShell(page,{nav=true}={}){
   /* bildirimler henüz yok */
   document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Yeni bildirimin yok.','Tamam',()=>{},3000)});
   liveNow();setInterval(liveNow,60000);
-  /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
-  document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;
-    if(document.referrer.startsWith(R)&&history.length>1){e.preventDefault();history.back()}});
+  initBack();
+}
+
+/* Geri (başlıktaki ok): sitede gezilen sayfaların yolu bu sekmede tutulur
+   (sessionStorage), her sayfanın geçmiş kaydına sırası yazılır (m360i).
+   Geri bir önceki sayfaya döner; o sayfa bu sayfanın kendisi ya da bir
+   rezervasyon adımıysa (ürün → rezervasyon → ürün döngüsü) atlanır.
+   Önceki sayfa yoksa (siteye bu sayfadan girildiyse) bağın adresine gider. */
+const YOL='m360-yol',here=()=>location.pathname+location.search;
+const readYol=()=>{try{const y=JSON.parse(sessionStorage.getItem(YOL)||'[]');return Array.isArray(y)?y:[]}catch(e){return[]}};
+const saveYol=y=>{try{sessionStorage.setItem(YOL,JSON.stringify(y.slice(-40)))}catch(e){}};
+const skip=u=>u===here()||/\/rezervasyon\//.test(u);
+function markYol(){
+  let y=readYol(),i=history.state&&history.state.m360i;
+  if(typeof i==='number'&&i<=y.length){y=y.slice(0,i);}
+  else{const inside=document.referrer.startsWith(R)&&y.length;i=inside?y.length:0;if(!inside)y=[];
+    history.replaceState({...(history.state||{}),m360i:i},'')}
+  y[i]=here();saveYol(y);
+}
+function initBack(){
+  markYol();
+  addEventListener('pageshow',e=>{if(e.persisted)markYol()});
+  addEventListener('pagehide',()=>{const y=readYol(),i=history.state&&history.state.m360i;if(typeof i==='number'&&i<y.length){y[i]=here();saveYol(y)}});
+  document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a||e.defaultPrevented)return;
+    const y=readYol(),i=history.state&&history.state.m360i;if(typeof i!=='number'||i<1)return;
+    let j=i-1;while(j>=0&&skip(y[j]))j--;
+    e.preventDefault();
+    if(j===i-1)history.back();else location.href=j>=0?y[j]:a.href});
 }
 
 /* Yüzen alt menü: aşağı kaydırınca küçülür (yalnızca ikonlar), yukarı
