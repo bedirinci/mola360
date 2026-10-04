@@ -147,12 +147,38 @@ main#urun .box:first-of-type{margin-top:24px}
 /* dar telefonda kısa etiket, tek satır */
 @media (max-width:359px){.pf-acts .lg{display:none}.pf-acts .sm{display:inline}}
 .btn.ghost-d{background:rgba(255,255,255,.1);color:#fff}
+/* Kısa lacivert başlık (Bedir: "Üst lacivert alan çok uzun"): adın yanında doğrulanmış rozeti (Kâşif etiketi kaldırıldı), şehir kullanıcı adının yanında, sayılar tek satır */
+.pf-top{padding-bottom:16px}
+.pf-top .pf-id{gap:12px;margin-top:10px}
+.pf-top .pf-id .ava.l{width:52px;height:52px;font-size:var(--fs-lg);box-shadow:0 0 0 2px var(--navy),0 0 0 4px var(--green)}
+.pf-nm{display:flex;align-items:center;gap:0;min-width:0}
+.pf-nm b{min-width:0;font-size:var(--fs-xl);font-weight:var(--fw-black);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-nm .vf{flex:none;width:15px;height:15px;margin-left:5px}
+.pf-at{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:var(--fs-md);color:var(--navy-ink);white-space:nowrap}
+.pf-at i{font-style:normal;margin:0 2px}
+.pf-at svg{width:13px;height:13px;stroke-width:2.4}
+.pf-top .pf-bio{margin-top:10px;line-height:1.4}
+/* sayılar ortalı, aralarında dikey çizgi; üstte ve altta çizgi yok (Bedir) */
+.pf-top .pf-stats{margin-top:10px;padding:2px 0;border:0}
+.pf-top .pf-stats>*{flex-direction:row;justify-content:center;align-items:baseline;gap:4px}
+.pf-top .pf-stats b{font-size:var(--fs-base)}
+.pf-top .pf-stats span{font-size:var(--fs-md)}
+/* dar telefonda sayı üstte, yazı altta */
+@media (max-width:374px){.pf-top .pf-stats>*{flex-direction:column;align-items:center;gap:0}}
+.pf-top .pf-acts{margin-top:12px}
+.pf-top .pf-acts .btn{padding-top:8px;padding-bottom:8px}
+.pf-top .pf-acts .btn.sq{width:40px}
 #pfTabs{margin:16px 16px 0}
 #pfTabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:var(--fs-sm)}
 #pfTabs svg{width:16px;height:16px}
+/* seçili sekme beyaz, ikonu dolgulu (Bedir) */
+#pfTabs button[aria-pressed="true"]{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,26,46,.12)}
+#pfTabs button[aria-pressed="true"] svg{fill:currentColor}
 /* dar telefonda üç sekme yazısıyla sığsın */
 @media (max-width:359px){#pfTabs svg{display:none}}
 .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}
+.pf-sq{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:14px 16px 0}
+.pf-sq a{aspect-ratio:1;border-radius:var(--r-xs);background-size:cover;background-position:center}
 .pf-grid .pmini{width:auto}
 .pmini.own{justify-content:flex-end}
 .pmini.own .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:var(--r-pill);background:rgba(255,255,255,.95);color:var(--ink);font-size:var(--fs-xs);font-weight:var(--fw-bold)}
