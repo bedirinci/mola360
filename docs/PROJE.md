@@ -1194,3 +1194,17 @@ güncellenecek yaşayan proje dokümanıdır.
     etmiyor; Mola360 ile gidilenlerde "Mola360 ile gitti" rozeti var.
 - **UX sonucu:** Site bitmiş bir ürün gibi okunuyor. Profilde en görünür
   eylem paylaşmak. 320px'te ana düğme "Paylaş" diye kısalıyor.
+
+### 2026-10-04 — Molapuan kartının yazıları 1px küçük
+
+- **Karar (Bedir):** Puan kartındaki bütün yazılar 1px küçülüyor.
+- **Neden:** Kart, sayfanın akışında daha ince ve hafif dursun.
+- **Etkilediği alanlar:** Molapuan kartı (Keşfet ve Profil);
+  `tokens.css` (`--fs-mp-down`) ve `components.css`.
+- **Teknik sonuç:** Kart yine ölçeğin tokenlarını kullanıyor, her biri
+  `--fs-mp-down` (1px) kadar küçük. Yeni boyutlar:
+  - başlık 15px;
+  - hedef cümlesi ve "Nasıl kazanırım?" 12px;
+  - "Seviye yolun" 11.5px;
+  - rozetler ve alt yazılar 10.5px.
+- **UX sonucu:** Kart daha ince görünüyor, 320px'te de taşma yok.
