@@ -211,7 +211,7 @@ export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
    "Mola360 ile gitti" rozeti yalnızca bunlardan birine bağlanınca çıkar. */
 const PAST=[{productId:'kapadokya-turu',when:'12 – 15 Eylül',who:'2 yetişkin'},{productId:'kordon-caz-aksamlari',when:'5 Eylül',who:'2 bilet',shared:true}];
 export const listPastBookings=()=>PAST.map(b=>({...b,product:getProduct(b.productId),
-  shared:!!b.shared||listMyPosts().some(p=>p.product&&p.product.id===b.productId)})).filter(b=>b.product);
+  shared:!!b.shared||listMyPosts().some(p=>p.product&&p.product.id===b.productId),review:readRv()[b.productId]||null})).filter(b=>b.product);
 
 /* Paylaşımlar: taslakta yalnızca bu cihazda tutulur, görseller küçültülmüş
    önizleme olarak. Backend gelince yükleme ve akış oradan. */
@@ -307,7 +307,28 @@ export function createBooking(b){
   writeBk([r,...readBk()]);return r;
 }
 export const listBookings=()=>readBk().map(b=>({...b,product:getProduct(b.productId)})).filter(b=>b.product);
-export function cancelBooking(no){writeBk(readBk().filter(b=>b.no!==no))}
+
+/* Bugün: örnek takvimin ilk gününden önceye düşmez; backend gelince sunucudan */
+export const today=()=>{const n=new Date(),d=new Date(n.getFullYear(),n.getMonth(),n.getDate());return d<TODAY?new Date(TODAY):d};
+
+/* Yaklaşan rezervasyonlar (ÖRNEK): hesaptaki rezervasyon ve bu cihazda
+   yapılanlar, tarihe göre. İptal ve kalan ödeme bu cihazda tutulur. */
+const UPCOMING=[{productId:'pamukkale-ve-hierapolis',date:'Cmt 10 Eki',slot:'07:30',qty:'2 yetişkin',total:3780,paid:756,pay:'kapora',no:'M360-48211',
+  meet:{yer:'Konak Saat Kulesi önü',adres:'Konak Meydanı, Konak, İzmir',saat:'07:15',not:'Rehberin Murat Bey, Mola360 bayrağıyla seni otobüsün önünde karşılar. Kimliğini yanına al.'}}];
+const RDK='m360-rez-durum';
+const readDk=()=>{try{return {iptal:[],odeme:{},...JSON.parse(localStorage.getItem(RDK))}}catch(e){return {iptal:[],odeme:{}}}};
+const writeDk=d=>{try{localStorage.setItem(RDK,JSON.stringify(d))}catch(e){}};
+export function listUpcoming(){const d=readDk();
+  return [...readBk(),...UPCOMING].filter(b=>!d.iptal.includes(b.no))
+    .map(b=>({...b,paid:d.odeme[b.no]??b.paid,product:getProduct(b.productId),day:parseDay(b.date)}))
+    .filter(b=>b.product).sort((a,b)=>(a.day||0)-(b.day||0)||String(a.slot).localeCompare(String(b.slot)))}
+export function cancelBooking(no){writeBk(readBk().filter(b=>b.no!==no));const d=readDk();d.iptal=[...new Set([...d.iptal,no])];writeDk(d)}
+export function payRemaining(no){const b=listUpcoming().find(x=>x.no===no);if(!b)return;const d=readDk();d.odeme[no]=b.total;writeDk(d)}
+
+/* Geçmiş deneyimin değerlendirmesi: bu cihazda */
+const RVK='m360-degerlendir';
+const readRv=()=>{try{return JSON.parse(localStorage.getItem(RVK))||{}}catch(e){return {}}};
+export function rateBooking(productId,puan,metin,alt){const r=readRv();r[productId]={puan,metin,alt:alt||{},t:Date.now()};try{localStorage.setItem(RVK,JSON.stringify(r))}catch(e){}}
 
 /* Ürün sayfası içeriği: açıklama, program, dahil/hariç, buluşma noktası,
    bilmen gerekenler ve örnek değerlendirmeler (ÖRNEK, icerik.js) */
