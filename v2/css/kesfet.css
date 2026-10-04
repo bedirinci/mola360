@@ -31,8 +31,8 @@
 .time{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
 /* tek sırada dört seçenek: kart zemini yok; açık lacivert şeffaf yuvarlakta ikon, altında ad ve deneyim sayısı */
 .tt{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;padding:2px 0;background:none;text-align:center;color:var(--ink)}
-.tt .i{width:44px;height:44px;margin-top:6px;border-radius:50%;background:rgba(40,72,170,.12);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px transparent;transition:background-color var(--t) var(--ease),box-shadow var(--t) var(--ease)}
-.tt .i img{width:40px;height:40px;object-fit:contain;transform:translate(3px,-7px)}
+.tt .i{width:60px;height:60px;border-radius:50%;background:rgba(40,72,170,.12);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px transparent;transition:background-color var(--t) var(--ease),box-shadow var(--t) var(--ease)}
+.tt .i img{width:40px;height:40px;object-fit:contain}
 .tt .x{min-width:0;max-width:100%}
 .tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
 .tt small{display:block;margin-top:2px;font-size:clamp(10px,3.1vw,11.5px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
