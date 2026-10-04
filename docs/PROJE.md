@@ -360,6 +360,14 @@ Mola360'ın kendi tasarım dili oluşturulacaktır.
 Unilayk projesi yalnızca referans niteliğindedir. Mola360, Unilayk'ın
 yeniden adlandırılmış hali olarak konumlandırılmayacaktır.
 
+Renk kuralı (2026-10-04): her renge tek görev.
+- **Yeşil = eylem ve kazanç.** Ana düğme (Molamı bul, Tarih seç,
+  Devam et, Paylaş +) ve para kazancı (indirim etiketi, Molapuan).
+- **Lacivert = marka ve seçili durum.** Keşfet'in üst bandı, seçili
+  sekme/çip, alt menüde aktif sayfa, puan kutusu, yuvarlak ok düğmesi.
+- Geri kalan her şey (kategori etiketi, rozet, tik, boş durum, alt sayfa
+  başlıkları) beyaz, gri ya da koyu yazı.
+
 Tasarım sisteminde:
 
 - Renk tokenları
@@ -1281,3 +1289,25 @@ güncellenecek yaşayan proje dokümanıdır.
   görselin sol altında yer alır.
 - **UX sonucu:** Sekmeler parmak altında oynamıyor. Fırsat ilk bakışta
   görülüyor.
+
+### 2026-10-04 — Renk sadeleştirmesi: her renge tek görev (Bedir)
+
+- **Karar:** Yeşil yalnızca eylem ve kazançta, lacivert yalnızca marka
+  ve seçili durumda kullanılır (§14 renk kuralı). Lacivert üst bant
+  yalnızca Keşfet'te kalır; Liste, Bağlan, Planlarım, Profil,
+  Rezervasyon başlıkları beyaz zemin ve koyu yazıya geçer.
+- **Neden:** Bedir lacivert ve yeşilin çok yerde kullanıldığını söyledi.
+  Yeşil aynı anda düğme, indirim, başarı, kategori etiketi, rozet ve
+  başlık vurgusuydu; "buna bas" sinyali kayboluyordu. Her sayfanın
+  koyu başlık bloğu ekranları ağırlaştırıyordu.
+- **Etkilediği alanlar:** `v2/css/components.css`, `v2/css/kesfet.css`,
+  `v2/css/sayfalar.css`, alt sayfaların `index.html`'i (logo ve
+  `theme-color`), `v2/js/liste.js`, yeni `v2/logo-koyu.webp`.
+- **Teknik sonuç:** `.pg-top` beyaz ve ince çizgili; tema vitrini
+  (`.pg-top.cover`) görselli ve koyu kalır, orada beyaz logo kullanılır.
+  `.seg` tek tip (gri zemin, seçili lacivert). Yıldızlar, tikler,
+  kategori etiketleri, "Yeni", "Mola360 ile gitti", seviye rozetleri ve
+  etkinlik tarih kutuları nötr renge geçti. Menü katmanı bu işin dışında.
+- **UX sonucu:** Her ekranda tek yeşil düğme göze çarpar; lacivert
+  "seçtin / buradasın" demektir. Alt sayfalar Molapuan kartının beyaz,
+  ince diline yaklaşır.

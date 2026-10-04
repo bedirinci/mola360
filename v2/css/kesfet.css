@@ -1,6 +1,6 @@
 /* Keşfet (anasayfa): üst bant, sekmeler, arama, "Ne kadar molan var?", alt bilgi. */
 .hello{white-space:nowrap;margin:12px 0 14px;font-size:var(--fs-2xl);line-height:1.18;font-weight:var(--fw-black);letter-spacing:-.6px}
-.hello span{color:var(--green)}
+.hello span{color:var(--navy-ink)}
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{display:flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:var(--r-pill);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--navy-ink);white-space:nowrap}
@@ -19,14 +19,14 @@
 /* Popüler aramalar: formun altında, sekmeye göre (arama.js) */
 .popular{padding:12px 0 2px;margin:0 -6px}
 .pop-h{display:flex;align-items:center;gap:6px;padding:0 12px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
-.pop-h svg{width:15px;height:15px;color:var(--green-ink);stroke-width:2.2}
+.pop-h svg{width:15px;height:15px;color:var(--mute);stroke-width:2.2}
 .pchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding:8px 12px 6px;scroll-padding-inline:12px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 .pchips.end{-webkit-mask-image:none;mask-image:none}
 .pchips::-webkit-scrollbar{display:none}
 .pc{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px 0 11px;border-radius:var(--r-pill);background:var(--card);border:1px solid var(--line);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--ink);white-space:nowrap}
 .pc svg{width:15px;height:15px;color:var(--mute)}
 .pc[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
-.pc[aria-pressed="true"] svg{color:var(--green)}
+.pc[aria-pressed="true"] svg{color:#fff}
 .go{display:block;width:100%;margin-top:6px;background:var(--green);color:var(--navy);border-radius:var(--r-md);font-weight:var(--fw-bold);font-size:var(--fs-base);padding:14px}
 .time{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
 /* tek sırada dört seçenek: ikon, ad, deneyim sayısı alt alta */
@@ -37,7 +37,7 @@
 .tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
 .tt small{display:block;margin-top:2px;font-size:clamp(10px,3.1vw,11.5px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt[aria-pressed="true"]{background:var(--navy);color:#fff}
-.tt[aria-pressed="true"] .i{background:var(--green);color:var(--navy)}
+.tt[aria-pressed="true"] .i{background:#fff;color:var(--navy)}
 .tt[aria-pressed="true"] small{color:var(--navy-ink)}
 @media (hover:hover){.tt[aria-pressed="false"]:hover{background:var(--line)}}
 .foot{padding:26px 16px 10px;font-size:var(--fs-sm);color:var(--mute);line-height:1.7}
@@ -114,7 +114,7 @@
 .sr-row b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sr-row mark{background:none;color:var(--navy);font-weight:var(--fw-bold)}
 .sr-row small{display:block;margin-top:1px;font-size:var(--fs-sm);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sr-row em{flex:none;font-style:normal;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--green-ink);font-variant-numeric:tabular-nums}
+.sr-row em{flex:none;font-style:normal;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);font-variant-numeric:tabular-nums}
 .sr-row .chev{width:18px;height:18px;color:var(--mute)}
 .sr-row.all{margin-top:10px;background:var(--soft)}
 .sr-row.all .sr-ic{background:var(--card)}
