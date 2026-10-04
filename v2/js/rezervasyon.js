@@ -30,7 +30,7 @@ document.title='mola360 — Rezervasyon · '+p.title;
 function startQty(q){const s=getSearch(),n=s.tur===typeKey(p.type)&&+s.adet;return n?Math.max(q.min,Math.min(q.max,n)):q.start||2}
 /* tur: yaşa göre kişi satırları [anahtar, ad, not, fiyat oranı, yaş aralığı] */
 const PP=S.people,ROWS=PP?PP.rows:[];
-const DEP=S.dep;
+const DEP=S.dep,RM=S.room;
 /* seçim durumu; adresten gelen tarih (ürün sayfasında seçildiyse) */
 const dateKey=d=>d[0]+' '+d[1];
 const st={step:1,
@@ -38,7 +38,7 @@ const st={step:1,
   slot:'',opt:S.opts.length?0:-1,qty:S.qty?startQty(S.qty):1,pay:S.deposit?'kapora':'tam',
   ppl:PP?{yetiskin:startQty({min:1,max:PP.max,start:2}),cocuk:0,bebek:0}:null,
   stop:DEP&&DEP.stops.length===1?0:-1,
-  pax:{},ben:true,note:'',
+  sgl:0,pax:{},ben:true,note:'',
   name:'',phone:'',email:'',ok:false};
 
 const unit=()=>lvPrice(p.title,st.opt>=0?S.opts[st.opt][1]:p.price);
@@ -47,7 +47,16 @@ const full=()=>st.opt>=0?S.opts[st.opt][1]:p.price;
 const rowFull=r=>r[3]===1?full():Math.round(full()*r[3]/10)*10;
 const seats=()=>PP?st.ppl.yetiskin+st.ppl.cocuk:st.qty;
 const heads=()=>PP?seats()+st.ppl.bebek:st.qty;
-const gross=()=>ROWS.reduce((a,r)=>a+rowFull(r)*st.ppl[r[0]],0);
+/* oda düzeni: bebek ebeveyn odasında; istenen tek kişilik odalar ayrılır, kalanlar
+   ikişerli, tek sayıda kalırsa son oda üç kişilik; yalnız kalan yetişkin tek kişilik odada */
+const sglMax=()=>RM?Math.max(0,st.ppl.yetiskin-Math.ceil(st.ppl.cocuk/2)):0;
+function rooms(){const s=Math.min(st.sgl,sglMax());let rest=seats()-s,forced=false,single=s;
+  if(rest===1){single++;rest=0;forced=true}
+  const triple=rest>=3&&rest%2?1:0,dbl=(rest-triple*3)/2;
+  return {single,dbl,triple,forced,count:single+dbl+triple}}
+const roomTxt=r=>[r.dbl&&r.dbl+' iki kişilik',r.triple&&r.triple+' üç kişilik',r.single&&r.single+' tek kişilik'].filter(Boolean).join(', ')+' oda';
+const sglFee=()=>RM?rooms().single*RM.single:0;
+const gross=()=>ROWS.reduce((a,r)=>a+rowFull(r)*st.ppl[r[0]],0)+sglFee();
 const total=()=>PP?lvPrice(p.title,gross()):S.fixed?unit():unit()*st.qty;
 const now=()=>st.pay==='kapora'?Math.round(total()*S.deposit):total();
 const qtyTxt=()=>PP?ROWS.filter(r=>st.ppl[r[0]]).map(r=>st.ppl[r[0]]+' '+r[1].toLocaleLowerCase('tr')).join(', '):S.qty?st.qty+' '+S.qty.label.toLocaleLowerCase('tr'):'';
@@ -71,6 +80,11 @@ function step1(){
     +ROWS.map(r=>'<div class="bk-pr"><div><b>'+r[1]+'</b><small>'+r[2]+(r[3]?' · <i>'+tl(lvPrice(p.title,rowFull(r)))+'</i>':'')+'</small></div>'
       +'<div class="stp"><button type="button" data-pq="'+r[0]+'" data-d="-1" aria-label="'+r[1]+' azalt">−</button><output id="pq-'+r[0]+'" aria-live="polite">'+st.ppl[r[0]]+'</output><button type="button" data-pq="'+r[0]+'" data-d="1" aria-label="'+r[1]+' artır">+</button></div></div>').join('')
     +'</div></section>':'')
+  +(RM?'<section class="box" id="bkRoom"><h2>Oda düzeni</h2><p>Fiyat iki kişilik odada kişi başı. Bebekler ebeveyn odasında kalır, bebek yatağı ücretsiz.</p>'
+    +'<div class="bk-room">'+I.bed+'<div><b id="roomPlan"></b><span id="roomSub"></span></div></div>'
+    +'<div class="bk-pr"><div><b>Tek kişilik oda</b><small>Kişi başı <i>+'+tl(lvPrice(p.title,RM.single))+'</i> fark</small></div>'
+    +'<div class="stp"><button type="button" data-sg="-1" aria-label="Tek kişilik oda azalt">−</button><output id="sgl" aria-live="polite">0</output><button type="button" data-sg="1" aria-label="Tek kişilik oda artır">+</button></div></div>'
+    +'<p class="bk-rn" id="roomNote" hidden></p></section>':'')
   +(DEP?'<section class="box" id="bkStop">'+stopBox()+'</section>':'')
   +(S.slots.length?'<section class="box" id="bkSlot"><h2>Saat</h2>'+radios('Saat',S.slots.map(s=>[s,'Başlangıç',s]),st.slot)+'<p class="err" id="slotErr" hidden>Bir saat seç.</p></section>':'')
   +(S.opts.length?'<section class="box"><h2>'+(S.fixed?'Alan':'Seçenek')+'</h2><div class="bk-opts" role="radiogroup" aria-label="Seçenek">'
@@ -140,7 +154,7 @@ function step2(){
 
 function step3(){
   const so=stopOf();
-  const rows=[['Tarih',so?st.date:when()],so&&['Kalkış',(so.saat?so.saat+' · ':'')+so.yer],
+  const rows=[['Tarih',so?st.date:when()],RM&&['Oda',roomTxt(rooms())],so&&['Kalkış',(so.saat?so.saat+' · ':'')+so.yer],
     S.opts.length&&[S.fixed?'Alan':'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()],
     PP&&['Kişi',qtyTxt()],PP&&['Katılımcılar',people().map(x=>esc(meOn(x.key)?st.name:(st.pax[x.key]||{}).ad)+(x.yas?' <small>('+(+(st.pax[x.key]||{}).yas?(st.pax[x.key]||{}).yas+' yaş':'bebek')+')</small>':'')).join('<br>')],
     PP&&st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean);
@@ -150,6 +164,7 @@ function step3(){
   +'<section class="box"><h2>Özet</h2><dl class="bk-sum">'+rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('')+'<div><dt>İletişim</dt><dd>'+esc(st.name)+'<br>'+esc(st.email)+'</dd></div></dl></section>'
   +'<section class="box"><h2>Fiyat</h2><dl class="bk-sum price">'
   +(PP?ROWS.filter(r=>st.ppl[r[0]]).map(r=>'<div><dt>'+r[1]+(rowFull(r)?' '+tl(rowFull(r))+' × '+st.ppl[r[0]]:' × '+st.ppl[r[0]])+'</dt><dd>'+(rowFull(r)?tl(rowFull(r)*st.ppl[r[0]]):'Ücretsiz')+'</dd></div>').join('')
+     +(sglFee()?'<div><dt>Tek kişilik oda farkı '+tl(RM.single)+' × '+rooms().single+'</dt><dd>'+tl(sglFee())+'</dd></div>':'')
      +(lvOn(p.title)?'<div><dt>Kâşif indirimi %10</dt><dd class="ok">−'+tl(gross()-total())+'</dd></div>':'')
    :S.fixed?'<div><dt>Minimum harcama</dt><dd>'+tl(unit())+'</dd></div>'
     :'<div><dt>'+tl(full())+' × '+qtyTxt()+'</dt><dd>'+tl(full()*st.qty)+'</dd></div>'
@@ -209,7 +224,7 @@ if(was===4){location.replace(ROOT+'planlarim/');return}
 let restored=false;
 try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
   if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1;
-  if(PP&&!(st.ppl&&st.ppl.yetiskin>=1))st.ppl={yetiskin:2,cocuk:0,bebek:0};if(!DEP||!DEP.stops[st.stop])st.stop=DEP&&DEP.stops.length===1?0:-1;if(!st.pax)st.pax={}}}catch(e){}
+  if(PP&&!(st.ppl&&st.ppl.yetiskin>=1))st.ppl={yetiskin:2,cocuk:0,bebek:0};if(!DEP||!DEP.stops[st.stop])st.stop=DEP&&DEP.stops.length===1?0:-1;if(!st.pax)st.pax={};if(!(st.sgl>=0))st.sgl=0}}catch(e){}
 if(!restored)history.replaceState({...history.state,s:1},'');
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
@@ -268,7 +283,7 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm
   if(st.step===2&&!check2())return;
   if(st.step===3){
     if(!st.ok){show('okErr','Devam etmek için sözleşmeyi onaylaman gerekiyor.');document.getElementById('okBox').focus();return}
-    last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay,
+    last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay,...(RM?{rooms:roomTxt(rooms())}:{}),
       ...(stopOf()?{slot:stopOf().saat||st.slot,meet:{yer:stopOf().yer,adres:stopOf().adres||p.place,saat:stopOf().saat,not:stopOf().not}}:{})});
     st.step=4;history.replaceState({...history.state,s:4},'');draw(false);return;
   }
@@ -285,6 +300,13 @@ function refresh(){
   if(PP){ROWS.forEach(r=>{const o=document.getElementById('pq-'+r[0]);if(o)o.textContent=st.ppl[r[0]]});
     main.querySelectorAll('[data-pq]').forEach(b=>{const k=b.dataset.pq,up=+b.dataset.d>0;
       b.disabled=up?(k==='bebek'?st.ppl.bebek>=st.ppl.yetiskin:seats()>=PP.max):st.ppl[k]<=(k==='yetiskin'?1:0)})}
+  if(RM&&document.getElementById('roomPlan')){st.sgl=Math.min(st.sgl,sglMax());const r=rooms();
+    document.getElementById('roomPlan').textContent=roomTxt(r);
+    document.getElementById('roomSub').textContent=r.count+' oda · '+qtyTxt();
+    document.getElementById('sgl').textContent=r.single;
+    main.querySelectorAll('[data-sg]').forEach(b=>b.disabled=+b.dataset.sg>0?st.sgl>=sglMax()||r.single>=st.ppl.yetiskin:st.sgl<=0);
+    const n=document.getElementById('roomNote');n.hidden=!r.forced;
+    if(r.forced)n.textContent=seats()===1?'Tek kişi katıldığın için oda tek kişilik; fark fiyata eklendi.':'Bir yetişkin tek kaldığı için tek kişilik odada kalır; fark fiyata eklendi.'}
   drawCta();save();
 }
 main.addEventListener('click',e=>{
@@ -295,6 +317,7 @@ main.addEventListener('click',e=>{
   const pq=e.target.closest('[data-pq]');if(pq){const k=pq.dataset.pq,d=+pq.dataset.d,c=st.ppl;
     if(d>0&&(k==='bebek'?c.bebek>=c.yetiskin:seats()>=PP.max))return;
     c[k]=Math.max(k==='yetiskin'?1:0,c[k]+d);if(c.bebek>c.yetiskin)c.bebek=c.yetiskin;refresh();return}
+  const sg=e.target.closest('[data-sg]');if(sg){st.sgl=Math.max(0,Math.min(sglMax(),st.sgl+ +sg.dataset.sg));refresh();return}
   const so=e.target.closest('[data-stop]');if(so){st.stop=+so.dataset.stop;radio('[data-stop]',so);show('stopErr','');refresh();return}
   const n=e.target.closest('[data-q]');if(n){st.qty=Math.max(S.qty.min,Math.min(S.qty.max,st.qty+ +n.dataset.q));refresh();return}
   /* misafir: giriş bilgileri doldurur; onayda hesap oluşturunca puan hesaba geçer */

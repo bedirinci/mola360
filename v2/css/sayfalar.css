@@ -30,15 +30,15 @@ body{min-height:100vh;min-height:100dvh}
 .sort svg{width:16px;height:16px}
 
 /* Ürün */
-.ug{height:min(250px,34vh);position:relative;margin:12px 16px 0;border-radius:var(--r-lg);overflow:hidden}
-.ug::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 70%,rgba(10,14,30,.25))}
-.ug-tr{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.ug{position:relative;margin-top:12px}
+.ug-tr{display:flex;gap:10px;height:min(210px,30vh);min-height:184px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
 .ug-tr::-webkit-scrollbar{display:none}
-.ug-f{flex:0 0 100%;height:100%;scroll-snap-align:start}
-.ug-n{position:absolute;z-index:2;right:12px;bottom:12px;background:rgba(10,14,30,.55);color:#fff;font-size:var(--fs-xs);font-weight:var(--fw-semi);padding:4px 9px;border-radius:var(--r-pill);font-variant-numeric:tabular-nums}
-.ug-dots{position:absolute;z-index:2;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:5px}
-.ug-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);transition:width var(--t) var(--ease),background-color var(--t) var(--ease)}
-.ug-dots i.on{width:16px;border-radius:var(--r-pill);background:#fff}
+/* kart ekrandan 44px dar: sağdaki kartın ucu görünür, kaydırılabildiği anlaşılır */
+.ug-f{flex:0 0 calc(100% - 44px);height:100%;scroll-snap-align:start;border-radius:var(--r-lg);overflow:hidden}
+.ug-f:last-child{scroll-snap-align:end}
+.ug-dots{display:flex;justify-content:center;gap:5px;margin-top:10px}
+.ug-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width var(--t) var(--ease),background-color var(--t) var(--ease)}
+.ug-dots i.on{width:16px;border-radius:var(--r-pill);background:var(--navy)}
 /* üst çubuk: diğer sayfalardaki lacivert bant (Gönderi gibi: ortada ad, altında soluk
    tür · yer). Sabit durur; başlık geçince altında bölüm sekmeleri açılır */
 .u-top{position:sticky;z-index:14;top:0;padding-top:calc(10px + env(safe-area-inset-top,0px))}
@@ -662,3 +662,10 @@ main#urun .box:first-of-type{margin-top:24px}
 .box p.err{color:#B42318;margin-top:2px}
 .bk-pr small i{white-space:nowrap}
 @media (max-width:359px){.bk-pr .stp button{width:38px;height:38px}.bk-pr .stp output{min-width:28px}}
+/* Rezervasyon: oda düzeni (konaklamalı tur) */
+.bk-room{display:flex;gap:12px;align-items:center;margin-top:12px;padding:12px 14px;border-radius:var(--r-md);background:var(--soft)}
+.bk-room svg{width:24px;height:24px;flex:none;color:var(--navy);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bk-room b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+.bk-room span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:2px}
+#bkRoom .bk-pr{margin-top:6px}
+.box p.bk-rn{font-size:var(--fs-sm);color:var(--ink);margin-top:4px}
