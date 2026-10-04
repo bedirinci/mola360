@@ -255,6 +255,29 @@ export const DETAY={
   bilgi:['18 yaş sınırı var.','Fiyat masanın minimum harcaması; yediğin içtiğin bundan düşülür.']}
 };
 
+/* Tur kalkışları (ÖRNEK): kalkış şehri, kişi başı fark ve buluşma durakları
+   [saat, durak, adres, not]. Burada olmayan turda tek buluşma noktası
+   DETAY'daki "yer"den gelir. */
+export const KALKIS={
+ 'Efes ve Şirince Turu':[['İzmir',0,'Otobüsle',[
+   ['07:40','Bornova Metro','Ege Üniversitesi metro çıkışı, Bornova','Otobüs metro çıkışının karşısında bekler.'],
+   ['08:00','Konak Saat Kulesi','Konak Meydanı, Konak','Rehberin Mola360 bayrağıyla otobüsün önünde karşılar.']]]],
+ 'Sapanca ve Maşukiye Turu':[['İstanbul',0,'Otobüsle',[
+   ['07:30','Kadıköy Söğütlüçeşme','Söğütlüçeşme metrobüs durağı, Kadıköy','Otobüs durağın Fikirtepe tarafında bekler.'],
+   ['07:50','Ataşehir Metropol','Metropol İstanbul AVM önü, Ataşehir','AVM\'nin Bulvar girişinin önünde.']]]],
+ 'Pamukkale ve Hierapolis':[['İzmir',0,'Otobüsle',[
+   ['06:30','Konak Saat Kulesi','Konak Meydanı, Konak','Rehberin Mola360 bayrağıyla otobüsün önünde karşılar.'],
+   ['06:50','Karşıyaka İskele','Karşıyaka İskelesi önü, Karşıyaka','İskele meydanındaki taksi durağının yanında.']]]],
+ 'Kapadokya Turu':[
+  ['İstanbul',0,'Uçakla',[
+   ['05:30','İstanbul Havalimanı','İç hatlar gidiş katı, 4 numaralı kapı','Uçuştan 2 saat önce Mola360 karşılama noktasında.'],
+   ['06:00','Sabiha Gökçen Havalimanı','İç hatlar gidiş katı, A kapısı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]],
+  ['İzmir',600,'Uçakla',[
+   ['06:15','Adnan Menderes Havalimanı','İç hatlar terminali, gidiş katı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]],
+  ['Ankara',0,'Uçakla',[
+   ['07:00','Esenboğa Havalimanı','İç hatlar gidiş katı, B kapısı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]]]
+};
+
 /* Ürün türüne göre bölüm başlıkları: program ve konum */
 export const BASLIK={tur:['Program','Buluşma noktası'],otel:['Konaklama','Konum'],etkinlik:['Akış','Etkinlik alanı'],aktivite:['Nasıl geçiyor?','Buluşma noktası'],mekan:['Hizmetler','Konum']};
 

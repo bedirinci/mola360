@@ -87,7 +87,17 @@ document.getElementById('urun').innerHTML=
  +(info.dahil.length?'<section class="box" id="dahil"><h2>Fiyata neler dahil?</h2><div class="u-inc"><h3>Dahil</h3><ul class="ticks">'+info.dahil.map(x=>'<li>'+IC.check+'<div>'+x+'</div></li>').join('')+'</ul>'
    +(info.haric.length?'<h3>Dahil değil</h3><ul class="ticks no">'+info.haric.map(x=>'<li>'+NO+'<div>'+x+'</div></li>').join('')+'</ul>':'')+'</div></section>':'')
 
- +'<section class="box"><h2>'+info.placeTitle+'</h2><div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>'
+ /* turda kişi başı fiyat: yetişkin, çocuk, bebek (rezervasyondakiyle aynı) */
+ +(S.people?'<section class="box"><h2>Kişi başı fiyat</h2><dl class="u-pp">'+S.people.rows.map(r=>{const f=r[3]===1?p.price:Math.round(p.price*r[3]/10)*10;
+     return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')+'</dl>'
+   +'<p class="u-pp-n">Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
+
+ +'<section class="box"><h2>'+(S.from.length&&S.from[0].city?'Kalkış ve buluşma noktaları':info.placeTitle)+'</h2>'
+ +(S.from.length&&S.from[0].city
+   ?S.from.map(c=>'<div class="u-from">'+(S.from.length>1?'<h3>'+c.city+' çıkışı<span>'+c.how+(c.fee?' · +'+tl(lvPrice(p.title,c.fee))+' kişi başı':'')+'</span></h3>':'')
+      +'<ol class="u-stops">'+c.stops.map(x=>'<li><b class="t">'+x.saat+'</b><div><b>'+x.yer+'</b><span>'+x.adres+'</span></div></li>').join('')+'</ol></div>').join('')
+    +'<p class="u-pp-n">Durağını rezervasyonda seçersin; saat kalkış saatin olur.</p>'
+   :'<div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>')
  +(info.bilgi.length?'<h3 class="u-h3">Bilmen gerekenler</h3><ul class="u-info">'+info.bilgi.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</section>'
 
  +'<section class="box"><h2>İptal ve ödeme</h2><ul class="ticks">'

@@ -4,7 +4,7 @@
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
 import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
-import { DETAY, BASLIK, YORUM } from './icerik.js';
+import { DETAY, BASLIK, YORUM, KALKIS } from './icerik.js';
 import { ROOT } from './root.js';
 
 /* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil) */
@@ -306,10 +306,24 @@ export function bookingSpec(p){
     dates,fixed,
     slots:p.slots||((t==='aktivite'||t==='mekan')&&!fixed?['10:00','12:00','14:00','16:00']:[]),
     opts:p.opts||[],
-    qty:fixed?null:t==='otel'?{label:'Oda',min:1,max:3,start:1,note:'Oda başına 2 yetişkin.'}:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
+    qty:fixed||t==='tur'?null:t==='otel'?{label:'Oda',min:1,max:3,start:1,note:'Oda başına 2 yetişkin.'}:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
+    /* turda kişi yaşa göre: çocuk %30 indirimli, bebek kucakta (uçakta bilet farkı) */
+    people:t==='tur'?{max:9,rows:[['yetiskin','Yetişkin','12 yaş ve üzeri',1,null],['cocuk','Çocuk','3–11 yaş',.7,[3,11]],
+      ['bebek','Bebek',p.tr==='ucak'?'0–2 yaş · kucakta':'0–2 yaş · kucakta, ücretsiz',p.tr==='ucak'?.1:0,[0,2]]]}:null,
+    from:t==='tur'?kalkis(p):[],
+    /* katılımcı kimliği: yurt dışında herkes için pasaport, yurt içinde yetişkinlerde T.C. kimlik */
+    idDoc:t==='tur'?(p.abroad?'pasaport':'tc'):'',
     deposit:t==='tur'?.2:0,
     cancel:CANCEL[t]||'24 saat öncesine kadar ücretsiz iptal'
   };
+}
+
+/* Tur kalkışları: şehir, kişi başı fark, duraklar {saat,yer,adres,not} */
+function kalkis(p){
+  const k=KALKIS[p.title];
+  if(k)return k.map(([city,fee,how,st])=>({city,fee,how,stops:st.map(([saat,yer,adres,not])=>({saat,yer,adres,not}))}));
+  const y=(DETAY[p.title]||{}).yer||[p.place,''];
+  return [{city:'',fee:0,how:'',stops:[{saat:'',yer:y[0],adres:'',not:y[1]}]}];
 }
 
 /* Taslak rezervasyonlar: ödeme alınmaz, yalnızca bu cihazda tutulur */

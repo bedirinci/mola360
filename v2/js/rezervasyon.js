@@ -6,7 +6,7 @@ import { renderShell, backTo } from './shell.js';
 import { getProduct, bookingSpec, createBooking, cancelBy, getSearch, typeKey } from './api.js';
 import { tl, esc, toast, makeSheet } from './ui.js';
 import { lvOn, lvPrice, getLevel } from './level.js';
-import { IC } from './icons.js';
+import { IC, I } from './icons.js';
 import { ROOT } from './root.js';
 import { openLogin, guestNudge } from './giris.js';
 
@@ -27,20 +27,37 @@ back.href=productUrl;
 document.title='mola360 — Rezervasyon · '+p.title;
 
 /* başlangıç adedi: Keşfet'te aynı türde arandıysa oradaki kişi, oda ya da bilet sayısı */
-function startQty(){const s=getSearch(),n=s.tur===typeKey(p.type)&&+s.adet;return n?Math.max(S.qty.min,Math.min(S.qty.max,n)):S.qty.start||2}
+function startQty(q){const s=getSearch(),n=s.tur===typeKey(p.type)&&+s.adet;return n?Math.max(q.min,Math.min(q.max,n)):q.start||2}
+/* tur: yaşa göre kişi satırları [anahtar, ad, not, fiyat oranı, yaş aralığı] */
+const PP=S.people,ROWS=PP?PP.rows:[];
+const FROM=S.from;
 /* seçim durumu; adresten gelen tarih (ürün sayfasında seçildiyse) */
 const dateKey=d=>d[0]+' '+d[1];
 const st={step:1,
   date:S.dates.length===1?dateKey(S.dates[0]):(S.dates.map(dateKey).find(k=>k===q.get('tarih'))||''),
-  slot:'',opt:S.opts.length?0:-1,qty:S.qty?startQty():1,pay:S.deposit?'kapora':'tam',
+  slot:'',opt:S.opts.length?0:-1,qty:S.qty?startQty(S.qty):1,pay:S.deposit?'kapora':'tam',
+  ppl:PP?{yetiskin:startQty({min:1,max:PP.max,start:2}),cocuk:0,bebek:0}:null,
+  city:0,stop:FROM.length&&FROM[0].stops.length===1?0:-1,
+  pax:{},ben:true,note:'',
   name:'',phone:'',email:'',ok:false};
 
 const unit=()=>lvPrice(p.title,st.opt>=0?S.opts[st.opt][1]:p.price);
 const full=()=>st.opt>=0?S.opts[st.opt][1]:p.price;
-const total=()=>S.fixed?unit():unit()*st.qty;
+/* kişi satırının liste fiyatı (çocuk ve bebek oranla, 10 TL'ye yuvarlı) */
+const rowFull=r=>r[3]===1?full():Math.round(full()*r[3]/10)*10;
+const seats=()=>PP?st.ppl.yetiskin+st.ppl.cocuk:st.qty;
+const heads=()=>PP?seats()+st.ppl.bebek:st.qty;
+const fee=()=>FROM.length?FROM[st.city].fee:0;
+const gross=()=>ROWS.reduce((a,r)=>a+rowFull(r)*st.ppl[r[0]],0)+fee()*seats();
+const total=()=>PP?lvPrice(p.title,gross()):S.fixed?unit():unit()*st.qty;
 const now=()=>st.pay==='kapora'?Math.round(total()*S.deposit):total();
-const qtyTxt=()=>S.qty?st.qty+' '+S.qty.label.toLocaleLowerCase('tr'):'';
-const when=()=>[st.date,st.slot].filter(Boolean).join(' · ');
+const qtyTxt=()=>PP?ROWS.filter(r=>st.ppl[r[0]]).map(r=>st.ppl[r[0]]+' '+r[1].toLocaleLowerCase('tr')).join(', '):S.qty?st.qty+' '+S.qty.label.toLocaleLowerCase('tr'):'';
+const stopOf=()=>FROM.length&&st.stop>=0?FROM[st.city].stops[st.stop]:null;
+const when=()=>[st.date,(stopOf()||{}).saat||st.slot].filter(Boolean).join(' · ');
+/* katılımcılar: kişi sayısına göre; bilgiler "yetiskin-0" gibi anahtarla tutulur */
+const people=()=>ROWS.flatMap(r=>Array.from({length:st.ppl[r[0]]},(_,i)=>({key:r[0]+'-'+i,rol:r[0],label:r[1],n:i+1,many:st.ppl[r[0]]>1,yas:r[4]})));
+const ME_TC='18427350998';
+const meOn=k=>st.ben&&k==='yetiskin-0';
 
 const head='<a class="bk-p" href="'+productUrl+'"><span class="pt" style="background:'+p.bg+'"></span><div class="x"><small>'+p.type.toLocaleUpperCase('tr')+'</small><b>'+p.title+'</b><span>'+p.place.split(' · ')[0]+'</span></div></a>';
 const radios=(name,items,cur)=>'<div class="u-dates" role="radiogroup" aria-label="'+name+'">'+items.map(([v,a,b])=>'<button type="button" role="radio" aria-checked="'+(v===cur)+'" data-'+name.toLocaleLowerCase('tr').replace(/[^a-z]/g,'')+'="'+esc(v)+'"><small>'+a+'</small><b>'+b+'</b></button>').join('')+'</div>';
@@ -51,6 +68,13 @@ function step1(){
   +(S.dates.length===1?'<p class="bk-one">'+IC.calendar+'<b>'+st.date+'</b></p>'
     :radios('Tarih',S.dates.map(d=>[dateKey(d),d[0],d[1]]),st.date)+'<p class="err" id="dateErr" hidden>Devam etmek için bir tarih seç.</p>')
   +'</section>'
+  +(FROM.length>1?'<section class="box"><h2>Kalkış şehri</h2><div class="bk-opts" role="radiogroup" aria-label="Kalkış şehri">'
+    +FROM.map((c,i)=>'<button type="button" role="radio" aria-checked="'+(i===st.city)+'" data-city="'+i+'"><span>'+c.city+'<small>'+c.how+' · '+c.stops.length+' buluşma noktası</small></span><b>'+(c.fee?'+'+tl(lvPrice(p.title,c.fee))+'<small>kişi başı</small>':'Fark yok')+'</b></button>').join('')+'</div></section>':'')
+  +(PP?'<section class="box" id="bkPpl"><h2>Kişi sayısı</h2><p>En fazla '+PP.max+' kişi. Her bebek bir yetişkinin kucağında yolculuk eder.</p><div class="bk-ppl">'
+    +ROWS.map(r=>'<div class="bk-pr"><div><b>'+r[1]+'</b><small>'+r[2]+(r[3]?' · <i>'+tl(lvPrice(p.title,rowFull(r)))+'</i>':'')+'</small></div>'
+      +'<div class="stp"><button type="button" data-pq="'+r[0]+'" data-d="-1" aria-label="'+r[1]+' azalt">−</button><output id="pq-'+r[0]+'" aria-live="polite">'+st.ppl[r[0]]+'</output><button type="button" data-pq="'+r[0]+'" data-d="1" aria-label="'+r[1]+' artır">+</button></div></div>').join('')
+    +'</div></section>':'')
+  +(FROM.length?'<section class="box" id="bkStop">'+stopBox()+'</section>':'')
   +(S.slots.length?'<section class="box" id="bkSlot"><h2>Saat</h2>'+radios('Saat',S.slots.map(s=>[s,'Başlangıç',s]),st.slot)+'<p class="err" id="slotErr" hidden>Bir saat seç.</p></section>':'')
   +(S.opts.length?'<section class="box"><h2>'+(S.fixed?'Alan':'Seçenek')+'</h2><div class="bk-opts" role="radiogroup" aria-label="Seçenek">'
     +S.opts.map((o,i)=>'<button type="button" role="radio" aria-checked="'+(i===st.opt)+'" data-opt="'+i+'"><span>'+o[0]+'</span><b>'+tl(lvPrice(p.title,o[1]))+'</b></button>').join('')+'</div>'
@@ -63,6 +87,48 @@ function step1(){
     +'<p></p></section>':'');
 }
 
+/* buluşma noktası: tek durak bilgi olarak, birden çoksa seçim */
+function stopBox(){const ss=FROM[st.city].stops;
+  if(ss.length===1){const x=ss[0];return '<h2>Buluşma noktası</h2><div class="bk-stop1">'+I.pin+'<div><b>'+(x.saat?x.saat+' · ':'')+x.yer+'</b>'+(x.adres?'<span>'+x.adres+'</span>':'')+(x.not?'<p>'+x.not+'</p>':'')+'</div></div>'}
+  return '<h2>Buluşma noktası seç</h2><p>Sana en yakın duraktan katıl; saat kalkış saatin olur.</p><div class="bk-opts bk-stops" role="radiogroup" aria-label="Buluşma noktası">'
+   +ss.map((x,i)=>'<button type="button" role="radio" aria-checked="'+(i===st.stop)+'" data-stop="'+i+'"><b class="t">'+x.saat+'</b><span>'+x.yer+'<small>'+x.adres+'</small></span></button>').join('')
+   +'</div><p class="err" id="stopErr" hidden>Bir buluşma noktası seç.</p>'}
+
+function pxBox(){
+  const tc=S.idDoc==='tc',acc=getLevel()!=='guest';
+  const fld=(k,f,label,attrs)=>'<div class="bk-f" data-w="'+k+'-'+f+'"><label for="px-'+k+'-'+f+'">'+label+'</label><input id="px-'+k+'-'+f+'" data-px="'+k+'" data-f="'+f+'" '+attrs+' value="'+esc((st.pax[k]||{})[f]||'')+'"><p class="err" id="px-'+k+'-'+f+'Err" hidden></p></div>';
+  return '<section class="box" id="bkPx"><h2>Katılımcılar</h2><p>Yolcu listesi ve seyahat sigortası için. '
+   +(tc?'Yetişkinlerde T.C. kimlik numarası gerekli.':'Yurt dışı turunda herkes için pasaport numarası gerekli; pasaportun dönüşten sonra en az 6 ay geçerli olmalı.')+'</p>'
+   +people().map(x=>{const k=x.key,v=st.pax[k]||{},me=k==='yetiskin-0';
+     return '<fieldset class="bk-px"><legend>'+(x.many?x.n+'. ':'')+x.label+'</legend>'
+      +(me?'<label class="bk-ck"><input type="checkbox" id="pxBen"'+(st.ben?' checked':'')+'><span>Bu kişi benim</span></label>'
+        +'<p class="bk-me" id="pxMe"><b>'+esc(st.name||'Adın soyadın')+'</b>'+(tc&&acc?'<span>T.C. kimlik no •••••••'+ME_TC.slice(-4)+' · hesabından</span>':'')+'</p>':'')
+      +fld(k,'ad','Ad soyad','type="text" autocomplete="'+(me?'name':'off')+'" maxlength="60"')
+      +(x.yas?'<div class="bk-f" data-w="'+k+'-yas"><label for="px-'+k+'-yas">Yaşı</label><select id="px-'+k+'-yas" data-px="'+k+'" data-f="yas"><option value="">Seç</option>'
+          +Array.from({length:x.yas[1]-x.yas[0]+1},(_,i)=>x.yas[0]+i).map(y=>'<option value="'+y+'"'+(String(v.yas)===String(y)?' selected':'')+'>'+(y?y+' yaş':'1 yaşından küçük')+'</option>').join('')
+          +'</select><p class="err" id="px-'+k+'-yasErr" hidden></p></div>':'')
+      +(tc&&!x.yas?fld(k,'tc','T.C. kimlik no','type="text" inputmode="numeric" maxlength="11" autocomplete="off"')
+        +'<label class="bk-ck"><input type="checkbox" data-yab="'+k+'"'+(v.yab?' checked':'')+'><span>T.C. vatandaşı değilim</span></label>':'')
+      +fld(k,'pas','Pasaport no','type="text" maxlength="12" autocomplete="off" autocapitalize="characters"')
+      +'</fieldset>'}).join('')
+   +'<label class="bk-lb" for="bkNote">Özel istek <span>(isteğe bağlı)</span></label><textarea id="bkNote" rows="2" maxlength="300" placeholder="Ör. vejetaryen menü, bebek arabası">'+esc(st.note)+'</textarea>'
+   +'</section>';
+}
+/* katılımcı alanlarının görünürlüğü: "Bu kişi benim" ve vatandaşlık seçimine göre */
+function syncPx(){if(!PP)return;const tc=S.idDoc==='tc',acc=getLevel()!=='guest';
+  const w=id=>main.querySelector('[data-w="'+id+'"]'),hide=(id,h)=>{const e=w(id);if(e)e.hidden=h};
+  const me=document.getElementById('pxMe');if(me){me.hidden=!st.ben;me.querySelector('b').textContent=st.name||'Adın soyadın'}
+  people().forEach(x=>{const k=x.key,v=st.pax[k]||{},m=meOn(k);
+    hide(k+'-ad',m);
+    hide(k+'-tc',!tc||!!x.yas||!!v.yab||(m&&acc));
+    hide(k+'-pas',tc&&!(v.yab&&!x.yas));
+    const y=main.querySelector('[data-yab="'+k+'"]');if(y)y.closest('label').hidden=m&&acc});
+}
+/* T.C. kimlik numarası denetimi (11 hane, son iki hane kontrol hanesi) */
+function tcOk(n){if(!/^[1-9]\d{10}$/.test(n))return false;const d=[...n].map(Number);
+  const o=d[0]+d[2]+d[4]+d[6]+d[8],e=d[1]+d[3]+d[5]+d[7];
+  return ((o*7-e)%10+10)%10===d[9]&&d.slice(0,10).reduce((a,b)=>a+b,0)%10===d[10]}
+
 function step2(){
   const f=(id,label,type,ac,v,extra)=>'<label for="'+id+'">'+label+'</label><input id="'+id+'" name="'+id+'" type="'+type+'" autocomplete="'+ac+'" value="'+esc(v)+'"'+(extra||'')+'><p class="err" id="'+id+'Err" hidden></p>';
   return head
@@ -71,17 +137,26 @@ function step2(){
   +f('name','Ad soyad','text','name',st.name)
   +f('phone','Telefon','tel','tel',st.phone,' inputmode="tel" placeholder="05xx xxx xx xx"')
   +f('email','E-posta','email','email',st.email,' inputmode="email"')
-  +'</form>'+(getLevel()==='guest'?'<p class="bk-login">Hesabın var mı? <a href="#giris" data-rz-login>Giriş yap</a>, bilgilerin dolsun.</p>':'')+'</section>';
+  +'</form>'+(getLevel()==='guest'?'<p class="bk-login">Hesabın var mı? <a href="#giris" data-rz-login>Giriş yap</a>, bilgilerin dolsun.</p>':'')+'</section>'
+  +(PP?pxBox():'');
 }
 
 function step3(){
-  const rows=[['Tarih',when()],S.opts.length&&[S.fixed?'Alan':'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()]].filter(Boolean);
+  const so=stopOf();
+  const rows=[['Tarih',so?st.date:when()],FROM.length>1&&['Kalkış',FROM[st.city].city+' · '+FROM[st.city].how.toLocaleLowerCase('tr')],
+    so&&['Buluşma',(so.saat?so.saat+' · ':'')+so.yer],
+    S.opts.length&&[S.fixed?'Alan':'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()],
+    PP&&['Kişi',qtyTxt()],PP&&['Katılımcılar',people().map(x=>esc(meOn(x.key)?st.name:(st.pax[x.key]||{}).ad)+(x.yas?' <small>('+(+(st.pax[x.key]||{}).yas?(st.pax[x.key]||{}).yas+' yaş':'bebek')+')</small>':'')).join('<br>')],
+    PP&&st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean);
   const lv=lvOn(p.title);
   const pts=Math.floor(total()/100);
   return head
   +'<section class="box"><h2>Özet</h2><dl class="bk-sum">'+rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('')+'<div><dt>İletişim</dt><dd>'+esc(st.name)+'<br>'+esc(st.email)+'</dd></div></dl></section>'
   +'<section class="box"><h2>Fiyat</h2><dl class="bk-sum price">'
-  +(S.fixed?'<div><dt>Minimum harcama</dt><dd>'+tl(unit())+'</dd></div>'
+  +(PP?ROWS.filter(r=>st.ppl[r[0]]).map(r=>'<div><dt>'+r[1]+(rowFull(r)?' '+tl(rowFull(r))+' × '+st.ppl[r[0]]:' × '+st.ppl[r[0]])+'</dt><dd>'+(rowFull(r)?tl(rowFull(r)*st.ppl[r[0]]):'Ücretsiz')+'</dd></div>').join('')
+     +(fee()?'<div><dt>Kalkış farkı ('+FROM[st.city].city+') '+tl(fee())+' × '+seats()+'</dt><dd>'+tl(fee()*seats())+'</dd></div>':'')
+     +(lvOn(p.title)?'<div><dt>Kâşif indirimi %10</dt><dd class="ok">−'+tl(gross()-total())+'</dd></div>':'')
+   :S.fixed?'<div><dt>Minimum harcama</dt><dd>'+tl(unit())+'</dd></div>'
     :'<div><dt>'+tl(full())+' × '+qtyTxt()+'</dt><dd>'+tl(full()*st.qty)+'</dd></div>'
      +(lv?'<div><dt>Kâşif indirimi %10</dt><dd class="ok">−'+tl(full()*st.qty-total())+'</dd></div>':''))
   +'<div><dt>Hizmet bedeli</dt><dd>0 TL</dd></div>'
@@ -103,6 +178,7 @@ function done(r){
   return '<div class="bk-done"><span class="ei">'+IC.check+'</span><h2>Rezervasyonun alındı</h2><p>'+p.title+'<br>'+when()+(S.qty?' · '+qtyTxt():'')+'</p>'
   +'<p class="no">Rezervasyon no <b>'+r.no+'</b></p></div>'
   +'<section class="box"><h2>Sırada ne var?</h2><ul class="ticks">'
+  +(stopOf()?'<li>'+I.pin+'<div><b>Buluşma '+[stopOf().saat,stopOf().yer].filter(Boolean).join(' · ')+'</b> <span>'+(stopOf().not||stopOf().adres)+'</span></div></li>':'')
   +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider.</span></div></li>'
   +(st.pay==='kapora'?'<li>'+IC.check+'<div><b>Kalan '+tl(total()-now())+'</b> <span>Kalkıştan 7 gün önce hatırlatırız; Planlarım\'dan ödeyebilirsin.</span></div></li>':'')
   +'<li>'+IC.check+'<div><b>Döndükten sonra paylaş</b> <span>Paylaşımın bu deneyimin sayfasında ve Bağlan\'da "Mola360 ile gitti" rozetiyle görünür.</span></div></li></ul></section>'
@@ -114,7 +190,7 @@ const LABEL={1:'Devam et',2:'Ödemeye geç'};
 function drawCta(){
   if(st.step===4){cta.hidden=true;return}
   cta.hidden=false;
-  const small=st.step===3&&st.pay==='kapora'?'Bugün ödenecek':(S.fixed?'minimum harcama':'toplam'+(S.qty?' · '+qtyTxt():''));
+  const small=st.step===3&&st.pay==='kapora'?'Bugün ödenecek':(S.fixed?'minimum harcama':'toplam'+(PP?' · '+heads()+' kişi':S.qty?' · '+qtyTxt():''));
   cta.innerHTML='<div class="pp"><small>'+small+'</small><strong>'+tl(st.step===3?now():total())+'</strong></div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(LABEL[st.step]||tl(now())+' öde')+'</button>';
 }
@@ -124,6 +200,7 @@ function draw(push){
   document.getElementById('steps').hidden=st.step===4;
   main.innerHTML=st.step===1?step1():st.step===2?step2():st.step===3?step3():done(last);
   if(st.step===1)refresh();else drawCta();
+  if(st.step===2)syncPx();
   if(push)history.pushState({...history.state,s:st.step,m360d:((history.state||{}).m360d||0)+1},'');
   save();
   window.scrollTo(0,0);
@@ -136,15 +213,18 @@ const was=history.state&&history.state.s;
 if(was===4){location.replace(ROOT+'planlarim/');return}
 let restored=false;
 try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
-  if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1}}catch(e){}
+  if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1;
+  if(PP&&!(st.ppl&&st.ppl.yetiskin>=1))st.ppl={yetiskin:2,cocuk:0,bebek:0};if(!FROM[st.city]){st.city=0;st.stop=-1}if(!st.pax)st.pax={}}}catch(e){}
 if(!restored)history.replaceState({...history.state,s:1},'');
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
 /* başlıktaki geri: ara adımda bir önceki adıma; ilk adımda geldiğin sayfaya (shell.js data-back);
    onaydan sonra deneyimin sayfasına */
 back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}else if(st.step===4){e.preventDefault();location.href=productUrl}
-  else if(['name','phone','email'].some(k=>st[k]&&st[k]!==ME_C[k])){e.preventDefault();exitSheet().open(back,document.getElementById('exStay'))}});
+  else if(dirty()){e.preventDefault();exitSheet().open(back,document.getElementById('exStay'))}});
 
+/* hesaptakinden farklı bir bilgi ya da katılımcı bilgisi girildi mi */
+const dirty=()=>['name','phone','email'].some(k=>st[k]&&st[k]!==ME_C[k])||Object.values(st.pax||{}).some(v=>Object.values(v).some(Boolean))||!!st.note.trim();
 /* İletişim bilgisi girildiyse çıkmadan önce sorulur; iki seçenek de açıkça görünür */
 let ex=null;
 function exitSheet(){if(ex)return ex;
@@ -167,7 +247,17 @@ function check2(){
     phone:st.phone.replace(/\D/g,'').length<10?'Telefon numarası en az 10 rakam olmalı.':'',
     email:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(st.email)?'':'Geçerli bir e-posta adresi yaz.'};
   Object.entries(e).forEach(([k,m])=>{show(k+'Err',m);document.getElementById(k).setAttribute('aria-invalid',!!m)});
-  const bad=Object.keys(e).find(k=>e[k]);if(bad)document.getElementById(bad).focus();
+  /* katılımcılar */
+  if(PP){const tc=S.idDoc==='tc',acc=getLevel()!=='guest';
+    people().forEach(x=>{const k=x.key,v=st.pax[k]=st.pax[k]||{},m=meOn(k),id=f=>'px-'+k+'-'+f;
+      const ad=(v.ad||'').trim(),pas=(v.pas||'').trim(),t=(v.tc||'').trim();
+      if(!m)e[id('ad')]=ad.length<3||!ad.includes(' ')?'Adını ve soyadını yaz.':'';
+      if(x.yas)e[id('yas')]=v.yas===undefined||v.yas===''?'Yaşını seç.':'';
+      const needTc=tc&&!x.yas&&!v.yab&&!(m&&acc),needPas=!tc||(v.yab&&!x.yas);
+      if(needTc)e[id('tc')]=!t?'T.C. kimlik numarasını yaz.':tcOk(t)?'':'T.C. kimlik numarası geçersiz; 11 haneyi kontrol et.';
+      if(needPas)e[id('pas')]=/^[A-Za-z0-9]{6,12}$/.test(pas)?'':'Pasaport numarasını yaz (6–12 harf ve rakam).'});
+    Object.entries(e).forEach(([k,m])=>{if(!k.startsWith('px-'))return;show(k+'Err',m);const el=document.getElementById(k);if(el)el.setAttribute('aria-invalid',!!m)})}
+  const bad=Object.keys(e).find(k=>e[k]);if(bad){const el=document.getElementById(bad);el.focus();el.scrollIntoView({block:'center'})}
   return !bad;
 }
 /* oturumdaki kullanıcının iletişim bilgileri (boş alanlara) */
@@ -177,12 +267,14 @@ function fillMe(){for(const k in ME_C)if(!st[k])st[k]=ME_C[k];save()}
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm)return;
   if(st.step===1){
     if(!st.date){show('dateErr','Devam etmek için bir tarih seç.');document.getElementById('bkDate').scrollIntoView({behavior:'smooth',block:'center'});return}
+    if(FROM.length&&st.stop<0){show('stopErr','Bir buluşma noktası seç.');document.getElementById('bkStop').scrollIntoView({behavior:'smooth',block:'center'});return}
     if(S.slots.length&&!st.slot){show('slotErr','Bir saat seç.');document.getElementById('bkSlot').scrollIntoView({behavior:'smooth',block:'center'});return}
   }
   if(st.step===2&&!check2())return;
   if(st.step===3){
     if(!st.ok){show('okErr','Devam etmek için sözleşmeyi onaylaman gerekiyor.');document.getElementById('okBox').focus();return}
-    last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay});
+    last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay,
+      ...(stopOf()?{slot:stopOf().saat||st.slot,meet:{yer:stopOf().yer,adres:stopOf().adres||p.place,saat:stopOf().saat,not:stopOf().not}}:{})});
     st.step=4;history.replaceState({...history.state,s:4},'');draw(false);return;
   }
   /* sonraki adımın düğmesi kısa bir süre dokunuş almaz: "Devam et"e çift
@@ -195,6 +287,9 @@ function refresh(){
   const q=document.getElementById('qty');if(q)q.textContent=st.qty;
   const d=document.getElementById('depNow');if(d)d.textContent=tl(Math.round(total()*S.deposit));
   main.querySelectorAll('[data-q]').forEach(b=>b.disabled=+b.dataset.q<0?st.qty<=S.qty.min:st.qty>=S.qty.max);
+  if(PP){ROWS.forEach(r=>{const o=document.getElementById('pq-'+r[0]);if(o)o.textContent=st.ppl[r[0]]});
+    main.querySelectorAll('[data-pq]').forEach(b=>{const k=b.dataset.pq,up=+b.dataset.d>0;
+      b.disabled=up?(k==='bebek'?st.ppl.bebek>=st.ppl.yetiskin:seats()>=PP.max):st.ppl[k]<=(k==='yetiskin'?1:0)})}
   drawCta();save();
 }
 main.addEventListener('click',e=>{
@@ -202,6 +297,12 @@ main.addEventListener('click',e=>{
   const s=e.target.closest('[data-saat]');if(s){st.slot=s.dataset.saat;radio('[data-saat]',s);show('slotErr','');refresh();return}
   const o=e.target.closest('[data-opt]');if(o){st.opt=+o.dataset.opt;radio('[data-opt]',o);refresh();return}
   const y=e.target.closest('[data-pay]');if(y){st.pay=y.dataset.pay;radio('[data-pay]',y);refresh();return}
+  const pq=e.target.closest('[data-pq]');if(pq){const k=pq.dataset.pq,d=+pq.dataset.d,c=st.ppl;
+    if(d>0&&(k==='bebek'?c.bebek>=c.yetiskin:seats()>=PP.max))return;
+    c[k]=Math.max(k==='yetiskin'?1:0,c[k]+d);if(c.bebek>c.yetiskin)c.bebek=c.yetiskin;refresh();return}
+  const ci=e.target.closest('[data-city]');if(ci){const i=+ci.dataset.city;if(i!==st.city){st.city=i;st.stop=FROM[i].stops.length===1?0:-1;document.getElementById('bkStop').innerHTML=stopBox()}
+    radio('[data-city]',ci);refresh();return}
+  const so=e.target.closest('[data-stop]');if(so){st.stop=+so.dataset.stop;radio('[data-stop]',so);show('stopErr','');refresh();return}
   const n=e.target.closest('[data-q]');if(n){st.qty=Math.max(S.qty.min,Math.min(S.qty.max,st.qty+ +n.dataset.q));refresh();return}
   /* misafir: giriş bilgileri doldurur; onayda hesap oluşturunca puan hesaba geçer */
   const lg=e.target.closest('[data-rz-login]');if(lg){e.preventDefault();openLogin(lg,'login',()=>{fillMe();draw(false)});return}
@@ -211,8 +312,17 @@ main.addEventListener('click',e=>{
     if(navigator.share)navigator.share({title:p.title,text:when()+' · '+p.title+' için yerimizi ayırttım.',url:new URL(productUrl,location.href).href}).catch(()=>{});
     else toast('Paylaşım bu tarayıcıda yok; bağlantıyı kopyalayıp gönderebilirsin.','Tamam',()=>{},3500);return}
 });
-main.addEventListener('change',e=>{if(e.target.id==='okBox'){st.ok=e.target.checked;if(st.ok)show('okErr','')}save()});
-main.addEventListener('input',e=>{if(st.step===2&&['name','phone','email'].includes(e.target.id)){st[e.target.id]=e.target.value;save()}});
+main.addEventListener('change',e=>{const t=e.target;
+  if(t.id==='okBox'){st.ok=t.checked;if(st.ok)show('okErr','')}
+  if(t.id==='pxBen'){st.ben=t.checked;syncPx()}
+  if(t.dataset.yab){(st.pax[t.dataset.yab]=st.pax[t.dataset.yab]||{}).yab=t.checked;syncPx()}
+  if(t.dataset.px){(st.pax[t.dataset.px]=st.pax[t.dataset.px]||{})[t.dataset.f]=t.value}
+  save()});
+main.addEventListener('input',e=>{const t=e.target;if(st.step!==2)return;
+  if(['name','phone','email'].includes(t.id)){st[t.id]=t.value;if(t.id==='name')syncPx()}
+  else if(t.dataset.px)(st.pax[t.dataset.px]=st.pax[t.dataset.px]||{})[t.dataset.f]=t.value;
+  else if(t.id==='bkNote')st.note=t.value;
+  save()});
 
 if(getLevel()!=='guest')fillMe();
 renderShell('kesfet',{nav:false});
