@@ -1454,3 +1454,22 @@ güncellenecek yaşayan proje dokümanıdır.
   kaydını değiştiren kodlar (`replaceState`/`pushState`) bu sırayı korur.
 - **UX sonucu:** Geri butonu beklenen yere gider; telefonun geri tuşu ile
   başlıktaki geri aynı davranır.
+
+### 2026-10-04 — Geri dönüşte kayma yok, rezervasyondan çıkış onayı, geri okunda sayfa adı (Bedir)
+
+- **Karar:** Bedir'in onayladığı üç öneri: (1) Keşfet'e geri ile
+  dönünce "Kaldığın yerden" rafı ayrıldığın gibi kalır, sayfa kaymaz; raf
+  bir sonraki açılışta görünür. (2) Rezervasyonda iletişim bilgisi
+  girildiyse ilk adımdaki geri "Rezervasyondan çıkılsın mı?" diye sorar:
+  "Rezervasyona devam et" ve "Çık" eşit boyda, ikisi de açıkça görünür.
+  (3) Ürün sayfasındaki geri okunun yanında dönülecek sayfanın adı yazar
+  (Keşfet, Bağlan, Liste, Planlarım…).
+- **Neden:** Geri butonu incelemesinde önerildi; Bedir "Bunları da yap" dedi.
+- **Etkilediği alanlar:** `v2/js/kesfet.js`, `v2/js/rezervasyon.js`,
+  `v2/css/sayfalar.css` (`.ex-*`), `v2/js/shell.js` (`backTo`,
+  `backLabel`), `v2/js/urun.js`, `v2/css/components.css` (`.cb.lbl`).
+- **Teknik sonuç:** Keşfet rafın görünürlüğünü geçmiş kaydında tutar
+  (`history.state.rc`). Çıkışta çekmecenin geçmiş adımı ile rezervasyon
+  birlikte geçilir (`history.go(-2)`).
+- **UX sonucu:** Dönüşte göz kaldığı yerde kalır; bilgiler yanlışlıkla
+  kaybolmaz; kullanıcı geri okunun nereye götüreceğini görür.

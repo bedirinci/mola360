@@ -160,6 +160,10 @@ main#urun .box:first-of-type{margin-top:24px}
 .pf-went .plink{background:var(--card);box-shadow:var(--shadow)}
 
 /* Rezervasyon akışı */
+/* Rezervasyondan çıkma onayı: iki seçenek eşit boyda, ikisi de açıkça görünür */
+.ex-t{font-size:var(--fs-base);color:var(--mute);margin:2px 0 16px;line-height:1.5}
+.ex-b{display:grid;gap:10px}
+.ex-b .btn{justify-content:center;min-height:48px;font-size:var(--fs-base)}
 .bk-h{font-size:var(--fs-lg);font-weight:var(--fw-bold);line-height:1.5;margin-left:4px}
 .steps{display:flex;gap:6px;margin-top:12px;counter-reset:s}
 .steps li{list-style:none;flex:1;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--navy-ink);counter-increment:s;padding-top:8px;border-top:3px solid rgba(255,255,255,.18)}

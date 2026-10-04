@@ -1,5 +1,5 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
-import { renderShell } from './shell.js';
+import { renderShell, backLabel } from './shell.js';
 import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
@@ -42,7 +42,7 @@ const deposit=p.type==='Tur'?Math.round(p.price*.2):0;
 
 document.getElementById('urun').innerHTML=
  '<div class="ug" style="background:'+p.bg+'">'
- +'<div class="ug-top"><a class="cb" href="'+ROOT+'" data-back aria-label="Geri">'+IC.back+'</a><span class="sp"></span>'
+ +'<div class="ug-top"><a class="cb lbl" href="'+ROOT+'" data-back>'+IC.back+'<span id="backTo">Geri</span></a><span class="sp"></span>'
  +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
  +'<button type="button" class="cb" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div>'
@@ -115,6 +115,8 @@ document.getElementById('urun').addEventListener('click',e=>{
 });
 
 renderShell('urun',{nav:false});
+/* geri okunda dönülecek sayfanın adı (Keşfet, Bağlan, Liste…) */
+const bt=document.getElementById('backTo');if(bt){bt.textContent=backLabel(ROOT);bt.parentElement.setAttribute('aria-label',bt.textContent+' sayfasına dön')}
 renderHelp(document.getElementById('urun'));
 initPostActions(toast);
 initFavorites();

@@ -150,10 +150,20 @@ function initBack(){
   addEventListener('pageshow',e=>{if(e.persisted)markYol()});
   addEventListener('pagehide',()=>{const y=readYol(),i=history.state&&history.state.m360i;if(typeof i==='number'&&i<y.length){y[i]=here();saveYol(y)}});
   document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a||e.defaultPrevented)return;
-    const y=readYol(),i=history.state&&history.state.m360i;if(typeof i!=='number'||i<1)return;
-    let j=i-1;while(j>=0&&skip(y[j]))j--;
+    const t=backTo(a.href);if(!t)return;
     e.preventDefault();
-    if(j===i-1)history.back();else location.href=j>=0?y[j]:a.href});
+    if(t.back)history.back();else location.href=t.url});
+}
+/* geri okunun yanındaki ad: dönülecek sayfa */
+const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim'};
+export function backLabel(fallback){const t=backTo(fallback),u=new URL(t?t.url:fallback,location.href);
+  if(!u.href.startsWith(R))return NAMES[''];return NAMES[u.pathname.slice(new URL(R).pathname.length).split('/')[0]]||'Geri'}
+/* geri nereye: {back:true} bir önceki sayfa tarayıcı geçmişinde hemen arkada;
+   {url} o adrese gidilir; null: sitede önceki sayfa yok, bağın kendi adresi */
+export function backTo(fallback){
+  const y=readYol(),i=history.state&&history.state.m360i;if(typeof i!=='number'||i<1)return null;
+  let j=i-1;while(j>=0&&skip(y[j]))j--;
+  return j===i-1?{back:true,url:y[j]}:{url:j>=0?y[j]:fallback};
 }
 
 /* Yüzen alt menü: aşağı kaydırınca küçülür (yalnızca ikonlar), yukarı
