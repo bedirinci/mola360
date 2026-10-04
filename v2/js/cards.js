@@ -76,7 +76,7 @@ function plinkOver(p){
 export function postCard(x){
   const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
+   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'<button type="button" class="p-more" aria-label="Seçenekler" aria-haspopup="menu" aria-expanded="false"'+(x.mine?' data-mine':'')+'>'+IC.more+'</button></div>'
    +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
    +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
      +(i===0&&x.verified?WENT:'')
@@ -99,9 +99,35 @@ export function postMini(x,{own=false}={}){
    +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
 
+/* Paylaşım seçenekleri (üç nokta): kaydet, bağlantıyı kopyala; başkasının
+   paylaşımında ilgilenmiyorum ve bildir */
+function closeMenu(){const m=document.querySelector('.pmenu');if(!m)return;
+  const b=m.parentElement.querySelector('.p-more');if(b)b.setAttribute('aria-expanded','false');m.remove()}
+function openMenu(btn){
+  closeMenu();const post=btn.closest('.post'),save=post.querySelector('.act.save'),saved=save&&save.getAttribute('aria-pressed')==='true';
+  const it=(k,ic,t)=>'<button type="button" role="menuitem" data-pm="'+k+'">'+ic+'<span>'+t+'</span></button>';
+  btn.insertAdjacentHTML('afterend','<div class="pmenu" role="menu">'
+    +it('save',IC.save,saved?'Kayıttan çıkar':'Kaydet')+it('link',IC.link,'Bağlantıyı kopyala')
+    +(btn.hasAttribute('data-mine')?'':it('hide',IC.eyeoff,'İlgilenmiyorum')+it('report',IC.flag,'Bildir'))+'</div>');
+  btn.setAttribute('aria-expanded','true');btn.nextElementSibling.querySelector('button').focus();
+}
+function menuAct(k,post,toast){
+  if(k==='save'){const s=post.querySelector('.act.save');if(s)s.click();return}
+  if(k==='link'){const url=location.href.split('#')[0]+'#'+post.dataset.post;
+    if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
+  if(k==='hide'){post.hidden=true;toast('Bu paylaşımı artık görmeyeceksin.','Geri al',()=>{post.hidden=false},5000);return}
+  if(k==='report')toast('Çok yakında.','Tamam',()=>{},3000);
+}
+
 /* Beğen, kaydet, takip et: taslakta yalnızca ekranda değişir */
 export function initPostActions(toast){
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.pmenu')){const b=document.querySelector('.pmenu').parentElement.querySelector('.p-more');closeMenu();if(b)b.focus()}});
   document.addEventListener('click',e=>{
+    const mb=e.target.closest('.p-more');
+    if(mb){const open=mb.getAttribute('aria-expanded')==='true';if(open)closeMenu();else openMenu(mb);return}
+    const mi=e.target.closest('[data-pm]');
+    if(mi){const post=mi.closest('.post');closeMenu();menuAct(mi.dataset.pm,post,toast);return}
+    if(!e.target.closest('.pmenu'))closeMenu();
     const b=e.target.closest('.act.like,.act.save,.follow');
     if(b){const on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);
       if(b.classList.contains('like')){const n=b.querySelector('span');n.textContent=+n.textContent+(on?1:-1)}

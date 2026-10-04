@@ -1380,3 +1380,18 @@ güncellenecek yaşayan proje dokümanıdır.
   (`.went`), yeni `v2/logo-koyu.webp` (beyaz logonun lacivert yazılı hali).
 - **UX sonucu:** Etiket Bağlan akışında ve profildeki paylaşımlarda aynı;
   marka logoyla tanınıyor.
+
+### 2026-10-04 — Paylaşım seçenekleri (üç nokta) (Bedir)
+
+- **Karar:** Bağlan'daki her paylaşımın sağ üstünde, Takip et'in sağında
+  üç noktalı seçenekler düğmesi var. Menü: Kaydet, Bağlantıyı kopyala;
+  başkasının paylaşımında ayrıca İlgilenmiyorum ve Bildir. "ile gitti"
+  yazısı yarı kalın (600).
+- **Etkilediği alanlar:** `v2/js/cards.js` (`openMenu`, `menuAct`),
+  `v2/js/icons.js` (`more`, `link`, `eyeoff`, `flag`),
+  `v2/css/components.css` (`.p-more`, `.pmenu`).
+- **Teknik sonuç:** İlgilenmiyorum paylaşımı bu oturumda gizler, "Geri al"
+  ile döner; backend gelince kalıcı olur. Bildir şimdilik "Çok yakında."
+  Menü dışarı dokununca ve Esc ile kapanır.
+- **UX sonucu:** Kullanıcı akışı kendine göre ayıklayabiliyor; kaydet ve
+  bağlantı paylaşma tek yerden.
