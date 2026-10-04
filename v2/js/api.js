@@ -72,7 +72,9 @@ const win=id=>{const w=WHEN.find(x=>x[0]===id);return w&&[new Date(...w[3]),new 
 const inWin=(d,w)=>d&&d>=w[0]&&d<=w[1];
 export function availableIn(p,tarih){const w=win(tarih);if(!w)return true;const ds=productDays(p);return !ds||ds.some(d=>inWin(d,w))}
 /* Ürünün seçilen penceredeki ilk kalkışı (ürün sayfasında hazır seçili gelir) */
-export function firstDateIn(p,tarih){const w=win(tarih);const d=w&&p.dates.find(x=>inWin(parseDay(x[1]),w));return d?d[0]+' '+d[1]:''}
+/* geçmişte kalan kalkışlar gösterilmez ve seçilemez */
+export const upcoming=ds=>ds.filter(x=>{const d=parseDay(x[1]);return !d||d>=today()});
+export function firstDateIn(p,tarih){const w=win(tarih);const d=w&&upcoming(p.dates).find(x=>inWin(parseDay(x[1]),w));return d?d[0]+' '+d[1]:''}
 
 /* Liste: kategori (type), keşif filtreleri (süre, kiminle, ne zaman), yer,
    arama ve tema ayrı parametreler: kategori ≠ filtre */
@@ -291,13 +293,13 @@ const CANCEL_DAYS={tur:7,otel:3,etkinlik:2};
 /* Seçilen tarihe göre son ücretsiz iptal günü; süre dolduysa past */
 export function cancelBy(p,label){const d=parseDay(label);if(!d)return null;
   const by=new Date(d);by.setDate(by.getDate()-(CANCEL_DAYS[typeKey(p.type)]||1));
-  return {date:by.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'}),past:by<TODAY}}
+  return {date:by.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'}),past:by<today()}}
 const NEXT_DAYS=[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki'],['Paz','11 Eki']];
 const CANCEL={tur:'Kalkıştan 7 gün öncesine kadar ücretsiz iptal',otel:'Girişten 3 gün öncesine kadar ücretsiz iptal',etkinlik:'Etkinlikten 48 saat öncesine kadar ücretsiz iptal'};
 export function bookingSpec(p){
   const t=typeKey(p.type);
   const split=f=>{const i=f.indexOf(' ');return [f.slice(0,i),f.slice(i+1)]};
-  const dates=p.dates.length?p.dates:t==='otel'?[['Giriş – çıkış',p.facts[0]]]:t==='etkinlik'?[split(p.facts[0])]:NEXT_DAYS;
+  const dates=p.dates.length?upcoming(p.dates):t==='otel'?[['Giriş – çıkış',p.facts[0]]]:t==='etkinlik'?[split(p.facts[0])]:upcoming(NEXT_DAYS);
   /* min. harcamalı mekânda fiyat seçilen alanın; kişi sayısı fiyatı değiştirmez */
   const fixed=p.unit==='min. harcama';
   return {

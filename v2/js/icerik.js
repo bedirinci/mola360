@@ -261,7 +261,7 @@ export const BASLIK={tur:['Program','Buluşma noktası'],otel:['Konaklama','Konu
 /* Örnek değerlendirmeler: türe göre iki tane. Gerçekte yalnızca
    rezervasyonu tamamlayanlar yazar. */
 export const YORUM={
- tur:[['selin',9.6,'Rehberimiz her durakta zamanı iyi ayarladı, kimse koşturmadı. Otel temizdi.'],['kaan',8.8,'Program dolu ama yorucu değil. Buluşma noktası net anlatılmıştı.']],
+ tur:[['selin',9.6,'Rehberimiz her durakta zamanı iyi ayarladı, kimse koşturmadı. Anlatımı çok keyifliydi.'],['kaan',8.8,'Program dolu ama yorucu değil. Buluşma noktası net anlatılmıştı.']],
  otel:[['zeynep',9.4,'Oda fotoğraflardaki gibiydi, kahvaltı çeşitliydi.'],['deniz',9.0,'Personel ilgiliydi; girişte bekletmediler.']],
  etkinlik:[['elif',9.5,'Ses çok iyiydi, girişte QR ile hızlıca geçtik.'],['mert',9.0,'Erken gidin; iyi yerler çabuk doluyor.']],
  aktivite:[['mert',9.8,'Ekip işini çok ciddiye alıyor, güvenlik anlatımı net ve uzundu.'],['kaan',9.2,'Otelden alış tam saatinde oldu.']],

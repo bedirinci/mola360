@@ -1,10 +1,10 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
 import { renderShell, backLabel } from './shell.js';
-import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch } from './api.js';
+import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
 import { isFav, initFavorites, favSync } from './favorites.js';
-import { initLevelInfo, lvb } from './level.js';
+import { initLevelInfo, lvb, lvOn, lvPrice } from './level.js';
 import { renderHelp } from './help.js';
 import { TRUST } from './data.js';
 import { IC, I, TRI } from './icons.js';
@@ -34,11 +34,13 @@ const unitOf=k=>/gün$/.test(k)?'gün':'adım';
 /* Keşfet'teki aramada seçilen tarih penceresindeki ilk kalkış hazır seçili gelir */
 /* seçilen tarih bu sayfanın geçmiş kaydında durur: rezervasyondan geri dönünce seçim kaybolmaz */
 const kept=history.state&&history.state.tarih;
-let picked=kept&&p.dates.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih);
+const ds=upcoming(p.dates);
+/* tek kalkış kaldıysa o seçili gelir */
+let picked=kept&&ds.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih)||(ds.length===1?ds[0].join(' '):'');
 const posts=listPosts({productId:p.id});
 const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
-const deposit=p.type==='Tur'?Math.round(p.price*.2):0;
+const deposit=p.type==='Tur'?Math.round(lvPrice(p.title,p.price)*.2):0;
 
 /* üst çubuk: görselin üstünde yüzen düğmeler; görsel geçince lacivert
    bant, ortada ad ve altında soluk tür · yer, altında bölüm sekmeleri */
@@ -47,15 +49,15 @@ const frame=i=>'radial-gradient(circle at '+[[30,25],[75,35],[50,70],[20,60],[80
 const short=p.place.split(' · ')[0];
 const tabs=[['genel','Genel'],p.dates.length&&['tarihler','Tarihler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
   info.dahil.length&&['dahil','Dahil'],['yorumlar','Yorumlar']].filter(Boolean);
-const facts=chips.slice(0,2).map(c=>[/\d+ (Eki|Kas|Ara)/.test(c)?IC.calendar:/saat|dk|gün|gece/.test(c)?I.clock:p.tr&&c===TRI[p.tr][0]?'<svg viewBox="0 0 24 24">'+TRI[p.tr][1]+'</svg>':IC.ticket,c]);
+const facts=chips.slice(0,2).map(c=>[/\d+ (Eki|Kas|Ara)/.test(c)?IC.calendar:/saat|dk|gün|gece/.test(c.toLocaleLowerCase('tr'))?I.clock:p.tr&&c===TRI[p.tr][0]?'<svg viewBox="0 0 24 24">'+TRI[p.tr][1]+'</svg>':IC.ticket,c]);
 facts.push([IC.shield,'Ücretsiz iptal']);
 const ppl=posts.slice(0,3).map(x=>'<span class="ava s" style="--c:'+x.user.renk+'" aria-hidden="true">'+x.user.ini[0]+'</span>').join('');
 
 document.getElementById('urun').innerHTML=
- '<header class="u-top" id="uTop"><div class="u-bar"><a class="cb lbl" href="'+ROOT+'" data-back>'+IC.back+'<span id="backTo">Geri</span></a>'
- +'<div class="u-mid" aria-hidden="true"><b>'+p.title+'</b><small>'+p.type+' · '+short+'</small></div>'
- +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
- +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div>'
+ '<header class="pg-top slim u-top" id="uTop"><div class="bar"><div class="bar-l"><a class="ib back" href="'+ROOT+'" data-back id="uBack" aria-label="Geri">'+IC.back+'</a></div>'
+ +'<div class="bk-mid"><b class="bk-h">'+p.title+'</b><small>'+p.type+' · '+short+'</small></div>'
+ +'<div class="bar-i"><button type="button" class="ib" data-share aria-label="Paylaş">'+IC.share+'</button>'
+ +'<button type="button" class="ib" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div></div>'
  +'<nav class="u-tabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav></header>'
  +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N},(_,i)=>'<div class="ug-f" style="background:'+frame(i)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"></div>').join('')+'</div>'
  +'<span class="ug-n"><span id="ugI">1</span> / '+N+'</span><div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
@@ -70,8 +72,8 @@ document.getElementById('urun').innerHTML=
    +'</section>':'')
 
  +(p.dates.length?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>Tarih seç</h2></div><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
-   +p.dates.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')
-   +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>+'+p.more+' tarih</span></button></div><p class="u-cx" id="cxl2"></p></section>':'')
+   +ds.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')
+   +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>'+p.more+' tarih</span></button></div><p class="u-cx" id="cxl2"></p></section>':'')
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -117,12 +119,14 @@ function cxl(){
 }
 cxl();
 function drawCta(){
-  cta.innerHTML='<div class="pp">'+(p.old?'<span class="pp-o"><s>'+tl(p.old)+'</s><em>%'+Math.round((1-p.price/p.old)*100)+' indirim</em></span>':'')+'<strong>'+tl(p.price)+'</strong><small>'+p.unit+(picked?' · '+picked:'')+'</small></div>'
+  /* kartlardaki fiyatla aynı: seviye indirimi (Kâşif %10) fiyata dahil, üstü çizili ilk fiyat */
+  const now=lvPrice(p.title,p.price),was=p.old||(lvOn(p.title)?p.price:0);
+  cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')+'<strong>'+tl(now)+'</strong><small>'+p.unit+(picked?' · '+picked:lvOn(p.title)?' · Kâşif fiyatı':'')+'</small></div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
 }
 drawCta();
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
-  if(p.dates.length&&!picked){document.getElementById('tarihler').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(p.dates.length&&!picked){goTo('tarihler');return}
   location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const d=e.target.closest('[data-d]');
@@ -135,14 +139,14 @@ document.getElementById('urun').addEventListener('click',e=>{
   if(e.target.closest('[data-soon-cal],[data-soon-rv]'))toast('Çok yakında.','Tamam',()=>{},3000);
 });
 /* sekmeler ve puan/paylaşım bağları sayfa içinde kaydırır; geçmişe kayıt eklemez */
-const top=document.getElementById('uTop'),gal=document.querySelector('.ug');
+const top=document.getElementById('uTop'),ttl=document.querySelector('.u-hd h1');
 function goTo(k,smooth=true){const el=document.getElementById(k);if(!el)return;
-  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-(top.classList.contains('on')?0:44)-8;
+  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-(top.classList.contains('on')?0:34)-8;
   scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'instant'})}
 /* görsel geçince üst çubuk lacivert banda döner; görünen bölümün sekmesi seçili */
 const secs=tabs.map(([k])=>document.getElementById(k)).filter(Boolean);
 function onScroll(){
-  const on=scrollY>gal.offsetHeight-top.querySelector('.u-bar').offsetHeight-8;
+  const on=ttl.getBoundingClientRect().bottom<top.querySelector('.bar').getBoundingClientRect().bottom;
   top.classList.toggle('on',on);
   if(!on)return;
   const line=top.offsetHeight+24;let cur=secs[0];
@@ -158,7 +162,7 @@ tr.addEventListener('scroll',()=>{const i=Math.round(tr.scrollLeft/tr.clientWidt
 
 renderShell('urun',{nav:false});
 /* geri okunda dönülecek sayfanın adı (Keşfet, Bağlan, Liste…) */
-const bt=document.getElementById('backTo');if(bt){bt.textContent=backLabel(ROOT);bt.parentElement.setAttribute('aria-label',bt.textContent+' sayfasına dön')}
+document.getElementById('uBack').setAttribute('aria-label',backLabel(ROOT)+' sayfasına dön');
 renderHelp(document.getElementById('urun'));
 initPostActions(toast);
 initFavorites();
