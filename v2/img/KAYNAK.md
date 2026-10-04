@@ -10,3 +10,9 @@ için `v2/js/data.js` içindeki `IMG` haritasına yazılır.
 | | | | | |
 
 Henüz fotoğraf yok; kartlar renk geçişiyle görünüyor.
+
+## Simgeler
+
+| Dosya | Nerede görünür | Kaynak | Not |
+|---|---|---|---|
+| `molapuan.webp` | Molapuan kartı (Keşfet, Profil), menüde "Molapuanlarım" | Bedir İnci'nin verdiği Molapuan ikonu (2026-10-04) | Yuvarlak kırpıldı, dışı saydam, 160×160 |

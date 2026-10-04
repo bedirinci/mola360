@@ -1208,3 +1208,41 @@ güncellenecek yaşayan proje dokümanıdır.
   - "Seviye yolun" 11.5px;
   - rozetler ve alt yazılar 10.5px.
 - **UX sonucu:** Kart daha ince görünüyor, 320px'te de taşma yok.
+
+### 2026-10-04 — "Yakınımda ne var?" açık renk; konum yalnızca kendi rayını değiştirir
+
+- **Karar (Bedir):**
+  - "Yakınımda ne var?" kartı çok lacivertti; daha uygun, açık bir tasarım
+    istendi.
+  - Konum açılınca yalnızca Yakınımda rayı açılıyor. Öteki başlıklardaki
+    deneyimlerin sırası değişmiyor.
+  - Bu karar 2026-10-03'teki "yakında olanlar öne (60 km, 300 km)" sıralamasının
+    yerini alıyor.
+- **Neden:** Lacivert kart sayfanın lacivert başlığıyla yarışıyordu. Konum
+  açınca bütün rayların değişmesi, kullanıcının gördüğünü beklenmedik
+  biçimde karıştırıyordu.
+- **Etkilediği alanlar:** Keşfet (`kesfet.css` `.near`, `kesfet.js` sıra
+  puanı).
+- **Teknik sonuç:**
+  - Davet kartı açık yeşil zeminde, ince yeşil çerçeveli. Halkalar ve ikon
+    yeşil, düğme lacivert.
+  - Şehir seçenekleri beyaz.
+  - Sıra puanında yalnızca kiminle seçimi kaldı.
+  - Konum açılıp kapanınca öteki raylar yeniden çizilmiyor.
+  - Arama kartındaki "Nereye?" önerisinde yakındaki yer yine önde.
+- **UX sonucu:** Kart sayfada daha sakin duruyor. Konum yalnızca "Yakınımda
+  ne var?" bölümünü dolduruyor.
+
+### 2026-10-04 — Yeni Molapuan ikonu
+
+- **Karar (Bedir):** Molapuan ikonu, Bedir'in verdiği çizim oldu: lacivert
+  daire içinde yeşil jetonlar, üstte "m" harfi ve parıltılar.
+- **Neden:** Molapuanın kendine ait, tanınır bir simgesi olmalı.
+- **Etkilediği alanlar:**
+  - Molapuan kartı (Keşfet, Profil);
+  - menüdeki "Molapuanlarım";
+  - `v2/img/molapuan.webp` ve `v2/img/KAYNAK.md`.
+- **Teknik sonuç:** Görsel yuvarlak kırpıldı, dışı saydam. 160×160 webp
+  olarak kaydedildi (5,5 KB). Kartta 40px, menüde 20px gösteriliyor.
+  Kartın eski yıldızlı lacivert kutusu kalktı.
+- **UX sonucu:** Puan her yerde aynı simgeyle tanınıyor.

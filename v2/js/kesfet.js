@@ -12,7 +12,7 @@ import { molapuan, initMolapuan } from './molapuan.js';
 import { favSync, initFavorites } from './favorites.js';
 import { productCard, recentCard, ticket, postMini, initPostActions } from './cards.js';
 import { renderShell } from './shell.js';
-import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, listNearby, nearestPlace, placePos, getDestination, kmTo, BUCKETS, WITH, TYPES, typeKey } from './api.js';
+import { listPosts, listProducts, listEvents, listThemes, listRecent, clearRecent, listNearby, nearestPlace, placePos, getDestination, BUCKETS, WITH, TYPES, typeKey } from './api.js';
 
 renderShell('kesfet');
 
@@ -34,10 +34,10 @@ let srch={setNear(){}};
 import('./arama.js').then(m=>{srch=m.initSearch();if(nearAt)srch.setNear(nearAt[2]);
   document.querySelectorAll('.pchips').forEach(el=>makeScroll(el))}).catch(e=>console.error(e));
 
-/* Kişiye göre sıra: kiminle seçimine uyanlar, sonra yakında olanlar öne
-   (60 km, 300 km, ötesi); aynı derecedekiler kendi sırasında kalır */
-const ring=p=>{const d=kmTo(nearAt&&nearAt[0],p);return d==null?2:d<=60?0:d<=300?1:2};
-const score=p=>(curK&&p&&!p.with.includes(curK)?3:0)+(nearAt&&p?ring(p):0);
+/* Kişiye göre sıra: kiminle seçimine uyanlar öne; aynı derecedekiler kendi
+   sırasında kalır. Konum yalnızca "Yakınımda ne var?" rayını doldurur,
+   öteki bölümlerin sırasını değiştirmez (Bedir, 2026-10-04). */
+const score=p=>curK&&p&&!p.with.includes(curK)?1:0;
 const rank=(l,of=x=>x)=>l.map((x,i)=>[x,score(of(x)),i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(a=>a[0]);
 const svg=p=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>';
 
@@ -80,9 +80,9 @@ function nearShow(pos,label,place){
   nearAt=[pos,label,place];nCard.hidden=true;nOn.hidden=false;
   $('nearLoc').textContent=label;
   fill($('nearRail'),listNearby(pos).map(productCard).join(''));
-  srch.setNear(place);pick();personal();
+  srch.setNear(place);
 }
-function nearOff(){nSet('');nearAt=null;srch.setNear(null);pick();personal();nOn.hidden=true;nCard.hidden=false;nAlt.hidden=true;nGo.disabled=false;nGo.querySelector('span').textContent='Konumumu kullan'}
+function nearOff(){nSet('');nearAt=null;srch.setNear(null);nOn.hidden=true;nCard.hidden=false;nAlt.hidden=true;nGo.disabled=false;nGo.querySelector('span').textContent='Konumumu kullan'}
 $('nearOff').addEventListener('click',()=>{nearOff();nGo.focus()});
 function nearCity(id){const d=getDestination(id),pos=placePos(id);if(!d||!pos)return nearOff();nSet('yer:'+id);nearShow(pos,d.name+' çevresi',id)}
 function nearFail(msg){nGo.disabled=false;nGo.querySelector('span').textContent='Tekrar dene';nAlt.hidden=false;$('nearMsg').textContent=msg}
@@ -139,7 +139,7 @@ const mpBox=document.getElementById('mpBox'),mpDraw=()=>{mpBox.innerHTML=molapua
 
 mpDraw();initMolapuan();
 recent();
-if(!nearStart()){pick();personal()}
+nearStart();pick();personal();
 initFavorites();
 favSync();
 

@@ -65,7 +65,7 @@ const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria
         <a href="${R}planlarim/#yaklasan" class="m-tile"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/></svg>Rezervasyonlarım</a>
         <a href="${R}planlarim/#favoriler" class="m-tile"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorilerim</a>
         <a href="#yakinda" class="m-tile"><svg viewBox="0 0 24 24"><path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/></svg>Kuponlarım</a>
-        <a href="${R}profil/" class="m-tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>Molapuanlarım</a>
+        <a href="${R}profil/" class="m-tile"><img src="${R}img/molapuan.webp" alt="" width="20" height="20">Molapuanlarım</a>
       </div>
     </div>
 

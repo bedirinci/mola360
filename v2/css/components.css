@@ -138,6 +138,7 @@ html.kb .dock :focus-visible{outline-offset:-2px}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .m-tile{background:var(--soft);color:var(--navy);border-radius:var(--r-md);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:var(--fs-md);font-weight:var(--fw-semi)}
 .m-tile svg{width:20px;height:20px;color:var(--green-ink)}
+.m-tile img{width:20px;height:20px;border-radius:50%}
 .m-contact{margin-top:10px;background:var(--soft);border-radius:var(--r-md);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .m-contact b{color:var(--navy);font-size:var(--fs-lg);letter-spacing:.2px;font-variant-numeric:tabular-nums;user-select:all}
 .m-contact span{display:block;font-size:var(--fs-xs);color:var(--mute)}
@@ -500,8 +501,7 @@ html.kb .ps-add:has(input:focus-visible){outline:2px solid var(--navy);outline-o
 /* Molapuan kartı (Keşfet, Profil): ince yatay kart */
 .mp{margin:20px 16px 0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
 .mp-top{display:flex;align-items:center;gap:10px;padding:12px 12px 10px 14px}
-.mp-ic{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:var(--r-sm);background:var(--navy);color:var(--green)}
-.mp-ic svg{width:19px;height:19px;fill:currentColor;stroke-width:2}
+.mp-ic{flex:none;width:40px;height:40px;border-radius:50%}
 .mp-x{flex:1;min-width:0;line-height:1.2}
 .mp-x h2{font-size:calc(var(--fs-lg) - var(--fs-mp-down));font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mp-x h2 b{font-weight:var(--fw-black);color:var(--green-ink);font-variant-numeric:tabular-nums}
