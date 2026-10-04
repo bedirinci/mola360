@@ -64,6 +64,8 @@
 /* davet kartı belirgin: açık lacivert zemin, sağda konum halkaları, yeşil eylem düğmesi */
 .near{margin:24px 16px 0;border-radius:var(--r-lg);background:linear-gradient(135deg,#F2F5FC 0%,#E4EAF7 100%);box-shadow:var(--shadow),inset 0 0 0 1px rgba(21,32,72,.06);overflow:hidden}
 .near-in{position:relative;display:flex;align-items:center;gap:8px;padding:16px 0 16px 16px;min-height:150px}
+/* arkada saydam harita deseni (Bedir); yazının olduğu sol taraf daha soluk */
+.near-in::before{content:"";position:absolute;inset:0;background:url(../img/harita-desen.svg) center/cover no-repeat;opacity:.55;-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.6) 45%,#000 75%);mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.6) 45%,#000 75%);pointer-events:none}
 .near-t{position:relative;z-index:1;flex:1;min-width:0;line-height:1.3}
 .near-t h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:-.01em;color:var(--ink)}
 .near-t p{margin-top:4px;max-width:210px;font-size:var(--fs-md);line-height:1.45;color:var(--mute)}

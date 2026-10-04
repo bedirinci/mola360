@@ -25,7 +25,7 @@ if(!u){
   const went=[...new Map(posts.filter(p=>p.verified&&p.product).map(p=>[p.product.id,p.product])).values()];
   const STAT=(v,t,tab)=>tab?'<button type="button" data-go="'+tab+'"><b>'+v+'</b><span>'+t+'</span></button>':'<div><b>'+v+'</b><span>'+t+'</span></div>';
   head.innerHTML='<div class="pf-id">'+ava(u,'l')+'<div class="x"><div class="pf-nm"><b>'+u.ad+'</b>'+(u.onay?VERIFIED:'')+'</div>'
-   +'<span class="pf-at">@'+u.kul+(u.city?'<i>·</i>'+PIN+u.city:'')+'</span></div></div>'
+   +(u.city?'<span class="pf-at">'+PIN+u.city+'</span>':'')+'</div></div>'
    +(u.bio?'<p class="pf-bio">'+u.bio+'</p>':'')
    +'<div class="pf-stats">'+STAT(posts.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+STAT(n(u.followers),'takipçi')+STAT(n(u.following),'takip')+'</div>'
    +'<div class="pf-acts"><button type="button" class="btn green follow k-follow" aria-pressed="false">Takip et</button>'
