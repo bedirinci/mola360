@@ -25,7 +25,8 @@ const s=getSearch();
 
 /* Tema vitrini: kapakta temanın görseli, adı ve girişi; sekmelerde yalnızca
    temada olan kategoriler */
-if(th){const top=document.querySelector('.pg-top');top.classList.add('cover');top.style.setProperty('--g',th.bg)}
+if(th){const top=document.querySelector('.pg-top');top.classList.add('cover');top.style.setProperty('--g',th.bg);
+  const lg=top.querySelector('.logo img');if(lg)lg.src='../logo.webp'}
 const CATS=th?TYPES.filter(t=>th.types.includes(t[1])):TYPES;
 /* Bu temada paylaşılanlar: temadaki (sekme seçiliyse o kategorideki) deneyimlerin paylaşımları */
 const themePosts=()=>th?listPosts().filter(x=>x.product&&th.ids.includes(x.product.id)&&(!tur||typeKey(x.product.type)===tur)):[];
