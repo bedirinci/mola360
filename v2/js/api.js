@@ -4,7 +4,7 @@
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
 import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
-import { DETAY, BASLIK, YORUM, KALKIS } from './icerik.js';
+import { DETAY, BASLIK, YORUM, KALKIS, OTEL } from './icerik.js';
 import { ROOT } from './root.js';
 
 /* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil) */
@@ -309,18 +309,20 @@ const CANCEL={tur:'Kalkıştan 7 gün öncesine kadar ücretsiz iptal',otel:'Gir
 export function bookingSpec(p){
   const t=typeKey(p.type);
   const split=f=>{const i=f.indexOf(' ');return [f.slice(0,i),f.slice(i+1)]};
-  const dates=p.dates.length?upcoming(p.dates):t==='otel'?[['Giriş – çıkış',p.facts[0]]]:t==='etkinlik'?[split(p.facts[0])]:upcoming(NEXT_DAYS);
+  const H=t==='otel'?hotel(p):null;
+  const dates=p.dates.length?upcoming(p.dates):H?H.dates:t==='etkinlik'?[split(p.facts[0])]:upcoming(NEXT_DAYS);
   /* min. harcamalı mekânda fiyat seçilen alanın; kişi sayısı fiyatı değiştirmez */
   const fixed=p.unit==='min. harcama';
   return {
     dates,fixed,
     slots:p.slots||((t==='aktivite'||t==='mekan')&&!fixed?['10:00','12:00','14:00','16:00']:[]),
     opts:p.opts||[],
-    qty:fixed||t==='tur'?null:t==='otel'?{label:'Oda',min:1,max:3,start:1,note:'Oda başına 2 yetişkin.'}:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
+    qty:fixed||t==='tur'||H?null:t==='etkinlik'?{label:'Bilet',min:1,max:8}:{label:'Kişi',min:1,max:9},
     /* turda kişi yaşa göre: çocuk %30 indirimli, bebek kucakta (uçakta bilet farkı) */
     people:t==='tur'?{max:9,rows:[['yetiskin','Yetişkin','12 yaş ve üzeri',1,null],['cocuk','Çocuk','3–11 yaş',.7,[3,11]],
       ['bebek','Bebek',p.tr==='ucak'?'0–2 yaş · kucakta':'0–2 yaş · kucakta, ücretsiz',p.tr==='ucak'?.1:0,[0,2]]]}:null,
     dep:t==='tur'?kalkis(p):null,
+    hotel:H,
     /* konaklamalı tur: fiyat iki kişilik odada kişi başı; tek kişilik oda farkı (ÖRNEK %30) */
     room:t==='tur'&&/gece/.test(p.info||'')?{single:Math.round(p.price*.3/10)*10}:null,
     /* katılımcı kimliği: yurt dışında herkes için pasaport, yurt içinde yetişkinlerde T.C. kimlik */
@@ -329,6 +331,26 @@ export function bookingSpec(p){
     cancel:CANCEL[t]||'24 saat öncesine kadar ücretsiz iptal'
   };
 }
+
+/* Otel: giriş günleri (yarından itibaren 60 gün), odalar, olanaklar, çocuk ve
+   evcil hayvan kuralları. Oda fiyatı gecelik ve odanın; 2 yaş altı bebek ücretsiz
+   ve kişi sayısına girmez. Bilgisi yazılmamış otelde tek oda tipi (ÖRNEK) */
+const GUN=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],AY3=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const dayLbl=d=>[GUN[d.getDay()],d.getDate()+' '+AY3[d.getMonth()]];
+export const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+function hotel(p){
+  const o=OTEL[p.title]||{giris:'14:00',cikis:'12:00',odalar:[['Standart oda','Çift kişilik',2,Math.round(p.price/2),[]]],olanak:[],cocuk:[6,0],evcil:false};
+  return {giris:o.giris,cikis:o.cikis,olanak:o.olanak,evcil:o.evcil,free:o.cocuk[0],extra:o.cocuk[1],maxNights:14,
+    rooms:o.odalar.map(([ad,alt,kap,fiyat,oz])=>({ad,alt,kap,fiyat,oz})),
+    dates:Array.from({length:60},(_,i)=>dayLbl(addDays(today(),i+1))),
+    stay:defaultStay()}
+}
+/* kartlarda ve ürün sayfasında hazır gelen konaklama: önümüzdeki cuma, 2 gece */
+function defaultStay(){const t=today(),d=addDays(t,((5-t.getDay()+7)%7)||7);return {date:dayLbl(d).join(' '),nights:2}}
+/* "9 – 11 Eki" ya da "30 Eki – 1 Kas" */
+export function stayRange(label,n){const a=parseDay(label);if(!a)return '';const b=addDays(a,n),m=x=>AY3[x.getMonth()];
+  return a.getMonth()===b.getMonth()?a.getDate()+' – '+b.getDate()+' '+m(b):a.getDate()+' '+m(a)+' – '+b.getDate()+' '+m(b)}
+export const longDate=d=>d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'});
 
 /* Tur kalkışı: turun çıkış şehri ve o şehirdeki duraklar {saat,yer,adres,not} */
 function kalkis(p){
@@ -374,7 +396,8 @@ export function rateBooking(productId,puan,metin,alt){const r=readRv();r[product
    bilmen gerekenler ve örnek değerlendirmeler (ÖRNEK, icerik.js) */
 export function productDetails(p){
   const t=typeKey(p.type),d=DETAY[p.title]||{},[progTitle,placeTitle]=BASLIK[t];
-  return {about:d.about||'',progTitle,program:d.program||[],placeTitle,place:d.yer||[p.place,''],
+  /* otelde program yerine odalar bölümü (bookingSpec().hotel) */
+  return {about:d.about||'',progTitle,program:t==='otel'?[]:d.program||[],placeTitle,place:d.yer||[p.place,''],
     dahil:d.dahil||[],haric:d.haric||[],bilgi:d.bilgi||[],
     reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[],
     /* türe göre ayrıntılı puanlar (değerlendirme formundakiyle aynı başlıklar), ÖRNEK: genel puandan türetilir */
@@ -466,3 +489,6 @@ export function notifOff(){try{return new Set(JSON.parse(localStorage.getItem(NA
 export function setNotif(k,on){const s=notifOff();on?s.delete(k):s.add(k);try{localStorage.setItem(NAK,JSON.stringify([...s]))}catch(e){}}
 export const unreadNotifs=()=>listNotifs().filter(n=>!n.read).length;
 export function markNotifs(ids){const s=new Set([...readNt(),...ids]);try{localStorage.setItem(NK,JSON.stringify([...s]))}catch(e){}}
+
+/* otel kartlarındaki tarih: hazır gelen konaklama (önümüzdeki cuma, 2 gece) */
+{const st=defaultStay();all.forEach(p=>{if(p.type==='Otel'&&p.facts.length)p.facts[0]=stayRange(st.date,st.nights)+' · '+st.nights+' gece'})}

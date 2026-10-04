@@ -191,25 +191,25 @@ export const DETAY={
  'Göreme Mağara Otel':{about:'Peri bacalarının içine oyulmuş mağara odalar ve Göreme\'ye bakan bir teras. Sabah balonlar tam karşında havalanıyor.',
   program:[['Oda','Mağara oda','Doğal taş, 25 m², çift kişilik yatak.'],['Kahvaltı','Terasta serpme kahvaltı','Balonların kalktığı saatte başlar.'],['Olanaklar','Teras, hamam, ücretsiz Wi-Fi','']],
   yer:['Göreme, Nevşehir','Göreme merkezine 5 dakika yürüme. Kayseri Havalimanı 70 km.'],
-  dahil:['2 gece konaklama','Kahvaltı','Wi-Fi'],haric:['Havalimanı transferi','Hamam ve masaj'],
+  dahil:['Konaklama','Kahvaltı','Wi-Fi'],haric:['Havalimanı transferi','Hamam ve masaj'],
   bilgi:['Giriş 14:00, çıkış 12:00.','Mağara odalara merdivenle çıkılır.']},
 
  'Sealight Resort':{about:'Kemer\'de denize sıfır bir tatil köyü: özel plaj, aquapark ve çocuk kulübü. Ekim\'de deniz hâlâ sıcak.',
   program:[['Oda','Deniz manzaralı standart oda','28 m², balkonlu.'],['Yeme içme','Her şey dahil','Ana restoran, üç alakart restoran ve barlar.'],['Olanaklar','Özel plaj, aquapark, çocuk kulübü','']],
   yer:['Kemer, Antalya','Antalya Havalimanı 55 km.'],
-  dahil:['2 gece konaklama','Her şey dahil yeme içme','Plaj ve havuz kullanımı'],haric:['Havalimanı transferi','Spa hizmetleri'],
+  dahil:['Konaklama','Her şey dahil yeme içme','Plaj ve havuz kullanımı'],haric:['Havalimanı transferi','Spa hizmetleri'],
   bilgi:['Giriş 14:00, çıkış 12:00.']},
 
  'Kordon Butik Otel':{about:'Alsancak\'ın ara sokaklarında yüksek tavanlı eski bir Rum evi. Kordon 120 metre ötede.',
   program:[['Oda','Butik oda','Yüksek tavanlı, 20 m².'],['Kahvaltı','Avluda kahvaltı',''],['Konum','Kordon\'a 120 m','Alsancak\'ın kafeleri kapının önünde.']],
   yer:['Alsancak, İzmir','Alsancak Garı\'na 6 dakika yürüme.'],
-  dahil:['2 gece konaklama','Kahvaltı','Wi-Fi'],haric:['Otopark','Havalimanı transferi'],
+  dahil:['Konaklama','Kahvaltı','Wi-Fi'],haric:['Otopark','Havalimanı transferi'],
   bilgi:['Giriş 14:00, çıkış 11:00.','Asansör yok; odalar ikinci kata kadar.']},
 
  'Termal Vadi Resort':{about:'Yalova\'nın ormanlık vadisinde termal havuzlarıyla bir hafta sonu dinlenmesi.',
   program:[['Oda','Standart oda','Orman manzaralı.'],['Termal','Açık ve kapalı termal havuz','Konaklamaya dahil.'],['Kahvaltı','Açık büfe kahvaltı','']],
   yer:['Termal, Yalova','Yalova iskelesine 12 km; İstanbul\'dan feribotla 1,5 saat.'],
-  dahil:['2 gece konaklama','Kahvaltı','Termal havuz kullanımı'],haric:['Masaj ve kese','Akşam yemeği'],
+  dahil:['Konaklama','Kahvaltı','Termal havuz kullanımı'],haric:['Masaj ve kese','Akşam yemeği'],
   bilgi:['Giriş 14:00, çıkış 12:00.','Termal havuza 12 yaş altı yetişkinle girer.']},
 
  'Kordon Spa & Masaj':{about:'Alsancak\'ta sakin bir masaj salonu: deneyimli terapistler, randevuyla, beklemeden.',
@@ -227,7 +227,7 @@ export const DETAY={
  'Ayder Yayla Evi':{about:'Kaçkarlar\'ın eteğinde ahşap bir yayla evi. Sabah sisin içinden yayla, akşam şöminenin başında Karadeniz sofrası.',
   program:[['Oda','Ahşap oda, yayla manzarası','Çift kişilik ya da aile odası; balkonlu.'],['Kahvaltı','Karadeniz kahvaltısı','Muhlama, yayla tereyağı ve köy yumurtası.'],['Çevre','Ayder kaplıcası 300 m','Gelin Tülü Şelalesi\'ne yürüyerek 15 dakika.']],
   yer:['Ayder, Çamlıhemşin, Rize','Rize-Artvin Havalimanı\'na 85 km; otopark var.'],
-  dahil:['2 gece konaklama','Kahvaltı'],haric:['Akşam yemeği','Kaplıca girişi'],
+  dahil:['Konaklama','Kahvaltı'],haric:['Akşam yemeği','Kaplıca girişi'],
   bilgi:['Yaylada akşamlar serin; kalın bir şey getir.','Giriş 14:00, çıkış 12:00.']},
 
  'Maşukiye Dere Evi':{about:'Maşukiye\'de dere kenarında, ağaçların altında serpme kahvaltı ya da mangal. Şehirden kaçmak için kısa bir mola.',
@@ -258,6 +258,38 @@ export const DETAY={
 /* Tur kalkış noktaları (ÖRNEK): tur hangi şehirden çıkıyorsa o şehrin
    durakları [saat, durak, adres, not]. Burada olmayan turda tek kalkış
    noktası DETAY'daki "yer"den gelir. */
+/* Otel odaları ve kuralları (ÖRNEK): giriş ve çıkış saati, odalar
+   [ad, açıklama, en fazla kişi (2 yaş ve üzeri), gecelik oda fiyatı, öne çıkanlar],
+   olanaklar, çocuk: [bu yaşa kadar ücretsiz, 12 yaşa kadar ek yatak gecelik], evcil hayvan */
+export const OTEL={
+ 'Göreme Mağara Otel':{giris:'14:00',cikis:'12:00',
+  odalar:[['Mağara oda','25 m² · çift kişilik yatak',2,2450,['Doğal taş duvarlar','Duş']],
+   ['Deluxe mağara oda','35 m² · jakuzili',2,3290,['Jakuzi','Vadi manzarası']],
+   ['Aile mağara süiti','50 m² · iki yatak odası',4,4650,['İki yatak odası','Oturma alanı']]],
+  olanak:['Ücretsiz Wi-Fi','Balon manzaralı teras','Hamam','Ücretsiz otopark','Havalimanı transferi (ücretli)','24 saat resepsiyon'],
+  cocuk:[6,450],evcil:false},
+ 'Sealight Resort':{giris:'14:00',cikis:'12:00',
+  odalar:[['Standart oda','26 m² · bahçe manzaralı',3,2100,['Balkon','Klima']],
+   ['Deniz manzaralı oda','28 m² · balkonlu',3,2490,['Deniz manzarası','Balkon']],
+   ['Aile odası','40 m² · iki bölmeli',4,3390,['İki bölme','Deniz manzarası']]],
+  olanak:['Özel plaj','Açık ve kapalı havuz','Aquapark','Çocuk kulübü','Spa (ücretli)','Ücretsiz Wi-Fi','Ücretsiz otopark'],
+  cocuk:[6,600],evcil:false},
+ 'Kordon Butik Otel':{giris:'14:00',cikis:'11:00',
+  odalar:[['Butik oda','20 m² · çift kişilik yatak',2,1989,['Yüksek tavan','Klima']],
+   ['Kordon manzaralı oda','24 m² · fransız balkonlu',2,2390,['Deniz manzarası','Fransız balkon']]],
+  olanak:['Ücretsiz Wi-Fi','Avluda kahvaltı','Klima','24 saat resepsiyon','Bagaj saklama'],
+  cocuk:[6,400],evcil:true},
+ 'Termal Vadi Resort':{giris:'14:00',cikis:'12:00',
+  odalar:[['Standart oda','24 m² · orman manzaralı',3,1590,['Orman manzarası','Klima']],
+   ['Termal süit','38 m² · odada termal küvet',3,2590,['Termal küvet','Oturma alanı']]],
+  olanak:['Açık ve kapalı termal havuz','Sauna ve buhar odası','Ücretsiz Wi-Fi','Ücretsiz otopark','Masaj (ücretli)'],
+  cocuk:[6,350],evcil:false},
+ 'Ayder Yayla Evi':{giris:'14:00',cikis:'12:00',
+  odalar:[['Ahşap oda','18 m² · balkonlu',2,1450,['Yayla manzarası','Balkon']],
+   ['Aile odası','30 m² · iki yatak',4,2150,['Yayla manzarası','İki yatak']]],
+  olanak:['Şömineli salon','Ücretsiz Wi-Fi','Ücretsiz otopark','Karadeniz mutfağı restoranı'],
+  cocuk:[6,300],evcil:true}};
+
 export const KALKIS={
  'Efes ve Şirince Turu':['İzmir','Otobüsle',[
    ['07:40','Bornova Metro','Ege Üniversitesi metro çıkışı, Bornova','Otobüs metro çıkışının karşısında bekler.'],
@@ -281,7 +313,7 @@ export const KALKIS={
 };
 
 /* Ürün türüne göre bölüm başlıkları: program ve konum */
-export const BASLIK={tur:['Program','Kalkış noktası'],otel:['Konaklama','Konum'],etkinlik:['Akış','Etkinlik alanı'],aktivite:['Nasıl geçiyor?','Buluşma noktası'],mekan:['Hizmetler','Konum']};
+export const BASLIK={tur:['Program','Kalkış noktası'],otel:['Odalar','Konum'],etkinlik:['Akış','Etkinlik alanı'],aktivite:['Nasıl geçiyor?','Buluşma noktası'],mekan:['Hizmetler','Konum']};
 
 /* Örnek değerlendirmeler: türe göre iki tane. Gerçekte yalnızca
    rezervasyonu tamamlayanlar yazar. */

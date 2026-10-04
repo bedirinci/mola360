@@ -175,6 +175,8 @@ main#urun .box:first-of-type{margin-top:24px}
 .rz-rows{display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
 .rz-rows small{display:block;font-size:var(--fs-xs);color:var(--mute);font-weight:var(--fw-medium)}
 .rz-rows b{font-size:var(--fs-md);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rz-rows>div:first-child{min-width:0}
+.rz-rows>div:first-child b{white-space:normal}
 .rz-rows .ok{color:var(--ink)}
 .rz-acts{display:flex;gap:8px;margin-top:12px}
 .rz-acts .btn{flex:1;justify-content:center;padding:11px 8px;font-size:var(--fs-md);white-space:nowrap}
@@ -687,3 +689,31 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-room span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:2px}
 #bkRoom .bk-pr{margin-top:6px}
 .box p.bk-rn{font-size:var(--fs-sm);color:var(--ink);margin-top:4px}
+
+/* ---- otel: gece sayısı, odalar, olanaklar (ürün sayfası ve rezervasyon) */
+.u-night{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--card)}
+.u-rooms{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.u-room{display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:3px;text-align:left;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--card)}
+.u-room[aria-checked="true"]{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);background:#F4F6FB}
+.u-rm-h{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.u-rm-h b{font-size:var(--fs-base);font-weight:var(--fw-bold)}
+.u-rm-h i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.u-room[aria-checked="true"] .u-rm-h i{border-color:var(--navy);background:var(--navy)}
+.u-room[aria-checked="true"] .u-rm-h i::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.u-rm-s{grid-column:1;font-size:var(--fs-sm);color:var(--mute)}
+.u-rm-f{grid-column:1;display:flex;align-items:flex-start;gap:6px;font-size:var(--fs-sm);color:var(--ink);line-height:1.35}
+.u-rm-f svg{width:15px;height:15px;flex:none;margin-top:1px}
+.u-rm-o{grid-column:1;font-size:var(--fs-sm);color:var(--mute);line-height:1.35}
+.u-rm-p{grid-column:2;grid-row:2/span 3;align-self:end;display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+.u-rm-p s{font-size:var(--fs-xs);color:var(--mute)}
+.u-rm-p strong{font-size:var(--fs-base);font-weight:var(--fw-black);font-variant-numeric:tabular-nums;white-space:nowrap}
+.u-rm-p small{font-size:var(--fs-xs);color:var(--mute)}
+.u-amen{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:12px}
+.u-amen li{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-sm);line-height:1.35}
+.u-amen svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--navy)}
+#bk .bk-dg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#bk .bk-dg button{min-width:0;padding:8px 4px}
+.bk-kids{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.bk-kids:empty{display:none}
+.bk-kids .err{grid-column:1/-1}
+.bk-rc{margin-top:10px}

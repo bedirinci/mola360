@@ -103,7 +103,7 @@ describe('v2', () => {
     const api = await import('../v2/js/api.js');
     api.listProducts().forEach(p => {
       const d = api.productDetails(p);
-      expect(d.about && d.program.length && d.dahil.length && d.place[0], p.title).toBeTruthy();
+      expect(d.about && (d.program.length || (api.bookingSpec(p).hotel || {rooms: []}).rooms.length) && d.dahil.length && d.place[0], p.title).toBeTruthy();
     });
     const k = api.getProduct('kapadokya-turu');
     expect(api.cancelBy(k, 'Pzt 12 Eki')).toEqual({ date: '5 Ekim Pazartesi', past: false });
