@@ -4,7 +4,7 @@
    Mola360'tan rezerve edip yaşadığın deneyime bağlanan paylaşım "Mola360
    ile gitti" rozeti alır; başka bir deneyime bağlanan almaz. Taslakta
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
-import { listPastBookings, suggest, getProduct, createPost, createStory, getPost, postDraft, updatePost, POST_MIN } from './api.js';
+import { listPastBookings, suggest, getProduct, createPost, getPost, postDraft, updatePost, POST_MIN } from './api.js';
 import { makeSheet, toast } from './ui.js';
 import { IC, PIN } from './icons.js';
 import { ROOT } from './root.js';
@@ -22,17 +22,17 @@ const HTML=`<div class="sh-bg" id="psBg"></div>
     <section class="ps-sec" aria-labelledby="psH1"><h4 id="psH1">Fotoğraf veya video <small id="psMinT">(en az ${POST_MIN})</small></h4>
       <div class="ps-media" id="psMedia"></div>
     </section>
-    <section class="ps-sec" aria-labelledby="psH2"><h4 id="psH2">Hangi deneyim? <small id="psOpt" hidden>(isteğe bağlı)</small></h4>
+    <section class="ps-sec" aria-labelledby="psH2"><h4 id="psH2">Hangi deneyim?</h4>
       <div id="psPast"></div>
       <p class="ps-lbl">Başka bir deneyim</p>
       <div id="psSel"></div>
       <div class="ps-q">${IC.search}<input type="search" id="psQ" placeholder="Deneyim adı ya da yer" autocomplete="off" enterkeyhint="search" aria-label="Başka bir deneyim ara"></div>
       <div id="psRes" aria-live="polite"></div>
     </section>
-    <section class="ps-sec" id="psWithSec" aria-labelledby="psH3"><h4 id="psH3">Kiminle gittin?</h4>
+    <section class="ps-sec" aria-labelledby="psH3"><h4 id="psH3">Kiminle gittin?</h4>
       <div class="ps-with" role="radiogroup" aria-labelledby="psH3">${WITH.map(w=>'<button type="button" class="fc" role="radio" aria-checked="false" data-with="'+w+'">'+w+'</button>').join('')}</div>
     </section>
-    <section class="ps-sec"><label for="psNote"><h4 id="psNoteH">Nasıldı?</h4></label>
+    <section class="ps-sec"><label for="psNote"><h4>Nasıldı?</h4></label>
       <div class="ps-note"><textarea id="psNote" rows="3" maxlength="${NOTE}" placeholder="Birkaç cümle yeter"></textarea><small id="psCnt" aria-live="polite">0 / ${NOTE}</small></div>
     </section>
   </div>
@@ -45,7 +45,7 @@ const CHOOSE=`<div class="sh-bg" id="pcBg"></div>
   <div class="sh-grab"></div>
   <div class="sh-hd"><h3 id="pcTtl">Ne paylaşmak istersin?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${IC.close}</button></div>
   <div class="pc-list">
-    <button type="button" class="pc-o" data-mode="hikaye"><i class="pc-ic hk-ic">${IC.plus}</i><span><b>Hikaye</b><small>24 saat görünür, tek fotoğraf yeter</small></span>${IC.right}</button>
+    <button type="button" class="pc-o" data-mode="hikaye"><i class="pc-ic hk-ic">${IC.plus}</i><span><b>Hikaye</b><small>Tam ekran; yazı, yer ve deneyim ekle</small></span>${IC.right}</button>
     <button type="button" class="pc-o" data-mode="post"><i class="pc-ic">${IC.grid}</i><span><b>Gönderi</b><small>Bağlan akışında ve profilinde kalır</small></span>${IC.right}</button>
   </div>
 </div>`;
@@ -54,13 +54,13 @@ let chooser;
 let sheet,st,mode='post';
 const $=id=>document.getElementById(id);
 const fresh=()=>({media:[],productId:'',custom:'',q:'',with:'',note:'',editId:'',pics:[]});
-const MIN=()=>mode==='hikaye'?1:POST_MIN;
+const MIN=()=>POST_MIN;
 const ED=()=>mode==='edit';
 
 /* Önizleme: görsel küçültülür (en fazla 720 px); videodan ilk kare */
 function shrink(src,w,h0){const k=Math.min(1,720/Math.max(w,h0)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h0*k);
   c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.72)}
-function thumbOf(m){return new Promise(res=>{
+export function thumbOf(m){return new Promise(res=>{
   if(m.video){const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='metadata';v.src=m.url;
     v.onloadeddata=()=>{v.currentTime=Math.min(.5,(v.duration||1)/2)};v.onseeked=()=>{try{res(shrink(v,v.videoWidth,v.videoHeight))}catch(e){res('')}};v.onerror=()=>res('');return}
   const i=new Image();i.onload=()=>{try{res(shrink(i,i.naturalWidth,i.naturalHeight))}catch(e){res('')}};i.onerror=()=>res('');i.src=m.url})}
@@ -94,16 +94,12 @@ function drawPick(){
 function check(){
   if(ED()){const need=!st.productId&&!st.custom?'Paylaşımı bir deneyime bağla':'';$('psNeed').textContent=need;$('psGo').disabled=!!need;return}
   const n=st.media.length,left=MIN()-n;
-  if(mode==='hikaye'){const need=n?'':'Bir fotoğraf ya da video ekle';$('psNeed').textContent=need;$('psGo').disabled=!!need;return}
   const need=left>0&&!st.productId&&!st.custom?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
     :left===1?(n?'Bir fotoğraf daha ekle':'Bir fotoğraf ya da video ekle'):!st.productId&&!st.custom?'Paylaşımı bir deneyime bağla':'';
   $('psNeed').textContent=need;$('psGo').disabled=!!need;
 }
-/* hikaye: tek görsel yeter, deneyim isteğe bağlı, kiminle sorulmaz */
-function drawMode(){const hk=mode==='hikaye',ed=ED();
-  $('psTtl').textContent=hk?'Hikaye paylaş':'Deneyimini paylaş';
-  $('psMinT').textContent=hk?'':'(en az '+POST_MIN+')';$('psOpt').hidden=!hk;$('psWithSec').hidden=hk;
-  $('psNoteH').textContent=hk?'Kısa not':'Nasıldı?';$('psGo').textContent=hk?'Hikayeni paylaş':'Paylaş';
+function drawMode(){const ed=ED();
+  $('psTtl').textContent='Deneyimini paylaş';$('psMinT').textContent='(en az '+POST_MIN+')';$('psGo').textContent='Paylaş';
   if(ed){$('psTtl').textContent='Gönderiyi düzenle';$('psMinT').textContent='(değiştirilemez)';$('psGo').textContent='Kaydet'}}
 function drawAll(){drawMode();drawMedia();drawPick();
   document.querySelectorAll('[data-with]').forEach(b=>b.setAttribute('aria-checked',b.dataset.with===st.with));
@@ -137,20 +133,7 @@ function build(){
   });
 }
 
-async function shareStory(){
-  const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
-  const thumbs=(await Promise.all(st.media.slice(0,5).map(thumbOf))).filter(Boolean);
-  const ok=createStory({productId:st.productId,title:st.custom,text:st.note.trim(),thumbs});
-  go.textContent='Hikayeni paylaş';
-  if(!ok){check();toast('Hikaye kaydedilemedi, tekrar dene.','Tamam',()=>{},3500);return}
-  st.media.forEach(m=>URL.revokeObjectURL(m.url));st=fresh();drawAll();sheet.close();
-  document.dispatchEvent(new CustomEvent('m360:hikaye'));
-  if(!document.getElementById('hikayeler'))toast('Hikayen Bağlan\'da','Gör',()=>{location.href=ROOT+'baglan/'},5000);
-  else toast('Hikayen paylaşıldı','Tamam',()=>{},3000);
-}
-
 async function share(){
-  if(mode==='hikaye')return shareStory();
   if(ED())return saveEdit();
   const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
   const thumbs=(await Promise.all(st.media.slice(0,3).map(thumbOf))).filter(Boolean);
@@ -181,8 +164,9 @@ export function openEdit(from,id){
 }
 
 /* opts.productId: geçmiş rezervasyondan gelince o deneyim seçili açılır.
-   opts.mode: 'hikaye' ya da 'post' (varsayılan) */
+   opts.mode: 'hikaye' tam ekran hikaye oluşturucuyu açar (hikaye-olustur.js) */
 export function openShare(from,{productId,mode:m='post'}={}){
+  if(m==='hikaye')return import('./hikaye-olustur.js').then(x=>x.openStory(from,{productId}));
   if(!sheet)build();
   if(m!==mode){mode=m;st.media.forEach(x=>URL.revokeObjectURL(x.url));st=fresh()}
   if(productId&&getProduct(productId)){st.productId=productId;st.q='';st.custom=''}

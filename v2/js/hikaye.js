@@ -101,6 +101,8 @@ function card(p,{mola,deal}={}){
 }
 function show(){
   const s=list[cur],f=s.frames[fi],mola=s.kind==='mola';
+  /* kendi hikayende yer ve rozet her karede ayrı */
+  const place=f.place!==undefined?f.place:s.place,ver=f.verified!==undefined?f.verified:s.verified;
   markSeen(s.id);
   sv.setAttribute('aria-label',(mola?s.title:s.user.kul)+' hikayesi, '+(fi+1)+'/'+s.frames.length);
   sv.querySelector('.sv-m').style.background=f.bg;
@@ -111,7 +113,7 @@ function show(){
    +'<button type="button" class="sv-x" aria-label="Kapat">'+IC.close+'</button>';
   sv.querySelector('.sv-body').innerHTML=(mola
      ?'<div class="sv-ed"><span class="ov">'+f.over+'</span><h2>'+f.title+'</h2><p>'+f.sub+'</p></div>'
-     :(s.verified?'<span class="went">'+LOGO_K+' ile gitti</span>':'')+(f.text||s.place?'<div class="sv-cap">'+(f.text?'<p>'+f.text+'</p>':'')+(s.place?'<span class="loc">'+PIN+s.place+'</span>':'')+'</div>':''))
+     :(ver?'<span class="went">'+LOGO_K+' ile gitti</span>':'')+(f.text||place?'<div class="sv-cap'+(f.box?' box':'')+'">'+(f.text?'<p>'+f.text+'</p>':'')+(place?'<span class="loc">'+PIN+place+'</span>':'')+'</div>':''))
    +card(f.product,{mola,deal:f.deal});
   sv.querySelector('.sv-ft').innerHTML=(mola||s.mine?'':'<label class="sv-rep"><input type="text" placeholder="'+s.user.kul+' kişisine yanıt ver" enterkeyhint="send"></label>')
    +'<button type="button" class="sv-act" data-sva="like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'</button>'
