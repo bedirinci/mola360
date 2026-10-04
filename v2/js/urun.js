@@ -45,6 +45,18 @@ const deposit=p.type==='Tur'?Math.round(lvPrice(p.title,p.price)*.2):0;
 /* üst çubuk: görselin üstünde yüzen düğmeler; görsel geçince lacivert
    bant, ortada ad ve altında soluk tür · yer, altında bölüm sekmeleri */
 const N=5;
+/* galerinin ilk karesi kampanya kartı: sarı başlık, büyük fiyat, logo kutusu, deneyimin görseli */
+function banner(){const now=lvPrice(p.title,p.price),was=p.old||(lvOn(p.title)?p.price:0);
+  const note=[p.info,info.dahil[0]].filter(Boolean).join(' · ');
+  return '<div class="ug-f ub" role="img" aria-label="'+esc(p.title+', '+tl(now)+' '+p.unit)+'">'
+   +'<svg class="ub-w" viewBox="0 0 400 250" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 70C60 20 120 120 210 80S330 10 420 60"/><path d="M-20 120C70 70 130 170 220 130S340 60 420 110"/><path d="M-20 170C80 120 140 220 230 180S350 110 420 160"/><path d="M-20 220C90 170 150 270 240 230S360 160 420 210"/></svg>'
+   +'<i class="ub-c1"></i><i class="ub-c2"></i>'
+   +'<span class="ub-v" style="background:'+frame(0)+'"></span><span class="ub-v b" style="background:'+p.bg+'"></span>'
+   +'<span class="ub-logo"><img src="'+ROOT+'logo-koyu.webp" alt="" width="66" height="27"></span>'
+   +'<div class="ub-l"><b class="ub-t"><span>'+p.title+'</span></b>'
+   +(was?'<span class="ub-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')
+   +'<strong class="ub-p">'+tl(now)+'</strong><small class="ub-u">'+p.unit+(lvOn(p.title)?' · Kâşif fiyatı':'')+'</small></div>'
+   +(note?'<p class="ub-n">'+note+'</p>':'')+'</div>'}
 const frame=i=>'radial-gradient(circle at '+[[30,25],[75,35],[50,70],[20,60],[80,80]][i].map(v=>v+'%').join(' ')+',rgba(255,255,255,.28),transparent 55%),'+p.bg;
 const short=p.place.split(' · ')[0];
 const tabs=[['genel','Genel'],p.dates.length&&['tarihler','Tarihler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
@@ -59,8 +71,8 @@ document.getElementById('urun').innerHTML=
  +'<div class="bar-i"><button type="button" class="ib" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="ib" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div></div>'
  +'</header><nav class="u-tabs" id="uTabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav>'
- +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N},(_,i)=>'<div class="ug-f" style="background:'+frame(i)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"></div>').join('')+'</div>'
- +'<span class="ug-n"><span id="ugI">1</span> / '+N+'</span><div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
+ +'<div class="ug"><div class="ug-tr" id="ugTr">'+banner()+Array.from({length:N-1},(_,i)=>'<div class="ug-f" style="background:'+frame(i+1)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+2)+'"></div>').join('')+'</div>'
+ +'<div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
  +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-proof">'+(p.count?'<button type="button" class="u-sc" data-go="yorumlar">'+sc(p.score)+'<span>'+p.count.toLocaleString('tr-TR')+' değerlendirme</span></button>':'<span class="score new"><b>Yeni</b></span><span class="u-nr">Henüz değerlendirme yok</span>')
@@ -170,7 +182,8 @@ function onScroll(){
 addEventListener('scroll',onScroll,{passive:true});onScroll();
 /* görsel sayacı ve noktalar kaydırdıkça */
 const tr=document.getElementById('ugTr');
-tr.addEventListener('scroll',()=>{const i=Math.round(tr.scrollLeft/tr.clientWidth);document.getElementById('ugI').textContent=i+1;
+/* kartlar ekrandan dar: yanındaki kartın ucu görünür; sıra kart genişliği + aralıkla bulunur */
+tr.addEventListener('scroll',()=>{const f=tr.children[1]||tr.children[0],i=Math.round(tr.scrollLeft/(f.offsetLeft-tr.children[0].offsetLeft||tr.clientWidth));
   document.querySelectorAll('.ug-dots i').forEach((d,j)=>d.classList.toggle('on',j===i))},{passive:true});
 
 renderShell('urun',{nav:false});
