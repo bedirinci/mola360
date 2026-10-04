@@ -254,3 +254,28 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-done .no{font-size:var(--fs-md)}
 .bk-acts{display:flex;flex-direction:column;gap:10px;margin:16px 16px 0}
 .bk-acts .btn{justify-content:center;padding:14px}
+
+/* Misafir tanıtımı (Planlarım, Profil) ve rezervasyon onayındaki hesap daveti */
+.gi{margin:16px 16px calc(110px + env(safe-area-inset-bottom,0px));padding:20px 16px 16px;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow)}
+.gi h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:-.01em}
+.gi>p{margin-top:6px;font-size:var(--fs-md);line-height:1.5;color:var(--mute)}
+.gi-l{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.gi-l li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.gi-l i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--soft);color:var(--ink)}
+.gi-l i img{display:block;width:36px;height:36px}
+.gi-l i img.lg-k{width:30px;height:auto}
+.gi-l i svg{width:19px;height:19px;stroke-width:2.2}
+.gi-l span{min-width:0;line-height:1.3}
+.gi-l b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi)}
+.gi-l small{display:block;margin-top:1px;font-size:var(--fs-sm);color:var(--mute)}
+.gi-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.gi-acts .btn{width:100%;justify-content:center;min-height:46px}
+.gi-k{display:block;margin-top:12px;text-align:center;font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--navy);text-decoration:underline;text-underline-offset:2px}
+.pf-top .pf-id .ava.gst{background:var(--navy-2);color:#fff;box-shadow:0 0 0 2px var(--navy),0 0 0 4px rgba(255,255,255,.35)}
+.pf-top .pf-id .ava.gst svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2}
+.gi-n{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.gi-n>img{flex:none;width:40px;height:40px}
+.gi-n>div{flex:1;min-width:0}
+.gi-n b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+.gi-n p{margin-top:2px!important;font-size:var(--fs-sm)!important;color:var(--mute)}
+.gi-n .btn{width:100%;justify-content:center;min-height:46px}

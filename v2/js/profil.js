@@ -6,6 +6,8 @@ import { toast } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
 import { molapuan, initMolapuan } from './molapuan.js';
 import { ROOT } from './root.js';
+import { getLevel } from './level.js';
+import { guestIntro } from './giris.js';
 
 renderShell('profil');
 initPostActions(toast);
@@ -16,6 +18,11 @@ const went=['Kapadokya Turu','Kordon Caz Akşamları','Köprülü Kanyon Rafting
 
 const PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>';
 const STAT=(n,t,tab)=>tab?'<button type="button" data-go="'+tab+'"><b>'+n+'</b><span>'+t+'</span></button>':'<div><b>'+n+'</b><span>'+t+'</span></div>';
+/* misafir: kimlik yerine karşılama, içerik yerine tanıtım */
+const GUEST=getLevel()==='guest';
+if(GUEST){document.getElementById('pfHead').innerHTML='<div class="pf-id"><span class="ava l gst" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><div class="x"><div class="pf-nm"><b>Hoş geldin</b></div><span class="pf-at">Giriş yap, molalarını biriktir.</span></div></div>';
+  document.getElementById('pf').innerHTML=guestIntro('profil')}
+else{
 document.getElementById('pfHead').innerHTML=
   '<div class="pf-id">'+ava(ME,'l')+'<div class="x"><div class="pf-nm"><b>'+ME.ad+'</b>'+VERIFIED+'</div>'
  +'<span class="pf-at">@'+ME.kul+'<i>·</i>'+PIN+'İzmir</span></div></div>'
@@ -61,3 +68,4 @@ show('pay');
 document.getElementById('pfHead').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;show(b.dataset.go);document.getElementById('pfTabs').scrollIntoView({behavior:'smooth',block:'start'})});
 
 initMolapuan();
+}

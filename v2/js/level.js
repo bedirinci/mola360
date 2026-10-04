@@ -10,6 +10,8 @@ const GK='m360-gorunum',GV={misafir:'guest',gezgin:'gezgin',kasif:'kasif'};
 let LEVEL=(()=>{try{const q=GV[new URLSearchParams(location.search).get('gorunum')];if(q){sessionStorage.setItem(GK,q);return q}
   return GV[Object.keys(GV).find(k=>GV[k]===sessionStorage.getItem(GK))]||'kasif'}catch(e){return 'kasif'}})();
 export const getLevel=()=>LEVEL;
+/* giriş çekmecesi (giris.js) oturumu açar */
+export const setLevel=l=>{LEVEL=l;try{sessionStorage.setItem(GK,l)}catch(e){}};
 const LVTXT={guest:'Üyelere %15\'e varan indirim',gezgin:'Kâşif\'e %10 indirim',kasif:'Kâşif indirimi %10'};
 export const lvOn=t=>LEVEL==='kasif'&&LV.has(t);
 export const lvPrice=(t,p)=>lvOn(t)?Math.round(p*.9):p;

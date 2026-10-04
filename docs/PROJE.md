@@ -1491,3 +1491,30 @@ güncellenecek yaşayan proje dokümanıdır.
   anahtarını kullanır; yeni durum eklenmedi.
 - **UX sonucu:** Hesap ayarları tek yerde, sosyal içeriğin altında; renk
   kuralına uygun (ikonlar nötr gri zeminde, yeşil yok).
+
+### 2026-10-04 — Misafir görünümü: göz atmak serbest, kişisel işlem girişle
+
+- **Karar:** Keşfet, ürün, liste ve Bağlan akışı herkese açık. Beğen,
+  kaydet, takip et, yorum, paylaş ve favori misafirde giriş çekmecesini
+  açar (Google, Apple, telefon tek ekranda; hesap yoksa aynı adımla
+  oluşur). Girişten sonra yarım kalan işlem kendiliğinden tamamlanır.
+  Planlarım ve Profil misafire tanıtım sayfası gösterir (Molapuan, ilk
+  rezervasyonda %15, "Mola360 ile gitti" rozeti; Giriş yap / Üye ol).
+  Misafir rezervasyon yapabilir; onay ekranında "Hesap oluştur,
+  N Molapuanını al" daveti çıkar.
+- **Neden:** Bedir giriş yapmamış kullanıcının sayfaları nasıl göreceğini
+  sordu ve dört maddelik öneriyi "Hepsini kur" diyerek onayladı. Kayıt
+  duvarı keşfi ve ilk rezervasyonu kesmemeli; üyelik değeri gösterilerek
+  istenmeli.
+- **Etkilediği alanlar:** `v2/js/giris.js` (yeni: çekmece, kapı,
+  tanıtım, davet), `v2/js/level.js` (`setLevel`), `v2/js/shell.js`
+  (menüde Giriş yap), `v2/js/planlarim.js`, `v2/js/profil.js`,
+  `v2/js/rezervasyon.js`, `v2/css/components.css` (`.lg-*`),
+  `v2/css/sayfalar.css` (`.gi*`).
+- **Teknik sonuç:** Kapı, belge düzeyinde yakalama aşamasında tıklamayı
+  durdurur; giriş oturumu `m360-gorunum` ile Kâşif yapar ve aynı öğeye
+  yeniden dokunur. Sayfa gerektirenler (menü, tanıtım) yenilenir.
+  Rezervasyonda giriş iletişim bilgilerini doldurur, üye için alanlar
+  baştan dolu gelir.
+- **UX sonucu:** Misafir hiçbir ekranda boş ya da kilitli sayfa görmez;
+  kayıt istendiği anda nedeni başlıkta yazar ("Beğenmek için giriş yap").
