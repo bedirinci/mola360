@@ -48,13 +48,12 @@ body{min-height:100vh;min-height:100dvh}
 .u-top .bar-i{margin-left:auto;display:flex;gap:2px}
 .u-top .ib{color:#fff}
 .u-top .ib[aria-pressed="true"] svg{fill:#E0464B;stroke:#E0464B}
-.u-tabs{display:none;gap:22px;overflow-x:auto;scrollbar-width:none;margin:6px -16px -14px;padding:0 16px}
+.u-tabs{display:none;position:fixed;z-index:13;left:50%;transform:translateX(-50%);width:100%;max-width:440px;gap:22px;overflow-x:auto;scrollbar-width:none;padding:24px 16px 0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 6px 18px rgba(20,26,46,.08)}
 .u-tabs::-webkit-scrollbar{display:none}
-.u-tabs button{flex:none;position:relative;height:42px;font-size:var(--fs-md);font-weight:var(--fw-semi);color:rgba(255,255,255,.65);white-space:nowrap}
-.u-tabs button[aria-current="true"]{color:#fff;font-weight:var(--fw-bold)}
-.u-tabs button[aria-current="true"]::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;border-radius:var(--r-pill);background:#fff}
-.u-top.on{margin-bottom:-34px}
-.u-top.on .u-tabs{display:flex}
+.u-tabs button{flex:none;position:relative;height:44px;font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--mute);white-space:nowrap}
+.u-tabs button[aria-current="true"]{color:var(--navy);font-weight:var(--fw-bold)}
+.u-tabs button[aria-current="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:var(--r-pill);background:var(--navy)}
+.u-tabs.on{display:flex}
 .u-hd{padding:18px 16px 0;scroll-margin-top:120px}
 .u-type{display:flex;align-items:center;gap:8px}
 .u-type .type{position:static;background:var(--soft)}
@@ -620,3 +619,14 @@ main#urun .box:first-of-type{margin-top:24px}
 .sw[aria-checked="true"]{background:var(--navy)}
 .sw[aria-checked="true"]::after{transform:translateX(18px)}
 @media (max-width:374px){#ntTabs button{font-size:var(--fs-sm)}#ntTabs .ms-c{min-width:18px;height:18px;padding:0 5px;margin-left:2px}}
+
+/* ürün sayfasının alt çubuğu: üstte eski fiyat + indirim, ortada fiyat ve birim,
+   altta seçilen tarih ve Kâşif fiyatı; sağda yeşil düğme */
+.cta-bar{box-shadow:0 -6px 20px rgba(20,26,46,.06)}
+.cta-bar .pp{display:flex;flex-direction:column;gap:2px}
+.cta-bar .pp-o{display:flex;align-items:center;gap:6px}
+.cta-bar .pp-o s{font-size:var(--fs-sm);color:var(--mute);margin:0}
+.cta-bar .pp-o em{font-style:normal;background:var(--green);color:var(--navy);font-size:var(--fs-xs);font-weight:var(--fw-bold);line-height:1;padding:3px 7px;border-radius:var(--r-pill)}
+.cta-bar .pp-n{display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.cta-bar .pp-n small{display:inline;font-size:var(--fs-sm);color:var(--mute);font-weight:var(--fw-medium)}
+.cta-bar .pp-m{font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

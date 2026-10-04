@@ -58,7 +58,7 @@ document.getElementById('urun').innerHTML=
  +'<div class="bk-mid"><b class="bk-h">'+p.title+'</b><small>'+p.type+' · '+short+'</small></div>'
  +'<div class="bar-i"><button type="button" class="ib" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="ib" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div></div>'
- +'<nav class="u-tabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav></header>'
+ +'</header><nav class="u-tabs" id="uTabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav>'
  +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N},(_,i)=>'<div class="ug-f" style="background:'+frame(i)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"></div>').join('')+'</div>'
  +'<span class="ug-n"><span id="ugI">1</span> / '+N+'</span><div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
  +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
@@ -121,7 +121,9 @@ cxl();
 function drawCta(){
   /* kartlardaki fiyatla aynı: seviye indirimi (Kâşif %10) fiyata dahil, üstü çizili ilk fiyat */
   const now=lvPrice(p.title,p.price),was=p.old||(lvOn(p.title)?p.price:0);
-  cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')+'<strong>'+tl(now)+'</strong><small>'+p.unit+(picked?' · '+picked:lvOn(p.title)?' · Kâşif fiyatı':'')+'</small></div>'
+  const meta=[picked,lvOn(p.title)&&'Kâşif fiyatı'].filter(Boolean).join(' · ');
+  cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')
+   +'<span class="pp-n"><strong>'+tl(now)+'</strong><small>'+p.unit+'</small></span>'+(meta?'<span class="pp-m">'+meta+'</span>':'')+'</div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
 }
 drawCta();
@@ -139,20 +141,21 @@ document.getElementById('urun').addEventListener('click',e=>{
   if(e.target.closest('[data-soon-cal],[data-soon-rv]'))toast('Çok yakında.','Tamam',()=>{},3000);
 });
 /* sekmeler ve puan/paylaşım bağları sayfa içinde kaydırır; geçmişe kayıt eklemez */
-const top=document.getElementById('uTop'),ttl=document.querySelector('.u-hd h1');
+const top=document.getElementById('uTop'),tabsEl=document.getElementById('uTabs'),ttl=document.querySelector('.u-hd h1');
 function goTo(k,smooth=true){const el=document.getElementById(k);if(!el)return;
-  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-(top.classList.contains('on')?0:34)-8;
+  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-20-8;
   scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'instant'})}
 /* görsel geçince üst çubuk lacivert banda döner; görünen bölümün sekmesi seçili */
 const secs=tabs.map(([k])=>document.getElementById(k)).filter(Boolean);
 function onScroll(){
   const on=ttl.getBoundingClientRect().bottom<top.querySelector('.bar').getBoundingClientRect().bottom;
-  top.classList.toggle('on',on);
+  /* sekme şeridi bandın yuvarlak alt köşelerinin altından çıkar */
+  tabsEl.style.top=(top.offsetHeight-24)+'px';tabsEl.classList.toggle('on',on);
   if(!on)return;
-  const line=top.offsetHeight+24;let cur=secs[0];
+  const line=top.offsetHeight+44;let cur=secs[0];
   secs.forEach(x=>{if(x.getBoundingClientRect().top<=line)cur=x});
   if(innerHeight+scrollY>=document.documentElement.scrollHeight-4)cur=secs[secs.length-1];
-  top.querySelectorAll('[data-go]').forEach(b=>{const m=b.dataset.go===cur.id;if(m!==(b.getAttribute('aria-current')==='true')){b.setAttribute('aria-current',m);if(m){const n=b.parentElement;n.scrollTo({left:b.offsetLeft-(n.clientWidth-b.offsetWidth)/2,behavior:'smooth'})}}});
+  tabsEl.querySelectorAll('[data-go]').forEach(b=>{const m=b.dataset.go===cur.id;if(m!==(b.getAttribute('aria-current')==='true')){b.setAttribute('aria-current',m);if(m){const n=b.parentElement;n.scrollTo({left:b.offsetLeft-(n.clientWidth-b.offsetWidth)/2,behavior:'smooth'})}}});
 }
 addEventListener('scroll',onScroll,{passive:true});onScroll();
 /* görsel sayacı ve noktalar kaydırdıkça */
