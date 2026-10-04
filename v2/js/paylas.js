@@ -4,7 +4,7 @@
    Mola360'tan rezerve edip yaşadığın deneyime bağlanan paylaşım "Mola360
    ile gitti" rozeti alır; başka bir deneyime bağlanan almaz. Taslakta
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
-import { listPastBookings, suggest, getProduct, createPost, POST_MIN } from './api.js';
+import { listPastBookings, suggest, getProduct, createPost, createStory, POST_MIN } from './api.js';
 import { makeSheet, toast } from './ui.js';
 import { IC, PIN } from './icons.js';
 import { ROOT } from './root.js';
@@ -19,29 +19,42 @@ const HTML=`<div class="sh-bg" id="psBg"></div>
     <div class="sh-hd"><h3 id="psTtl">Deneyimini paylaş</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${IC.close}</button></div>
   </div>
   <div class="ps-body">
-    <section class="ps-sec" aria-labelledby="psH1"><h4 id="psH1">Fotoğraf veya video <small>(en az ${POST_MIN})</small></h4>
+    <section class="ps-sec" aria-labelledby="psH1"><h4 id="psH1">Fotoğraf veya video <small id="psMinT">(en az ${POST_MIN})</small></h4>
       <div class="ps-media" id="psMedia"></div>
     </section>
-    <section class="ps-sec" aria-labelledby="psH2"><h4 id="psH2">Hangi deneyim?</h4>
+    <section class="ps-sec" aria-labelledby="psH2"><h4 id="psH2">Hangi deneyim? <small id="psOpt" hidden>(isteğe bağlı)</small></h4>
       <div id="psPast"></div>
       <p class="ps-lbl">Başka bir deneyim</p>
       <div id="psSel"></div>
       <div class="ps-q">${IC.search}<input type="search" id="psQ" placeholder="Deneyim adı ya da yer" autocomplete="off" enterkeyhint="search" aria-label="Başka bir deneyim ara"></div>
       <div id="psRes" aria-live="polite"></div>
     </section>
-    <section class="ps-sec" aria-labelledby="psH3"><h4 id="psH3">Kiminle gittin?</h4>
+    <section class="ps-sec" id="psWithSec" aria-labelledby="psH3"><h4 id="psH3">Kiminle gittin?</h4>
       <div class="ps-with" role="radiogroup" aria-labelledby="psH3">${WITH.map(w=>'<button type="button" class="fc" role="radio" aria-checked="false" data-with="'+w+'">'+w+'</button>').join('')}</div>
     </section>
-    <section class="ps-sec"><label for="psNote"><h4>Nasıldı?</h4></label>
+    <section class="ps-sec"><label for="psNote"><h4 id="psNoteH">Nasıldı?</h4></label>
       <div class="ps-note"><textarea id="psNote" rows="3" maxlength="${NOTE}" placeholder="Birkaç cümle yeter"></textarea><small id="psCnt" aria-live="polite">0 / ${NOTE}</small></div>
     </section>
   </div>
   <div class="ps-foot"><p id="psNeed" class="ps-need"></p><button type="button" class="btn green ps-go" id="psGo" disabled>Paylaş</button></div>
 </div>`;
 
-let sheet,st;
+/* Paylaş düğmesi önce ne paylaşılacağını sorar: hikaye ya da gönderi (Bedir) */
+const CHOOSE=`<div class="sh-bg" id="pcBg"></div>
+<div class="sheet ps-choose" id="pcSheet" role="dialog" aria-modal="true" aria-labelledby="pcTtl">
+  <div class="sh-grab"></div>
+  <div class="sh-hd"><h3 id="pcTtl">Ne paylaşmak istersin?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${IC.close}</button></div>
+  <div class="pc-list">
+    <button type="button" class="pc-o" data-mode="hikaye"><i class="pc-ic hk-ic">${IC.plus}</i><span><b>Hikaye</b><small>24 saat görünür, tek fotoğraf yeter</small></span>${IC.right}</button>
+    <button type="button" class="pc-o" data-mode="post"><i class="pc-ic">${IC.grid}</i><span><b>Gönderi</b><small>Bağlan akışında ve profilinde kalır</small></span>${IC.right}</button>
+  </div>
+</div>`;
+let chooser;
+
+let sheet,st,mode='post';
 const $=id=>document.getElementById(id);
 const fresh=()=>({media:[],productId:'',custom:'',q:'',with:'',note:''});
+const MIN=()=>mode==='hikaye'?1:POST_MIN;
 
 /* Önizleme: görsel küçültülür (en fazla 720 px); videodan ilk kare */
 function shrink(src,w,h0){const k=Math.min(1,720/Math.max(w,h0)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h0*k);
@@ -54,7 +67,7 @@ function thumbOf(m){return new Promise(res=>{
 function drawMedia(){
   $('psMedia').innerHTML=st.media.map((m,i)=>'<div class="ps-th'+(m.video?' vid':'')+'">'+(m.video?'<video src="'+m.url+'" muted playsinline preload="metadata"></video>'+IC.play:'<img src="'+m.url+'" alt="">')
     +'<button type="button" class="ps-rm" data-rm="'+i+'" aria-label="'+(i+1)+'. medyayı kaldır">'+IC.close+'</button></div>').join('')
-   +(st.media.length<MAX?'<label class="ps-add'+(st.media.length?'':' first')+'"><input type="file" class="sr" id="psFile" accept="image/*,video/*" multiple>'+IC.image+'<span>'+(st.media.length?'Ekle':'En az '+POST_MIN+' fotoğraf ya da video seç')+'</span></label>':'');
+   +(st.media.length<MAX?'<label class="ps-add'+(st.media.length?'':' first')+'"><input type="file" class="sr" id="psFile" accept="image/*,video/*" multiple>'+IC.image+'<span>'+(st.media.length?'Ekle':MIN()>1?'En az '+MIN()+' fotoğraf ya da video seç':'Fotoğraf ya da video seç')+'</span></label>':'');
 }
 
 const row=(p,{went,sub})=>{const on=st.productId===p.id;
@@ -76,12 +89,18 @@ function drawPick(){
 }
 
 function check(){
-  const n=st.media.length,left=POST_MIN-n;
+  const n=st.media.length,left=MIN()-n;
+  if(mode==='hikaye'){const need=n?'':'Bir fotoğraf ya da video ekle';$('psNeed').textContent=need;$('psGo').disabled=!!need;return}
   const need=left>0&&!st.productId&&!st.custom?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
     :left===1?(n?'Bir fotoğraf daha ekle':'Bir fotoğraf ya da video ekle'):!st.productId&&!st.custom?'Paylaşımı bir deneyime bağla':'';
   $('psNeed').textContent=need;$('psGo').disabled=!!need;
 }
-function drawAll(){drawMedia();drawPick();
+/* hikaye: tek görsel yeter, deneyim isteğe bağlı, kiminle sorulmaz */
+function drawMode(){const hk=mode==='hikaye';
+  $('psTtl').textContent=hk?'Hikaye paylaş':'Deneyimini paylaş';
+  $('psMinT').textContent=hk?'':'(en az '+POST_MIN+')';$('psOpt').hidden=!hk;$('psWithSec').hidden=hk;
+  $('psNoteH').textContent=hk?'Kısa not':'Nasıldı?';$('psGo').textContent=hk?'Hikayeni paylaş':'Paylaş'}
+function drawAll(){drawMode();drawMedia();drawPick();
   document.querySelectorAll('[data-with]').forEach(b=>b.setAttribute('aria-checked',b.dataset.with===st.with));
   $('psQ').value=st.q;$('psNote').value=st.note;$('psCnt').textContent=st.note.length+' / '+NOTE;check()}
 
@@ -113,7 +132,20 @@ function build(){
   });
 }
 
+async function shareStory(){
+  const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
+  const thumbs=(await Promise.all(st.media.slice(0,5).map(thumbOf))).filter(Boolean);
+  const ok=createStory({productId:st.productId,title:st.custom,text:st.note.trim(),thumbs});
+  go.textContent='Hikayeni paylaş';
+  if(!ok){check();toast('Hikaye kaydedilemedi, tekrar dene.','Tamam',()=>{},3500);return}
+  st.media.forEach(m=>URL.revokeObjectURL(m.url));st=fresh();drawAll();sheet.close();
+  document.dispatchEvent(new CustomEvent('m360:hikaye'));
+  if(!document.getElementById('hikayeler'))toast('Hikayen Bağlan\'da','Gör',()=>{location.href=ROOT+'baglan/'},5000);
+  else toast('Hikayen paylaşıldı','Tamam',()=>{},3000);
+}
+
 async function share(){
+  if(mode==='hikaye')return shareStory();
   const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
   const thumbs=(await Promise.all(st.media.slice(0,3).map(thumbOf))).filter(Boolean);
   const p=createPost({productId:st.productId,title:st.custom,text:st.note.trim(),with:st.with,thumbs,media:st.media.length,video:!!st.media[0]&&st.media[0].video});
@@ -125,9 +157,25 @@ async function share(){
   else toast('Paylaşımın Bağlan\'da','Tamam',()=>{},3000);
 }
 
-/* opts.productId: geçmiş rezervasyondan gelince o deneyim seçili açılır */
-export function openShare(from,{productId}={}){
+/* opts.productId: geçmiş rezervasyondan gelince o deneyim seçili açılır.
+   opts.mode: 'hikaye' ya da 'post' (varsayılan) */
+export function openShare(from,{productId,mode:m='post'}={}){
   if(!sheet)build();
+  if(m!==mode){mode=m;st.media.forEach(x=>URL.revokeObjectURL(x.url));st=fresh()}
   if(productId&&getProduct(productId)){st.productId=productId;st.q='';st.custom=''}
   drawAll();sheet.open(from,$('psFile')||$('psQ'));
+}
+
+/* Alt menüdeki yuvarlak Paylaş: önce Hikaye mi Gönderi mi. Seçince bu
+   çekmece kapanır, geri adımı bitince paylaşım çekmecesi açılır. */
+export function openChooser(from){
+  if(!chooser){
+    document.body.insertAdjacentHTML('beforeend',CHOOSE);
+    chooser=makeSheet($('pcSheet'),$('pcBg'));
+    $('pcSheet').addEventListener('click',e=>{const o=e.target.closest('[data-mode]');if(!o)return;
+      const m=o.dataset.mode;let done=false;
+      const go=()=>{if(done)return;done=true;removeEventListener('popstate',go);openShare(from,{mode:m})};
+      addEventListener('popstate',go);chooser.close();setTimeout(go,450)});
+  }
+  chooser.open(from);
 }

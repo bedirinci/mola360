@@ -183,7 +183,8 @@ function initDock(page){
   if(page==='kesfet'&&f1)dock.querySelector('[data-nav="kesfet"]').addEventListener('click',e=>{e.preventDefault();
     const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches&&scrollY>8;
     scrollTo({top:0,behavior:smooth?'smooth':'auto'});setTimeout(()=>f1.click(),smooth?380:0)});
-  document.getElementById('shareBtn').addEventListener('click',e=>openShare(e.currentTarget));
+  /* yuvarlak Paylaş: önce Hikaye / Gönderi seçimi */
+  document.getElementById('shareBtn').addEventListener('click',e=>{const b=e.currentTarget;import('./paylas.js').then(m=>m.openChooser(b))});
 }
 
 /* Paylaş çekmecesi (paylas.js) ilk açılışta yüklenir. Her sayfadan açılır:

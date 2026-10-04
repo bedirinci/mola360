@@ -219,6 +219,26 @@ export function createPost({productId,title='',text='',with:w='',thumbs=[],media
   return listMyPosts().find(p=>p.id===r.id)||null;
 }
 
+/* Hikayen: 24 saat görünür, bu cihazda tutulur (backend gelince oradan).
+   Bir fotoğraf ya da video yeter; deneyim isteğe bağlı. */
+const HK='m360-hikayem',DAY=864e5;
+const readHk=()=>{try{return (JSON.parse(localStorage.getItem(HK))||[]).filter(x=>Date.now()-x.created<DAY)}catch(e){return []}};
+export function createStory({productId='',title='',text='',thumbs=[]}){
+  const p=getProduct(productId);
+  const r={id:'hm'+Date.now().toString(36),productId:p?productId:'',title:p?'':String(title).trim().slice(0,60),text:String(text).slice(0,300),thumbs:thumbs.filter(okThumb),created:Date.now()};
+  const save=l=>{try{localStorage.setItem(HK,JSON.stringify(l));return true}catch(e){return false}};
+  if(!save([...readHk(),r].slice(-5))){r.thumbs=r.thumbs.slice(0,1);if(!save([r]))return false}
+  return true;
+}
+export function myStory(){
+  const l=readHk();if(!l.length)return null;const last=l[l.length-1];
+  const frames=l.flatMap(x=>{const p=getProduct(x.productId),bg=p?p.bg:OUT_BG,t=x.thumbs.length?x.thumbs:[''];
+    return t.map(u=>({bg:u?'url('+u+') center/cover,'+bg:bg,text:hx(x.text||''),product:p||null}))});
+  const lp=getProduct(last.productId);
+  return {id:'h-me',kind:'kisi',mine:true,user:{...ME,onay:PAST.length>0},when:ago(last.created),
+    place:lp?lp.place.split(' · ')[0]:hx(last.title||''),verified:!!lp&&PAST.some(b=>b.productId===lp.id),frames};
+}
+
 /* Rezervasyon: ürün türüne göre tarih, saat, seçenek ve adet. Kurallar
    (kapora, iptal, adet sınırları, saatler) ÖRNEK; v2'nin kuralları
    yazılınca buradan değişecek. */
