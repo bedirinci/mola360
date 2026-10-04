@@ -1,5 +1,5 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
-import { renderShell } from './shell.js';
+import { renderShell, backLabel } from './shell.js';
 import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
@@ -32,7 +32,9 @@ const info=productDetails(p),S=bookingSpec(p);
 const cut=info.program.length>4;
 const unitOf=k=>/gün$/.test(k)?'gün':'adım';
 /* Keşfet'teki aramada seçilen tarih penceresindeki ilk kalkış hazır seçili gelir */
-let picked=firstDateIn(p,getSearch().tarih);
+/* seçilen tarih bu sayfanın geçmiş kaydında durur: rezervasyondan geri dönünce seçim kaybolmaz */
+const kept=history.state&&history.state.tarih;
+let picked=kept&&p.dates.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih);
 const posts=listPosts({productId:p.id});
 const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
@@ -40,7 +42,7 @@ const deposit=p.type==='Tur'?Math.round(p.price*.2):0;
 
 document.getElementById('urun').innerHTML=
  '<div class="ug" style="background:'+p.bg+'">'
- +'<div class="ug-top"><a class="cb" href="'+ROOT+'" data-back aria-label="Geri">'+IC.back+'</a><span class="sp"></span>'
+ +'<div class="ug-top"><a class="cb lbl" href="'+ROOT+'" data-back>'+IC.back+'<span id="backTo">Geri</span></a><span class="sp"></span>'
  +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
  +'<button type="button" class="cb" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div>'
@@ -105,7 +107,7 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const d=e.target.closest('[data-d]');
-  if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;drawCta();cxl();return}
+  if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;history.replaceState({...history.state,tarih:picked},'');drawCta();cxl();return}
   const m=e.target.closest('[data-prog]');
   if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);
     m.textContent=open?'Daha az göster':'Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0]);return}
@@ -113,6 +115,8 @@ document.getElementById('urun').addEventListener('click',e=>{
 });
 
 renderShell('urun',{nav:false});
+/* geri okunda dönülecek sayfanın adı (Keşfet, Bağlan, Liste…) */
+const bt=document.getElementById('backTo');if(bt){bt.textContent=backLabel(ROOT);bt.parentElement.setAttribute('aria-label',bt.textContent+' sayfasına dön')}
 renderHelp(document.getElementById('urun'));
 initPostActions(toast);
 initFavorites();

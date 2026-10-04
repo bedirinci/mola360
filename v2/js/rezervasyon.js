@@ -2,9 +2,9 @@
    tarayıcı geçmişine yazılır (geri tuşu bir önceki adıma döner). Taslakta
    ödeme alınmaz ve kart bilgisi istenmez; rezervasyon yalnızca bu cihazda
    tutulur. Toplam fiyat baştan sona aynı: sonradan eklenen ücret yok. */
-import { renderShell } from './shell.js';
+import { renderShell, backTo } from './shell.js';
 import { getProduct, bookingSpec, createBooking, cancelBy, getSearch, typeKey } from './api.js';
-import { tl, esc, toast } from './ui.js';
+import { tl, esc, toast, makeSheet } from './ui.js';
 import { lvOn, lvPrice, getLevel } from './level.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
@@ -122,7 +122,7 @@ function draw(push){
   document.getElementById('steps').hidden=st.step===4;
   main.innerHTML=st.step===1?step1():st.step===2?step2():st.step===3?step3():done(last);
   if(st.step===1)refresh();else drawCta();
-  if(push)history.pushState({s:st.step},'');
+  if(push)history.pushState({...history.state,s:st.step},'');
   save();
   window.scrollTo(0,0);
 }
@@ -135,10 +135,28 @@ if(was===4){location.replace(ROOT+'planlarim/');return}
 let restored=false;
 try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
   if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1}}catch(e){}
-if(!restored)history.replaceState({s:1},'');
+if(!restored)history.replaceState({...history.state,s:1},'');
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
-back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}});
+/* başlıktaki geri: ara adımda bir önceki adıma; ilk adımda geldiğin sayfaya (shell.js data-back);
+   onaydan sonra deneyimin sayfasına */
+back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}else if(st.step===4){e.preventDefault();location.href=productUrl}
+  else if(st.name||st.phone||st.email){e.preventDefault();exitSheet().open(back,document.getElementById('exStay'))}});
+
+/* İletişim bilgisi girildiyse çıkmadan önce sorulur; iki seçenek de açıkça görünür */
+let ex=null;
+function exitSheet(){if(ex)return ex;
+  main.insertAdjacentHTML('afterend','<div class="sh-bg" id="exBg"></div><div class="sheet ex" id="exSheet" role="alertdialog" aria-modal="true" aria-labelledby="exTtl" aria-describedby="exTxt">'
+   +'<div class="sh-grab"></div><div class="sh-hd"><h3 id="exTtl">Rezervasyondan çıkılsın mı?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div>'
+   +'<p class="ex-t" id="exTxt">Seçtiğin tarih ve girdiğin bilgiler silinir.</p>'
+   +'<div class="ex-b"><button type="button" class="btn green" id="exStay" data-x>Rezervasyona devam et</button><button type="button" class="btn ghost" id="exGo">Çık</button></div></div>');
+  ex=makeSheet(document.getElementById('exSheet'),document.getElementById('exBg'));
+  document.getElementById('exGo').addEventListener('click',()=>{
+    try{sessionStorage.removeItem(KEY)}catch(e){}
+    const t=backTo(productUrl);
+    /* çekmecenin geçmiş adımı ile rezervasyon sayfası birlikte geçilir */
+    if(t&&t.back)history.go(-2);else ex.go(t?t.url:productUrl)});
+  return ex}
 
 const show=(id,msg)=>{const el=document.getElementById(id);if(!el)return;el.hidden=!msg;if(msg)el.textContent=msg};
 function check2(){
@@ -159,7 +177,7 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm
   if(st.step===3){
     if(!st.ok){show('okErr','Devam etmek için sözleşmeyi onaylaman gerekiyor.');document.getElementById('okBox').focus();return}
     last=createBooking({productId:p.id,date:st.date,slot:st.slot,opt:st.opt>=0?S.opts[st.opt][0]:'',qty:qtyTxt(),total:total(),paid:now(),pay:st.pay});
-    st.step=4;history.replaceState({s:4},'');draw(false);return;
+    st.step=4;history.replaceState({...history.state,s:4},'');draw(false);return;
   }
   /* sonraki adımın düğmesi kısa bir süre dokunuş almaz: "Devam et"e çift
      dokunuş boş formu gönderip hata göstermesin */

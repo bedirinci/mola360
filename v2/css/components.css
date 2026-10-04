@@ -336,6 +336,7 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 /* yuvarlak simge düğmesi (görsel üstünde) */
 .cb{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .cb svg{width:20px;height:20px}
+.cb.lbl{width:auto;display:inline-flex;align-items:center;gap:3px;padding:0 14px 0 9px;border-radius:var(--r-pill);font-size:var(--fs-md);font-weight:var(--fw-semi)}
 .cb[aria-pressed="true"] svg{fill:#E0464B;stroke:#E0464B}
 
 /* başlıklı kutu */

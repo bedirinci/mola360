@@ -45,7 +45,7 @@ let cur='yaklasan';
 function show(k){cur=k;
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===k));
   el.innerHTML=TABS[k]();if(k==='favoriler')favSync();
-  history.replaceState(null,'','#'+k);
+  history.replaceState(history.state,'','#'+k);
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
 el.addEventListener('click',e=>{const c=e.target.closest('[data-cancel]');
