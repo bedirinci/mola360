@@ -98,8 +98,11 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:var(--r-pill);font-size:var(--fs-xs);font-weight:var(--fw-semi);letter-spacing:.01em;color:var(--mute);position:relative}
 .nav svg{width:23px;height:23px}
 .nav a span{max-height:16px;line-height:16px;overflow:hidden;white-space:nowrap;transition:max-height var(--t-slow) var(--ease),opacity var(--t) var(--ease)}
-.nav a[aria-current]{background:var(--navy);color:#fff;font-weight:var(--fw-bold)}
-.nav a[aria-current] svg{color:#fff}
+.nav a[aria-current]{color:var(--navy);font-weight:var(--fw-bold)}
+/* seçili sekme: zemin yok, ikon dolgulu */
+.nav a[aria-current] svg .f{fill:currentColor}
+.nav a[aria-current] svg .w{stroke:#fff}
+.nav a[aria-current] svg .wf{fill:#fff}
 .dock-add{flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:var(--navy);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 12px 28px rgba(21,32,72,.26);transition:width var(--t-slow) var(--ease),height var(--t-slow) var(--ease),transform var(--t-fast) var(--ease)}
 .dock-add svg{width:28px;height:28px;stroke-width:2.4}
 body.nav-min .nav{max-width:232px;height:52px}
