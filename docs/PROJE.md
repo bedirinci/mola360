@@ -1113,10 +1113,13 @@ güncellenecek yaşayan proje dokümanıdır.
 ### 2026-10-03 — Profilde Molapuan kartı: puan, sıradaki hedef, seviye yolu
 
 - **Karar (Bedir):** Molapuan, Bedir'in gönderdiği bir sadakat kartı
-  örneğine benzer bir kartla gösteriliyor. Kartın üstünde puan, seviye
-  rozeti ve "Nasıl kazanırım?" yer alıyor. Altında sıradaki hedef bir
-  cümleyle yazıyor ve bir ok düğmesi var. En altta açılıp kapanan bir
-  seviye yolu bulunuyor.
+  örneğinden yola çıkan bir kartla gösteriliyor. İlk sürüm sade bulundu
+  ("daha kaliteli"). Son hali şöyle:
+  - Koyu lacivert üst bölümde büyük puan, TL karşılığı, seviye rozeti ve
+    "Nasıl kazanırım?" var.
+  - Altında yeşil bir kutuda sıradaki hedef yazıyor.
+  - En altta açılıp kapanan "Seviye yolun" var. Geçilen durak tikli, bulunulan
+    durak "Buradasın" ile vurgulu, kilitli durakta kilit simgesi var.
 - **Neden:** Kullanıcı ne kadar puanı olduğunu, sıradaki ödülü ve oraya ne
   kadar kaldığını tek bakışta görmeli.
 - **Etkilediği alanlar:** Profil sayfası.
@@ -1128,6 +1131,7 @@ güncellenecek yaşayan proje dokümanıdır.
   - Çubuk, ulaşılan durağa kadar dolu.
   - Okuyuculara ilerleme çubuğu olarak bildiriliyor.
   - Eski "ÖRNEK" etiketi karttan kalktı.
-- **UX sonucu:** Sıradaki hedef somut bir cümle (ör. "3 rezervasyon daha
-  yap, Mola Ustası ol, %15 indirim kazan!"). Ok düğmesi Keşfet'e götürüyor.
+- **UX sonucu:** Sıradaki hedef somut bir cümle (ör. "Mola Ustası'na 3
+  rezervasyon kaldı, %15 indirim seni bekliyor"). Ok düğmesi Keşfet'e
+  götürüyor.
   Kart 320px genişlikte de taşmadan sığıyor.

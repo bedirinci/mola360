@@ -24,21 +24,30 @@ const TABS={
   pay:()=>'<div class="pf-grid">'+mine.map(postMini).join('')+'</div>',
   den:()=>'<div class="pf-went">'+went.map(plink).join('')+'</div>',
   kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin Planlarım\'da.</p><a class="btn" href="'+ROOT+'planlarim/#favoriler">Favorilere git</a></div>'};
-/* Molapuan kartı: puan, sıradaki seviye ve seviye yolu.
+/* Molapuan kartı: koyu üst bölümde puan ve seviye; altta sıradaki hedef ve seviye yolu.
    Seviye son 24 aydaki rezervasyon sayısıyla (ÖNERİ): Gezgin 1, Kâşif 3, Mola Ustası 6. */
-const LVS=[['Gezgin',1,'Puan kazanır'],['Kâşif',3,'%10 indirim'],['Mola Ustası',6,'%15 indirim']];
-const PTS=1240,n=went.length,cur=LVS.filter(l=>n>=l[1]).pop(),nxt=LVS.find(l=>n<l[1]);
-/* düğümler sütun ortalarında (1/6, 3/6, 5/6); dolgu iki düğüm arasında orantılı ilerler */
+const LVS=[['Gezgin',1,'Puan kazanır','Gezgin\'e'],['Kâşif',3,'%10 indirim','Kâşif\'e'],['Mola Ustası',6,'%15 indirim','Mola Ustası\'na']];
+const PTS=1240,n=went.length,cur=LVS.filter(l=>n>=l[1]).pop(),nxt=LVS.find(l=>n<l[1]),top=LVS[LVS.length-1][1];
+const LOCK='<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const INFO='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>';
+/* duraklar sütun ortalarında (1/6, 3/6, 5/6); dolgu iki durak arasında orantılı ilerler */
 const fillPct=(()=>{const i=LVS.findIndex(l=>n<l[1]);if(i<0)return 100;
   const a=i?LVS[i-1][1]:0,b=LVS[i][1],x0=i?(2*i-1)/6*100:0,x1=(2*i+1)/6*100;return x0+(x1-x0)*(n-a)/(b-a)})();
+const stop=l=>{const st=l===cur?'cur':n>=l[1]?'on':'off';
+  return '<li class="'+st+'">'+(st==='cur'?'<span class="mp-you">Buradasın</span>':'<span class="mp-cnt">'+l[1]+' rez.</span>')
+   +'<span class="mp-n" aria-hidden="true">'+(st==='off'?LOCK:st==='cur'?STAR:IC.check)+'</span><strong>'+l[0]+'</strong><small>'+l[2]+'</small></li>'};
 el.innerHTML='<section class="mp" aria-labelledby="mpT">'
- +'<div class="mp-top"><span class="mp-ic" aria-hidden="true">'+STAR+'</span><div class="mp-x"><h2 id="mpT">Molapuanın: <b>'+PTS.toLocaleString('tr-TR')+'</b></h2>'+'<div class="mp-r">'+(cur?'<span class="mp-lv">'+cur[0].toLocaleUpperCase('tr-TR')+'</span>':'')
- +'<button type="button" class="mp-how" id="mpHow">Nasıl kazanırım?</button></div></div></div>'
- +(nxt?'<a class="mp-next" href="'+ROOT+'"><p>'+(nxt[1]-n)+' rezervasyon daha yap, <em>'+nxt[0]+'</em> ol, '+nxt[2]+' kazan!</p><span class="mp-go" aria-hidden="true">'+chevR+'</span></a>'
-     :'<p class="mp-next"><span class="mp-t">En üst seviyedesin: <em>Mola Ustası</em> indirimlerin açık.</span></p>')
- +'<button type="button" class="mp-tg" aria-expanded="true" aria-controls="mpPath"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg><span>Seviye yolun<small>Son 24 aydaki rezervasyonların sayılır</small></span></button>'
- +'<div class="mp-path" id="mpPath"><div class="mp-bar" role="progressbar" aria-label="Seviye ilerlemesi" aria-valuemin="0" aria-valuemax="'+LVS[2][1]+'" aria-valuenow="'+n+'" aria-valuetext="'+n+' rezervasyon"><i style="width:'+fillPct.toFixed(1)+'%"></i></div>'
- +'<ol class="mp-lvls">'+LVS.map(l=>'<li'+(n>=l[1]?' class="on"':'')+'><b>'+l[1]+'</b><span class="mp-n" aria-hidden="true">'+(n>=l[1]?IC.check:STAR)+'</span><strong>'+l[0]+'</strong><small>'+l[2]+'</small></li>').join('')+'</ol></div>'
+ +'<div class="mp-hero"><div class="mp-row"><h2 class="mp-brand" id="mpT"><span aria-hidden="true">'+STAR+'</span>Molapuan</h2>'
+ +'<button type="button" class="mp-how" id="mpHow">'+INFO+'Nasıl kazanırım?</button></div>'
+ +'<p class="mp-sum"><b>'+PTS.toLocaleString('tr-TR')+'</b><span>puan</span></p>'
+ +'<p class="mp-val">Sonraki rezervasyonunda '+PTS.toLocaleString('tr-TR')+' TL indirim olarak kullanabilirsin</p>'
+ +(cur?'<span class="mp-lv">'+STAR+cur[0]+' · '+cur[2]+'</span>':'')+'</div>'
+ +'<div class="mp-body">'
+ +(nxt?'<a class="mp-next" href="'+ROOT+'"><span class="mp-t"><b>'+nxt[3]+' '+(nxt[1]-n)+' rezervasyon kaldı</b><span>'+nxt[2]+' seni bekliyor</span></span><span class="mp-go" aria-hidden="true">'+chevR+'</span></a>'
+     :'<p class="mp-next"><span class="mp-t"><b>En üst seviyedesin</b><span>Mola Ustası indirimlerin açık</span></span></p>')
+ +'<button type="button" class="mp-tg" aria-expanded="true" aria-controls="mpPath"><span><b>Seviye yolun</b><small>Son 24 ayda '+n+' rezervasyon</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>'
+ +'<div class="mp-path" id="mpPath"><div class="mp-bar" role="progressbar" aria-label="Seviye ilerlemesi" aria-valuemin="0" aria-valuemax="'+top+'" aria-valuenow="'+n+'" aria-valuetext="'+top+' rezervasyondan '+n+'"><i style="width:'+fillPct.toFixed(1)+'%"></i></div>'
+ +'<ol class="mp-lvls">'+LVS.map(stop).join('')+'</ol></div></div>'
  +'</section>'
  +'<div class="seg light" role="group" aria-label="Profil" id="pfTabs"><button type="button" aria-pressed="true" data-t="pay">'+IC.grid+'Paylaşımlar</button><button type="button" aria-pressed="false" data-t="den">'+IC.bag+'Deneyimler</button><button type="button" aria-pressed="false" data-t="kay">'+IC.save+'Kaydedilenler</button></div>'
  +'<div id="pfBody"></div>';
