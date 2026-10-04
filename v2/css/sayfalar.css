@@ -158,11 +158,13 @@ main#urun .box:first-of-type{margin-top:24px}
 .pf-at i{font-style:normal;margin:0 2px}
 .pf-at svg{width:13px;height:13px;stroke-width:2.4}
 .pf-top .pf-bio{margin-top:10px;line-height:1.4}
-.pf-top .pf-stats{display:flex;gap:16px;margin-top:8px;padding:0;border:0;text-align:left}
-.pf-top .pf-stats>*{flex-direction:row;align-items:baseline;gap:4px;border:0}
+/* sayılar ortalı, aralarında dikey çizgi; üstte ve altta çizgi yok (Bedir) */
+.pf-top .pf-stats{margin-top:10px;padding:2px 0;border:0}
+.pf-top .pf-stats>*{flex-direction:row;justify-content:center;align-items:baseline;gap:4px}
 .pf-top .pf-stats b{font-size:var(--fs-base)}
 .pf-top .pf-stats span{font-size:var(--fs-md)}
-@media (max-width:359px){.pf-top .pf-stats{gap:10px}.pf-top .pf-stats span{font-size:var(--fs-sm)}}
+/* dar telefonda sayı üstte, yazı altta */
+@media (max-width:374px){.pf-top .pf-stats>*{flex-direction:column;align-items:center;gap:0}}
 .pf-top .pf-acts{margin-top:12px}
 .pf-top .pf-acts .btn{padding-top:8px;padding-bottom:8px}
 .pf-top .pf-acts .btn.sq{width:40px}
