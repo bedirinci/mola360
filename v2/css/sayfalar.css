@@ -98,7 +98,8 @@ main#urun .box:first-of-type{margin-top:24px}
 .u-rev span{font-size:var(--fs-sm);color:var(--mute);line-height:1.4}
 
 /* Rezervasyonlar */
-.rz-list{display:flex;flex-direction:column;gap:14px;padding:0 16px}
+.rz-list{display:flex;flex-direction:column;gap:14px;padding:16px 16px 0}
+#plan .feed-note+.stack{padding-top:0}
 .rz{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:12px}
 .rz-hd{display:flex;align-items:center;gap:12px}
 .rz-hd .pt{width:64px;height:64px;border-radius:var(--r-md);flex:none}
@@ -107,9 +108,9 @@ main#urun .box:first-of-type{margin-top:24px}
 .rz-hd b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rz-hd span{font-size:var(--fs-sm);color:var(--mute)}
 .rz-hd>svg{width:18px;height:18px;color:var(--mute)}
-.rz-rows{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.rz-rows{display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
 .rz-rows small{display:block;font-size:var(--fs-xs);color:var(--mute);font-weight:var(--fw-medium)}
-.rz-rows b{font-size:var(--fs-md);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}
+.rz-rows b{font-size:var(--fs-md);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums;white-space:nowrap}
 .rz-rows .ok{color:var(--ink)}
 .rz-acts{display:flex;gap:8px;margin-top:12px}
 .rz-acts .btn{flex:1;justify-content:center;padding:11px 8px;font-size:var(--fs-md)}

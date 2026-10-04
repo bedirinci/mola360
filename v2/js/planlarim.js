@@ -4,7 +4,7 @@ import { renderShell } from './shell.js';
 import { findByTitle, listBookings, cancelBooking, listPastBookings } from './api.js';
 import { productCard } from './cards.js';
 import { favList, initFavorites, favSync } from './favorites.js';
-import { toast, tl } from './ui.js';
+import { toast, tl, makeSheet } from './ui.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
@@ -29,9 +29,9 @@ const past=b=>'<article class="rz">'+head(b.product,b.when+' · '+b.who)
 /* Bu cihazda yapılan taslak rezervasyonlar (rezervasyon akışından) */
 const mine=b=>'<article class="rz">'+head(b.product,[b.date,b.slot].filter(Boolean).join(' · '))
   +'<div class="rz-rows"><div><small>Seçim</small><b>'+[b.opt,b.qty].filter(Boolean).join(' · ')+'</b></div>'
-  +'<div><small>Durum</small><b class="ok">'+(b.pay==='kapora'?'Kapora':'Tamamı')+'</b></div><div><small>'+(b.total>b.paid?'Kalan':'Toplam')+'</small><b>'+tl(b.total>b.paid?b.total-b.paid:b.total)+'</b></div></div>'
+  +'<div><small>Durum</small><b class="ok">'+(b.pay==='kapora'?'Kapora ödendi':'Ödendi')+'</b></div><div><small>'+(b.total>b.paid?'Kalan':'Toplam')+'</small><b>'+tl(b.total>b.paid?b.total-b.paid:b.total)+'</b></div></div>'
   +'<div class="rz-acts"><button type="button" class="btn ghost" data-soon>Biletim</button><button type="button" class="btn ghost" data-cancel="'+b.no+'">İptal et</button></div>'
-  +'<p class="rz-no">Rezervasyon no '+b.no+' · ödeme alınmadı</p></article>';
+  +'<p class="rz-no">Rezervasyon no '+b.no+'</p></article>';
 
 const favs=()=>{const items=favList().map(findByTitle).filter(Boolean).reverse();
   return items.length?'<p class="feed-note" data-fav-n aria-live="polite">'+items.length+' deneyim</p><div class="stack">'+items.map(x=>productCard(x)).join('')+'</div>'
@@ -52,8 +52,24 @@ function show(k){cur=k;
   history.replaceState(history.state,'','#'+k);
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
+/* İptal geri alınamaz: önce onay */
+let cx=null,cxNo='';
+function askCancel(btn){cxNo=btn.dataset.cancel;
+  if(!cx){document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="cxBg"></div><div class="sheet ex" id="cxSheet" role="alertdialog" aria-modal="true" aria-labelledby="cxTtl" aria-describedby="cxTxt">'
+     +'<div class="sh-grab"></div><div class="sh-hd"><h3 id="cxTtl">Rezervasyon iptal edilsin mi?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div>'
+     +'<p class="ex-t" id="cxTxt"></p>'
+     +'<div class="ex-b"><button type="button" class="btn danger" id="cxGo">İptal et</button><button type="button" class="btn ghost" data-x>Vazgeç</button></div></div>');
+    cx=makeSheet(document.getElementById('cxSheet'),document.getElementById('cxBg'));
+    document.getElementById('cxGo').addEventListener('click',()=>{const no=cxNo;
+      let done=false;const go=()=>{if(done)return;done=true;removeEventListener('popstate',go);
+        cancelBooking(no);show('yaklasan');toast('Rezervasyon iptal edildi.','Tamam',()=>{},3000)};
+      addEventListener('popstate',go);cx.close();setTimeout(go,450)})}
+  const t=btn.closest('.rz').querySelector('.rz-hd b').textContent;
+  document.getElementById('cxTxt').textContent=t+' rezervasyonun iptal edilir. İaden, iptal koşullarına göre ödeme yöntemine yapılır.';
+  cx.open(btn);
+}
 el.addEventListener('click',e=>{const c=e.target.closest('[data-cancel]');
-  if(c){cancelBooking(c.dataset.cancel);show('yaklasan');toast('Rezervasyon iptal edildi.','Tamam',()=>{},3000);return}
+  if(c){askCancel(c);return}
   if(e.target.closest('[data-soon]'))toast('Çok yakında.','Tamam',()=>{},3000)});
 /* Paylaşınca geçmişteki kart "paylaştın"a döner */
 document.addEventListener('m360:paylasildi',()=>{if(cur==='gecmis')show('gecmis')});
