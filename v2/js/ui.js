@@ -39,7 +39,7 @@ export function backLayer(hide){
   const mine=()=>!!(history.state&&history.state.m360ov);
   addEventListener('popstate',()=>{if(on&&!mine()){on=false;hide()}});
   return {
-    push(){if(on)return;on=true;history.pushState({...(history.state||{}),m360ov:1},'')},
+    push(){if(on)return;on=true;const s=history.state||{};history.pushState({...s,m360ov:1,m360d:(s.m360d||0)+1},'')},
     pop(){if(!on)return;on=false;if(mine())history.back()},
     leave(url){hide();if(on&&mine()){on=false;location.replace(url)}else{on=false;location.href=url}}};
 }
