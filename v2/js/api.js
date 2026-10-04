@@ -174,7 +174,32 @@ export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];re
    Silinen önceki paylaşımlar m360-silinen'de tutulur. */
 const DK='m360-silinen';
 const gone=()=>{try{return new Set(JSON.parse(localStorage.getItem(DK))||[])}catch(e){return new Set()}};
-const ayse=()=>posts.slice(0,4).map((p,i)=>({...p,id:'a'+(i+1),user:{...ME,onay:true},mine:true}));
+const ayse=()=>posts.slice(0,4).map((p,i)=>withEdit({...p,id:'a'+(i+1),user:{...ME,onay:true},mine:true}));
+/* Gönderiyi düzenle: yazı, bağlı deneyim ve kiminle değişir; fotoğraflar değişmez.
+   Bu cihazdaki paylaşımlarda kaydın kendisi, önceki paylaşımlarda m360-duzen güncellenir. */
+const EK='m360-duzen';
+const edits=()=>{try{return JSON.parse(localStorage.getItem(EK))||{}}catch(e){return {}}};
+function withEdit(p){const e=edits()[p.id];if(!e)return p;const pr=getProduct(e.productId);
+  return {...p,text:hx(e.text||''),with:hx(e.with||''),product:pr,place:pr&&p.product&&p.product.id===pr.id?p.place:pr?pr.place.split(' · ')[0]:hx(e.title||''),verified:!!pr&&PAST.some(b=>b.productId===pr.id)}}
+/* düzenleme çekmecesi için ham değerler */
+export function postDraft(id){
+  const r=readPs().find(x=>x.id===id);if(r)return {productId:r.productId||'',title:r.title||'',text:r.text||'',with:r.with||''};
+  const m=/^a([1-4])$/.exec(id||'');if(!m)return null;
+  const e=edits()[id];if(e)return {productId:e.productId||'',title:e.title||'',text:e.text||'',with:e.with||''};
+  const x=POSTS[+m[1]-1],pr=findByTitle(x.urun);return {productId:pr?pr.id:'',title:pr?'':x.urun||'',text:x.metin||'',with:''};
+}
+export function updatePost(id,{productId='',title='',text='',with:w=''}){
+  const pr=getProduct(productId);title=pr?'':String(title).trim().slice(0,60);text=String(text).slice(0,300);
+  if(!pr&&!title)return null;
+  const v={productId:pr?productId:'',title,text,with:w};
+  const l=readPs();
+  try{
+    if(l.some(x=>x.id===id))localStorage.setItem(PK,JSON.stringify(l.map(x=>x.id===id?{...x,...v}:x)));
+    else if(/^a[1-4]$/.test(id))localStorage.setItem(EK,JSON.stringify({...edits(),[id]:v}));
+    else return null;
+  }catch(e){return null}
+  return getPost(id);
+}
 export const listProfilePosts=()=>{const g=gone();return [...listMyPosts(),...ayse()].filter(p=>!g.has(p.id))};
 export const getPost=id=>id&&!gone().has(id)?[...listMyPosts(),...ayse(),...posts].find(p=>p.id===id)||null:null;
 export function deletePost(id){
