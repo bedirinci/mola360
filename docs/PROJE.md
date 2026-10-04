@@ -1609,3 +1609,11 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Etkilediği alanlar:** `v2/js/cards.js` (menü, yeniden çizim), `v2/js/paylas.js` (düzen modu), `v2/js/api.js` (`postDraft`, `updatePost`).
 - **Teknik sonuç:** "Deneyimini paylaş" çekmecesi düzen modunda açılır; yazı, bağlı deneyim ve kiminle değişir, fotoğraflar değişmez. Bu cihazdaki paylaşımlarda kayıt (`m360-paylas`), önceki paylaşımlarda `m360-duzen` güncellenir; `m360:duzenlendi` ile ekrandaki kart yeniden çizilir.
 - **UX sonucu:** "Kaydet" sonrası gönderi aynı yerde güncellenir, "Gönderi güncellendi." bilgisi çıkar.
+
+### 2026-10-04 — Hikaye oluşturucu gönderiden ayrıldı
+
+- **Karar (Bedir):** "Hikaye paylaşım içeriği daha farklı olsun." Hikaye artık gönderi çekmecesiyle değil, tam ekran dikey bir oluşturucuyla paylaşılır.
+- **Neden:** Hikaye ve gönderi aynı formla açılınca ikisi arasında fark kalmıyordu; hikaye anlık ve görsel, gönderi kalıcı ve anlatımlı.
+- **Etkilediği alanlar:** `v2/js/hikaye-olustur.js` (yeni), `v2/js/paylas.js` (hikaye modu kaldırıldı, `mode:'hikaye'` oluşturucuyu açar), `v2/js/api.js` (`createStory` yer ve yazı biçimi saklar), `v2/js/hikaye.js` (yer ve rozet kare başına), `v2/css/components.css` (hikaye öğeleri ve oluşturucu; izleyiciyle ortak kart/yazı stilleri buraya taşındı).
+- **Teknik sonuç:** Önce bir fotoğraf ya da video seçilir. Üstte Yazı (düz ya da beyaz zemin), Deneyim, Konum, Değiştir araçları. Deneyim seçilince konum boşsa deneyimin yeri gelir. Mola360'tan gidilen deneyimde "Mola360 ile gitti" görünür. Kayıt bu cihazda (`m360-hikayem`), 24 saat.
+- **UX sonucu:** Ekranda görülen, Bağlan'daki hikaye izleyicisinin aynısıdır (ortada yazı, altında yer, altta "Deneyimi gör" kartı). Yeşil "Hikayene ekle" ile paylaşılır. Gönderi çekmecesi ("Deneyimini paylaş") değişmedi.
