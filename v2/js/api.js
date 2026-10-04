@@ -310,7 +310,7 @@ export function bookingSpec(p){
     /* turda kişi yaşa göre: çocuk %30 indirimli, bebek kucakta (uçakta bilet farkı) */
     people:t==='tur'?{max:9,rows:[['yetiskin','Yetişkin','12 yaş ve üzeri',1,null],['cocuk','Çocuk','3–11 yaş',.7,[3,11]],
       ['bebek','Bebek',p.tr==='ucak'?'0–2 yaş · kucakta':'0–2 yaş · kucakta, ücretsiz',p.tr==='ucak'?.1:0,[0,2]]]}:null,
-    from:t==='tur'?kalkis(p):[],
+    dep:t==='tur'?kalkis(p):null,
     /* katılımcı kimliği: yurt dışında herkes için pasaport, yurt içinde yetişkinlerde T.C. kimlik */
     idDoc:t==='tur'?(p.abroad?'pasaport':'tc'):'',
     deposit:t==='tur'?.2:0,
@@ -318,12 +318,12 @@ export function bookingSpec(p){
   };
 }
 
-/* Tur kalkışları: şehir, kişi başı fark, duraklar {saat,yer,adres,not} */
+/* Tur kalkışı: turun çıkış şehri ve o şehirdeki duraklar {saat,yer,adres,not} */
 function kalkis(p){
   const k=KALKIS[p.title];
-  if(k)return k.map(([city,fee,how,st])=>({city,fee,how,stops:st.map(([saat,yer,adres,not])=>({saat,yer,adres,not}))}));
+  if(k)return {city:k[0],how:k[1],stops:k[2].map(([saat,yer,adres,not])=>({saat,yer,adres,not}))};
   const y=(DETAY[p.title]||{}).yer||[p.place,''];
-  return [{city:'',fee:0,how:'',stops:[{saat:'',yer:y[0],adres:'',not:y[1]}]}];
+  return {city:'',how:'',stops:[{saat:'',yer:y[0],adres:'',not:y[1]}]};
 }
 
 /* Taslak rezervasyonlar: ödeme alınmaz, yalnızca bu cihazda tutulur */

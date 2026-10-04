@@ -12,7 +12,7 @@ export const DETAY={
    ['2. gün','Yeraltı şehri ve Ihlara Vadisi','Derinkuyu Yeraltı Şehri, Ihlara Vadisi\'nde 4 km yürüyüş ve Selime Manastırı.'],
    ['3. gün','Peri bacaları ve Avanos','İsteğe bağlı sabah balon turu. Paşabağ, Devrent Vadisi ve Avanos\'ta çömlek atölyesi.'],
    ['4. gün','Dönüş','Kahvaltıdan sonra serbest zaman, öğleden sonra havalimanına transfer.']],
-  yer:['İstanbul Havalimanı, iç hatlar','Uçuştan 2 saat önce Mola360 karşılama noktasında. İzmir ve Ankara çıkışında buluşma yine havalimanında.'],
+  yer:['İstanbul Havalimanı, iç hatlar','Uçuştan 2 saat önce Mola360 karşılama noktasında.'],
   dahil:['Gidiş-dönüş uçak bileti','3 gece mağara otelde konaklama, kahvaltı dahil','Havalimanı transferleri ve gezi ulaşımı','Profesyonel rehberlik'],
   haric:['Balon turu (isteğe bağlı)','Müze ve ören yeri girişleri','Öğle ve akşam yemekleri'],
   bilgi:['Vadi yürüyüşü için rahat ayakkabı getir.','Balon uçuşu hava koşuluna bağlı; uçulmazsa balon ücreti iade edilir.']},
@@ -34,7 +34,7 @@ export const DETAY={
  'Pamukkale ve Hierapolis':{about:'Beyaz travertenlerde çıplak ayakla yürüyüş, Hierapolis Antik Kenti ve isteyene Antik Havuz\'da yüzme.',
   program:[['06:30','İzmir\'den hareket','Konak ve Karşıyaka\'dan alış.'],['10:30','Hierapolis','Antik tiyatro ve Kuzey Nekropol, rehberli.'],
    ['12:30','Travertenler','Serbest zaman, isteyene Antik Havuz.'],['14:00','Öğle yemeği','Karahayıt\'ta açık büfe.'],['18:30','Dönüş','İzmir\'e varış.']],
-  yer:['Konak, İzmir · Saat Kulesi önü','Sabah 06:30. Karşıyaka\'dan 06:50\'de alış.'],
+  yer:['Konak, İzmir · Saat Kulesi önü','Sabah 06:30. Karşıyaka\'dan 06:10\'da, Bornova\'dan 06:50\'de alış.'],
   dahil:['Klimalı araçla ulaşım','Rehberlik','Öğle yemeği'],haric:['Ören yeri girişi','Antik Havuz girişi'],
   bilgi:['Travertenlerde ayakkabıyla yürünmez; çıkarıp elinde taşırsın.','Mayo ve havlu getir.']},
 
@@ -255,31 +255,33 @@ export const DETAY={
   bilgi:['18 yaş sınırı var.','Fiyat masanın minimum harcaması; yediğin içtiğin bundan düşülür.']}
 };
 
-/* Tur kalkışları (ÖRNEK): kalkış şehri, kişi başı fark ve buluşma durakları
-   [saat, durak, adres, not]. Burada olmayan turda tek buluşma noktası
-   DETAY'daki "yer"den gelir. */
+/* Tur kalkış noktaları (ÖRNEK): tur hangi şehirden çıkıyorsa o şehrin
+   durakları [saat, durak, adres, not]. Burada olmayan turda tek kalkış
+   noktası DETAY'daki "yer"den gelir. */
 export const KALKIS={
- 'Efes ve Şirince Turu':[['İzmir',0,'Otobüsle',[
+ 'Efes ve Şirince Turu':['İzmir','Otobüsle',[
    ['07:40','Bornova Metro','Ege Üniversitesi metro çıkışı, Bornova','Otobüs metro çıkışının karşısında bekler.'],
-   ['08:00','Konak Saat Kulesi','Konak Meydanı, Konak','Rehberin Mola360 bayrağıyla otobüsün önünde karşılar.']]]],
- 'Sapanca ve Maşukiye Turu':[['İstanbul',0,'Otobüsle',[
+   ['08:00','Konak Saat Kulesi','Konak Meydanı, Konak','Rehberin Mola360 bayrağıyla otobüsün önünde karşılar.'],
+   ['08:20','Gaziemir Optimum','Optimum AVM otoparkı girişi, Gaziemir','Otopark girişindeki otobüs cebinde.']]],
+ 'Sapanca ve Maşukiye Turu':['İstanbul','Otobüsle',[
    ['07:30','Kadıköy Söğütlüçeşme','Söğütlüçeşme metrobüs durağı, Kadıköy','Otobüs durağın Fikirtepe tarafında bekler.'],
-   ['07:50','Ataşehir Metropol','Metropol İstanbul AVM önü, Ataşehir','AVM\'nin Bulvar girişinin önünde.']]]],
- 'Pamukkale ve Hierapolis':[['İzmir',0,'Otobüsle',[
+   ['07:50','Ataşehir Metropol','Metropol İstanbul AVM önü, Ataşehir','AVM\'nin Bulvar girişinin önünde.'],
+   ['08:15','Kartal Metro','Kartal metro istasyonu, D-100 çıkışı','Metro çıkışındaki otobüs cebinde.']]],
+ 'Pamukkale ve Hierapolis':['İzmir','Otobüsle',[
+   ['06:10','Karşıyaka İskele','Karşıyaka İskelesi önü, Karşıyaka','İskele meydanındaki taksi durağının yanında.'],
    ['06:30','Konak Saat Kulesi','Konak Meydanı, Konak','Rehberin Mola360 bayrağıyla otobüsün önünde karşılar.'],
-   ['06:50','Karşıyaka İskele','Karşıyaka İskelesi önü, Karşıyaka','İskele meydanındaki taksi durağının yanında.']]]],
- 'Kapadokya Turu':[
-  ['İstanbul',0,'Uçakla',[
+   ['06:50','Bornova Metro','Ege Üniversitesi metro çıkışı, Bornova','Otobüs metro çıkışının karşısında bekler.']]],
+ 'Batum ve Acara Turu':['Trabzon','Otobüsle',[
+   ['08:00','Meydan Parkı','Meydan Parkı önü, Ortahisar','Otobüs parkın Uzun Sokak tarafında bekler.'],
+   ['08:20','Trabzon Havalimanı','Dış hatlar terminali önü','Uçakla gelenler için.'],
+   ['09:15','Rize Merkez','Rize Belediyesi önü, Rize','Yol üzerindeki son durak.']]],
+ 'Kapadokya Turu':['İstanbul','Uçakla',[
    ['05:30','İstanbul Havalimanı','İç hatlar gidiş katı, 4 numaralı kapı','Uçuştan 2 saat önce Mola360 karşılama noktasında.'],
-   ['06:00','Sabiha Gökçen Havalimanı','İç hatlar gidiş katı, A kapısı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]],
-  ['İzmir',600,'Uçakla',[
-   ['06:15','Adnan Menderes Havalimanı','İç hatlar terminali, gidiş katı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]],
-  ['Ankara',0,'Uçakla',[
-   ['07:00','Esenboğa Havalimanı','İç hatlar gidiş katı, B kapısı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]]]
+   ['06:00','Sabiha Gökçen Havalimanı','İç hatlar gidiş katı, A kapısı','Uçuştan 2 saat önce Mola360 karşılama noktasında.']]]
 };
 
 /* Ürün türüne göre bölüm başlıkları: program ve konum */
-export const BASLIK={tur:['Program','Buluşma noktası'],otel:['Konaklama','Konum'],etkinlik:['Akış','Etkinlik alanı'],aktivite:['Nasıl geçiyor?','Buluşma noktası'],mekan:['Hizmetler','Konum']};
+export const BASLIK={tur:['Program','Kalkış noktası'],otel:['Konaklama','Konum'],etkinlik:['Akış','Etkinlik alanı'],aktivite:['Nasıl geçiyor?','Buluşma noktası'],mekan:['Hizmetler','Konum']};
 
 /* Örnek değerlendirmeler: türe göre iki tane. Gerçekte yalnızca
    rezervasyonu tamamlayanlar yazar. */

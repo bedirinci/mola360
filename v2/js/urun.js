@@ -92,11 +92,10 @@ document.getElementById('urun').innerHTML=
      return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')+'</dl>'
    +'<p class="u-pp-n">Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
 
- +'<section class="box"><h2>'+(S.from.length&&S.from[0].city?'Kalkış ve buluşma noktaları':info.placeTitle)+'</h2>'
- +(S.from.length&&S.from[0].city
-   ?S.from.map(c=>'<div class="u-from">'+(S.from.length>1?'<h3>'+c.city+' çıkışı<span>'+c.how+(c.fee?' · +'+tl(lvPrice(p.title,c.fee))+' kişi başı':'')+'</span></h3>':'')
-      +'<ol class="u-stops">'+c.stops.map(x=>'<li><b class="t">'+x.saat+'</b><div><b>'+x.yer+'</b><span>'+x.adres+'</span></div></li>').join('')+'</ol></div>').join('')
-    +'<p class="u-pp-n">Durağını rezervasyonda seçersin; saat kalkış saatin olur.</p>'
+ +'<section class="box"><h2>'+(S.dep&&S.dep.city?'Kalkış noktaları ve saatleri':info.placeTitle)+'</h2>'
+ +(S.dep&&S.dep.city
+   ?'<p class="u-pp-n">'+S.dep.city+' çıkışlı · '+S.dep.how.toLocaleLowerCase('tr')+'</p><ol class="u-stops">'+S.dep.stops.map(x=>'<li><b class="t">'+x.saat+'</b><div><b>'+x.yer+'</b><span>'+x.adres+'</span></div></li>').join('')+'</ol>'
+    +'<p class="u-pp-n">Kalkış noktanı rezervasyonda seçersin.</p>'
    :'<div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>')
  +(info.bilgi.length?'<h3 class="u-h3">Bilmen gerekenler</h3><ul class="u-info">'+info.bilgi.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</section>'
 

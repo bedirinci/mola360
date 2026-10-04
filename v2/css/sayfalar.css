@@ -638,7 +638,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .bk-pr b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
 .bk-pr small{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:2px}
 .bk-pr small i{font-style:normal;font-weight:var(--fw-bold);color:var(--ink)}
-.bk-opts b small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-medium);color:var(--mute);text-align:right;margin-top:1px}
 .bk-stops button{justify-content:flex-start}
 .bk-stops .t{flex:none;min-width:52px;font-size:var(--fs-lg);font-weight:var(--fw-black);font-variant-numeric:tabular-nums;color:var(--navy)}
 .bk-stop1{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
@@ -670,9 +669,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .u-pp dt small{display:block;font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--mute);margin-top:1px}
 .u-pp dd{font-size:var(--fs-base);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums}
 .box .u-pp-n{font-size:var(--fs-sm);margin-top:8px}
-.u-from+.u-from{margin-top:6px}
-.u-from h3{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:var(--fs-base);font-weight:var(--fw-bold);margin-top:12px}
-.u-from h3 span{font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--mute)}
 .u-stops{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
 .u-stops li{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
 .u-stops li+li{border-top:1px solid var(--line)}
