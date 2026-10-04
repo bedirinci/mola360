@@ -4,7 +4,7 @@
    Mola360'tan rezerve edip yaşadığın deneyime bağlanan paylaşım "Mola360
    ile gitti" rozeti alır; başka bir deneyime bağlanan almaz. Taslakta
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
-import { listPastBookings, suggest, getProduct, createPost, createStory, POST_MIN } from './api.js';
+import { listPastBookings, suggest, getProduct, createPost, createStory, getPost, postDraft, updatePost, POST_MIN } from './api.js';
 import { makeSheet, toast } from './ui.js';
 import { IC, PIN } from './icons.js';
 import { ROOT } from './root.js';
@@ -53,8 +53,9 @@ let chooser;
 
 let sheet,st,mode='post';
 const $=id=>document.getElementById(id);
-const fresh=()=>({media:[],productId:'',custom:'',q:'',with:'',note:''});
+const fresh=()=>({media:[],productId:'',custom:'',q:'',with:'',note:'',editId:'',pics:[]});
 const MIN=()=>mode==='hikaye'?1:POST_MIN;
+const ED=()=>mode==='edit';
 
 /* Önizleme: görsel küçültülür (en fazla 720 px); videodan ilk kare */
 function shrink(src,w,h0){const k=Math.min(1,720/Math.max(w,h0)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h0*k);
@@ -65,6 +66,8 @@ function thumbOf(m){return new Promise(res=>{
   const i=new Image();i.onload=()=>{try{res(shrink(i,i.naturalWidth,i.naturalHeight))}catch(e){res('')}};i.onerror=()=>res('');i.src=m.url})}
 
 function drawMedia(){
+  /* düzenlemede fotoğraflar gösterilir ama değişmez */
+  if(ED()){$('psMedia').innerHTML=st.pics.slice(0,6).map(bg=>'<div class="ps-th" style="background:'+bg+'"></div>').join('');return}
   $('psMedia').innerHTML=st.media.map((m,i)=>'<div class="ps-th'+(m.video?' vid':'')+'">'+(m.video?'<video src="'+m.url+'" muted playsinline preload="metadata"></video>'+IC.play:'<img src="'+m.url+'" alt="">')
     +'<button type="button" class="ps-rm" data-rm="'+i+'" aria-label="'+(i+1)+'. medyayı kaldır">'+IC.close+'</button></div>').join('')
    +(st.media.length<MAX?'<label class="ps-add'+(st.media.length?'':' first')+'"><input type="file" class="sr" id="psFile" accept="image/*,video/*" multiple>'+IC.image+'<span>'+(st.media.length?'Ekle':MIN()>1?'En az '+MIN()+' fotoğraf ya da video seç':'Fotoğraf ya da video seç')+'</span></label>':'');
@@ -89,6 +92,7 @@ function drawPick(){
 }
 
 function check(){
+  if(ED()){const need=!st.productId&&!st.custom?'Paylaşımı bir deneyime bağla':'';$('psNeed').textContent=need;$('psGo').disabled=!!need;return}
   const n=st.media.length,left=MIN()-n;
   if(mode==='hikaye'){const need=n?'':'Bir fotoğraf ya da video ekle';$('psNeed').textContent=need;$('psGo').disabled=!!need;return}
   const need=left>0&&!st.productId&&!st.custom?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
@@ -96,10 +100,11 @@ function check(){
   $('psNeed').textContent=need;$('psGo').disabled=!!need;
 }
 /* hikaye: tek görsel yeter, deneyim isteğe bağlı, kiminle sorulmaz */
-function drawMode(){const hk=mode==='hikaye';
+function drawMode(){const hk=mode==='hikaye',ed=ED();
   $('psTtl').textContent=hk?'Hikaye paylaş':'Deneyimini paylaş';
   $('psMinT').textContent=hk?'':'(en az '+POST_MIN+')';$('psOpt').hidden=!hk;$('psWithSec').hidden=hk;
-  $('psNoteH').textContent=hk?'Kısa not':'Nasıldı?';$('psGo').textContent=hk?'Hikayeni paylaş':'Paylaş'}
+  $('psNoteH').textContent=hk?'Kısa not':'Nasıldı?';$('psGo').textContent=hk?'Hikayeni paylaş':'Paylaş';
+  if(ed){$('psTtl').textContent='Gönderiyi düzenle';$('psMinT').textContent='(değiştirilemez)';$('psGo').textContent='Kaydet'}}
 function drawAll(){drawMode();drawMedia();drawPick();
   document.querySelectorAll('[data-with]').forEach(b=>b.setAttribute('aria-checked',b.dataset.with===st.with));
   $('psQ').value=st.q;$('psNote').value=st.note;$('psCnt').textContent=st.note.length+' / '+NOTE;check()}
@@ -146,6 +151,7 @@ async function shareStory(){
 
 async function share(){
   if(mode==='hikaye')return shareStory();
+  if(ED())return saveEdit();
   const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
   const thumbs=(await Promise.all(st.media.slice(0,3).map(thumbOf))).filter(Boolean);
   const p=createPost({productId:st.productId,title:st.custom,text:st.note.trim(),with:st.with,thumbs,media:st.media.length,video:!!st.media[0]&&st.media[0].video});
@@ -155,6 +161,23 @@ async function share(){
   document.dispatchEvent(new CustomEvent('m360:paylasildi',{detail:p}));
   if(!document.getElementById('feed'))toast('Paylaşımın Bağlan\'da','Gör',()=>{location.href=ROOT+'baglan/#'+p.id},5000);
   else toast('Paylaşımın Bağlan\'da','Tamam',()=>{},3000);
+}
+
+function saveEdit(){
+  const id=st.editId,p=updatePost(id,{productId:st.productId,title:st.custom,text:st.note.trim(),with:st.with});
+  if(!p){toast('Değişiklik kaydedilemedi, tekrar dene.','Tamam',()=>{},3500);return}
+  st=fresh();sheet.close();
+  document.dispatchEvent(new CustomEvent('m360:duzenlendi',{detail:{id}}));
+  toast('Gönderi güncellendi.','Tamam',()=>{},3000);
+}
+
+/* Gönderiyi düzenle: aynı çekmece; yazı, deneyim ve kiminle değişir */
+export function openEdit(from,id){
+  const d=postDraft(id),p=getPost(id);if(!d||!p)return;
+  if(!sheet)build();
+  mode='edit';st.media.forEach(x=>URL.revokeObjectURL(x.url));st=fresh();
+  Object.assign(st,{editId:id,pics:p.pics||[p.bg],productId:d.productId,custom:d.productId?'':d.title,with:d.with,note:d.text});
+  drawAll();sheet.open(from,$('psNote'));
 }
 
 /* opts.productId: geçmiş rezervasyondan gelince o deneyim seçili açılır.
