@@ -41,4 +41,5 @@ export const IC={
  image:s('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'),
  play:s('<path d="M8 5.5v13l11-6.5z"/>'),
  search:s('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
+ ticket:s('<path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.2"/>'),
  close:s('<path d="M6 6l12 12M18 6 6 18"/>')};

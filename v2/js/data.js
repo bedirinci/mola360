@@ -214,3 +214,13 @@ export const WHEN=[
    Seviye eşikleri (ÖNERİ): Gezgin 1, Kâşif 3, Mola Ustası 6 rezervasyon. */
 export const PUAN={guest:[0,0],gezgin:[320,1],kasif:[1240,3]};
 export const SEVIYE=[['Gezgin',1,'Puan kazanır','Gezgin\'e','puan kazanmaya başla'],['Kâşif',3,'%10 indirim','Kâşif\'e','%10 indirim kazan'],['Mola Ustası',6,'%15 indirim','Mola Ustası\'na','%15 indirim kazan']];
+
+/* Bağlan hikayeleri: ÖRNEK. Takip edilen kişilerin son 24 saatteki kısa
+   anları; her biri Mola360'daki bir ürüne (ürün adıyla) bağlı.
+   kare: [görselin renk geçişi (G), kısa yazı]. */
+export const HIKAYE=[
+ {u:'selin',ne:'18 dk',yer:'Göreme',urun:'Kapadokya Turu',gitti:1,kare:[['kapadokya','Balonlar kalktı, terastayız'],['goreme','Vadide sabah yürüyüşü']]},
+ {u:'mert',ne:'1 sa',yer:'Ölüdeniz',urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,kare:[['parasut','Babadağ, kalkışa 5 dakika'],['ege','Altımızda Ölüdeniz']]},
+ {u:'elif',ne:'3 sa',yer:'Alsancak',urun:'Kordon Caz Akşamları',gitti:1,kare:[['caz','Kordon\'da ilk set başladı'],['kordon','Gün batımı ve caz']]},
+ {u:'zeynep',ne:'6 sa',yer:'Ayder',urun:'Ayder Yayla Evi',gitti:1,kare:[['ayder','Sis kalkıyor, yayla uyanıyor'],['karadeniz','Sobada mısır ekmeği']]},
+ {u:'kaan',ne:'9 sa',yer:'Manavgat',urun:'Köprülü Kanyon Rafting',gitti:0,kare:[['rafting','Kanyonda ilk dalga'],['sapanca','Nehir kenarında alabalık']]}];

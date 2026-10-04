@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -157,6 +157,21 @@ const post=(p,i)=>({id:'p'+(i+1),user:{...USERS[p.u],onay:ONAY.has(p.u)},place:p
 const posts=POSTS.map(post);
 /* Akış: önce bu cihazda paylaştıkların, sonra örnek paylaşımlar */
 export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];return productId?l.filter(p=>p.product&&p.product.id===productId):l};
+
+/* Hikayeler: önce Mola360'ın kendi hikayeleri (gerçek ürünlerden: bu
+   haftanın etkinlikleri, hafta sonu fırsatları, temalar), sonra takip
+   edilen kişilerinkiler. Her karenin altında bağlı olduğu deneyim. */
+const kisiHikaye=HIKAYE.map(h=>({id:'h-'+h.u,kind:'kisi',user:{...USERS[h.u],onay:ONAY.has(h.u)},when:h.ne,place:h.yer,verified:!!h.gitti,
+  frames:h.kare.map(([g,text])=>({bg:G[g],text,product:findByTitle(h.urun)}))}));
+const DEAL=['Kapadokya Turu','Göreme Mağara Otel','Sealight Resort'];
+export function listStories(){
+  const ev=listEvents().slice(0,3).map(e=>({bg:e.bg,over:e.dw+' '+e.dn+' '+e.month+' · '+e.time,title:e.title,sub:e.place.split(' · ')[0],product:e}));
+  const hs=DEAL.map(findByTitle).filter(Boolean).map(p=>({bg:p.bg,over:'Bu hafta sonu',title:p.title,sub:p.facts[0]||p.place,product:p,deal:true}));
+  const th=themes.slice(0,4).map(t=>({bg:t.bg,over:'Tema',title:t.name,sub:t.intro.split('. ')[0]+'.',product:all.get(t.ids[0]),theme:t.id}));
+  const m=[['sahne','Sahnede','Bu hafta sahnede','ticket',ev],['hafta-sonu','Hafta sonu','Bu hafta sonu için','calendar',hs],['temalar','Temalar','Temalar','grid',th]]
+    .filter(x=>x[4].length).map(([id,label,title,icon,frames])=>({id:'m-'+id,kind:'mola',label,title,icon,bg:frames[0].bg,frames}));
+  return [...m,...kisiHikaye];
+}
 
 /* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};

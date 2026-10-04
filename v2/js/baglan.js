@@ -4,9 +4,11 @@ import { listPosts } from './api.js';
 import { postCard, initPostActions } from './cards.js';
 import { toast } from './ui.js';
 import { IC } from './icons.js';
+import { initStories } from './hikaye.js';
 
 renderShell('baglan');
 initPostActions(toast);
+initStories(document.getElementById('hikayeler'));
 
 const feed=document.getElementById('feed');
 /* Akış seçimi bir filtre: aynı paylaşımlara farklı bakış. Takip ve konum gerçek veriyle gelecek. */
