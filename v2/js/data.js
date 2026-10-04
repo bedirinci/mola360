@@ -265,7 +265,8 @@ export const HIKAYE=[
  {u:'zeynep',ne:'6 sa',yer:'Ayder',urun:'Ayder Yayla Evi',gitti:1,kare:[['ayder','Sis kalkıyor, yayla uyanıyor'],['karadeniz','Sobada mısır ekmeği']]},
  {u:'kaan',ne:'9 sa',yer:'Manavgat',urun:'Köprülü Kanyon Rafting',gitti:0,kare:[['rafting','Kanyonda ilk dalga'],['sapanca','Nehir kenarında alabalık']]}];
 /* Mesajlar (ÖRNEK): Ayşe'nin sohbetleri, en yeniden eskiye. k: kişi (USERS),
-   ist: mesaj isteği (takip etmediği biri yazmış), yeni: okunmamış mesaj sayısı.
+   ist: mesaj isteği (takip etmediği biri yazmış), yeni: okunmamış mesaj sayısı,
+   durum: Ayşe'nin son mesajı karşıya ulaştı ama okunmadıysa 'iletildi' (yoksa görüldü).
    m: {gun:'Dün'} gün ayracı ya da [kim (o: karşı taraf, b: Ayşe), metin, saat, ek];
    ek {urun:'Ürün adı'} deneyim kartı, davet:1 ile "Birlikte gidelim" daveti,
    {post:'p1'} Bağlan paylaşımı. */
@@ -287,7 +288,7 @@ export const SOHBET=[
  {k:'deniz',m:[{gun:'Çarşamba'},
    ['o','Efes\'i soruyordun ya, bu paylaşımı gördün mü?','12:10',{post:'p4'}],
    ['b','Gördüm, listeme ekledim. Teşekkürler 🙏','12:31']]},
- {k:'zeynep',m:[{gun:'28 Eylül'},
+ {k:'zeynep',durum:'iletildi',m:[{gun:'28 Eylül'},
    ['b','Ayder\'de nerede kaldınız?','14:02'],
    ['o','Yayla evinde kaldık, sabah sis kalkarken manzara bambaşka.','14:20',{urun:'Ayder Yayla Evi'}],
    ['b','Harika, kaydettim!','14:22']]},

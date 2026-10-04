@@ -443,12 +443,16 @@ export function getPoints(level){const [pts,n]=PUAN[level]||PUAN.guest;
   return {pts,n,levels:SEVIYE.map(([name,need,perk,to,goal])=>({name,need,perk,to,goal}))};}
 
 /* Mesajlar: örnek sohbetler (SOHBET) + bu cihazda gönderilenler. Gönderilenler,
-   okunanlar, kabul edilen ve silinen istekler/sohbetler m360-mesaj'da. */
+   okunanlar, kabul edilen, silinen, sessize alınan ve arşivlenen sohbetler m360-mesaj'da. */
 const MK='m360-mesaj';
-const readMs=()=>{try{const d=JSON.parse(localStorage.getItem(MK))||{};return {ek:d.ek||{},oku:d.oku||[],kabul:d.kabul||[],sil:d.sil||[]}}catch(e){return {ek:{},oku:[],kabul:[],sil:[]}}};
+const readMs=()=>{try{const d=JSON.parse(localStorage.getItem(MK))||{};return {ek:d.ek||{},oku:d.oku||[],kabul:d.kabul||[],sil:d.sil||[],sessiz:d.sessiz||[],arsiv:d.arsiv||[]}}catch(e){return {ek:{},oku:[],kabul:[],sil:[],sessiz:[],arsiv:[]}}};
 const writeMs=d=>{try{localStorage.setItem(MK,JSON.stringify(d))}catch(e){}};
 const msg=x=>x.gun?{day:x.gun}:{who:x[0],text:x[1],at:x[2],product:x[3]&&x[3].urun?findByTitle(x[3].urun):null,invite:!!(x[3]&&x[3].davet),post:x[3]&&x[3].post?getPost(x[3].post):null};
 const hm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+/* son mesaj Ayşe'ninse durumu: gonderildi (az önce), iletildi, goruldu */
+function statusOf(msgs,s,mine){const m=[...msgs].reverse().find(x=>!x.day);if(!m||m.who!=='b')return '';
+  if(m.sent)return Date.now()-(mine[mine.length-1].t||0)<60000?'gonderildi':'iletildi';
+  return (s&&s.durum)||'goruldu'}
 function chatOf(k,d){
   const s=SOHBET.find(c=>c.k===k),u=USERS[k];if(!u)return null;
   const mine=(d.ek[k]||[]).map(m=>({who:'b',text:m.text,at:m.at,product:m.urun?getProduct(m.urun):null,invite:!!m.davet,post:m.post?getPost(m.post):null,sent:true,t:m.t}));
@@ -458,13 +462,18 @@ function chatOf(k,d){
   const accepted=d.kabul.includes(k)||mine.length>0;
   return {id:k,user:{...u,onay:ONAY.has(k)||ONERI.some(o=>o[0]===k&&o[2])},msgs,request:!!(s&&s.ist)&&!accepted,
     unread:d.oku.includes(k)||mine.length?0:(s&&s.yeni)||0,t:mine.length?mine[mine.length-1].t:0,
+    muted:d.sessiz.includes(k),archived:d.arsiv.includes(k),status:statusOf(msgs,s,mine),
     when:(()=>{const l=[...msgs].reverse(),m=l.find(x=>!x.day),g=l.find(x=>x.day);return !g||g.day==='Bugün'?(m?m.at:''):g.day})()};
 }
 /* Sohbetler: bu cihazda yazılanlar en üstte, sonra örnekler sırasıyla. istek:true → mesaj istekleri */
-export function listChats({istek=false}={}){const d=readMs();
+export function listChats({istek=false,arsiv=false}={}){const d=readMs();
   const ks=[...new Set([...Object.keys(d.ek),...SOHBET.map(c=>c.k)])];
-  return ks.map(k=>chatOf(k,d)).filter(c=>c&&c.msgs.length&&c.request===istek).sort((a,b)=>b.t-a.t);
+  return ks.map(k=>chatOf(k,d)).filter(c=>c&&c.msgs.length&&c.request===istek&&c.archived===arsiv).sort((a,b)=>b.t-a.t);
 }
+/* sessize al / arşivle (on:false geri alır) */
+const flag=(key,k,on)=>{const d=readMs();d[key]=d[key].filter(x=>x!==k);if(on)d[key].push(k);writeMs(d)};
+export const setMuted=(k,on)=>flag('sessiz',k,on);
+export const setArchived=(k,on)=>flag('arsiv',k,on);
 export const getChat=k=>chatOf(k,readMs());
 /* okunmamış sohbet sayısı (istekler hariç) ve istek sayısı */
 export const unreadChats=()=>listChats().filter(c=>c.unread).length;
@@ -476,7 +485,7 @@ export function sendMessage(k,{text='',urun='',davet=false,post=''}={}){
   if(!USERS[k])return null;text=String(text).trim().slice(0,1000);if(!text&&!urun&&!post)return null;
   const d=readMs(),n=new Date(),m={text,at:hm(n),t:n.getTime()};
   if(urun)m.urun=urun;if(davet)m.davet=1;if(post)m.post=post;
-  (d.ek[k]=d.ek[k]||[]).push(m);if(!d.oku.includes(k))d.oku.push(k);writeMs(d);
+  (d.ek[k]=d.ek[k]||[]).push(m);if(!d.oku.includes(k))d.oku.push(k);d.arsiv=d.arsiv.filter(x=>x!==k);writeMs(d);
   return {who:'b',text:m.text,at:m.at,product:urun?getProduct(urun):null,invite:!!davet,post:post?getPost(post):null,sent:true};
 }
 /* yeni mesajda seçilebilecek kişiler: takip ettiklerin */
