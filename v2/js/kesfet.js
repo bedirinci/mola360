@@ -47,7 +47,7 @@ $('rcClear').addEventListener('click',()=>{clearRecent();recent();toast('Son bak
 
 /* Ne kadar molan var? + Kiminle? (iki keşif filtresi birlikte) */
 /* süre ikonları: Bedir'in verdiği 3B ikonlar (v2/img/KAYNAK.md) */
-const ICON=b=>'<img src="'+ROOT+'img/sure-'+b+'.webp" alt="" width="38" height="38" decoding="async">';
+const ICON=b=>'<img src="'+ROOT+'img/sure-'+b+'.webp" alt="" width="40" height="40" decoding="async">';
 const tEl=$('time'),rail=$('timeRail'),wEl=$('withChips');
 const q=(k,v)=>k&&v?k+'='+v:'';
 tEl.innerHTML=BUCKETS.map(b=>'<button type="button" class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="i">'+ICON(b[0])+'</span><span class="x"><b>'+b[1]+'</b><small></small></span></button>').join('');
