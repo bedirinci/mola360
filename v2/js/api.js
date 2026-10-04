@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, HAFTA, PROFIL, SOHBET } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -179,6 +179,8 @@ export function listComments(post){
   const n=Math.min(post.comments||0,5),start=[...post.id].reduce((a,c)=>a+c.charCodeAt(0),0);
   const base=Array.from({length:n},(_,i)=>{const [u,text,when]=YORUMLAR[(start+i)%YORUMLAR.length];return {id:'b'+i,user:{...USERS[u],onay:ONAY.has(u)},text,when,likes:(start*7+i*13)%40}})
     .filter(c=>c.user.kul!==post.user.kul);
+  /* paylaşım sahibi ilk yoruma yanıt vermiş */
+  if(base.length>1){const own=post.user.kul===ME.kul;base.splice(1,0,{id:'r0',to:base[0].id,user:own?{...ME,onay:true}:post.user,text:'@'+base[0].user.kul+' '+YANITLAR[start%YANITLAR.length],when:base[0].when,likes:(start%9)+1,mine:own})}
   /* to: yanıtlanan yorumun kimliği (yanıtlar o yorumun altında görünür) */
   return [...base,...myCm(post.id).map(c=>({id:'m'+c.at,to:c.to||'',user:{...ME,onay:true},text:hx(c.text),when:ago(c.at),likes:0,mine:true}))];
 }
@@ -209,7 +211,10 @@ export function listStories(){
 
 /* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
 /* Bağlan: haftanın gezgini */
-export const weekTraveler=()=>{const p=posts.find(x=>x.id===HAFTA.post);return p?{post:p,saves:HAFTA.kayit,points:HAFTA.puan}:null};
+export const weekTraveler=()=>{
+  const score=(p,i)=>{const r=POSTS[i];return {post:p,likes:p.likes,comments:p.comments,saves:r.kay||0,shares:r.pay||0,total:p.likes+p.comments+(r.kay||0)+(r.pay||0)}};
+  const best=posts.map(score).sort((a,b)=>b.total-a.total)[0];
+  return best?{...best,points:HAFTA.puan}:null};
 /* Bağlan: takip önerileri */
 export const listSuggestions=()=>ONERI.map(([u,why,gitti])=>({id:u,user:{...USERS[u],onay:!!gitti||ONAY.has(u)},why}));
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};

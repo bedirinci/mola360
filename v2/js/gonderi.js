@@ -19,10 +19,13 @@ const post=getPost(id);
 /* yorum: ada dokununca profil; Yanıtla yorum kutusunu o kişiye açar. Yanıtlar yorumun altında. */
 const cm=c=>'<li class="cmt'+(c.mine?' mine':'')+'" data-cm="'+c.id+'">'+'<a class="cm-av" href="'+userUrl(c.user)+'" aria-label="'+c.user.kul+' profili">'+ava(c.user,'s')+'</a><div class="x"><p><a class="cm-u" href="'+userUrl(c.user)+'">'+c.user.kul+'</a>'+(c.user.onay?VERIFIED:'')+' '+c.text.replace(/^@([\w.]+)/,(m,k)=>'<a class="cm-at" href="'+ROOT+'kisi/?u='+k+'">@'+k+'</a>')+'</p>'
   +'<small>'+c.when+(c.likes?' · '+c.likes+' beğeni':'')+(c.mine?'':'<button type="button" class="cm-rep" data-rep="'+(c.to||c.id)+'" data-kul="'+c.user.kul+'">Yanıtla</button>')+'</small>'
-  +'<ul class="cm-sub"></ul></div>'
+  +'<button type="button" class="cm-more" hidden aria-expanded="false"></button><ul class="cm-sub" hidden></ul></div>'
   +'<button type="button" class="cm-like" aria-pressed="false" aria-label="Yorumu beğen">'+IC.heart+'</button></li>';
 const place=(ul,c)=>{const parent=c.to&&ul.querySelector('[data-cm="'+c.to+'"] > .x > .cm-sub');(parent||ul).insertAdjacentHTML('beforeend',cm(c));
-  return (parent||ul).lastElementChild};
+  if(parent)more(parent);return (parent||ul).lastElementChild};
+/* yanıtlar kapalı gelir: "Yanıtları gör (N)" açar, "Yanıtları gizle" kapatır */
+const more=(sub,open)=>{const b=sub.previousElementSibling,n=sub.children.length;if(open!=null)sub.hidden=!open;
+  b.hidden=!n;b.setAttribute('aria-expanded',String(!sub.hidden));b.textContent=sub.hidden?'Yanıtları gör ('+n+')':'Yanıtları gizle'};
 
 if(!post){
   main.innerHTML='<div class="empty"><span class="ei">'+IC.comment+'</span><b>Bu gönderi artık yok</b><p>Paylaşan kişi gönderiyi silmiş olabilir.</p><a class="btn" href="'+ROOT+'baglan/">Bağlan\'a git</a></div>';
@@ -47,12 +50,13 @@ if(!post){
   /* akıştaki yorum düğmesi burada yorum kutusuna götürür */
   main.addEventListener('click',e=>{
     const c=e.target.closest('.act.cm');if(c){e.preventDefault();txt.focus();return}
+    const m=e.target.closest('.cm-more');if(m){more(m.nextElementSibling,m.nextElementSibling.hidden);return}
     const r=e.target.closest('.cm-rep');if(r){reply(r.dataset.rep,r.dataset.kul);return}
     const l=e.target.closest('.cm-like');if(l)l.setAttribute('aria-pressed',l.getAttribute('aria-pressed')!=='true');
   });
   txt.addEventListener('input',()=>{go.disabled=!txt.value.trim()});
   form.addEventListener('submit',e=>{e.preventDefault();if(to&&/^@\S+\s*$/.test(txt.value))return;const c=addComment(post.id,txt.value,to);if(!c)return;
-    const li=place(ul,c);
+    const li=place(ul,c);if(c.to)more(li.parentElement,true);
     const n=document.getElementById('cmNone');if(n)n.remove();
     const k=document.getElementById('cmN');k.textContent=+k.textContent+1;
     const a=main.querySelector('.act.cm span');if(a)a.textContent=+a.textContent+1;
