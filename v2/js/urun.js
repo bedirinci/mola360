@@ -15,7 +15,7 @@ const p=getProduct(id);
 
 if(p)render(p);
 else{
-  document.getElementById('urun').innerHTML='<header class="pg-top slim"><div class="bar"><div class="bar-l"><a class="ib back" href="'+ROOT+'" data-back aria-label="Geri">'+IC.back+'</a></div><div class="bar-i"><button class="ib" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div></div><h1>Deneyim bulunamadı</h1></header>'
+  document.getElementById('urun').innerHTML='<header class="pg-top slim"><div class="bar"><div class="bar-l"><a class="ib back" href="'+ROOT+'" data-back aria-label="Geri">'+IC.back+'</a></div></div><h1>Deneyim bulunamadı</h1></header>'
    +'<div class="empty"><b>Bu deneyim artık yok ya da adres yanlış</b><p>Benzerlerini Keşfet\'te bulabilirsin.</p><a class="btn" href="'+ROOT+'">Keşfet\'e dön</a></div>';
   document.getElementById('ctaBar').remove();
   renderShell('kesfet');
@@ -44,8 +44,7 @@ document.getElementById('urun').innerHTML=
  '<div class="ug" style="background:'+p.bg+'">'
  +'<div class="ug-top"><a class="cb lbl" href="'+ROOT+'" data-back>'+IC.back+'<span id="backTo">Geri</span></a><span class="sp"></span>'
  +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
- +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
- +'<button type="button" class="cb" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div>'
+ +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div>'
  +'<span class="ug-n">1 / 8 · Görseller</span></div>'
  +'<section class="u-hd"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'

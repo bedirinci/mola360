@@ -43,4 +43,7 @@ export const IC={
  play:s('<path d="M8 5.5v13l11-6.5z"/>'),
  search:s('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
  ticket:s('<path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.2"/>'),
- close:s('<path d="M6 6l12 12M18 6 6 18"/>')};
+ close:s('<path d="M6 6l12 12M18 6 6 18"/>'),
+ send:s('<path d="M21.5 2.5 10.5 13.5"/><path d="M21.5 2.5 14.5 21.5l-4-8-8-4z"/>'),
+ edit:s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+ mute:s('<path d="M6 16v-5a6 6 0 0 1 9.4-4.9M18 11v5l2 2H8M10 20a2 2 0 0 0 4 0M3 3l18 18"/>')};

@@ -160,6 +160,9 @@ export function initPostActions(toast){
     const tg=e.target.closest('[data-birlikte]');
     if(tg){import('./birlikte.js').then(m=>m.openTogether(tg,tg.dataset.birlikte));return}
     const s=e.target.closest('[data-share]');
+    /* paylaşımdaki Paylaş: takip ettiklerine mesajla gönder (birlikte.js) */
+    const sp=s&&s.closest('.post[data-post]');
+    if(sp){import('./birlikte.js').then(m=>m.openSend(s,sp.dataset.post));return}
     if(s){const url=location.href;if(navigator.share){navigator.share({title:'mola360',url}).catch(()=>{})}else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
     if(e.target.closest('.act[data-soon]'))toast('Çok yakında.','Tamam',()=>{},3000);
   });

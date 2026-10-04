@@ -14,7 +14,7 @@ const T='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="
 /* neden açıldığına göre başlık */
 const WHY={like:'Beğenmek için giriş yap',save:'Kaydetmek için giriş yap',follow:'Takip etmek için giriş yap',
   comment:'Yorum yapmak için giriş yap',fav:'Favorilerine eklemek için giriş yap',share:'Paylaşmak için giriş yap',
-  join:'Mola360\'a üye ol',login:'Mola360\'a giriş yap'};
+  message:'Mesajlaşmak için giriş yap',join:'Mola360\'a üye ol',login:'Mola360\'a giriş yap'};
 const SUB='Molapuan kazan, ilk rezervasyonunda %15 indirim al.';
 
 const HTML=`<div class="sh-bg lg-bg" id="lgBg"></div>
@@ -78,7 +78,7 @@ export function openLogin(from,why,then){
 
 /* Misafirken kişisel işlemleri yakala: işlem durur, çekmece açılır, girişten sonra aynı öğeye yeniden dokunulur */
 const GATE=[['.act.like,.sv-act[data-sva="like"]','like'],['.act.save,[data-pm="save"]','save'],['.follow','follow'],
-  ['.cm-in input,.cm-in button,.sv-rep input','comment'],['[data-fav]','fav'],['#shareBtn,[data-paylas],[data-hk-me],[data-birlikte]','share']];
+  ['.cm-in input,.cm-in button,.sv-rep input','comment'],['[data-fav]','fav'],['#shareBtn,[data-paylas],[data-hk-me],[data-birlikte]','share'],['[data-mesaj],.post [data-share]','message']];
 export function initGuestGate(){
   const hit=e=>{if(getLevel()!=='guest')return;
     const j=e.target.closest('[data-giris]');

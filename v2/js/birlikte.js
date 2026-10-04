@@ -1,15 +1,16 @@
 /* Birlikte gidelim: Bağlan'daki bir deneyimi arkadaşlarına "Bunu yapalım mı?"
    notuyla gönderir. Takip ettiğin kişiler seçilir; ya da telefonun paylaşımıyla
-   başka uygulamadan gönderilir. */
+   başka uygulamadan gönderilir. Aynı çekmece paylaşımın Paylaş düğmesinde
+   "Gönder" olur (openSend). Gönderilen her şey Mesajlar'da sohbete düşer. */
 import { makeSheet, toast } from './ui.js';
-import { getProduct, productUrl } from './api.js';
+import { getProduct, productUrl, getPost, sendMessage, FOLLOWING } from './api.js';
 import { USERS } from './data.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
 
-const FRIENDS=['selin','mert','elif','deniz','kaan','zeynep'];
+const FRIENDS=FOLLOWING;
 const $=id=>document.getElementById(id);
-let sheet=null,prod=null;
+let sheet=null,prod=null,post=null;
 const ava=u=>'<span class="ava" style="--c:'+u.renk+'" aria-hidden="true">'+u.ini+'</span>';
 
 function build(){
@@ -24,22 +25,35 @@ function build(){
    +'<button type="button" class="btn green tg-go" id="tgGo" disabled>Kişi seç</button>'
    +'<button type="button" class="tg-out" id="tgOut">'+IC.share+'Başka uygulamayla gönder</button></div>');
   sheet=makeSheet($('tgSheet'),$('tgBg'));
-  const sel=()=>[...$('tgF').querySelectorAll('[aria-pressed="true"]')].map(b=>USERS[b.dataset.u].ad.split(' ')[0]);
+  const keys=()=>[...$('tgF').querySelectorAll('[aria-pressed="true"]')].map(b=>b.dataset.u);
+  const sel=()=>keys().map(k=>USERS[k].ad.split(' ')[0]);
   const upd=()=>{const n=sel().length;$('tgGo').disabled=!n;$('tgGo').textContent=n?n+' kişiye gönder':'Kişi seç'};
   $('tgF').addEventListener('click',e=>{const b=e.target.closest('[data-u]');if(!b)return;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');upd()});
-  $('tgGo').addEventListener('click',()=>{const l=sel();if(!l.length)return;
+  $('tgGo').addEventListener('click',()=>{const l=sel(),ks=keys();if(!l.length)return;
+    const note=$('tgNote').value.trim();
+    ks.forEach(k=>post?sendMessage(k,{post:post.id,text:note}):sendMessage(k,{urun:prod.id,davet:true,text:note}));
     const who=l.length>2?l.slice(0,2).join(', ')+' ve '+(l.length-2)+' kişi':l.join(' ve ');
-    sheet.close();toast(who+' ile paylaşıldı.','Tamam',()=>{},3500)});
-  $('tgOut').addEventListener('click',()=>{const url=new URL(productUrl(ROOT,prod.title),location.href).href,text=$('tgNote').value+' '+prod.title;
-    if(navigator.share)navigator.share({title:prod.title,text,url}).catch(()=>{});
+    const to=ks.length===1?ROOT+'sohbet/?k='+ks[0]:ROOT+'mesajlar/';
+    sheet.close();toast(who+' ile paylaşıldı.',ks.length===1?'Sohbete git':'Mesajlar',()=>{location.href=to},4500)});
+  $('tgOut').addEventListener('click',()=>{const title=post?post.user.kul+' paylaşımı':prod.title,
+      url=new URL(post?ROOT+'gonderi/?id='+encodeURIComponent(post.id):productUrl(ROOT,prod.title),location.href).href,text=($('tgNote').value+' '+(post?'':prod.title)).trim();
+    if(navigator.share)navigator.share({title,text,url}).catch(()=>{});
     else if(navigator.clipboard)navigator.clipboard.writeText(text+' '+url).then(()=>{sheet.close();toast('Bağlantı kopyalandı.','Tamam',()=>{},3000)},()=>{})});
 }
 
-export function openTogether(from,id){
-  prod=getProduct(id);if(!prod)return;
+function open(from,ttl,preview,note,ph){
   if(!sheet)build();
-  $('tgP').innerHTML='<span class="pt" style="background:'+prod.bg+'"></span><span class="x"><b>'+prod.title+'</b><small>'+prod.type+' · '+prod.place.split(' · ')[0]+'</small></span>';
+  $('tgTtl').textContent=ttl;$('tgP').innerHTML=preview;
   $('tgF').querySelectorAll('[data-u]').forEach(b=>b.setAttribute('aria-pressed','false'));
-  $('tgGo').disabled=true;$('tgGo').textContent='Kişi seç';$('tgNote').value='Bunu birlikte yapalım mı?';
+  $('tgGo').disabled=true;$('tgGo').textContent='Kişi seç';$('tgNote').value=note;$('tgNote').placeholder=ph;
   sheet.open(from);
+}
+export function openTogether(from,id){
+  prod=getProduct(id);post=null;if(!prod)return;
+  open(from,'Birlikte gidelim','<span class="pt" style="background:'+prod.bg+'"></span><span class="x"><b>'+prod.title+'</b><small>'+prod.type+' · '+prod.place.split(' · ')[0]+'</small></span>','Bunu birlikte yapalım mı?','Notun');
+}
+/* Paylaşımı mesajla gönder */
+export function openSend(from,id){
+  post=getPost(id);prod=null;if(!post)return;
+  open(from,'Gönder','<span class="pt" style="background:'+post.bg+'"></span><span class="x"><b>'+post.user.kul+' paylaşımı</b><small>'+(post.product?post.product.title:post.place)+'</small></span>','','Mesaj ekle…');
 }
