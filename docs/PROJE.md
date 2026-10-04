@@ -1232,3 +1232,17 @@ güncellenecek yaşayan proje dokümanıdır.
   - Arama kartındaki "Nereye?" önerisinde yakındaki yer yine önde.
 - **UX sonucu:** Kart sayfada daha sakin duruyor. Konum yalnızca "Yakınımda
   ne var?" bölümünü dolduruyor.
+
+### 2026-10-04 — Yeni Molapuan ikonu
+
+- **Karar (Bedir):** Molapuan ikonu, Bedir'in verdiği çizim oldu: lacivert
+  daire içinde yeşil jetonlar, üstte "m" harfi ve parıltılar.
+- **Neden:** Molapuanın kendine ait, tanınır bir simgesi olmalı.
+- **Etkilediği alanlar:**
+  - Molapuan kartı (Keşfet, Profil);
+  - menüdeki "Molapuanlarım";
+  - `v2/img/molapuan.webp` ve `v2/img/KAYNAK.md`.
+- **Teknik sonuç:** Görsel yuvarlak kırpıldı, dışı saydam. 160×160 webp
+  olarak kaydedildi (5,5 KB). Kartta 40px, menüde 20px gösteriliyor.
+  Kartın eski yıldızlı lacivert kutusu kalktı.
+- **UX sonucu:** Puan her yerde aynı simgeyle tanınıyor.

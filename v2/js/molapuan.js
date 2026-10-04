@@ -24,7 +24,7 @@ export function molapuan(level){
     :nxt.to+' '+(nxt.need-n)+' rezervasyon kaldı, <em>'+nxt.goal+'</em>!';
   const o=isOpen();
   return '<section class="mp" aria-labelledby="mpT">'
-   +'<div class="mp-top"><span class="mp-ic" aria-hidden="true">'+STAR+'</span>'
+   +'<div class="mp-top"><img class="mp-ic" src="'+ROOT+'img/molapuan.webp" alt="" width="40" height="40">'
    +'<div class="mp-x"><h2 id="mpT">Molapuanın: <b>'+fmt(pts)+'</b></h2>'
    +'<div class="mp-r">'+(cur?'<span class="mp-lv">'+cur.name+'<i> · '+cur.perk+'</i></span>':'<span class="mp-lv off">Üye ol<i>, puan kazan</i></span>')
    +'<button type="button" class="mp-how" data-mp-how>Nasıl kazanırım?</button></div></div></div>'
