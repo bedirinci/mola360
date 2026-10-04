@@ -121,7 +121,9 @@ cxl();
 function drawCta(){
   /* kartlardaki fiyatla aynı: seviye indirimi (Kâşif %10) fiyata dahil, üstü çizili ilk fiyat */
   const now=lvPrice(p.title,p.price),was=p.old||(lvOn(p.title)?p.price:0);
-  cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')+'<strong>'+tl(now)+'</strong><small>'+p.unit+(picked?' · '+picked:lvOn(p.title)?' · Kâşif fiyatı':'')+'</small></div>'
+  const meta=[picked,lvOn(p.title)&&'Kâşif fiyatı'].filter(Boolean).join(' · ');
+  cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')
+   +'<span class="pp-n"><strong>'+tl(now)+'</strong><small>'+p.unit+'</small></span>'+(meta?'<span class="pp-m">'+meta+'</span>':'')+'</div>'
    +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
 }
 drawCta();
@@ -141,7 +143,7 @@ document.getElementById('urun').addEventListener('click',e=>{
 /* sekmeler ve puan/paylaşım bağları sayfa içinde kaydırır; geçmişe kayıt eklemez */
 const top=document.getElementById('uTop'),ttl=document.querySelector('.u-hd h1');
 function goTo(k,smooth=true){const el=document.getElementById(k);if(!el)return;
-  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-(top.classList.contains('on')?0:34)-8;
+  const y=k==='genel'?0:el.getBoundingClientRect().top+scrollY-top.offsetHeight-(top.classList.contains('on')?0:36)-8;
   scrollTo({top:Math.max(0,y),behavior:smooth?'smooth':'instant'})}
 /* görsel geçince üst çubuk lacivert banda döner; görünen bölümün sekmesi seçili */
 const secs=tabs.map(([k])=>document.getElementById(k)).filter(Boolean);
