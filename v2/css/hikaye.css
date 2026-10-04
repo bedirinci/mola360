@@ -17,6 +17,9 @@
 .hk-logo img{display:block;height:12px;width:auto}
 /* Hikayen: halkasız, sağ altta yeşil artı */
 .hk.me .hk-c{box-shadow:none}
+/* hikayen varsa halkası görünür */
+.hk.me[data-hk] .hk-c{box-shadow:inset 0 0 0 2px var(--navy)}
+.hk.me.seen[data-hk] .hk-c{box-shadow:inset 0 0 0 1.5px var(--line)}
 .hk-plus{position:absolute;right:1px;bottom:1px;width:22px;height:22px;border-radius:50%;background:var(--green);color:var(--navy);border:2.5px solid #fff;display:grid;place-items:center}
 .hk-plus svg{width:12px;height:12px;stroke-width:3}
 .hk.me .hk-n{color:var(--mute)}

@@ -7,6 +7,8 @@ import { favList, initFavorites, favSync } from './favorites.js';
 import { toast, tl } from './ui.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
+import { getLevel } from './level.js';
+import { guestIntro } from './giris.js';
 
 renderShell('planlarim');
 initFavorites();
@@ -41,6 +43,8 @@ const TABS={
   favoriler:favs};
 
 const el=document.getElementById('plan');
+/* misafir: sekmeler yerine tanıtım */
+if(getLevel()==='guest'){document.querySelector('.seg').hidden=true;el.innerHTML=guestIntro('planlarim')}else{
 let cur='yaklasan';
 function show(k){cur=k;
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===k));
@@ -57,3 +61,4 @@ const h=location.hash.slice(1);
 show(TABS[h]?h:'yaklasan');
 /* aynı sayfadayken menüden gelen #favoriler ya da #yaklasan sekmeyi değiştirir */
 addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(TABS[k]&&k!==cur)show(k)});
+}

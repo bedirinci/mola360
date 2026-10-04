@@ -1,7 +1,7 @@
 /* Bağlan hikayeleri: akışın üstünde ince bir satır ve tam ekran izleyici.
    Satırda önce "Hikayen", sonra Mola360'ın hikayeleri (sahnede, hafta sonu,
    temalar), sonra takip edilenler. Her karenin altında bağlı deneyim. */
-import { listStories, ME } from './api.js';
+import { listStories, myStory, ME } from './api.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
 import { lvOn, lvPrice } from './level.js';
 import { ROOT } from './root.js';
@@ -16,7 +16,8 @@ const markSeen=id=>{try{localStorage.setItem(SK,JSON.stringify([...new Set([...s
 const LOGO_K='<img src="'+ROOT+'logo-koyu.webp" alt="Mola360" width="44" height="18">';
 const placeOf=p=>p.place.split(' · ')[0];
 
-let stories=[],row;
+let stories=[],mine=null,row;
+const load=()=>{mine=myStory();stories=mine?[mine,...listStories()]:listStories()};
 
 /* ---- Satır ---- */
 function item(s,isSeen){
@@ -29,8 +30,11 @@ function item(s,isSeen){
 function drawRow(){
   const sn=seen();
   /* görülmemişler önde; Mola360'ın hikayeleri hep kişilerden önce */
-  const ord=[...stories].sort((a,b)=>(a.kind!==b.kind?(a.kind==='mola'?-1:1):0)||(sn.includes(a.id)-sn.includes(b.id)));
-  row.innerHTML='<button type="button" class="hk me" data-hk-me aria-label="Hikaye ekle"><span class="hk-c"><span class="hk-in">'+ava(ME)+'</span><i class="hk-plus" aria-hidden="true">'+IC.plus+'</i></span><span class="hk-n">Hikayen</span></button>'
+  const ord=stories.filter(s=>!s.mine).sort((a,b)=>(a.kind!==b.kind?(a.kind==='mola'?-1:1):0)||(sn.includes(a.id)-sn.includes(b.id)));
+  /* hikayen varsa halka görünür ve dokununca açılır; yoksa + ile hikaye eklenir */
+  row.innerHTML=(mine
+     ?'<button type="button" class="hk me'+(sn.includes(mine.id)?' seen':'')+'" data-hk="h-me" aria-label="Hikayen"><span class="hk-c"><span class="hk-in">'+ava(ME)+'</span></span><span class="hk-n">Hikayen</span></button>'
+     :'<button type="button" class="hk me" data-hk-me aria-label="Hikaye ekle"><span class="hk-c"><span class="hk-in">'+ava(ME)+'</span><i class="hk-plus" aria-hidden="true">'+IC.plus+'</i></span><span class="hk-n">Hikayen</span></button>')
    +ord.map(s=>item(s,sn.includes(s.id))).join('');
 }
 
@@ -107,9 +111,9 @@ function show(){
    +'<button type="button" class="sv-x" aria-label="Kapat">'+IC.close+'</button>';
   sv.querySelector('.sv-body').innerHTML=(mola
      ?'<div class="sv-ed"><span class="ov">'+f.over+'</span><h2>'+f.title+'</h2><p>'+f.sub+'</p></div>'
-     :(s.verified?'<span class="went">'+LOGO_K+' ile gitti</span>':'')+'<div class="sv-cap"><p>'+f.text+'</p><span class="loc">'+PIN+s.place+'</span></div>')
+     :(s.verified?'<span class="went">'+LOGO_K+' ile gitti</span>':'')+(f.text||s.place?'<div class="sv-cap">'+(f.text?'<p>'+f.text+'</p>':'')+(s.place?'<span class="loc">'+PIN+s.place+'</span>':'')+'</div>':''))
    +card(f.product,{mola,deal:f.deal});
-  sv.querySelector('.sv-ft').innerHTML=(mola?'':'<label class="sv-rep"><input type="text" placeholder="'+s.user.kul+' kişisine yanıt ver" enterkeyhint="send"></label>')
+  sv.querySelector('.sv-ft').innerHTML=(mola||s.mine?'':'<label class="sv-rep"><input type="text" placeholder="'+s.user.kul+' kişisine yanıt ver" enterkeyhint="send"></label>')
    +'<button type="button" class="sv-act" data-sva="like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'</button>'
    +'<button type="button" class="sv-act" data-sva="share" aria-label="Paylaş">'+IC.share+'</button>';
   const rep=sv.querySelector('.sv-rep input');
@@ -126,9 +130,10 @@ function tick(){
 }
 
 export function initStories(el){
-  row=el;stories=listStories();drawRow();
+  row=el;load();drawRow();
+  document.addEventListener('m360:hikaye',()=>{load();drawRow()});
   row.addEventListener('click',e=>{
-    if(e.target.closest('[data-hk-me]')){openShare(e.target.closest('[data-hk-me]'));return}
+    if(e.target.closest('[data-hk-me]')){openShare(e.target.closest('[data-hk-me]'),{mode:'hikaye'});return}
     const b=e.target.closest('[data-hk]');if(b)open(b.dataset.hk);
   });
   /* adresten açılan hikaye: ?hikaye=m-sahne */

@@ -8,6 +8,7 @@ import { tl, esc, toast, makeSheet } from './ui.js';
 import { lvOn, lvPrice, getLevel } from './level.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
+import { openLogin, guestNudge } from './giris.js';
 
 const q=new URLSearchParams(location.search);
 const p=getProduct(q.get('id'));
@@ -70,7 +71,7 @@ function step2(){
   +f('name','Ad soyad','text','name',st.name)
   +f('phone','Telefon','tel','tel',st.phone,' inputmode="tel" placeholder="05xx xxx xx xx"')
   +f('email','E-posta','email','email',st.email,' inputmode="email"')
-  +'</form><p class="bk-login">Hesabın var mı? <a href="#yakinda">Giriş yap</a>, bilgilerin dolsun.</p></section>';
+  +'</form>'+(getLevel()==='guest'?'<p class="bk-login">Hesabın var mı? <a href="#giris" data-rz-login>Giriş yap</a>, bilgilerin dolsun.</p>':'')+'</section>';
 }
 
 function step3(){
@@ -105,6 +106,7 @@ function done(r){
   +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider.</span></div></li>'
   +(st.pay==='kapora'?'<li>'+IC.check+'<div><b>Kalan '+tl(total()-now())+'</b> <span>Kalkıştan 7 gün önce hatırlatırız; Planlarım\'dan ödeyebilirsin.</span></div></li>':'')
   +'<li>'+IC.check+'<div><b>Döndükten sonra paylaş</b> <span>Paylaşımın bu deneyimin sayfasında ve Bağlan\'da "Mola360 ile gitti" rozetiyle görünür.</span></div></li></ul></section>'
+  +(getLevel()==='guest'?guestNudge(Math.floor(total()/100)):'')
   +'<div class="bk-acts"><a class="btn" href="'+ROOT+'planlarim/">Planlarım</a><button type="button" class="btn ghost" data-invite>'+IC.share+'Birlikte gideceklere gönder</button></div>';
 }
 
@@ -168,6 +170,8 @@ function check2(){
   const bad=Object.keys(e).find(k=>e[k]);if(bad)document.getElementById(bad).focus();
   return !bad;
 }
+/* oturumdaki kullanıcının iletişim bilgileri (boş alanlara) */
+function fillMe(){const me={name:'Ayşe Yılmaz',phone:'0532 418 27 63',email:'ayse.yilmaz@mail.com'};for(const k in me)if(!st[k])st[k]=me[k];save()}
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm)return;
   if(st.step===1){
     if(!st.date){show('dateErr','Devam etmek için bir tarih seç.');document.getElementById('bkDate').scrollIntoView({behavior:'smooth',block:'center'});return}
@@ -197,6 +201,10 @@ main.addEventListener('click',e=>{
   const o=e.target.closest('[data-opt]');if(o){st.opt=+o.dataset.opt;radio('[data-opt]',o);refresh();return}
   const y=e.target.closest('[data-pay]');if(y){st.pay=y.dataset.pay;radio('[data-pay]',y);refresh();return}
   const n=e.target.closest('[data-q]');if(n){st.qty=Math.max(S.qty.min,Math.min(S.qty.max,st.qty+ +n.dataset.q));refresh();return}
+  /* misafir: giriş bilgileri doldurur; onayda hesap oluşturunca puan hesaba geçer */
+  const lg=e.target.closest('[data-rz-login]');if(lg){e.preventDefault();openLogin(lg,'login',()=>{fillMe();draw(false)});return}
+  const j=e.target.closest('[data-rz-join]');if(j){openLogin(j,'join',()=>{const n=j.closest('.gi-n');
+    n.innerHTML='<img src="'+ROOT+'img/molapuan.webp" alt="" width="40" height="40"><div><b>Hesabın hazır</b><p>'+n.dataset.pts+' Molapuan hesabına eklendi. Rezervasyonun Planlarım\'da.</p></div>';n.classList.add('ok')});return}
   if(e.target.closest('[data-invite]')){
     if(navigator.share)navigator.share({title:p.title,text:when()+' · '+p.title+' için yerimizi ayırttım.',url:new URL(productUrl,location.href).href}).catch(()=>{});
     else toast('Paylaşım bu tarayıcıda yok; bağlantıyı kopyalayıp gönderebilirsin.','Tamam',()=>{},3500);return}
@@ -204,6 +212,7 @@ main.addEventListener('click',e=>{
 main.addEventListener('change',e=>{if(e.target.id==='okBox'){st.ok=e.target.checked;if(st.ok)show('okErr','')}save()});
 main.addEventListener('input',e=>{if(st.step===2&&['name','phone','email'].includes(e.target.id)){st[e.target.id]=e.target.value;save()}});
 
+if(getLevel()!=='guest')fillMe();
 renderShell('kesfet',{nav:false});
 draw(false);
 }

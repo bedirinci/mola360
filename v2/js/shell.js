@@ -8,6 +8,7 @@ import { initGestures, initKeyboardFocus, backLayer, toast } from './ui.js';
 
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
+import { initGuestGate } from './giris.js';
 export { ROOT };
 const R=ROOT;
 
@@ -37,7 +38,7 @@ const menuHtml=`<div class="menu" id="menu" role="dialog" aria-modal="true" aria
     <div class="m-user" data-guest>
       <div class="av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
       <div class="x"><b>Hoş geldin</b><span>İlk rezervasyonda %15 indirim</span></div>
-      <a href="?gorunum=kasif" class="btn">Giriş yap</a>
+      <button type="button" class="btn" data-giris="login">Giriş yap</button>
     </div>
     <div class="m-user" data-member hidden>
       <div class="av ini">AY</div>
@@ -122,6 +123,8 @@ export function renderShell(page,{nav=true}={}){
   initMenu();
   applyLevel();
   if(nav)initDock(page);
+  initGuestGate();
+  document.addEventListener('m360:giris',applyLevel);
   initShare();
   /* bildirimler henüz yok */
   document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Yeni bildirimin yok.','Tamam',()=>{},3000)});
@@ -183,7 +186,8 @@ function initDock(page){
   if(page==='kesfet'&&f1)dock.querySelector('[data-nav="kesfet"]').addEventListener('click',e=>{e.preventDefault();
     const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches&&scrollY>8;
     scrollTo({top:0,behavior:smooth?'smooth':'auto'});setTimeout(()=>f1.click(),smooth?380:0)});
-  document.getElementById('shareBtn').addEventListener('click',e=>openShare(e.currentTarget));
+  /* yuvarlak Paylaş: önce Hikaye / Gönderi seçimi */
+  document.getElementById('shareBtn').addEventListener('click',e=>{const b=e.currentTarget;import('./paylas.js').then(m=>m.openChooser(b))});
 }
 
 /* Paylaş çekmecesi (paylas.js) ilk açılışta yüklenir. Her sayfadan açılır:
