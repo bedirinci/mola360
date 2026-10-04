@@ -19,7 +19,7 @@ if(!u){
   el.innerHTML='<div class="empty"><span class="ei">'+IC.users+'</span><b>Bu profil bulunamadı</b><p>Kullanıcı adı değişmiş ya da hesap kapanmış olabilir.</p><a class="btn" href="'+ROOT+'baglan/">Bağlan\'a git</a></div>';
 }else{
   document.title='mola360 — '+u.kul;
-  document.getElementById('kTtl').textContent=u.kul;
+  document.getElementById('kTtl').textContent='@'+u.kul;
   const posts=listUserPosts(u.kul);
   /* yaşadığı deneyimler: Mola360 ile gittiği paylaşımların deneyimleri */
   const went=[...new Map(posts.filter(p=>p.verified&&p.product).map(p=>[p.product.id,p.product])).values()];

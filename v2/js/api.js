@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, HAFTA, PROFIL } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -179,6 +179,8 @@ export function listComments(post){
   const n=Math.min(post.comments||0,5),start=[...post.id].reduce((a,c)=>a+c.charCodeAt(0),0);
   const base=Array.from({length:n},(_,i)=>{const [u,text,when]=YORUMLAR[(start+i)%YORUMLAR.length];return {id:'b'+i,user:{...USERS[u],onay:ONAY.has(u)},text,when,likes:(start*7+i*13)%40}})
     .filter(c=>c.user.kul!==post.user.kul);
+  /* paylaşım sahibi ilk yoruma yanıt vermiş */
+  if(base.length>1){const own=post.user.kul===ME.kul;base.splice(1,0,{id:'r0',to:base[0].id,user:own?{...ME,onay:true}:post.user,text:'@'+base[0].user.kul+' '+YANITLAR[start%YANITLAR.length],when:base[0].when,likes:(start%9)+1,mine:own})}
   /* to: yanıtlanan yorumun kimliği (yanıtlar o yorumun altında görünür) */
   return [...base,...myCm(post.id).map(c=>({id:'m'+c.at,to:c.to||'',user:{...ME,onay:true},text:hx(c.text),when:ago(c.at),likes:0,mine:true}))];
 }
