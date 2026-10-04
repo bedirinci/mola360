@@ -18,6 +18,9 @@ const went=['Kapadokya Turu','Kordon Caz Akşamları','Köprülü Kanyon Rafting
 
 const PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>';
 const STAT=(n,t,tab)=>tab?'<button type="button" data-go="'+tab+'"><b>'+n+'</b><span>'+t+'</span></button>':'<div><b>'+n+'</b><span>'+t+'</span></div>';
+/* takipçi ve takip: alttan çekmece (takip.js) */
+const FSTAT=(v,t,tab)=>'<button type="button" data-flw="'+tab+'" aria-haspopup="dialog"><b>'+v+'</b><span>'+t+'</span></button>';
+document.addEventListener('click',e=>{const b=e.target.closest('[data-flw]');if(b)import('./takip.js').then(m=>m.openFollow(b,{who:'',tab:b.dataset.flw,counts:[128,96]}))});
 /* misafir: kimlik yerine karşılama, içerik yerine tanıtım */
 const GUEST=getLevel()==='guest';
 if(GUEST){document.getElementById('pfHead').innerHTML='<div class="pf-id"><span class="ava l gst" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><div class="x"><div class="pf-nm"><b>Hoş geldin</b></div><span class="pf-at">Giriş yap, molalarını biriktir.</span></div></div>';
@@ -27,7 +30,7 @@ document.getElementById('pfHead').innerHTML=
   '<div class="pf-id">'+ava(ME,'l')+'<div class="x"><div class="pf-nm"><b>'+ME.ad+'</b>'+VERIFIED+'</div>'
  +'<span class="pf-at">@'+ME.kul+'<i>·</i>'+PIN+'İzmir</span></div></div>'
  +'<p class="pf-bio">Hafta sonu kaçamakları, caz akşamları, bol yürüyüş.</p>'
- +'<div class="pf-stats">'+STAT(mine.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+STAT(128,'takipçi')+STAT(96,'takip')+'</div>'
+ +'<div class="pf-stats">'+STAT(mine.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+FSTAT(128,'takipçi','ers')+FSTAT(96,'takip','ing')+'</div>'
  +'<div class="pf-acts"><button type="button" class="btn green" data-paylas>'+IC.plus+'<span class="lg">Deneyimini paylaş</span><span class="sm">Paylaş</span></button>'
  +'<button type="button" class="btn ghost-d" data-soon>Düzenle</button>'
  +'<button type="button" class="btn ghost-d sq" data-share aria-label="Profili paylaş">'+IC.share+'</button></div>';
