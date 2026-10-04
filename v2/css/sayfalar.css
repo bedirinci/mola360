@@ -149,7 +149,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .btn.ghost-d{background:rgba(255,255,255,.1);color:#fff}
 /* Kısa lacivert başlık (Bedir: "Üst lacivert alan çok uzun"): adın yanında doğrulanmış rozeti (Kâşif etiketi kaldırıldı), şehir kullanıcı adının yanında, sayılar tek satır */
 .pf-top{padding-bottom:16px}
-.pf-top .pf-id{gap:12px;margin-top:4px}
+.pf-top .pf-id{gap:12px;margin-top:10px}
 .pf-top .pf-id .ava.l{width:52px;height:52px;font-size:var(--fs-lg);box-shadow:0 0 0 2px var(--navy),0 0 0 4px var(--green)}
 .pf-nm{display:flex;align-items:center;gap:0;min-width:0}
 .pf-nm b{min-width:0;font-size:var(--fs-xl);font-weight:var(--fw-black);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
