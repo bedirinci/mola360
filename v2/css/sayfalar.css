@@ -147,13 +147,13 @@ main#urun .box:first-of-type{margin-top:24px}
 /* dar telefonda kısa etiket, tek satır */
 @media (max-width:359px){.pf-acts .lg{display:none}.pf-acts .sm{display:inline}}
 .btn.ghost-d{background:rgba(255,255,255,.1);color:#fff}
-/* Kısa lacivert başlık (Bedir: "Üst lacivert alan çok uzun"): Kâşif adın yanında, şehir kullanıcı adının yanında, sayılar tek satır */
+/* Kısa lacivert başlık (Bedir: "Üst lacivert alan çok uzun"): adın yanında doğrulanmış rozeti (Kâşif etiketi kaldırıldı), şehir kullanıcı adının yanında, sayılar tek satır */
 .pf-top{padding-bottom:16px}
 .pf-top .pf-id{gap:12px;margin-top:4px}
 .pf-top .pf-id .ava.l{width:52px;height:52px;font-size:var(--fs-lg);box-shadow:0 0 0 2px var(--navy),0 0 0 4px var(--green)}
-.pf-nm{display:flex;align-items:center;gap:8px;min-width:0}
+.pf-nm{display:flex;align-items:center;gap:0;min-width:0}
 .pf-nm b{min-width:0;font-size:var(--fs-xl);font-weight:var(--fw-black);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf-nm .pf-lv{flex:none;height:22px}
+.pf-nm .vf{flex:none;width:20px;height:20px;margin-left:6px}
 .pf-at{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:var(--fs-md);color:var(--navy-ink);white-space:nowrap}
 .pf-at i{font-style:normal;margin:0 2px}
 .pf-at svg{width:13px;height:13px;stroke-width:2.4}
