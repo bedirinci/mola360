@@ -31,6 +31,7 @@ if(!post){
   main.innerHTML='<div class="empty"><span class="ei">'+IC.comment+'</span><b>Bu gönderi artık yok</b><p>Paylaşan kişi gönderiyi silmiş olabilir.</p><a class="btn" href="'+ROOT+'baglan/">Bağlan\'a git</a></div>';
 }else{
   document.title='mola360 — '+post.user.kul+' gönderisi';
+  document.getElementById('gpSub').textContent='@'+post.user.kul;
   const list=listComments(post);
   main.innerHTML=postCard(post)
    +'<section class="cms" aria-labelledby="h-cm"><h2 id="h-cm">Yorumlar <span id="cmN">'+Math.max(post.comments||0,list.length)+'</span></h2>'
