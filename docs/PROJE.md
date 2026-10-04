@@ -1415,3 +1415,17 @@ güncellenecek yaşayan proje dokümanıdır.
   "Galeriden seç" ile gelir.
 - **UX sonucu:** Paylaşım iki dokunuşta görselle başlıyor; bilgiler
   görselden sonra soruluyor.
+
+### 2026-10-04 — Paylaşım akışı önceki çekmeceye döndü (Bedir)
+
+- **Karar:** Instagram tarzı akış (galeriyle açılan tam ekran "Yeni
+  paylaşım" ve "Bilgiler" adımları) geri alındı. Paylaş yine alttan açılan
+  "Deneyimini paylaş" çekmecesini açar: fotoğraf/video (en az 2), hangi
+  deneyim, kiminle, nasıldı.
+- **Neden:** Bedir paylaşımın önceki haline dönmesini istedi.
+- **Etkilediği alanlar:** `v2/js/paylas.js`, `v2/js/shell.js`
+  (`pickAndShare` kaldırıldı), `v2/css/components.css` (`.cmp*` yerine
+  yine `.ps-*`). Seçenekler menüsü, altın yıldız, indirim etiketi ve
+  diğer değişiklikler yerinde kaldı.
+- **Teknik sonuç:** En az 2 görsel kuralı (`POST_MIN`) çekmecede de geçerli.
+- **UX sonucu:** Paylaşım tek ekranda, form olarak yapılıyor.
