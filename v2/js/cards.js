@@ -22,8 +22,7 @@ const pp=(id,l)=>l&&l.length?'<a class="vk-pp" href="'+ROOT+'urun/?id='+id+'#pay
   +l.slice(0,3).map(p=>ava(p.user,'xs')).join('')+'</span>'+l.length+' paylaşım</a>':'';
 export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
-  return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><span class="type">'+x.k+'</span>'+heartBtn(x.t)
-  +(lv?'<span class="vk-off">%10 indirim</span>':'')
+  return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><div class="vk-tg"><span class="type">'+x.k+'</span>'+(lv?'<span class="vk-off">%10 indirim</span>':'')+'</div>'+heartBtn(x.t)
   +'<div class="vk-b">'+pp(x.id,x.pp)+'<h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
   +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
   +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
