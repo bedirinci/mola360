@@ -363,10 +363,11 @@ yeniden adlandırılmış hali olarak konumlandırılmayacaktır.
 Renk kuralı (2026-10-04): her renge tek görev.
 - **Yeşil = eylem ve kazanç.** Ana düğme (Molamı bul, Tarih seç,
   Devam et, Paylaş +) ve para kazancı (indirim etiketi, Molapuan).
-- **Lacivert = marka ve seçili durum.** Keşfet'in üst bandı, seçili
-  sekme/çip, alt menüde aktif sayfa, puan kutusu, yuvarlak ok düğmesi.
-- Geri kalan her şey (kategori etiketi, rozet, tik, boş durum, alt sayfa
-  başlıkları) beyaz, gri ya da koyu yazı.
+- **Lacivert = marka ve seçili durum.** Sayfa başlıklarının zemini,
+  seçili sekme/çip, alt menüde aktif sayfa, puan kutusu, yuvarlak ok
+  düğmesi.
+- Geri kalan her şey (kategori etiketi, rozet, tik, boş durum) beyaz,
+  gri ya da koyu yazı.
 
 Tasarım sisteminde:
 
@@ -1311,3 +1312,19 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Her ekranda tek yeşil düğme göze çarpar; lacivert
   "seçtin / buradasın" demektir. Alt sayfalar Molapuan kartının beyaz,
   ince diline yaklaşır.
+
+### 2026-10-04 — Başlık zemini yeniden lacivert (Bedir)
+
+- **Karar:** Liste, Bağlan, Planlarım, Profil ve Rezervasyon
+  başlıklarının zemini eskisi gibi lacivert. Renk sadeleştirmesinin geri
+  kalanı (yeşil yalnızca eylem ve kazançta) aynen kalır.
+- **Neden:** Bedir beyaz başlığı görünce lacivert zemini istedi.
+- **Etkilediği alanlar:** `v2/css/components.css` (`.pg-top`, `.seg`),
+  `v2/css/sayfalar.css` (profil başlığı, rezervasyon adımları), alt
+  sayfaların `index.html`'i, `v2/js/liste.js`; `v2/logo-koyu.webp`
+  kaldırıldı.
+- **Teknik sonuç:** Başlıklar #110 öncesine döndü. Başlıktaki yeşil
+  vurgular yine yeşile dönmedi: ikinci satır başlık, Kâşif rozeti ve
+  tamamlanan rezervasyon adımı açık lacivert ya da beyaz.
+- **UX sonucu:** Marka bandı her sayfada var; yeşil yine yalnızca
+  basılacak yerde ve kazançta.

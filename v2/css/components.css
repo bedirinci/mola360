@@ -8,8 +8,6 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .ib{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative}
 .ib svg{width:23px;height:23px}
 .ib .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--navy)}
-.pg-top .ib .dot{border-color:var(--page)}
-.pg-top.cover .ib .dot{border-color:transparent}
 .sec{padding:30px 16px 0}
 .hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .hd h2{font-size:var(--fs-h2);font-weight:var(--fw-bold);letter-spacing:-.4px;flex:1 1 0%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -198,23 +196,26 @@ html.kb .dock :focus-visible{outline-offset:-2px}
 /* ---- iskelet bileşenleri (alt sayfalar) ---- */
 body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
-/* alt sayfa başlığı: beyaz, ince. Lacivert bant yalnızca Keşfet'te (renk kuralı) */
-.pg-top{background:var(--page);color:var(--ink);padding:10px 16px 18px;border-bottom:1px solid var(--line)}
+/* alt sayfa başlığı: Keşfet'teki lacivert bandın kısa hali */
+.pg-top{background:var(--navy);color:#fff;padding:10px 16px 22px;border-radius:0 0 var(--r-xl) var(--r-xl)}
 .pg-top .bar{gap:8px}
 .pg-top .bar-l{display:flex;align-items:center;gap:2px;min-width:0}
 .pg-top h1{font-size:var(--fs-2xl);font-weight:var(--fw-black);line-height:1.22;letter-spacing:-.015em;margin-top:10px}
-.pg-top h1 span{color:var(--mute)}
+.pg-top h1 span{color:var(--navy-ink)}
 /* dar ekranda (≤374 px) başlıklar tek satıra sığsın */
 @media (max-width:374px){.pg-top h1{font-size:clamp(20px,6.1vw,24px)}}
-.pg-top p{font-size:var(--fs-md);line-height:1.45;color:var(--mute);margin-top:4px}
-.pg-top.slim{padding-bottom:12px}
+.pg-top p{font-size:var(--fs-md);line-height:1.45;color:var(--navy-ink);margin-top:4px}
+.pg-top.slim{padding-bottom:14px}
 .pg-top.slim h1{margin-top:4px}
 .back svg{width:24px;height:24px}
 
 /* bölümlü sekme (filtre gibi davranır, kategori değil) */
-.seg{display:flex;gap:4px;margin-top:16px;background:var(--soft);border-radius:var(--r-pill);padding:4px}
-.seg button{flex:1;min-height:36px;border-radius:var(--r-pill);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--mute);white-space:nowrap}
-.seg button[aria-pressed="true"]{background:var(--navy);color:#fff;font-weight:var(--fw-bold)}
+.seg{display:flex;gap:4px;margin-top:16px;background:rgba(255,255,255,.08);border-radius:var(--r-pill);padding:4px}
+.seg button{flex:1;min-height:36px;border-radius:var(--r-pill);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--navy-ink);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--navy);font-weight:var(--fw-bold)}
+.seg.light{background:var(--soft)}
+.seg.light button{color:var(--mute)}
+.seg.light button[aria-pressed="true"]{background:var(--navy);color:#fff}
 
 /* dikey kart listesi: rayda olmayan kartlar tam genişlik */
 .stack{display:flex;flex-direction:column;gap:14px;padding:14px 16px 0}
@@ -231,7 +232,7 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 /* avatar */
 .ava{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff;font-size:var(--fs-sm);font-weight:var(--fw-bold);background:var(--c,var(--navy-2))}
 .ava.s{width:28px;height:28px;font-size:var(--fs-xs)}
-.ava.l{width:76px;height:76px;font-size:var(--fs-2xl)}
+.ava.l{width:76px;height:76px;font-size:var(--fs-2xl);box-shadow:0 0 0 2px rgba(255,255,255,.35)}
 
 /* Bağlan paylaşımı */
 .post{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;position:relative}
