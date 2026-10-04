@@ -138,7 +138,7 @@ main#urun .box:first-of-type{margin-top:24px}
 .dg-h{margin-top:16px;font-size:var(--fs-sm);font-weight:var(--fw-bold)}
 .dg-h small,.dg-l small{font-weight:var(--fw-regular);color:var(--mute)}
 .dg-n{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px}
-.dg-n button{min-height:40px;padding:0;border-radius:var(--r-sm,8px);border:1px solid var(--line);font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--ink);font-variant-numeric:tabular-nums}
+.dg-n button{min-height:40px;padding:0;border-radius:var(--r-sm);border:1px solid var(--line);font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--ink);font-variant-numeric:tabular-nums}
 .dg-n button[aria-checked="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
 .dg-alt{display:grid;gap:4px;margin-top:6px}
 .dg-r{display:grid;grid-template-columns:118px 1fr 28px;align-items:center;gap:10px;min-height:40px}
