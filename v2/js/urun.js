@@ -95,11 +95,10 @@ document.getElementById('urun').innerHTML=
  +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N*3},(_,k)=>{const i=k%N,real=k>=N&&k<2*N;
    return '<div class="ug-f" style="background:'+frame(i)+'"'+(real?' role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"':' aria-hidden="true"')+'></div>'}).join('')+'</div>'
  +'<div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
- +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
+ +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+lvb(p.title,'in')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-proof">'+(p.count?'<button type="button" class="u-sc" data-go="yorumlar">'+sc(p.score)+'<span>'+p.count.toLocaleString('tr-TR')+' değerlendirme</span></button>':'<span class="score new"><b>Yeni</b></span><span class="u-nr">Henüz değerlendirme yok</span>')
- +(posts.length?'<button type="button" class="u-ppl" data-go="paylasimlar"><span class="stk">'+ppl+'</span>'+posts.length+' paylaşım</button>':'')+'</div>'
- +lvb(p.title,'in')+'</section>'
+ +(posts.length?'<i class="u-sep" aria-hidden="true"></i><button type="button" class="u-ppl" data-go="paylasimlar"><span class="stk">'+ppl+'</span>'+posts.length+' paylaşım</button>':'')+'</div></section>'
  +'<ul class="u-facts">'+facts.map(([ic,t])=>'<li>'+ic+'<span>'+t+'</span></li>').join('')+'</ul>'
 
  +(info.about?'<section class="box"><h2>Hakkında</h2><p class="u-about">'+info.about+'</p>'
