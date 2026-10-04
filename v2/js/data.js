@@ -132,7 +132,15 @@ export const USERS={
  mert:{ad:'Mert Kaya',kul:'mertkampta',ini:'MK',renk:'#3E7A55'},
  elif:{ad:'Elif Demir',kul:'elif.mola',ini:'ED',renk:'#8A4F7A'},
  kaan:{ad:'Kaan Öztürk',kul:'kaanrota',ini:'KÖ',renk:'#216B64'},
- zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#9A4F2E'}};
+ zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#9A4F2E'},
+ burak:{ad:'Burak Şen',kul:'burakdalista',ini:'BŞ',renk:'#2F5D8A'},
+ ceren:{ad:'Ceren Yıldız',kul:'cerenkacamak',ini:'CY',renk:'#7A4E8C'},
+ ozan:{ad:'Ozan Er',kul:'ozanpatika',ini:'OE',renk:'#4D7A3A'},
+ irem:{ad:'İrem Koç',kul:'iremvebavul',ini:'İK',renk:'#A0573A'}};
+/* Bağlan'da "Yeni insanlar keşfet": kişi, neden önerildiği, Mola360 ile gitti mi */
+export const ONERI=[
+ ['ceren','Senin gibi Kapadokya\'ya gitti',1],['burak','İzmir\'de · 14 deneyim',1],['zeynep','elif.mola takip ediyor',0],
+ ['ozan','Doğa yürüyüşleri paylaşıyor',1],['irem','Kordon Caz Akşamları\'na gitti',1],['kaan','deniz.yolda takip ediyor',0]];
 export const POSTS=[
  {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',g2:['goreme','dagevi'],urun:'Kapadokya Turu',gitti:1,
   metin:'Gün doğumunda balonlar havalanırken terastaydık. Hayatımın en güzel sabahlarından biri.',beg:248,yor:31},

@@ -622,3 +622,20 @@ html.kb .ps-add:has(input:focus-visible){outline:2px solid var(--navy);outline-o
 .lg-back{align-self:center;min-height:40px;padding:0 12px;font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--navy)}
 .lg-note{margin:14px 4px 2px;font-size:var(--fs-xs);line-height:1.5;color:var(--mute);text-align:center}
 .lg-note a{color:var(--ink);font-weight:var(--fw-semi);text-decoration:underline;text-underline-offset:2px}
+
+/* Bağlan: Yeni insanlar keşfet (akışın içinde yatay şerit) */
+.ppl{padding:16px 0 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--soft)}
+.ppl-hd{display:flex;align-items:center;justify-content:space-between;padding:0 16px 12px}
+.ppl-hd h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:-.01em}
+.ppl-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px;scroll-padding:0 16px;scrollbar-width:none}
+.ppl-row::-webkit-scrollbar{display:none}
+.ppl-c{position:relative;flex:0 0 150px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;padding:16px 10px 12px;border-radius:var(--r-lg);background:var(--card);box-shadow:inset 0 0 0 1px var(--line);text-align:center}
+.ppl-c .ava.m{width:64px;height:64px;font-size:var(--fs-lg);margin-bottom:10px}
+.ppl-c b{display:flex;align-items:center;justify-content:center;gap:3px;max-width:100%;font-size:var(--fs-md);font-weight:var(--fw-bold);line-height:1.3}
+.ppl-c b .vf{flex:none;width:13px;height:13px}
+.ppl-c small{display:block;max-width:100%;font-size:var(--fs-xs);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppl-c p{min-height:2.7em;margin-top:6px;font-size:var(--fs-xs);line-height:1.35;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ppl-c .follow{width:100%;margin-top:10px}
+.ppl-x{position:absolute;top:4px;right:4px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:var(--mute)}
+.ppl-x svg{width:15px;height:15px;stroke-width:2.2}
+.empty+.ppl{margin-top:20px}

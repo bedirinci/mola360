@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -174,6 +174,8 @@ export function listStories(){
 }
 
 /* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
+/* Bağlan: takip önerileri */
+export const listSuggestions=()=>ONERI.map(([u,why,gitti])=>({id:u,user:{...USERS[u],onay:!!gitti||ONAY.has(u)},why}));
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
 
 /* Geçmiş rezervasyonlar (ÖRNEK): yaşanmış deneyimler. Paylaşımdaki
