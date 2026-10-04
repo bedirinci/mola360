@@ -1,7 +1,7 @@
 /* Profil: sosyal kimlik + deneyim geçmişi + Molapuan (PROJE.md §10) */
 import { renderShell } from './shell.js';
-import { listPosts, findByTitle, ME } from './api.js';
-import { plink, ava, initPostActions } from './cards.js';
+import { listProfilePosts, findByTitle, ME } from './api.js';
+import { plink, ava, initPostActions, postUrl } from './cards.js';
 import { toast } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
 import { molapuan, initMolapuan } from './molapuan.js';
@@ -13,7 +13,7 @@ renderShell('profil');
 initPostActions(toast);
 
 /* ÖRNEK profil (api.js ME) */
-const mine=listPosts().slice(0,4).map(p=>({...p,user:ME}));
+const mine=listProfilePosts();
 const went=['Kapadokya Turu','Kordon Caz Akşamları','Köprülü Kanyon Rafting'].map(findByTitle);
 
 const PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>';
@@ -52,7 +52,7 @@ const acc=()=>'<section class="acc" aria-labelledby="h-acc"><div class="hd"><h2 
 const el=document.getElementById('pf');
 const TABS={
   /* sade ızgara: kare kutu, yalnızca fotoğraf (Bedir: "Paylaşımlar sekmesi daha sade olmalı") */
-  pay:()=>'<div class="pf-sq">'+mine.map(x=>'<a href="'+ROOT+'baglan/#'+x.id+'" style="background:'+x.bg+'" aria-label="'+(x.product?x.product.title+' paylaşımını aç':'Paylaşımı aç')+'"></a>').join('')+'</div>',
+  pay:()=>'<div class="pf-sq">'+mine.map(x=>'<a href="'+postUrl(x.id)+'" style="background:'+x.bg+'" aria-label="'+(x.product?x.product.title+' paylaşımını aç':'Paylaşımı aç')+'"></a>').join('')+'</div>',
   den:()=>'<div class="pf-went">'+went.map(plink).join('')+'</div>',
   kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin Planlarım\'da.</p><a class="btn" href="'+ROOT+'planlarim/#favoriler">Favorilere git</a></div>'};
 el.innerHTML=molapuan('kasif')

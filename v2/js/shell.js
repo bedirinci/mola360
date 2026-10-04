@@ -158,7 +158,7 @@ function initBack(){
     if(t.back)history.back();else location.href=t.url});
 }
 /* geri okunun yanındaki ad: dönülecek sayfa */
-const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim'};
+const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim',gonderi:'Gönderi'};
 export function backLabel(fallback){const t=backTo(fallback),u=new URL(t?t.url:fallback,location.href);
   if(!u.href.startsWith(R))return NAMES[''];return NAMES[u.pathname.slice(new URL(R).pathname.length).split('/')[0]]||'Geri'}
 /* geri nereye: {back:true} bir önceki sayfa tarayıcı geçmişinde hemen arkada;

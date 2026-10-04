@@ -32,7 +32,7 @@ const HTML=`<div class="sh-bg lg-bg" id="lgBg"></div>
     <input id="lgTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx">
     <p class="err" id="lgErr" hidden>Telefon numaranı 05 ile başlayan 11 hane olarak yaz.</p>
     <button type="submit" class="btn green">Kod gönder</button>
-    <button type="button" class="lg-back" data-back>Diğer seçenekler</button>
+    <button type="button" class="lg-back" data-lg-back>Diğer seçenekler</button>
   </form>
   <p class="lg-note">Hesabın yoksa aynı adımla oluşturulur. Devam ederek <a href="#yakinda">Kullanım koşulları</a>'nı ve <a href="#yakinda">Gizlilik politikası</a>'nı kabul edersin.</p>
 </div>`;
@@ -60,7 +60,7 @@ function build(){
   $('lgSheet').addEventListener('click',e=>{
     const b=e.target.closest('[data-by]');
     if(b){if(b.dataset.by==='tel')step(2);else signIn();return}
-    if(e.target.closest('[data-back]'))step(1);
+    if(e.target.closest("[data-lg-back]"))step(1);
   });
   $('lgSheet').querySelector('form').addEventListener('submit',e=>{e.preventDefault();
     const v=$('lgTel').value.replace(/\D/g,'');
@@ -78,7 +78,7 @@ export function openLogin(from,why,then){
 
 /* Misafirken kişisel işlemleri yakala: işlem durur, çekmece açılır, girişten sonra aynı öğeye yeniden dokunulur */
 const GATE=[['.act.like,.sv-act[data-sva="like"]','like'],['.act.save,[data-pm="save"]','save'],['.follow','follow'],
-  ['.act[aria-label="Yorumlar"],.sv-rep input','comment'],['[data-fav]','fav'],['#shareBtn,[data-paylas],[data-hk-me]','share']];
+  ['.cm-in input,.cm-in button,.sv-rep input','comment'],['[data-fav]','fav'],['#shareBtn,[data-paylas],[data-hk-me],[data-birlikte]','share']];
 export function initGuestGate(){
   const hit=e=>{if(getLevel()!=='guest')return;
     const j=e.target.closest('[data-giris]');
@@ -90,7 +90,7 @@ export function initGuestGate(){
       return}};
   document.addEventListener('click',hit,true);
   /* yanıt kutusuna dokunmak odaklanmadan önce yakalanır */
-  document.addEventListener('focusin',e=>{if(getLevel()==='guest'&&e.target.closest&&e.target.closest('.sv-rep input'))hit(e)},true);
+  document.addEventListener('focusin',e=>{if(getLevel()==='guest'&&e.target.closest&&e.target.closest('.sv-rep input,.cm-in input'))hit(e)},true);
 }
 
 /* Planlarım ve Profil için misafir tanıtımı */

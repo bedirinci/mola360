@@ -137,6 +137,14 @@ export const USERS={
  ceren:{ad:'Ceren Yıldız',kul:'cerenkacamak',ini:'CY',renk:'#7A4E8C'},
  ozan:{ad:'Ozan Er',kul:'ozanpatika',ini:'OE',renk:'#4D7A3A'},
  irem:{ad:'İrem Koç',kul:'iremvebavul',ini:'İK',renk:'#A0573A'}};
+/* Paylaşım sayfasındaki yorumlar: kişi, yorum, ne zaman */
+export const YORUMLAR=[
+ ['deniz','Fotoğraflar harika! Hangi ayda gittiniz?','2 sa'],['elif','Listeme ekledim, bu yaz mutlaka.','5 sa'],
+ ['kaan','Rehber kimdi? Biz de aynı turu düşünüyoruz.','1 g'],['zeynep','Çocukla gitmeye uygun mu sizce?','1 g'],
+ ['mert','Bir daha gidersen haber ver, biz de gelelim.','2 g'],['selin','Gün doğumu ayrı güzel olmuş.','3 g'],
+ ['burak','Fiyat/performans nasıldı?','3 g'],['ceren','Kıskandım resmen 😍','4 g']];
+/* Haftanın gezgini: geçen hafta en çok kaydedilen paylaşım ve kazandırdığı Molapuan */
+export const HAFTA={post:'p2',kayit:186,puan:250};
 /* Bağlan'da "Yeni insanlar keşfet": kişi, neden önerildiği, Mola360 ile gitti mi */
 export const ONERI=[
  ['ceren','Senin gibi Kapadokya\'ya gitti',1],['burak','İzmir\'de · 14 deneyim',1],['zeynep','elif.mola takip ediyor',0],

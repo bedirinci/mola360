@@ -279,3 +279,26 @@ main#urun .box:first-of-type{margin-top:24px}
 .gi-n b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
 .gi-n p{margin-top:2px!important;font-size:var(--fs-sm)!important;color:var(--mute)}
 .gi-n .btn{width:100%;justify-content:center;min-height:46px}
+
+/* Gönderi sayfası: paylaşım + yorumlar, altta sabit yorum kutusu */
+#gp{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.cms{padding:14px 16px 8px;border-top:1px solid var(--line)}
+.cms h2{font-size:var(--fs-md);font-weight:var(--fw-bold)}
+.cms h2 span{color:var(--mute);font-weight:var(--fw-semi)}
+.cm-l{list-style:none;margin:6px 0 0;padding:0}
+.cmt{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+.cmt .x{flex:1;min-width:0}
+.cmt p{font-size:var(--fs-md);line-height:1.45;color:var(--ink)}
+.cmt p b{font-weight:var(--fw-bold)}
+.cmt p .vf{width:13px;height:13px;vertical-align:-2px;margin-left:2px}
+.cmt small{display:block;margin-top:2px;font-size:var(--fs-xs);color:var(--mute)}
+.cm-like{flex:none;display:grid;place-items:center;width:32px;height:32px;margin:-4px -6px 0 0;color:var(--mute)}
+.cm-like svg{width:15px;height:15px;stroke-width:2.2}
+.cm-like[aria-pressed="true"]{color:#E0245E}
+.cm-like[aria-pressed="true"] svg{fill:currentColor}
+.cm-none{padding:10px 0;font-size:var(--fs-md);color:var(--mute)}
+.cm-in{position:fixed;z-index:15;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;display:flex;align-items:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)) 16px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.cm-in[hidden]{display:none}
+.cm-in input{flex:1;min-width:0;min-height:42px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--soft);font-size:var(--fs-input);color:var(--ink)}
+.cm-in button{flex:none;min-height:42px;padding:0 6px;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy)}
+.cm-in button:disabled{color:var(--mute);opacity:.6}
