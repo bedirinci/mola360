@@ -248,10 +248,9 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .pic{flex:none;width:78%;aspect-ratio:4/5;border-radius:var(--r-md);position:relative;scroll-snap-align:start;overflow:hidden}
 .pic-more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(12,18,40,.45);color:#fff;font-size:var(--fs-2xl);font-weight:var(--fw-black)}
 html.kb .pics:focus-visible{outline-offset:-2px}
-/* Mola360 ile gitti: lacivert cam üstünde yeşil onay */
-.post .pic .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 4px;border-radius:var(--r-pill);background:rgba(21,32,72,.84);color:#fff;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.01em;line-height:20px;box-shadow:0 4px 12px rgba(12,18,40,.25)}
-.post .pic .went i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:var(--navy)}
-.post .pic .went i svg{width:12px;height:12px;stroke-width:3}
+/* Mola360 ile gitti: beyaz zemin, logo */
+.post .pic .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:5px 10px 5px 8px;border-radius:var(--r-pill);background:#fff;color:var(--ink);font-size:var(--fs-xs);font-weight:var(--fw-bold);line-height:16px;box-shadow:0 4px 12px rgba(12,18,40,.18)}
+.went img{display:block;height:18px;width:auto;margin:-1px 0}
 /* onaylı kullanıcı rozeti */
 .vf{display:inline-block;width:15px;height:15px;margin-left:4px;vertical-align:-2.5px;fill:var(--blue);stroke:none}
 .vf .vf-c{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}

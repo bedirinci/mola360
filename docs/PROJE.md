@@ -1370,3 +1370,13 @@ güncellenecek yaşayan proje dokümanıdır.
   varsa onaylı. Yorum ikonu düzgün yuvarlak konuşma balonu oldu.
 - **UX sonucu:** Akış daha kısa ve fotoğraf odaklı; güven sinyalleri
   (onaylı, Mola360 ile gitti) ilk bakışta okunuyor.
+
+### 2026-10-04 — "Mola360 ile gitti" etiketi logolu (Bedir)
+
+- **Karar:** Fotoğrafın üstündeki "Mola360 ile gitti" etiketi beyaz
+  zeminli; baştaki yuvarlak onay işareti yok; "Mola360" yazısı yerine
+  logo kullanılır.
+- **Etkilediği alanlar:** `v2/js/cards.js` (`WENT`), `v2/css/components.css`
+  (`.went`), yeni `v2/logo-koyu.webp` (beyaz logonun lacivert yazılı hali).
+- **UX sonucu:** Etiket Bağlan akışında ve profildeki paylaşımlarda aynı;
+  marka logoyla tanınıyor.

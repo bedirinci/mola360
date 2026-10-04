@@ -58,6 +58,9 @@ export function plink(p){
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
+/* Fotoğrafın üstünde "Mola360 ile gitti": beyaz zemin, Mola360 logosu */
+const WENT='<span class="went"><img src="'+ROOT+'logo-koyu.webp" alt="Mola360" width="44" height="18"> ile gitti</span>';
+
 /* Fotoğrafın içinde, altta bağlı deneyim: görsel, tür ve yer, ad, puan.
    Fiyat ürün sayfasında. */
 function plinkOver(p){
@@ -76,7 +79,7 @@ export function postCard(x){
    +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
    +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
    +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
-     +(i===0&&x.verified?'<span class="went"><i>'+IC.check+'</i>Mola360 ile gitti</span>':'')
+     +(i===0&&x.verified?WENT:'')
      +(i===0&&x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')
      +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')
      +(i===0?plinkOver(x.product):'')+'</div>').join('')+'</div>'
@@ -91,7 +94,7 @@ export function postCard(x){
 /* Rayda küçük paylaşım kartı (Keşfet ve ürün sayfası) */
 export function postMini(x,{own=false}={}){
   const u=x.user,p=x.product;
-  return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
+  return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?WENT:''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
    +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
    +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
