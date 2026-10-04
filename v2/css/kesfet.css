@@ -13,6 +13,11 @@
 .fld small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.6px;color:var(--mute)}
 .fld span{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);margin-top:1px}
 .fld span.hint{color:var(--mute);font-weight:var(--fw-medium)}
+/* Nereye doluyken sağda × (seçimi kaldırır); yazı altına girmesin diye sağ boşluk */
+#f1.has-x{padding-right:52px}
+.fld-x{position:absolute;top:19px;right:12px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--ink)}
+.fld-x::after{content:"";position:absolute;inset:-4px}
+.fld-x svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.4;fill:none}
 .split{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
 .split .fld+.fld{border-left:1px solid var(--line);border-radius:0 var(--r-md) var(--r-md) 0}
 /* Keşfet'in hatırladığı kiminle: aramaya biner, dokununca kalkar */

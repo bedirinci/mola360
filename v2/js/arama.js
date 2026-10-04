@@ -65,6 +65,9 @@ const f1=$('f1'),f2=$('f2'),f3=$('f3'),inp=$('whereIn'),list=$('whereList'),clr=
 /* Popüler aramalar: seçili sekmeye göre; dokununca "Nereye" dolar, yeniden dokununca boşalır */
 $('go').insertAdjacentHTML('afterend','<div class="popular"><p class="pop-h" id="popH">'+TREND+'Popüler aramalar</p><div class="pchips" id="pchips" role="group" aria-labelledby="popH"></div></div>');
 const pop=$('pchips');
+/* Nereye doluyken sağında × : seçimi iptal eder (Bedir) */
+f1.insertAdjacentHTML('afterend','<button type="button" class="fld-x" id="f1x" aria-label="Seçimi kaldır" hidden>'+X+'</button>');
+const f1x=$('f1x');
 
 /* arama durumu: bu sekmede açık kaldıkça hatırlanır */
 const saved=getSearch();
@@ -85,6 +88,7 @@ function fields(){
   const v=TABS[st.tur],w=whereTxt();
   f1.querySelector('small').textContent=v[0];
   const s1=f1.querySelector('span');s1.textContent=w||v[1];s1.classList.toggle('hint',!w);
+  f1x.hidden=!w;f1.classList.toggle('has-x',!!w);
   f2.querySelector('small').textContent=v[2];f2.querySelector('span').textContent=whenTxt();
   f3.querySelector('small').textContent=v[3];f3.querySelector('span').textContent=whoTxt();
   $('go').textContent=v[4];
@@ -203,6 +207,8 @@ $('search').addEventListener('submit',e=>{e.preventDefault();
 
 pop.addEventListener('click',e=>{const b=e.target.closest('[data-pop]');if(!b)return;const x=listPopular(st.tur)[+b.dataset.pop];
   const on=b.getAttribute('aria-pressed')==='true';st.yer=on?'':x.yer;st.ara=on?'':x.ara;fields();remember()});
+
+f1x.addEventListener('click',()=>{st.yer='';st.ara='';fields();remember();f1.focus({preventScroll:true})});
 
 fields();
 /* Keşfet'ten: yakındaki yer belli olunca */
