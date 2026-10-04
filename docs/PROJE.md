@@ -1349,3 +1349,24 @@ güncellenecek yaşayan proje dokümanıdır.
   görseliyle tamamlanır.
 - **UX sonucu:** Akış fotoğraf ağırlıklı ve daha geniş; birden fazla
   görsel olduğu ilk bakışta belli.
+
+### 2026-10-04 — Bağlan paylaşımı: fotoğraf içinde deneyim, onaylı rozeti (Bedir)
+
+- **Karar:** Başlıktaki yazı renkleri #110 öncesine döner (ikinci satır
+  yeşil). Paylaşımda sıra: kullanıcı, görseller, Beğen/Yorum/Paylaş/Kaydet
+  satırı, başında kullanıcı adı olan yazı. Bağlı deneyim kartı ilk
+  fotoğrafın içinde, altta durur ve fiyat göstermez. Puan yıldızları
+  altın rengi. Daha önce Mola360'tan deneyim satın almış kullanıcıların
+  adının yanında mavi, bulut kenarlı onaylı rozeti görünür. "Mola360 ile
+  gitti" etiketi lacivert zemin üstünde yeşil onaylı bir hap oldu.
+- **Neden:** Bedir'in Bağlan geri bildirimi; deneyim kartı fotoğrafın
+  altında akışı uzatıyor ve fiyatla reklam gibi duruyordu.
+- **Etkilediği alanlar:** `v2/js/cards.js` (`postCard`, `plinkOver`),
+  `v2/js/icons.js` (`comment`, `VERIFIED`), `v2/js/api.js` (`onay`),
+  `v2/css/components.css`, `v2/css/kesfet.css`, `v2/css/sayfalar.css`,
+  `v2/css/tokens.css` (`--blue`).
+- **Teknik sonuç:** Onaylı, örnek veride "gitti" işaretli en az bir
+  paylaşımı olan kullanıcı; bu cihazdaki kullanıcı geçmiş rezervasyonu
+  varsa onaylı. Yorum ikonu düzgün yuvarlak konuşma balonu oldu.
+- **UX sonucu:** Akış daha kısa ve fotoğraf odaklı; güven sinyalleri
+  (onaylı, Mola360 ile gitti) ilk bakışta okunuyor.

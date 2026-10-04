@@ -1,6 +1,6 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
-import { STAR, IC, PIN } from './icons.js';
+import { STAR, IC, PIN, VERIFIED } from './icons.js';
 import { tl, ttl } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn } from './favorites.js';
@@ -58,23 +58,33 @@ export function plink(p){
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
+/* Fotoğrafın içinde, altta bağlı deneyim: görsel, tür ve yer, ad, puan.
+   Fiyat ürün sayfasında. */
+function plinkOver(p){
+  if(!p)return '';
+  return '<a class="plo" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+   +'<small>'+p.type+' · '+placeOf({a:p.place})+'</small><b>'+p.title+'</b>'
+   +(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'<span class="st new">Yeni</span>')+'</span>'
+   +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
+}
+
 /* Akıştaki paylaşım: kart değil, ekran boyu. Görseller yan yana kayar;
    ilk görsel ekranın çoğunu kaplar, sonraki kenardan görünür. */
 export function postCard(x){
   const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
+   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
    +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
    +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
-     +(i===0&&x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
+     +(i===0&&x.verified?'<span class="went"><i>'+IC.check+'</i>Mola360 ile gitti</span>':'')
      +(i===0&&x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')
-     +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')+'</div>').join('')+'</div>'
-   +(x.text?'<p class="txt">'+x.text+'</p>':'')
-   +plink(x.product)
+     +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')
+     +(i===0?plinkOver(x.product):'')+'</div>').join('')+'</div>'
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
    +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
    +'<button type="button" class="act" aria-label="Paylaş" data-share>'+IC.share+'</button>'
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
+   +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
    +'</article>';
 }
 

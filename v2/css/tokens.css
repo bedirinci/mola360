@@ -4,6 +4,7 @@
   --green:#8CC63F; --green-ink:#3F6512; --green-soft:#EEF6E2;
   --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
   --gold:#C98A00;
+  --blue:#1D8CF0; /* onaylı kullanıcı rozeti */
   --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 
   /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları --fs-input */
