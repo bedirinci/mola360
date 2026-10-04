@@ -1563,3 +1563,18 @@ güncellenecek yaşayan proje dokümanıdır.
   Haftanın gezgini `m360-hafta`'da.
 - **UX sonucu:** Bağlan'da insanlar gerçek profillere bağlanır; konuşma
   yorumlar arasında sürer.
+
+### 2026-10-04 — Haftanın gezgini etkileşim toplamıyla seçilir
+
+- **Karar (Bedir):** Haftanın gezgini, geçen haftanın etkileşim toplamı
+  (beğeni + yorum + kayıt + paylaşım) en yüksek paylaşımın sahibidir; yalnız
+  kayıt sayısı değil. Kart daha ferah, "?" düğmesi geri geldi.
+- **Neden:** Tek bir sayı (kayıt) paylaşımın gerçek ilgisini göstermiyor;
+  ince kart sıkışık görünüyordu ve seçimin nasıl yapıldığı anlatılmıyordu.
+- **Etkilediği alanlar:** `v2/js/data.js` (paylaşımlarda `kay`/`pay`),
+  `v2/js/api.js` (`weekTraveler`), `v2/js/baglan.js`, `v2/css/components.css`.
+- **Teknik sonuç:** `weekTraveler()` tüm paylaşımları toplam etkileşime göre
+  sıralayıp en yüksekini döndürür; ödül `HAFTA.puan`.
+- **UX sonucu:** Kart "720 etkileşim · +250 Molapuan" gösterir, sağda
+  paylaşımın küçük görseli; "?" seçimin dökümünü (beğeni, yorum, kayıt,
+  paylaşım) anlatır, x kartı o hafta için kapatır.

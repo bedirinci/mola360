@@ -155,16 +155,17 @@ export const YORUMLAR=[
  ['kaan','Rehber kimdi? Biz de aynı turu düşünüyoruz.','1 g'],['zeynep','Çocukla gitmeye uygun mu sizce?','1 g'],
  ['mert','Bir daha gidersen haber ver, biz de gelelim.','2 g'],['selin','Gün doğumu ayrı güzel olmuş.','3 g'],
  ['burak','Fiyat/performans nasıldı?','3 g'],['ceren','Kıskandım resmen 😍','4 g']];
-/* Haftanın gezgini: geçen hafta en çok kaydedilen paylaşım ve kazandırdığı Molapuan */
-export const HAFTA={post:'p2',kayit:186,puan:250};
+/* Haftanın gezgini: geçen haftanın etkileşim toplamı (beğeni + yorum + kayıt + paylaşım) en yüksek paylaşımı.
+   Paylaşımlardaki kay/pay geçen haftanın kayıt ve paylaşım sayısı. Kazanan HAFTA.puan Molapuan alır. */
+export const HAFTA={puan:250};
 /* Bağlan'da "Yeni insanlar keşfet": kişi, neden önerildiği, Mola360 ile gitti mi */
 export const ONERI=[
  ['ceren','Senin gibi Kapadokya\'ya gitti',1],['burak','İzmir\'de · 14 deneyim',1],['zeynep','elif.mola takip ediyor',0],
  ['ozan','Doğa yürüyüşleri paylaşıyor',1],['irem','Kordon Caz Akşamları\'na gitti',1],['kaan','deniz.yolda takip ediyor',0]];
 export const POSTS=[
- {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',g2:['goreme','dagevi'],urun:'Kapadokya Turu',gitti:1,
+ {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',g2:['goreme','dagevi'],urun:'Kapadokya Turu',gitti:1,kay:97,pay:30,
   metin:'Gün doğumunda balonlar havalanırken terastaydık. Hayatımın en güzel sabahlarından biri.',beg:248,yor:31},
- {u:'mert',yer:'Fethiye, Muğla',ne:'5 saat önce',g:'parasut',g2:['ege'],urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,
+ {u:'mert',yer:'Fethiye, Muğla',ne:'5 saat önce',g:'parasut',g2:['ege'],urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,kay:186,pay:64,
   metin:'Babadağ\'dan atladık, 20 dakika boyunca altımızda Ölüdeniz. Korkuyordum, bir daha yaparım.',beg:412,yor:58},
  {u:'elif',yer:'Alsancak, İzmir',ne:'Dün',g:'caz',g2:['kordon'],urun:'Kordon Caz Akşamları',gitti:1,
   metin:'Kordon\'da gün batımı ve canlı caz. İzmir\'de cumartesi akşamı için daha iyisi yok.',beg:96,yor:12},
