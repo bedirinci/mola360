@@ -459,7 +459,7 @@ p{text-wrap:pretty}
 @media (hover:hover) and (pointer:fine){
   .vk:hover,.th:hover,.tk:hover{box-shadow:var(--shadow-lg)}
   .btn:hover,.go:hover{filter:brightness(1.06)}
-  .fc:hover:not([aria-pressed="true"]),.tt:hover:not([aria-pressed="true"]){border-color:var(--navy)}
+  .fc:hover:not([aria-pressed="true"]){border-color:var(--navy)}
   .sr-row:hover,.opt:hover:not([aria-checked="true"]){background:var(--soft)}
   /* fareyle kullanılan ekranlarda dokunulabilir her öğe üstüne gelince belli olsun */
   .ib:hover{background:rgba(128,134,160,.18)}
