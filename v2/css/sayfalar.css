@@ -2,10 +2,10 @@
 body{min-height:100vh;min-height:100dvh}
 
 /* Bağlan */
-.feed{display:flex;flex-direction:column;gap:16px;padding:16px 16px 0}
-.feed .feed-note{margin:0}
+.feed{display:flex;flex-direction:column;padding-top:4px}
+.feed .feed-note{margin:12px 16px 0}
 .feed-note{margin:16px 16px 12px;font-size:var(--fs-sm);line-height:1.5;color:var(--mute)}
-.feed .empty{margin:0}
+.feed .empty{margin:16px 16px 0}
 
 /* Liste: kategori satırı (sekme) ve filtre satırı (çip) ayrı */
 /* yalnızca yatay kayar: alt çizgi gölgeyle çizilir, taşan yükseklik olmaz */

@@ -1,10 +1,10 @@
 /* Paylaş: Bağlan'a yeni deneyim paylaşımı. Alt menünün yanındaki yuvarlak
    düğme ve geçmiş rezervasyonlardaki "Deneyimini paylaş" açar.
-   1) fotoğraf ya da video, 2) bağlı deneyim, 3) kiminle ve kısa not.
+   1) en az POST_MIN (2) fotoğraf ya da video, 2) bağlı deneyim, 3) kiminle ve kısa not.
    Mola360'tan rezerve edip yaşadığın deneyime bağlanan paylaşım "Mola360
    ile gitti" rozeti alır; başka bir deneyime bağlanan almaz. Taslakta
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
-import { listPastBookings, suggest, getProduct, createPost } from './api.js';
+import { listPastBookings, suggest, getProduct, createPost, POST_MIN } from './api.js';
 import { makeSheet, toast } from './ui.js';
 import { IC } from './icons.js';
 import { ROOT } from './root.js';
@@ -19,7 +19,7 @@ const HTML=`<div class="sh-bg" id="psBg"></div>
     <div class="sh-hd"><h3 id="psTtl">Deneyimini paylaş</h3><button type="button" class="sh-x" data-x aria-label="Kapat">${IC.close}</button></div>
   </div>
   <div class="ps-body">
-    <section class="ps-sec" aria-labelledby="psH1"><h4 id="psH1">Fotoğraf veya video</h4>
+    <section class="ps-sec" aria-labelledby="psH1"><h4 id="psH1">Fotoğraf veya video <small>(en az ${POST_MIN})</small></h4>
       <div class="ps-media" id="psMedia"></div>
     </section>
     <section class="ps-sec" aria-labelledby="psH2"><h4 id="psH2">Hangi deneyim?</h4>
@@ -54,7 +54,7 @@ function thumbOf(m){return new Promise(res=>{
 function drawMedia(){
   $('psMedia').innerHTML=st.media.map((m,i)=>'<div class="ps-th'+(m.video?' vid':'')+'">'+(m.video?'<video src="'+m.url+'" muted playsinline preload="metadata"></video>'+IC.play:'<img src="'+m.url+'" alt="">')
     +'<button type="button" class="ps-rm" data-rm="'+i+'" aria-label="'+(i+1)+'. medyayı kaldır">'+IC.close+'</button></div>').join('')
-   +(st.media.length<MAX?'<label class="ps-add'+(st.media.length?'':' first')+'"><input type="file" class="sr" id="psFile" accept="image/*,video/*" multiple>'+IC.image+'<span>'+(st.media.length?'Ekle':'Fotoğraf ya da video seç')+'</span></label>':'');
+   +(st.media.length<MAX?'<label class="ps-add'+(st.media.length?'':' first')+'"><input type="file" class="sr" id="psFile" accept="image/*,video/*" multiple>'+IC.image+'<span>'+(st.media.length?'Ekle':'En az '+POST_MIN+' fotoğraf ya da video seç')+'</span></label>':'');
 }
 
 const row=(p,{went,sub})=>{const on=st.productId===p.id;
@@ -73,7 +73,9 @@ function drawPick(){
 }
 
 function check(){
-  const need=!st.media.length&&!st.productId?'Fotoğraf ve deneyim seç':!st.media.length?'Bir fotoğraf ya da video ekle':!st.productId?'Paylaşımı bir deneyime bağla':'';
+  const n=st.media.length,left=POST_MIN-n;
+  const need=left>0&&!st.productId?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
+    :left===1?(n?'Bir fotoğraf daha ekle':'Bir fotoğraf ya da video ekle'):!st.productId?'Paylaşımı bir deneyime bağla':'';
   $('psNeed').textContent=need;$('psGo').disabled=!!need;
 }
 function drawAll(){drawMedia();drawPick();

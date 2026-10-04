@@ -58,19 +58,24 @@ export function plink(p){
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
-/* Akıştaki paylaşım kartı */
+/* Akıştaki paylaşım: kart değil, ekran boyu. Görseller yan yana kayar;
+   ilk görsel ekranın çoğunu kaplar, sonraki kenardan görünür. */
 export function postCard(x){
-  const u=x.user;
+  const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.ad+'</b><small>@'+u.kul+' · '+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
-   +'<div class="media" style="background:'+x.bg+'">'+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
-   +(x.media>1?'<span class="m-count">1/'+x.media+'</span>':'')+(x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')+'</div>'
+   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
+   +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
+   +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
+     +(i===0&&x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
+     +(i===0&&x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')
+     +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')+'</div>').join('')+'</div>'
+   +(x.text?'<p class="txt">'+x.text+'</p>':'')
+   +plink(x.product)
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
    +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
    +'<button type="button" class="act" aria-label="Paylaş" data-share>'+IC.share+'</button>'
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
-   +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
-   +plink(x.product)+'</article>';
+   +'</article>';
 }
 
 /* Rayda küçük paylaşım kartı (Keşfet ve ürün sayfası) */
