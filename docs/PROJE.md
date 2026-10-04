@@ -1473,3 +1473,21 @@ güncellenecek yaşayan proje dokümanıdır.
   birlikte geçilir (`history.go(-2)`).
 - **UX sonucu:** Dönüşte göz kaldığı yerde kalır; bilgiler yanlışlıkla
   kaybolmaz; kullanıcı geri okunun nereye götüreceğini görür.
+
+### 2026-10-04 — Hesabım: Profil'in altında hesap ve ayarlar
+
+- **Karar:** Menüdeki "Hesabım" Profil sayfasını açar. Profil'in en altına
+  "Hesap ve ayarlar" bölümü eklendi: Hesabım (Kişisel bilgiler, Ödeme
+  yöntemleri, Kuponlarım, Bildirimler), Destek ve gizlilik (Gizlilik ve
+  güvenlik, Yardım merkezi) ve Çıkış yap. Satırlar Molapuan kartı gibi
+  beyaz, ince. Henüz yapılmayan satırlar "Çok yakında." der. Çıkış yap
+  siteyi misafir görünümünde açar; menüdeki "Giriş yap" Ayşe'yi geri
+  getirir.
+- **Neden:** Profil yalnızca sosyal kimlikti; hesap işleri için yer yoktu.
+  Bedir önerilen seçeneği "Uygula" diyerek onayladı.
+- **Etkilediği alanlar:** `v2/js/profil.js` (`ACC`, `acc`),
+  `v2/css/sayfalar.css` (`.acc-*`), `v2/js/shell.js` (menüde Giriş yap).
+- **Teknik sonuç:** Çıkış ve giriş mevcut `?gorunum=misafir|kasif`
+  anahtarını kullanır; yeni durum eklenmedi.
+- **UX sonucu:** Hesap ayarları tek yerde, sosyal içeriğin altında; renk
+  kuralına uygun (ikonlar nötr gri zeminde, yeşil yok).
