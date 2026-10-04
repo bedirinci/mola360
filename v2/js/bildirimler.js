@@ -56,15 +56,15 @@ function row(n){const r=parts(n);if(!r)return '';const [lead,text,href,right,btn
    +(btn?'<a class="nt-b" href="'+href+'" data-id="'+n.id+'">'+btn+'</a>':'')
    +(follow?'<button type="button" class="follow" aria-pressed="false" data-id="'+n.id+'">Takip et</button>':'')+'</li>'}
 
-/* Yaklaşan molan ve kalan ödeme: Bugün'ün içinde, saatine göre yerinde duran ince beyaz kart
-   (Molapuan kartı dili). Öde, Planlarım'daki ödeme çekmecesini doğrudan açar; ödenince Biletim olur. */
-const leftTxt=n=>n===0?'Bugün':n===1?'Yarın':n+' gün kaldı';
+/* Yaklaşan molan ve kalan ödeme: öteki bildirimler gibi bir satır, Bugün'ün içinde saatine göre yerinde.
+   Öde, Planlarım'daki ödeme çekmecesini doğrudan açar; ödenince Biletim olur. */
+const CARD=I('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>');
+const leftTxt=n=>n===0?'bugün':n===1?'yarın':n+' gün sonra';
 const upCard=n=>{const p=n.product,pay=n.rest>0;
-  return '<li class="nt-cl"><div class="nt-cd'+(n.read?'':' new')+'"><a class="nt-cd-a" href="'+ROOT+'planlarim/#yaklasan" data-id="'+n.id+'">'
-   +'<span class="nt-th" style="background:'+p.bg+'"></span><span class="x"><b>'+p.title+'</b>'
-   +'<small>'+leftTxt(n.left)+' · '+(pay?'Kalan <strong>'+tl(n.rest)+'</strong>':'Ödendi')+'</small></span></a>'
-   +(pay?'<a class="nt-cd-b green" href="'+plan('pay','no='+n.no)+'" data-id="'+n.id+'">Öde</a>'
-     :'<a class="nt-cd-b" href="'+plan('bilet','no='+n.no)+'" data-id="'+n.id+'">Biletim</a>')+'</div></li>'};
+  return '<li class="nt-r'+(n.read?'':' new')+'"><a class="nt-a" href="'+ROOT+'planlarim/#yaklasan" data-id="'+n.id+'">'+icon(pay?CARD:IC.calendar)
+   +'<span class="nt-x"><span class="nt-t"><b>'+p.title+'</b> '+leftTxt(n.left)+'. '+(pay?'Kalan <b>'+tl(n.rest)+'</b> ödemen var.':'Biletin hazır.')+'</span> <time>'+n.ne+'</time></span></a>'
+   +(pay?'<a class="nt-b green" href="'+plan('pay','no='+n.no)+'" data-id="'+n.id+'">Öde</a>'
+     :'<a class="nt-b" href="'+plan('bilet','no='+n.no)+'" data-id="'+n.id+'">Biletim</a>')+'</li>'};
 
 const GROUPS=[['bugun','Bugün'],['hafta','Bu hafta'],['once','Daha önce']];
 const EMPTY={hepsi:['Bildirimin yok','Biri paylaşımını beğenince, seni takip edince ya da molan yaklaşınca burada görürsün.'],
