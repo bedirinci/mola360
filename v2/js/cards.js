@@ -5,7 +5,7 @@ import { tl, ttl, makeSheet } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
-import { listPosts, deletePost } from './api.js';
+import { listPosts, deletePost, ME } from './api.js';
 
 /* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
    Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
@@ -73,11 +73,13 @@ function plinkOver(p){
 /* Akıştaki paylaşım: kart değil, ekran boyu. Görseller yan yana kayar;
    ilk görsel ekranın çoğunu kaplar, sonraki kenardan görünür. */
 /* her paylaşımın kendi sayfası: yorumlarıyla açılır */
+/* kişinin profili: kendin için Profil, başkası için kisi/ */
+export const userUrl=u=>u.kul===ME.kul?ROOT+'profil/':ROOT+'kisi/?u='+encodeURIComponent(u.kul);
 export const postUrl=id=>ROOT+'gonderi/?id='+encodeURIComponent(id);
 export function postCard(x){
   const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'<button type="button" class="p-more" aria-label="Seçenekler" aria-haspopup="menu" aria-expanded="false"'+(x.mine?' data-mine':'')+'>'+IC.more+'</button></div>'
+   +'<div class="post-hd"><a class="ph-av" href="'+userUrl(u)+'" aria-label="'+u.kul+' profili">'+ava(u)+'</a><div class="x"><b><a href="'+userUrl(u)+'">'+u.kul+'</a>'+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'<button type="button" class="p-more" aria-label="Seçenekler" aria-haspopup="menu" aria-expanded="false"'+(x.mine?' data-mine':'')+'>'+IC.more+'</button></div>'
    +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
    +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
      +(i===0&&x.verified?WENT:'')
