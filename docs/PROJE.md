@@ -363,10 +363,11 @@ yeniden adlandırılmış hali olarak konumlandırılmayacaktır.
 Renk kuralı (2026-10-04): her renge tek görev.
 - **Yeşil = eylem ve kazanç.** Ana düğme (Molamı bul, Tarih seç,
   Devam et, Paylaş +) ve para kazancı (indirim etiketi, Molapuan).
-- **Lacivert = marka ve seçili durum.** Keşfet'in üst bandı, seçili
-  sekme/çip, alt menüde aktif sayfa, puan kutusu, yuvarlak ok düğmesi.
-- Geri kalan her şey (kategori etiketi, rozet, tik, boş durum, alt sayfa
-  başlıkları) beyaz, gri ya da koyu yazı.
+- **Lacivert = marka ve seçili durum.** Sayfa başlıklarının zemini,
+  seçili sekme/çip, alt menüde aktif sayfa, puan kutusu, yuvarlak ok
+  düğmesi.
+- Geri kalan her şey (kategori etiketi, rozet, tik, boş durum) beyaz,
+  gri ya da koyu yazı.
 
 Tasarım sisteminde:
 
@@ -1311,3 +1312,71 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Her ekranda tek yeşil düğme göze çarpar; lacivert
   "seçtin / buradasın" demektir. Alt sayfalar Molapuan kartının beyaz,
   ince diline yaklaşır.
+
+### 2026-10-04 — Başlık zemini yeniden lacivert (Bedir)
+
+- **Karar:** Liste, Bağlan, Planlarım, Profil ve Rezervasyon
+  başlıklarının zemini eskisi gibi lacivert. Renk sadeleştirmesinin geri
+  kalanı (yeşil yalnızca eylem ve kazançta) aynen kalır.
+- **Neden:** Bedir beyaz başlığı görünce lacivert zemini istedi.
+- **Etkilediği alanlar:** `v2/css/components.css` (`.pg-top`, `.seg`),
+  `v2/css/sayfalar.css` (profil başlığı, rezervasyon adımları), alt
+  sayfaların `index.html`'i, `v2/js/liste.js`; `v2/logo-koyu.webp`
+  kaldırıldı.
+- **Teknik sonuç:** Başlıklar #110 öncesine döndü. Başlıktaki yeşil
+  vurgular yine yeşile dönmedi: ikinci satır başlık, Kâşif rozeti ve
+  tamamlanan rezervasyon adımı açık lacivert ya da beyaz.
+- **UX sonucu:** Marka bandı her sayfada var; yeşil yine yalnızca
+  basılacak yerde ve kazançta.
+
+### 2026-10-04 — Bağlan akışı ekran boyu, paylaşımda en az 2 görsel (Bedir)
+
+- **Karar:** Bağlan'daki paylaşımlar kart olarak değil, ekran boyu
+  (kenardan kenara) görünür. Her paylaşımda en az 2 fotoğraf ya da video
+  olur; görseller yan yana kayar.
+- **Neden:** Bedir akışın kart yığını gibi değil, sosyal akış gibi
+  görünmesini istedi ve örnek olarak bir akış ekranı paylaştı. Tek
+  görsel deneyimi anlatmaya yetmiyor.
+- **Etkilediği alanlar:** `v2/js/cards.js` (`postCard`),
+  `v2/css/components.css` (`.post`, `.pics`, `.pic`),
+  `v2/css/sayfalar.css` (`.feed`), `v2/js/paylas.js`, `v2/js/api.js`
+  (`POST_MIN`, `pics`), `v2/js/data.js` (`g2`).
+- **Teknik sonuç:** Paylaşımların gölgeli kart çerçevesi kalktı; aralarında
+  ince çizgi var. İlk görsel ekranın %78'i, ikincisi kenardan görünür
+  (kaydırma noktalı, `scroll-snap`). `createPost` 2'den az görselle
+  paylaşımı reddeder; Paylaş penceresinde düğme 2 görsel olmadan açılmaz.
+  Önizlemesi kaydedilemeyen eski paylaşımlarda eksik görsel deneyimin
+  görseliyle tamamlanır.
+- **UX sonucu:** Akış fotoğraf ağırlıklı ve daha geniş; birden fazla
+  görsel olduğu ilk bakışta belli.
+
+### 2026-10-04 — Bağlan paylaşımı: fotoğraf içinde deneyim, onaylı rozeti (Bedir)
+
+- **Karar:** Başlıktaki yazı renkleri #110 öncesine döner (ikinci satır
+  yeşil). Paylaşımda sıra: kullanıcı, görseller, Beğen/Yorum/Paylaş/Kaydet
+  satırı, başında kullanıcı adı olan yazı. Bağlı deneyim kartı ilk
+  fotoğrafın içinde, altta durur ve fiyat göstermez. Puan yıldızları
+  altın rengi. Daha önce Mola360'tan deneyim satın almış kullanıcıların
+  adının yanında mavi, bulut kenarlı onaylı rozeti görünür. "Mola360 ile
+  gitti" etiketi lacivert zemin üstünde yeşil onaylı bir hap oldu.
+- **Neden:** Bedir'in Bağlan geri bildirimi; deneyim kartı fotoğrafın
+  altında akışı uzatıyor ve fiyatla reklam gibi duruyordu.
+- **Etkilediği alanlar:** `v2/js/cards.js` (`postCard`, `plinkOver`),
+  `v2/js/icons.js` (`comment`, `VERIFIED`), `v2/js/api.js` (`onay`),
+  `v2/css/components.css`, `v2/css/kesfet.css`, `v2/css/sayfalar.css`,
+  `v2/css/tokens.css` (`--blue`).
+- **Teknik sonuç:** Onaylı, örnek veride "gitti" işaretli en az bir
+  paylaşımı olan kullanıcı; bu cihazdaki kullanıcı geçmiş rezervasyonu
+  varsa onaylı. Yorum ikonu düzgün yuvarlak konuşma balonu oldu.
+- **UX sonucu:** Akış daha kısa ve fotoğraf odaklı; güven sinyalleri
+  (onaylı, Mola360 ile gitti) ilk bakışta okunuyor.
+
+### 2026-10-04 — "Mola360 ile gitti" etiketi logolu (Bedir)
+
+- **Karar:** Fotoğrafın üstündeki "Mola360 ile gitti" etiketi beyaz
+  zeminli; baştaki yuvarlak onay işareti yok; "Mola360" yazısı yerine
+  logo kullanılır.
+- **Etkilediği alanlar:** `v2/js/cards.js` (`WENT`), `v2/css/components.css`
+  (`.went`), yeni `v2/logo-koyu.webp` (beyaz logonun lacivert yazılı hali).
+- **UX sonucu:** Etiket Bağlan akışında ve profildeki paylaşımlarda aynı;
+  marka logoyla tanınıyor.

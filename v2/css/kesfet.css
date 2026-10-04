@@ -1,6 +1,6 @@
 /* Keşfet (anasayfa): üst bant, sekmeler, arama, "Ne kadar molan var?", alt bilgi. */
 .hello{white-space:nowrap;margin:12px 0 14px;font-size:var(--fs-2xl);line-height:1.18;font-weight:var(--fw-black);letter-spacing:-.6px}
-.hello span{color:var(--navy-ink)}
+.hello span{color:var(--green)}
 .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{display:flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:var(--r-pill);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--navy-ink);white-space:nowrap}

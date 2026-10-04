@@ -123,7 +123,9 @@ export const THEMES=[
 /* Bağlan: ÖRNEK paylaşımlar. Kullanıcılar ve metinler uydurma; her paylaşım
    Mola360'daki bir ürüne (ürün adıyla) bağlı. "gitti": paylaşan kişi bu
    deneyimi Mola360'tan rezerve edip yaşamış (doğrulanmış katılımcı).
-   "img": paylaşımın fotoğrafı (v2/img/ altında; yoksa renk geçişi). */
+   "img": paylaşımın fotoğrafı (v2/img/ altında; yoksa renk geçişi).
+   "g2": paylaşımdaki öteki görsellerin renk geçişleri; her paylaşımda en
+   az 2 görsel olur. */
 export const USERS={
  deniz:{ad:'Deniz Aksoy',kul:'deniz.yolda',ini:'DA',renk:'#3A6FA5'},
  selin:{ad:'Selin ve Can',kul:'selinilecan',ini:'SC',renk:'#8C5A34'},
@@ -132,29 +134,29 @@ export const USERS={
  kaan:{ad:'Kaan Öztürk',kul:'kaanrota',ini:'KÖ',renk:'#216B64'},
  zeynep:{ad:'Zeynep Arslan',kul:'zeynepgezer',ini:'ZA',renk:'#9A4F2E'}};
 export const POSTS=[
- {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',urun:'Kapadokya Turu',gitti:1,
+ {u:'selin',yer:'Göreme, Nevşehir',ne:'2 gün önce',g:'kapadokya',g2:['goreme','dagevi'],urun:'Kapadokya Turu',gitti:1,
   metin:'Gün doğumunda balonlar havalanırken terastaydık. Hayatımın en güzel sabahlarından biri.',beg:248,yor:31},
- {u:'mert',yer:'Fethiye, Muğla',ne:'5 saat önce',g:'parasut',urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,
+ {u:'mert',yer:'Fethiye, Muğla',ne:'5 saat önce',g:'parasut',g2:['ege'],urun:'Ölüdeniz Yamaç Paraşütü',gitti:1,
   metin:'Babadağ\'dan atladık, 20 dakika boyunca altımızda Ölüdeniz. Korkuyordum, bir daha yaparım.',beg:412,yor:58},
- {u:'elif',yer:'Alsancak, İzmir',ne:'Dün',g:'caz',urun:'Kordon Caz Akşamları',gitti:1,
+ {u:'elif',yer:'Alsancak, İzmir',ne:'Dün',g:'caz',g2:['kordon'],urun:'Kordon Caz Akşamları',gitti:1,
   metin:'Kordon\'da gün batımı ve canlı caz. İzmir\'de cumartesi akşamı için daha iyisi yok.',beg:96,yor:12},
- {u:'deniz',yer:'Selçuk, İzmir',ne:'3 gün önce',g:'efes',urun:'Efes ve Şirince Turu',gitti:1,
+ {u:'deniz',yer:'Selçuk, İzmir',ne:'3 gün önce',g:'efes',g2:['aspendos'],urun:'Efes ve Şirince Turu',gitti:1,
   metin:'Rehberimiz Celsus Kütüphanesi\'ni öyle anlattı ki bir saat ayrılamadık. Şirince şarabı da bonus.',beg:173,yor:19},
- {u:'kaan',yer:'Manavgat, Antalya',ne:'1 hafta önce',g:'rafting',urun:'Köprülü Kanyon Rafting',gitti:0,
+ {u:'kaan',yer:'Manavgat, Antalya',ne:'1 hafta önce',g:'rafting',g2:['sapanca'],urun:'Köprülü Kanyon Rafting',gitti:0,
   metin:'Arkadaş grubuyla rafting, sonra nehir kenarında alabalık. Hafta sonu için birebir.',beg:134,yor:22},
- {u:'zeynep',yer:'Kemer, Antalya',ne:'4 gün önce',g:'sealight',urun:'Sealight Resort',gitti:1,
+ {u:'zeynep',yer:'Kemer, Antalya',ne:'4 gün önce',g:'sealight',g2:['ege'],urun:'Sealight Resort',gitti:1,
   metin:'Ekim\'de deniz hâlâ sıcak. Çocuklar havuzdan, biz plajdan çıkmadık.',beg:88,yor:9},
- {u:'kaan',yer:'Göreme, Nevşehir',ne:'1 hafta önce',g:'goreme',urun:'Kapadokya Turu',gitti:1,
+ {u:'kaan',yer:'Göreme, Nevşehir',ne:'1 hafta önce',g:'goreme',g2:['kapadokya'],urun:'Kapadokya Turu',gitti:1,
   metin:'Balonlar kalkmadan vadide yürüdük, rehber her kayanın hikâyesini biliyordu. İki gün az bile geldi.',beg:157,yor:14},
- {u:'zeynep',yer:'Ayder, Rize',ne:'2 gün önce',g:'ayder',urun:'Ayder Yayla Evi',gitti:1,
+ {u:'zeynep',yer:'Ayder, Rize',ne:'2 gün önce',g:'ayder',g2:['karadeniz'],urun:'Ayder Yayla Evi',gitti:1,
   metin:'Sabah sis, öğlen güneş, akşam sobada mısır ekmeği. Telefonu çantadan hiç çıkarmadık.',beg:121,yor:16},
- {u:'mert',yer:'Bodrum, Muğla',ne:'3 gün önce',g:'ege',urun:'Bodrum Tekne Turu',gitti:1,
+ {u:'mert',yer:'Bodrum, Muğla',ne:'3 gün önce',g:'ege',g2:['bodrum'],urun:'Bodrum Tekne Turu',gitti:1,
   metin:'Dört koy, iki yüzme molası, teknede ızgara balık. Akşama tuzlu ve mutlu döndük.',beg:203,yor:21},
- {u:'elif',yer:'Kaleiçi, Antalya',ne:'6 gün önce',g:'kaleici',urun:'Kaleiçi Konak Restoran',gitti:0,
+ {u:'elif',yer:'Kaleiçi, Antalya',ne:'6 gün önce',g:'kaleici',g2:['kahve'],urun:'Kaleiçi Konak Restoran',gitti:0,
   metin:'Avluda yemek, sonra dar sokaklarda yürüyüş. Doğum günü için güzel bir akşamdı.',beg:64,yor:7},
- {u:'selin',yer:'Maşukiye, Sakarya',ne:'Dün',g:'masukiye',urun:'Maşukiye Dere Evi',gitti:1,
+ {u:'selin',yer:'Maşukiye, Sakarya',ne:'Dün',g:'masukiye',g2:['sapanca'],urun:'Maşukiye Dere Evi',gitti:1,
   metin:'Dere kenarında serpme kahvaltı, sonra göl kıyısında kısa bir yürüyüş. Pazar sabahı için tam kıvamında.',beg:77,yor:8},
- {u:'deniz',yer:'Kavaklıdere, Ankara',ne:'3 hafta önce',g:'harbiye',urun:'Stand Up Gecesi',gitti:0,
+ {u:'deniz',yer:'Kavaklıdere, Ankara',ne:'3 hafta önce',g:'harbiye',g2:['akustik'],urun:'Stand Up Gecesi',gitti:0,
   metin:'Geçen ayki gösteriye gittik, salon kahkahadan yıkıldı. Bu cuma yine oradayız.',beg:58,yor:6}];
 
 /* Yerler: arama önerileri için. Bir ürün, adında ya da yerinde (kalkış

@@ -5,6 +5,8 @@ heart:'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.6
 chev:'<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>'};
 export const CLOCK='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 export const STAR='<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>';
+/* Onaylı kullanıcı rozeti: daha önce Mola360'tan deneyim satın almış */
+export const VERIFIED='<svg class="vf" viewBox="0 0 24 24" role="img" aria-label="Onaylı"><path d="M21.20 12.00A3.50 3.50 0 0 1 18.51 18.51A3.50 3.50 0 0 1 12.00 21.20A3.50 3.50 0 0 1 5.49 18.51A3.50 3.50 0 0 1 2.80 12.00A3.50 3.50 0 0 1 5.49 5.49A3.50 3.50 0 0 1 12.00 2.80A3.50 3.50 0 0 1 18.51 5.49A3.50 3.50 0 0 1 21.20 12.00Z"/><path class="vf-c" d="m8.2 12.2 2.6 2.6 5-5.2"/></svg>';
 /* Ulaşım etiketi ikonları */
 export const TRI={ucak:['Uçaklı','<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'],
  otobus:['Otobüslü','<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 18v3M16 18v3M8 14.5h.01M16 14.5h.01"/>'],
@@ -18,7 +20,7 @@ const s=p=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>';
 export const IC={
  back:s('<path d="m15 5-7 7 7 7"/>'),
  share:s('<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>'),
- comment:s('<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/>'),
+ comment:s('<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/>'),
  save:s('<path d="M6 3h12v18l-6-4.5L6 21z"/>'),
  check:s('<path d="m5 12.5 4.5 4.5L19 7"/>'),
  plus:s('<path d="M12 5v14M5 12h14"/>'),

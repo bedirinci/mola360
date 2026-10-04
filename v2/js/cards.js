@@ -1,6 +1,6 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
-import { STAR, IC, PIN } from './icons.js';
+import { STAR, IC, PIN, VERIFIED } from './icons.js';
 import { tl, ttl } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn } from './favorites.js';
@@ -58,25 +58,43 @@ export function plink(p){
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
 }
 
-/* Akıştaki paylaşım kartı */
+/* Fotoğrafın üstünde "Mola360 ile gitti": beyaz zemin, Mola360 logosu */
+const WENT='<span class="went"><img src="'+ROOT+'logo-koyu.webp" alt="Mola360" width="44" height="18"> ile gitti</span>';
+
+/* Fotoğrafın içinde, altta bağlı deneyim: görsel, tür ve yer, ad, puan.
+   Fiyat ürün sayfasında. */
+function plinkOver(p){
+  if(!p)return '';
+  return '<a class="plo" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+   +'<b>'+p.title+'</b><small>'+(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'<span class="st new">Yeni</span>')
+   +'<span class="w">'+p.type+' · '+placeOf({a:p.place})+'</span></small></span>'
+   +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';
+}
+
+/* Akıştaki paylaşım: kart değil, ekran boyu. Görseller yan yana kayar;
+   ilk görsel ekranın çoğunu kaplar, sonraki kenardan görünür. */
 export function postCard(x){
-  const u=x.user;
+  const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
-   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.ad+'</b><small>@'+u.kul+' · '+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
-   +'<div class="media" style="background:'+x.bg+'">'+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
-   +(x.media>1?'<span class="m-count">1/'+x.media+'</span>':'')+(x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')+'</div>'
+   +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
+   +'<div class="pics" role="group" aria-label="'+(n+more)+' görsel" tabindex="0">'
+   +pics.map((bg,i)=>'<div class="pic" style="background:'+bg+'">'
+     +(i===0&&x.verified?WENT:'')
+     +(i===0&&x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')
+     +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')
+     +(i===0?plinkOver(x.product):'')+'</div>').join('')+'</div>'
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
    +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
    +'<button type="button" class="act" aria-label="Paylaş" data-share>'+IC.share+'</button>'
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
    +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
-   +plink(x.product)+'</article>';
+   +'</article>';
 }
 
 /* Rayda küçük paylaşım kartı (Keşfet ve ürün sayfası) */
 export function postMini(x,{own=false}={}){
   const u=x.user,p=x.product;
-  return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
+  return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?WENT:''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
    +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
    +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
