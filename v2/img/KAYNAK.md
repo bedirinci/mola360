@@ -17,3 +17,4 @@ Henüz fotoğraf yok; kartlar renk geçişiyle görünüyor.
 |---|---|---|---|
 | `molapuan.webp` | Molapuan kartı (Keşfet, Profil), menüde "Molapuanlarım" | Bedir İnci'nin verdiği Molapuan ikonu (2026-10-04) | Yuvarlak kırpıldı, dışı saydam, 160×160 |
 | `sure-saat.webp`, `sure-gun.webp`, `sure-hs.webp`, `sure-uzun.webp` | Keşfet "Ne kadar molan var?" kartları (Birkaç saat, Bir gün, Hafta sonu, 4 gün +) | Bedir İnci'nin verdiği süre ikonları (2026-10-04) | Tek görselden kesildi (2. sürüm: Hafta sonu şezlong), dışı saydam, 120×120, yazısız; açık lacivert yuvarlak zeminde |
+| `yakinimda.webp` | Keşfet "Yakınımda ne var?" kartı | Bedir İnci'nin verdiği konum ikonu (2026-10-04) | Yuvarlak kırpıldı, dışı saydam, 160×160 |
