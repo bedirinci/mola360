@@ -1,11 +1,11 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
-import { tl, ttl } from './ui.js';
+import { tl, ttl, makeSheet } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
-import { heartBtn } from './favorites.js';
+import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
-import { listPosts } from './api.js';
+import { listPosts, deletePost } from './api.js';
 
 /* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
    Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
@@ -72,6 +72,8 @@ function plinkOver(p){
 
 /* Akıştaki paylaşım: kart değil, ekran boyu. Görseller yan yana kayar;
    ilk görsel ekranın çoğunu kaplar, sonraki kenardan görünür. */
+/* her paylaşımın kendi sayfası: yorumlarıyla açılır */
+export const postUrl=id=>ROOT+'gonderi/?id='+encodeURIComponent(id);
 export function postCard(x){
   const u=x.user,pics=x.pics&&x.pics.length?x.pics:[x.bg],more=Math.max(0,(x.media||pics.length)-pics.length),n=pics.length;
   return '<article class="post" data-post="'+x.id+'">'
@@ -83,10 +85,13 @@ export function postCard(x){
      +(i===n-1&&more?'<span class="pic-more">+'+more+'</span>':'')
      +(i===0?plinkOver(x.product):'')+'</div>').join('')+'</div>'
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
-   +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
+   +'<a class="act cm" href="'+postUrl(x.id)+'" aria-label="Yorumlar">'+IC.comment+'<span>'+x.comments+'</span></a>'
    +'<button type="button" class="act" aria-label="Paylaş" data-share>'+IC.share+'</button>'
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
    +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
+   /* ilhamdan plana: deneyimi listeye ekle ya da birlikte gitmeyi öner */
+   +(x.product&&!x.mine?'<div class="p-go"><button type="button" class="pg-b want" data-fav="'+x.product.title.replace(/"/g,'&quot;')+'" aria-pressed="'+isFav(x.product.title)+'">'+IC.plus+'<span class="off">Ben de gitmek istiyorum</span>'+IC.check+'<span class="on">Listende</span></button>'
+     +'<button type="button" class="pg-b" data-birlikte="'+x.product.id+'">'+IC.users+'Birlikte gidelim</button></div>':'')
    +'</article>';
 }
 
@@ -95,7 +100,7 @@ export function postMini(x,{own=false}={}){
   const u=x.user,p=x.product;
   return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?WENT:''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
    +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
-   +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
+   +'<a class="lk2" href="'+postUrl(x.id)+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
 
 /* Paylaşım seçenekleri (üç nokta): kaydet, bağlantıyı kopyala; başkasının
@@ -107,15 +112,32 @@ function openMenu(btn){
   const it=(k,ic,t)=>'<button type="button" role="menuitem" data-pm="'+k+'">'+ic+'<span>'+t+'</span></button>';
   btn.insertAdjacentHTML('afterend','<div class="pmenu" role="menu">'
     +it('save',IC.save,saved?'Kayıttan çıkar':'Kaydet')+it('link',IC.link,'Bağlantıyı kopyala')
-    +(btn.hasAttribute('data-mine')?'':it('hide',IC.eyeoff,'İlgilenmiyorum')+it('report',IC.flag,'Bildir'))+'</div>');
+    +(btn.hasAttribute('data-mine')?it('del',IC.trash,'Gönderiyi sil'):it('hide',IC.eyeoff,'İlgilenmiyorum')+it('report',IC.flag,'Bildir'))+'</div>');
   btn.setAttribute('aria-expanded','true');btn.nextElementSibling.querySelector('button').focus();
 }
 function menuAct(k,post,toast){
   if(k==='save'){const s=post.querySelector('.act.save');if(s)s.click();return}
-  if(k==='link'){const url=location.href.split('#')[0]+'#'+post.dataset.post;
+  if(k==='del'){askDelete(post,toast);return}
+  if(k==='link'){const url=new URL(postUrl(post.dataset.post),location.href).href;
     if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
   if(k==='hide'){post.hidden=true;toast('Bu paylaşımı artık görmeyeceksin.','Geri al',()=>{post.hidden=false},5000);return}
   if(k==='report')toast('Çok yakında.','Tamam',()=>{},3000);
+}
+
+/* Kendi paylaşımını silme: önce onay. Silinince paylaşım ekrandan kalkar ve
+   m360:silindi duyurulur (paylaşım sayfası Profil'e döner). */
+let del=null,delPost=null,delToast=null;
+function askDelete(post,toast){delPost=post;delToast=toast;
+  if(!del){document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="delBg"></div><div class="sheet ex" id="delSheet" role="alertdialog" aria-modal="true" aria-labelledby="delTtl" aria-describedby="delTxt">'
+     +'<div class="sh-grab"></div><div class="sh-hd"><h3 id="delTtl">Gönderi silinsin mi?</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div>'
+     +'<p class="ex-t" id="delTxt">Fotoğrafları, yazısı ve yorumlarıyla birlikte silinir. Bu işlem geri alınamaz.</p>'
+     +'<div class="ex-b"><button type="button" class="btn danger" id="delGo">Sil</button><button type="button" class="btn ghost" data-x>Vazgeç</button></div></div>');
+    del=makeSheet(document.getElementById('delSheet'),document.getElementById('delBg'));
+    document.getElementById('delGo').addEventListener('click',()=>{const p=delPost,id=p.dataset.post;deletePost(id);
+      let done=false;const go=()=>{if(done)return;done=true;removeEventListener('popstate',go);
+        p.remove();delToast('Gönderi silindi.','Tamam',()=>{},3000);document.dispatchEvent(new CustomEvent('m360:silindi',{detail:{id}}))};
+      addEventListener('popstate',go);del.close();setTimeout(go,450)})}
+  del.open(post.querySelector('.p-more'));
 }
 
 /* Beğen, kaydet, takip et: taslakta yalnızca ekranda değişir */
@@ -133,6 +155,8 @@ export function initPostActions(toast){
       if(b.classList.contains('follow'))b.textContent=on?'Takiptesin':'Takip et';
       if(b.classList.contains('save'))toast(on?'Paylaşım kaydedildi':'Kayıttan çıkarıldı','Tamam',()=>{},2500);
       return}
+    const tg=e.target.closest('[data-birlikte]');
+    if(tg){import('./birlikte.js').then(m=>m.openTogether(tg,tg.dataset.birlikte));return}
     const s=e.target.closest('[data-share]');
     if(s){const url=location.href;if(navigator.share){navigator.share({title:'mola360',url}).catch(()=>{})}else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
     if(e.target.closest('.act[data-soon]'))toast('Çok yakında.','Tamam',()=>{},3000);

@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, HAFTA } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -158,6 +158,33 @@ const posts=POSTS.map(post);
 /* Akış: önce bu cihazda paylaştıkların, sonra örnek paylaşımlar */
 export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];return productId?l.filter(p=>p.product&&p.product.id===productId):l};
 
+/* Profil: Ayşe'nin paylaşımları (bu cihazda paylaştıkları + önceki paylaşımları).
+   Silinen önceki paylaşımlar m360-silinen'de tutulur. */
+const DK='m360-silinen';
+const gone=()=>{try{return new Set(JSON.parse(localStorage.getItem(DK))||[])}catch(e){return new Set()}};
+const ayse=()=>posts.slice(0,4).map((p,i)=>({...p,id:'a'+(i+1),user:{...ME,onay:true},mine:true}));
+export const listProfilePosts=()=>{const g=gone();return [...listMyPosts(),...ayse()].filter(p=>!g.has(p.id))};
+export const getPost=id=>id&&!gone().has(id)?[...listMyPosts(),...ayse(),...posts].find(p=>p.id===id)||null:null;
+export function deletePost(id){
+  const l=readPs();
+  if(l.some(x=>x.id===id)){try{localStorage.setItem(PK,JSON.stringify(l.filter(x=>x.id!==id)))}catch(e){}}
+  else{try{localStorage.setItem(DK,JSON.stringify([...gone(),id]))}catch(e){}}
+  try{const c=JSON.parse(localStorage.getItem(CK))||{};delete c[id];localStorage.setItem(CK,JSON.stringify(c))}catch(e){}
+}
+/* Yorumlar: paylaşımın kendi sayfasında. Örnek paylaşımlara havuzdan yorum düşer;
+   yazılan yorumlar bu cihazda (m360-yorum) tutulur. */
+const CK='m360-yorum';
+const myCm=id=>{try{return (JSON.parse(localStorage.getItem(CK))||{})[id]||[]}catch(e){return []}};
+export function listComments(post){
+  const n=Math.min(post.comments||0,5),start=[...post.id].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const base=Array.from({length:n},(_,i)=>{const [u,text,when]=YORUMLAR[(start+i)%YORUMLAR.length];return {user:{...USERS[u],onay:ONAY.has(u)},text,when,likes:(start*7+i*13)%40}})
+    .filter(c=>c.user.kul!==post.user.kul);
+  return [...base,...myCm(post.id).map(c=>({user:{...ME,onay:true},text:hx(c.text),when:ago(c.at),likes:0,mine:true}))];
+}
+export function addComment(id,text){text=String(text).trim().slice(0,300);if(!text)return null;
+  try{const all=JSON.parse(localStorage.getItem(CK))||{};all[id]=[...(all[id]||[]),{text,at:Date.now()}];localStorage.setItem(CK,JSON.stringify(all))}catch(e){return null}
+  return {user:{...ME,onay:true},text:hx(text),when:'Az önce',likes:0,mine:true}}
+
 /* Hikayeler: önce Mola360'ın kendi hikayeleri (gerçek ürünlerden: bu
    haftanın etkinlikleri, hafta sonu fırsatları, temalar), sonra takip
    edilen kişilerinkiler. Her karenin altında bağlı olduğu deneyim. */
@@ -174,6 +201,8 @@ export function listStories(){
 }
 
 /* Oturumdaki kullanıcı (ÖRNEK); backend gelince hesaptan */
+/* Bağlan: haftanın gezgini */
+export const weekTraveler=()=>{const p=posts.find(x=>x.id===HAFTA.post);return p?{post:p,saves:HAFTA.kayit,points:HAFTA.puan}:null};
 /* Bağlan: takip önerileri */
 export const listSuggestions=()=>ONERI.map(([u,why,gitti])=>({id:u,user:{...USERS[u],onay:!!gitti||ONAY.has(u)},why}));
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};

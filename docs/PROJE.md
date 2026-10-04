@@ -1518,3 +1518,28 @@ güncellenecek yaşayan proje dokümanıdır.
   baştan dolu gelir.
 - **UX sonucu:** Misafir hiçbir ekranda boş ya da kilitli sayfa görmez;
   kayıt istendiği anda nedeni başlıkta yazar ("Beğenmek için giriş yap").
+
+### 2026-10-04 — Gönderi sayfası, silme ve Bağlan'da ilhamdan plana
+
+- **Karar:** Her gönderinin kendi sayfası var (`gonderi/?id=`); yorumlarıyla
+  açılır, altta yorum kutusu durur. Profil'deki kareler, Keşfet'teki küçük
+  kartlar ve akıştaki yorum düğmesi bu sayfaya gider. Kendi gönderini ⋯
+  menüsündeki "Gönderiyi sil" ile, onay çekmecesinden sonra silersin.
+  Bağlan'a üç öneri eklendi: "Ben de gitmek istiyorum" (deneyimi
+  Planlarım > Favoriler'e ekler), "Birlikte gidelim" (deneyimi seçilen
+  arkadaşlara "Bunu birlikte yapalım mı?" notuyla gönderir) ve "Haftanın
+  gezgini" (geçen hafta en çok kaydedilen paylaşımın sahibi, Molapuan
+  kazanır).
+- **Neden:** Bedir paylaşımını silemediğini ve Profil'den gönderiye
+  tıklayınca bütün akışın açıldığını söyledi. Bağlan önerilerinden 1, 2 ve
+  3'ü seçti.
+- **Etkilediği alanlar:** `v2/gonderi/`, `v2/js/gonderi.js`,
+  `v2/js/birlikte.js` (yeni), `v2/js/cards.js` (`postUrl`, sil menüsü,
+  `.p-go`), `v2/js/api.js` (`getPost`, `deletePost`, `listProfilePosts`,
+  `listComments`, `addComment`, `weekTraveler`), `v2/js/data.js`
+  (`YORUMLAR`, `HAFTA`), `v2/js/baglan.js`, `v2/js/profil.js`.
+- **Teknik sonuç:** Yorumlar ve silinen önceki paylaşımlar bu cihazda
+  tutulur (`m360-yorum`, `m360-silinen`). Misafirde yorum yazmak ve
+  "Birlikte gidelim" giriş çekmecesini açar.
+- **UX sonucu:** İlham bir dokunuşla plana ya da ortak plana döner;
+  paylaşım sahibi içeriğinin kontrolü kendinde.
