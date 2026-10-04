@@ -5,7 +5,7 @@
    Keşfet seni hatırlar: süre ve kiminle seçimi bu cihazda saklanır, arama
    kutusuna biner; bölümlerin sırası değişmez, içlerindeki deneyimler
    kiminle seçimine ve yakınlığa göre sıralanır. */
-import { CLOCK } from './icons.js';
+import { ROOT } from './root.js';
 import { makeScroll, toast } from './ui.js';
 import { getLevel } from './level.js';
 import { molapuan, initMolapuan } from './molapuan.js';
@@ -39,7 +39,6 @@ import('./arama.js').then(m=>{srch=m.initSearch();if(nearAt)srch.setNear(nearAt[
    öteki bölümlerin sırasını değiştirmez (Bedir, 2026-10-04). */
 const score=p=>curK&&p&&!p.with.includes(curK)?1:0;
 const rank=(l,of=x=>x)=>l.map((x,i)=>[x,score(of(x)),i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(a=>a[0]);
-const svg=p=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>';
 
 /* Kaldığın yerden: yalnızca bakılmış ürün varsa görünür */
 const rc=$('recent');
@@ -47,13 +46,11 @@ function recent(){const l=listRecent();rc.hidden=!l.length;if(l.length)fill($('r
 $('rcClear').addEventListener('click',()=>{clearRecent();recent();toast('Son baktıkların temizlendi.','Tamam',()=>{},2500)});
 
 /* Ne kadar molan var? + Kiminle? (iki keşif filtresi birlikte) */
-const ICON={saat:CLOCK,
-  gun:svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
-  hs:svg('<path d="M2.5 20h19M4.5 20 12 5l7.5 15"/><path d="m10 20 2-4 2 4"/>'),
-  uzun:svg('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4.5h6V7M3 13h18"/>')};
+/* süre ikonları: Bedir'in verdiği 3B ikonlar (v2/img/KAYNAK.md) */
+const ICON=b=>'<img src="'+ROOT+'img/sure-'+b+'.webp" alt="" width="38" height="38" decoding="async">';
 const tEl=$('time'),rail=$('timeRail'),wEl=$('withChips');
 const q=(k,v)=>k&&v?k+'='+v:'';
-tEl.innerHTML=BUCKETS.map(b=>'<button type="button" class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="i">'+ICON[b[0]]+'</span><span class="x"><b>'+b[1]+'</b><small></small></span></button>').join('');
+tEl.innerHTML=BUCKETS.map(b=>'<button type="button" class="tt" aria-pressed="false" data-b="'+b[0]+'"><span class="i">'+ICON(b[0])+'</span><span class="x"><b>'+b[1]+'</b><small></small></span></button>').join('');
 wEl.innerHTML=WITH.map(w=>'<button type="button" class="fc" aria-pressed="false" data-k="'+w[0]+'">'+w[1]+'</button>').join('');
 function pick(){
   tEl.querySelectorAll('.tt').forEach(e=>{e.setAttribute('aria-pressed',e.dataset.b===curB);e.querySelector('small').textContent=listProducts({sure:e.dataset.b,kimle:curK}).length+' deneyim'});

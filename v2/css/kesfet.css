@@ -31,8 +31,8 @@
 .time{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
 /* tek sırada dört seçenek: ikon, ad, deneyim sayısı alt alta */
 .tt{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--soft);text-align:center;color:var(--ink)}
-.tt .i{width:38px;height:38px;border-radius:var(--r-sm);background:var(--card);display:grid;place-items:center;color:var(--navy);flex:none;transition:background-color var(--t) var(--ease),color var(--t) var(--ease)}
-.tt .i svg{width:20px;height:20px;stroke-width:2}
+.tt .i{width:44px;height:44px;border-radius:var(--r-sm);background:var(--card);display:grid;place-items:center;color:var(--navy);flex:none;transition:background-color var(--t) var(--ease),color var(--t) var(--ease)}
+.tt .i img{width:38px;height:38px;object-fit:contain}
 .tt .x{min-width:0;max-width:100%}
 .tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
 .tt small{display:block;margin-top:2px;font-size:clamp(10px,3.1vw,11.5px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
