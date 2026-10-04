@@ -59,7 +59,8 @@ document.getElementById('urun').innerHTML=
  +'<div class="bar-i"><button type="button" class="ib" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="ib" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button></div></div>'
  +'</header><nav class="u-tabs" id="uTabs" aria-label="Bölümler">'+tabs.map(([k,t],i)=>'<button type="button" data-go="'+k+'"'+(i?'':' aria-current="true"')+'>'+t+'</button>').join('')+'</nav>'
- +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N},(_,i)=>'<div class="ug-f" style="background:'+frame(i)+'" role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"></div>').join('')+'</div>'
+ +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N*3},(_,k)=>{const i=k%N,real=k>=N&&k<2*N;
+   return '<div class="ug-f" style="background:'+frame(i)+'"'+(real?' role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"':' aria-hidden="true"')+'></div>'}).join('')+'</div>'
  +'<div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
  +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
@@ -168,11 +169,20 @@ function onScroll(){
   tabsEl.querySelectorAll('[data-go]').forEach(b=>{const m=b.dataset.go===cur.id;if(m!==(b.getAttribute('aria-current')==='true')){b.setAttribute('aria-current',m);if(m){const n=b.parentElement;n.scrollTo({left:b.offsetLeft-(n.clientWidth-b.offsetWidth)/2,behavior:'smooth'})}}});
 }
 addEventListener('scroll',onScroll,{passive:true});onScroll();
-/* görsel sayacı ve noktalar kaydırdıkça */
+/* galeri sonsuz döngü: kartlar üç kez dizilir, ortadaki takımdan başlanır; kaydırma
+   durunca baştaki ya da sondaki takıma geçildiyse aynı karta ortadaki takımda atlanır.
+   Ortadaki kartın iki yanında komşu kartların ucu görünür. */
 const tr=document.getElementById('ugTr');
-/* kartlar ekrandan dar: yanındaki kartın ucu görünür; sıra kart genişliği + aralıkla bulunur */
-tr.addEventListener('scroll',()=>{const f=tr.children[1]||tr.children[0],i=Math.round(tr.scrollLeft/(f.offsetLeft-tr.children[0].offsetLeft||tr.clientWidth));
-  document.querySelectorAll('.ug-dots i').forEach((d,j)=>d.classList.toggle('on',j===i))},{passive:true});
+const step=()=>tr.children[1].offsetLeft-tr.children[0].offsetLeft;
+const cAt=k=>tr.children[k].offsetLeft-(tr.clientWidth-tr.children[k].offsetWidth)/2;
+const idx=()=>Math.round((tr.scrollLeft-cAt(0))/step());
+const jump=k=>{tr.style.scrollSnapType='none';tr.scrollLeft=cAt(k);tr.offsetWidth;tr.style.scrollSnapType=''};
+jump(N);
+let stopT=0;
+tr.addEventListener('scroll',()=>{const k=idx();
+  document.querySelectorAll('.ug-dots i').forEach((d,j)=>d.classList.toggle('on',j===((k%N)+N)%N));
+  clearTimeout(stopT);stopT=setTimeout(()=>{const k=idx();if(k<N||k>=2*N)jump(N+((k%N)+N)%N)},140)},{passive:true});
+addEventListener('resize',()=>jump(N+((idx()%N)+N)%N));
 
 renderShell('urun',{nav:false});
 /* geri okunda dönülecek sayfanın adı (Keşfet, Bağlan, Liste…) */

@@ -31,11 +31,10 @@ body{min-height:100vh;min-height:100dvh}
 
 /* Ürün */
 .ug{position:relative;margin-top:12px}
-.ug-tr{display:flex;gap:10px;height:min(210px,30vh);min-height:184px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
+.ug-tr{display:flex;gap:10px;height:min(210px,30vh);min-height:184px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
 .ug-tr::-webkit-scrollbar{display:none}
-/* kart ekrandan 44px dar: sağdaki kartın ucu görünür, kaydırılabildiği anlaşılır */
-.ug-f{flex:0 0 calc(100% - 44px);height:100%;scroll-snap-align:start;border-radius:var(--r-lg);overflow:hidden}
-.ug-f:last-child{scroll-snap-align:end}
+/* kart ortada, ekrandan 64px dar: iki yanda komşu kartların ucu görünür */
+.ug-f{flex:0 0 calc(100% - 64px);height:100%;scroll-snap-align:center;border-radius:var(--r-lg);overflow:hidden}
 .ug-dots{display:flex;justify-content:center;gap:5px;margin-top:10px}
 .ug-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width var(--t) var(--ease),background-color var(--t) var(--ease)}
 .ug-dots i.on{width:16px;border-radius:var(--r-pill);background:var(--navy)}
