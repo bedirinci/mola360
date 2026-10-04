@@ -180,7 +180,7 @@ export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
    "Mola360 ile gitti" rozeti yalnızca bunlardan birine bağlanınca çıkar. */
 const PAST=[{productId:'kapadokya-turu',when:'12 – 15 Eylül',who:'2 yetişkin'},{productId:'kordon-caz-aksamlari',when:'5 Eylül',who:'2 bilet',shared:true}];
 export const listPastBookings=()=>PAST.map(b=>({...b,product:getProduct(b.productId),
-  shared:!!b.shared||listMyPosts().some(p=>p.product.id===b.productId)})).filter(b=>b.product);
+  shared:!!b.shared||listMyPosts().some(p=>p.product&&p.product.id===b.productId)})).filter(b=>b.product);
 
 /* Paylaşımlar: taslakta yalnızca bu cihazda tutulur, görseller küçültülmüş
    önizleme olarak. Backend gelince yükleme ve akış oradan. */
@@ -192,19 +192,27 @@ const ago=t=>{const m=Math.floor((Date.now()-t)/60000);return m<1?'Az önce':m<6
 /* Paylaşımın görselleri: kaydedilen önizlemeler; yer kalmadığı için
    önizlemesi silinenlerde deneyimin görseli. Her paylaşımda en az POST_MIN görsel. */
 export const POST_MIN=2;
+const OUT_BG='linear-gradient(160deg,#D5DCEA,#8E9AB6)';
 const picsOf=(x,p)=>{const t=(x.thumbs||[]).filter(okThumb).map(u=>'url('+u+') center/cover,'+p.bg);
   while(t.length<POST_MIN)t.push(p.bg);return t};
 export function listMyPosts(){
-  return readPs().map(x=>{const p=getProduct(x.productId);if(!p)return null;
+  return readPs().map(x=>{const p=getProduct(x.productId);
+    /* Mola360 dışı deneyim: kart yok, adı yer satırında */
+    if(!p){if(!x.title)return null;const o={bg:OUT_BG};
+      return {id:x.id,user:{...ME,onay:PAST.length>0},place:hx(x.title),when:ago(x.created),with:hx(x.with||''),
+        bg:x.thumbs&&okThumb(x.thumbs[0])?'url('+x.thumbs[0]+') center/cover,'+o.bg:o.bg,media:x.media||1,video:!!x.video,
+        pics:picsOf(x,o),text:hx(x.text||''),likes:0,comments:0,verified:false,product:null,mine:true}}
     return {id:x.id,user:{...ME,onay:PAST.length>0},place:p.place.split(' · ')[0],when:ago(x.created),with:hx(x.with||''),
       bg:x.thumbs&&okThumb(x.thumbs[0])?'url('+x.thumbs[0]+') center/cover,'+p.bg:p.bg,media:x.media||1,video:!!x.video,
       pics:picsOf(x,p),
       text:hx(x.text||''),likes:0,comments:0,verified:PAST.some(b=>b.productId===p.id),product:p,mine:true}}).filter(Boolean);
 }
 /* Rozet buradan değil, bağlanan deneyimin geçmiş rezervasyonlarda olmasından gelir */
-export function createPost({productId,text='',with:w='',thumbs=[],media=1,video=false}){
-  if(!getProduct(productId)||media<POST_MIN)return null;
-  const r={id:'m'+Date.now().toString(36),productId,text:String(text).slice(0,300),with:w,thumbs,media,video,created:Date.now()};
+/* title: sitede olmayan, kullanıcının yazdığı deneyim (ürüne bağlı değil) */
+export function createPost({productId,title='',text='',with:w='',thumbs=[],media=1,video=false}){
+  title=String(title).trim().slice(0,60);
+  if((!getProduct(productId)&&!title)||media<POST_MIN)return null;
+  const r={id:'m'+Date.now().toString(36),productId:getProduct(productId)?productId:'',title:getProduct(productId)?'':title,text:String(text).slice(0,300),with:w,thumbs,media,video,created:Date.now()};
   const save=l=>{try{localStorage.setItem(PK,JSON.stringify(l));return true}catch(e){return false}};
   /* yer kalmadıysa önizlemesiz kaydet */
   if(!save([r,...readPs()].slice(0,12))){r.thumbs=[];save([r,...readPs().map(x=>({...x,thumbs:[]}))].slice(0,12))}

@@ -6,7 +6,7 @@
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
 import { listPastBookings, suggest, getProduct, createPost, POST_MIN } from './api.js';
 import { makeSheet, toast } from './ui.js';
-import { IC } from './icons.js';
+import { IC, PIN } from './icons.js';
 import { ROOT } from './root.js';
 
 const MAX=10,NOTE=300;
@@ -41,7 +41,7 @@ const HTML=`<div class="sh-bg" id="psBg"></div>
 
 let sheet,st;
 const $=id=>document.getElementById(id);
-const fresh=()=>({media:[],productId:'',q:'',with:'',note:''});
+const fresh=()=>({media:[],productId:'',custom:'',q:'',with:'',note:''});
 
 /* Önizleme: görsel küçültülür (en fazla 720 px); videodan ilk kare */
 function shrink(src,w,h0){const k=Math.min(1,720/Math.max(w,h0)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h0*k);
@@ -66,16 +66,19 @@ function drawPick(){
   const q=st.q.trim(),found=q?suggest(q).products.filter(p=>!pastIds.includes(p.id)&&p.id!==st.productId):[];
   $('psPast').innerHTML=past.length?'<p class="ps-lbl" id="psL1">Mola360 ile gittiklerin</p><div class="ps-list" role="radiogroup" aria-labelledby="psL1">'
      +past.map(b=>row(b.product,{went:true,sub:b.when})).join('')+'</div>':'';
-  $('psSel').innerHTML=sel?'<div class="ps-list" role="radiogroup" aria-label="Seçtiğin deneyim">'+row(sel,{sub:sel.type+' · '+sel.place.split(' · ')[0]})+'</div>':'';
-  $('psRes').innerHTML=(found.length?'<div class="ps-list" role="radiogroup" aria-label="Arama sonuçları">'+found.map(p=>row(p,{sub:p.type+' · '+p.place.split(' · ')[0]})).join('')+'</div>'
-     :q?'<p class="ps-none">“'+h(q)+'” bulunamadı.</p>':'')
-   +(sel||found.length?'<p class="ps-hint">Mola360 dışından gittiğin deneyimde rozet görünmez.</p>':'');
+  /* sitede olmayan deneyim: yazılan ad seçenek olarak çıkar, sağında + (Bedir) */
+  const exact=found.some(p=>p.title.toLocaleLowerCase('tr')===q.toLocaleLowerCase('tr'));
+  const add=q&&!exact&&q!==st.custom?'<button type="button" class="ps-opt ps-new" data-new><span class="pt">'+PIN+'</span><span class="x"><b>'+h(q)+'</b><small>Yeni deneyim olarak ekle</small></span><i aria-hidden="true">'+IC.plus+'</i></button>':'';
+  const mine=st.custom?'<button type="button" class="ps-opt ps-new" role="radio" aria-checked="true" data-custom><span class="pt">'+PIN+'</span><span class="x"><b>'+h(st.custom)+'</b><small>Mola360 dışı deneyim</small></span><i aria-hidden="true"></i></button>':'';
+  $('psSel').innerHTML=sel||mine?'<div class="ps-list" role="radiogroup" aria-label="Seçtiğin deneyim">'+(sel?row(sel,{sub:sel.type+' · '+sel.place.split(' · ')[0]}):mine)+'</div>':'';
+  $('psRes').innerHTML=(found.length||add?'<div class="ps-list" aria-label="Arama sonuçları">'+found.map(p=>row(p,{sub:p.type+' · '+p.place.split(' · ')[0]})).join('')+add+'</div>':'')
+   +(sel||found.length||add||mine?'<p class="ps-hint">Mola360 dışından gittiğin deneyimde rozet görünmez.</p>':'');
 }
 
 function check(){
   const n=st.media.length,left=POST_MIN-n;
-  const need=left>0&&!st.productId?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
-    :left===1?(n?'Bir fotoğraf daha ekle':'Bir fotoğraf ya da video ekle'):!st.productId?'Paylaşımı bir deneyime bağla':'';
+  const need=left>0&&!st.productId&&!st.custom?'En az '+POST_MIN+' fotoğraf ekle ve deneyim seç':left>1?'En az '+POST_MIN+' fotoğraf ya da video ekle'
+    :left===1?(n?'Bir fotoğraf daha ekle':'Bir fotoğraf ya da video ekle'):!st.productId&&!st.custom?'Paylaşımı bir deneyime bağla':'';
   $('psNeed').textContent=need;$('psGo').disabled=!!need;
 }
 function drawAll(){drawMedia();drawPick();
@@ -98,7 +101,11 @@ function build(){
     const rm=e.target.closest('[data-rm]');
     if(rm){const m=st.media.splice(+rm.dataset.rm,1)[0];URL.revokeObjectURL(m.url);drawMedia();check();($('psFile')||sh.querySelector('[data-rm]')).focus();return}
     const o=e.target.closest('[data-pid]');
-    if(o){const id=o.dataset.pid;st.productId=st.productId===id?'':id;if(st.productId){st.q='';$('psQ').value=''}drawPick();check();
+    const nw=e.target.closest('[data-new]');
+    if(nw){st.custom=st.q.trim().slice(0,60);st.productId='';st.q='';$('psQ').value='';drawPick();check();
+      (sh.querySelector('[data-custom]')||$('psQ')).focus({preventScroll:true});return}
+    if(e.target.closest('[data-custom]')){st.custom='';drawPick();check();$('psQ').focus({preventScroll:true});return}
+    if(o){const id=o.dataset.pid;st.productId=st.productId===id?'':id;if(st.productId){st.q='';$('psQ').value='';st.custom=''}drawPick();check();
       const n=sh.querySelector('[data-pid="'+id+'"]')||$('psQ');n.focus({preventScroll:true});return}
     const w=e.target.closest('[data-with]');
     if(w){st.with=st.with===w.dataset.with?'':w.dataset.with;document.querySelectorAll('[data-with]').forEach(b=>b.setAttribute('aria-checked',b.dataset.with===st.with));return}
@@ -109,7 +116,7 @@ function build(){
 async function share(){
   const go=$('psGo');go.disabled=true;go.textContent='Paylaşılıyor…';
   const thumbs=(await Promise.all(st.media.slice(0,3).map(thumbOf))).filter(Boolean);
-  const p=createPost({productId:st.productId,text:st.note.trim(),with:st.with,thumbs,media:st.media.length,video:!!st.media[0]&&st.media[0].video});
+  const p=createPost({productId:st.productId,title:st.custom,text:st.note.trim(),with:st.with,thumbs,media:st.media.length,video:!!st.media[0]&&st.media[0].video});
   go.textContent='Paylaş';
   if(!p){check();toast('Paylaşım kaydedilemedi, tekrar dene.','Tamam',()=>{},3500);return}
   st.media.forEach(m=>URL.revokeObjectURL(m.url));st=fresh();drawAll();sheet.close();
@@ -121,6 +128,6 @@ async function share(){
 /* opts.productId: geçmiş rezervasyondan gelince o deneyim seçili açılır */
 export function openShare(from,{productId}={}){
   if(!sheet)build();
-  if(productId&&getProduct(productId)){st.productId=productId;st.q=''}
+  if(productId&&getProduct(productId)){st.productId=productId;st.q='';st.custom=''}
   drawAll();sheet.open(from,$('psFile')||$('psQ'));
 }
