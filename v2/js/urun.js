@@ -1,8 +1,9 @@
 /* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
 import { renderShell, backLabel } from './shell.js';
-import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming } from './api.js';
+import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming, stayRange, longDate, addDays, parseDay } from './api.js';
+import { dateGrid, openDates } from './tarihler.js';
 import { productCard, postMini, initPostActions } from './cards.js';
-import { tl, sc, word, toast, makeScroll, esc, makeSheet } from './ui.js';
+import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
 import { isFav, initFavorites, favSync } from './favorites.js';
 import { initLevelInfo, lvb, lvOn, lvPrice } from './level.js';
 import { renderHelp } from './help.js';
@@ -34,29 +35,32 @@ const unitOf=k=>/gün$/.test(k)?'gün':'adım';
 /* Keşfet'teki aramada seçilen tarih penceresindeki ilk kalkış hazır seçili gelir */
 /* seçilen tarih bu sayfanın geçmiş kaydında durur: rezervasyondan geri dönünce seçim kaybolmaz */
 const kept=history.state&&history.state.tarih;
-const ds=upcoming(p.dates);
+const H=S.hotel;
+/* otelde giriş günleri; turda kalkışlar (geçmiştekiler gösterilmez) */
+const ds=S.dates;
+const hasD=ds.length>0&&(p.dates.length>0||!!H||ds.length>1);
+/* paket, bilet türü ya da hizmet seçenekleri (otel dışı) */
+const OP=H?[]:S.opts;
 /* tek kalkış kaldıysa o seçili gelir */
-let picked=kept&&ds.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih)||(ds.length===1?ds[0].join(' '):'');
-/* sayfada üç tarih görünür; çekmeceden sonraki bir tarih seçilirse üçüncü yerde o durur */
-const dKey=x=>x[0]+' '+x[1];
-const dBtn=x=>'<button type="button" role="radio" aria-checked="'+(dKey(x)===picked)+'" data-d="'+dKey(x)+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>';
-function dGrid(){let show=ds.slice(0,3);const at=ds.find(x=>dKey(x)===picked);if(at&&!show.includes(at))show=[ds[0],ds[1],at];
-  return show.map(dBtn).join('')+(ds.length>3?'<button type="button" class="more-d" data-all-d aria-haspopup="dialog" aria-expanded="false">'+IC.calendar+'<span>Tüm tarihler</span></button>':'')}
-const AY={Oca:'Ocak',Şub:'Şubat',Mar:'Mart',Nis:'Nisan',May:'Mayıs',Haz:'Haziran',Tem:'Temmuz',Ağu:'Ağustos',Eyl:'Eylül',Eki:'Ekim',Kas:'Kasım',Ara:'Aralık'};
-let dSh=null;
-function allDates(from){
-  if(!dSh){document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="udBg"></div><div class="sheet pl-sh" id="udSheet" role="dialog" aria-modal="true" aria-labelledby="udTtl">'
-     +'<div class="pl-top"><div class="sh-grab"></div><div class="sh-hd"><h3 id="udTtl">Tüm tarihler</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div></div><div class="pl-in"></div></div>');
-    const el=document.getElementById('udSheet');dSh=makeSheet(el,document.getElementById('udBg'),{drag:el.querySelector('.pl-top')});
-    el.addEventListener('click',e=>{const d=e.target.closest('[data-d]');if(d){pick(d.dataset.d);dSh.close()}})}
-  /* aylara bölünmüş dörtlü ızgara */
-  const by=[];ds.forEach(x=>{const m=AY[x[1].split(' ')[1]]||'';const g=by.find(b=>b[0]===m);g?g[1].push(x):by.push([m,[x]])});
-  const inn=document.querySelector('#udSheet .pl-in');
-  inn.innerHTML='<p class="u-dn">'+ds.length+' kalkış tarihi</p>'
-    +by.map(([m,l])=>'<h4 class="u-dm">'+m+'</h4><div class="u-dates u-dall" role="radiogroup" aria-label="'+m+' kalkışları">'+l.map(dBtn).join('')+'</div>').join('');
-  inn.scrollTop=0;dSh.open(from)}
-function pick(k){picked=k;const g=document.querySelector('#tarihler .u-dates');if(g)g.innerHTML=dGrid();
-  history.replaceState({...history.state,tarih:picked},'');drawCta();cxl()}
+let picked=kept&&ds.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih)||(H?H.stay.date:ds.length===1?ds[0].join(' '):'');
+/* otel: gece sayısı ve oda tipi; seçimler sayfanın geçmiş kaydında durur */
+const hs=history.state||{};
+let nights=H?Math.min(H.maxNights,Math.max(1,+hs.gece||H.stay.nights)):0;
+let room=H?Math.min(H.rooms.length-1,Math.max(0,+hs.oda||0)):0;
+let sec=OP.length?Math.min(OP.length-1,Math.max(0,+hs.sec||0)):-1;
+const dGrid=()=>dateGrid(ds,picked);
+const optTitle={etkinlik:'Bilet türleri',aktivite:'Paketler'}[typeKey(p.type)]||(S.fixed?'Alanlar':'Seçenekler');
+const allDates=from=>openDates(ds,picked,pick,from,H?'giriş günü':'kalkış tarihi');
+const saveSel=()=>history.replaceState({...history.state,tarih:picked,...(H?{gece:nights,oda:room}:{}),...(OP.length?{sec}:{})},'');
+function pick(k){picked=k;const g=document.querySelector('#tarihler .u-dates');if(g)g.innerHTML=dGrid();saveSel();drawCta();cxl();stay()}
+/* çıkış günü ve gece düğmeleri */
+function stay(){if(!H)return;const o=document.getElementById('uOut'),n=document.getElementById('uN'),d=parseDay(picked);
+  if(n)n.textContent=nights;
+  if(o)o.textContent=d?'Çıkış '+longDate(addDays(d,nights))+' · '+H.cikis:'';
+  document.querySelectorAll('[data-gece]').forEach(b=>b.disabled=+b.dataset.gece<0?nights<=1:nights>=H.maxNights)}
+/* çocuk ve evcil hayvan kuralları: Bilmen gerekenler ve SSS'de aynı metin */
+const kidRule=H?(H.extra?'0–'+H.free+' yaş çocuklar ücretsiz; '+(H.free+1)+'–12 yaş için ek yatak gecelik '+tl(H.extra)+'.':'12 yaşa kadar çocuklar ücretsiz.')+' 2 yaş altına bebek yatağı ücretsiz.':'';
+const petRule=H?(H.evcil?'Küçük ırk evcil hayvan kabul edilir; ücret alınmaz.':'Evcil hayvan kabul edilmez.'):'';
 const posts=listPosts({productId:p.id});
 const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
@@ -67,7 +71,7 @@ const deposit=p.type==='Tur'?Math.round(lvPrice(p.title,p.price)*.2):0;
 const N=5;
 const frame=i=>'radial-gradient(circle at '+[[30,25],[75,35],[50,70],[20,60],[80,80]][i].map(v=>v+'%').join(' ')+',rgba(255,255,255,.28),transparent 55%),'+p.bg;
 const short=p.place.split(' · ')[0];
-const tabs=[['genel','Genel'],p.dates.length&&['tarihler','Tarihler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
+const tabs=[['genel','Genel'],hasD&&['tarihler','Tarihler'],H&&['odalar','Odalar'],OP.length>0&&['secenek',{etkinlik:'Biletler',aktivite:'Paketler'}[typeKey(p.type)]||'Seçenekler'],['paylasimlar','Paylaşımlar'],info.program.length&&['program',info.progTitle==='Nasıl geçiyor?'?'Akış':info.progTitle],
   info.dahil.length&&['dahil','Dahil'],['yorumlar','Yorumlar'],['sss','SSS']].filter(Boolean);
 function faq(){const t=typeKey(p.type),q=[];
   q.push(['Rezervasyonumu nasıl iptal ederim?',S.cancel+'. Planlarım\'da rezervasyonunu açıp "İptal et"e dokunman yeterli; iade aynı karta 3–7 iş günü içinde yapılır.']);
@@ -77,12 +81,16 @@ function faq(){const t=typeKey(p.type),q=[];
   if(S.dep&&S.dep.stops.length>1)q.push(['Kalkış noktamı sonradan değiştirebilir miyim?','Kalkıştan 48 saat öncesine kadar Mesajlar\'dan yazman yeterli; yeni noktanın saati biletine işlenir.']);
   if(p.visa)q.push(['Vize gerekiyor mu?',p.visa+'. '+(p.visaReq?'Başvuruyu kalkıştan en az 1 ay önce yapman gerekir; vize ücreti fiyata dahil değil.':'Pasaportunun dönüşten sonra en az 6 ay geçerli olması yeterli.')]);
   if(t==='tur')q.push(['Tur iptal olursa ne olur?','Yeterli katılım olmazsa ya da hava koşulları nedeniyle tur iptal edilirse ödediğin tutarın tamamı iade edilir veya başka bir tarihe aktarılır.']);
-  if(t==='otel')q.push(['Giriş ve çıkış saatleri nedir?','Giriş 14:00\'ten, çıkış 12:00\'ye kadar. Erken giriş için Mesajlar\'dan otele yazabilirsin.']);
+  if(H){q.push(['Giriş ve çıkış saatleri nedir?','Giriş '+H.giris+'\'ten, çıkış '+H.cikis+'\'ye kadar. Erken giriş ya da geç çıkış istersen rezervasyonda "Özel istek"e yaz; otel müsaitliğe göre ayarlar.']);
+    q.push(['Çocuklar için ücret alınıyor mu?',kidRule+' Çocukların yaşını rezervasyonda seçersin, fiyat ona göre hesaplanır.']);
+    q.push(['Evcil hayvanımı getirebilir miyim?',petRule]);
+    q.push(['Ödeme ne zaman alınır?','Tamamı rezervasyonda alınır; otelde konaklama için ek ödeme yapmazsın. Konaklama vergisi ve KDV fiyata dahil; otelde yaptığın ekstra harcamalar hariç.'])}
   if(t==='etkinlik')q.push(['Biletimi nasıl gösteririm?','Biletin Planlarım\'da karekodla durur; girişte telefonundan göstermen yeterli, çıktı gerekmez.']);
   if(t==='aktivite'||t==='mekan')q.push(['Saati değiştirebilir miyim?','Başlangıçtan 24 saat öncesine kadar Planlarım\'dan başka bir saat seçebilirsin; fark ücreti alınmaz.']);
   q.push(['Taksitle ödeyebilir miyim?','Anlaşmalı kartlarla 3 taksit vade farksız. Ödeme bankanın güvenli 3D Secure sayfasında yapılır.']);
   return q}
 const facts=chips.slice(0,2).map(c=>[/\d+ (Eki|Kas|Ara)/.test(c)?IC.calendar:/saat|dk|gün|gece/.test(c.toLocaleLowerCase('tr'))?I.clock:p.tr&&c===TRI[p.tr][0]?'<svg viewBox="0 0 24 24">'+TRI[p.tr][1]+'</svg>':IC.ticket,c]);
+if(H)facts[0]=[I.clock,'Giriş '+H.giris+' · Çıkış '+H.cikis];
 facts.push([IC.shield,'Ücretsiz iptal']);
 const ppl=posts.slice(0,3).map(x=>'<span class="ava s" style="--c:'+x.user.renk+'" aria-hidden="true">'+x.user.ini[0]+'</span>').join('');
 
@@ -104,10 +112,24 @@ document.getElementById('urun').innerHTML=
  +(info.about?'<section class="box"><h2>Hakkında</h2><p class="u-about">'+info.about+'</p>'
    +'</section>':'')
 
- +(p.dates.length?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>Tarih seç</h2></div><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
+ +(hasD?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>'+(H?'Giriş günü':'Tarih seç')+'</h2></div><div class="u-dates" role="radiogroup" aria-label="'+(H?'Giriş günü':'Kalkış tarihi')+'">'
    /* ilk üç tarih ve "Tüm tarihler" (çekmecede bütün tarihler) */
    +dGrid()
-   +'</div><p class="u-cx" id="cxl2"></p></section>':'')
+   +'</div>'+(H?'<div class="bk-pr u-night"><div><b>Kaç gece?</b><small id="uOut"></small></div><div class="stp"><button type="button" data-gece="-1" aria-label="Bir gece azalt">−</button><output id="uN" aria-live="polite">'+nights+'</output><button type="button" data-gece="1" aria-label="Bir gece artır">+</button></div></div>':'')
+   +'<p class="u-cx" id="cxl2"></p></section>':'')
+
+ /* paket, bilet türü ya da hizmet: seçilen rezervasyona geçer; başlangıç saatleri */
+ +(OP.length?'<section class="box" id="secenek"><h2>'+optTitle+'</h2>'+(S.slots.length&&typeKey(p.type)!=='etkinlik'?'<p class="u-pp-n">'+(S.slots.length>1?'Başlangıç saatleri: ':'Başlangıç ')+S.slots.join(' · ')+'</p>':'')
+   +'<div class="u-rooms" role="radiogroup" aria-label="'+optTitle+'">'+OP.map((o,i)=>'<button type="button" class="u-room u-opt" role="radio" aria-checked="'+(i===sec)+'" data-sec="'+i+'"><span class="u-rm-h"><b>'+o[0]+'</b><i aria-hidden="true"></i></span>'
+     +'<span class="u-rm-p">'+(lvOn(p.title)?'<s>'+tl(o[1])+'</s>':'')+'<strong>'+tl(lvPrice(p.title,o[1]))+'</strong><small>'+p.unit+'</small></span></button>').join('')+'</div>'
+   +(S.qty&&S.qty.note?'<p class="u-pp-n">'+S.qty.note+'</p>':'')+'</section>':'')
+
+ /* otel: oda tipleri (gecelik oda fiyatı, Kâşif indirimi yansımış) ve olanaklar */
+ +(H?'<section class="box" id="odalar"><h2>Odalar</h2><p class="u-pp-n">Fiyatlar oda başı, gecelik'+(p.facts[1]?'; '+p.facts[1].toLocaleLowerCase('tr'):'')+'.</p><div class="u-rooms" role="radiogroup" aria-label="Oda">'
+   +H.rooms.map((r,i)=>'<button type="button" class="u-room" role="radio" aria-checked="'+(i===room)+'" data-oda="'+i+'"><span class="u-rm-h"><b>'+r.ad+'</b><i aria-hidden="true"></i></span>'
+     +'<span class="u-rm-s">'+r.alt+'</span><span class="u-rm-f">'+IC.users+'En fazla '+r.kap+' kişi</span>'+(r.oz.length?'<span class="u-rm-o">'+r.oz.join(' · ')+'</span>':'')
+     +'<span class="u-rm-p">'+(lvOn(p.title)?'<s>'+tl(r.fiyat)+'</s>':'')+'<strong>'+tl(lvPrice(p.title,r.fiyat))+'</strong><small>gecelik</small></span></button>').join('')+'</div></section>'
+   +(H.olanak.length?'<section class="box" id="olanak"><h2>Olanaklar</h2><ul class="u-amen">'+H.olanak.map(x=>'<li>'+IC.check+'<span>'+x+'</span></li>').join('')+'</ul></section>':''):'')
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -133,7 +155,7 @@ document.getElementById('urun').innerHTML=
     +'<p class="u-pp-n">Kalkış noktanı rezervasyonda seçersin.</p>'
    :'<div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>')+'</section>'
 
- +(info.bilgi.length?'<section class="box" id="bilgi"><h2>Bilmen gerekenler</h2><ul class="u-info">'+info.bilgi.map(x=>'<li>'+IC.info+'<span>'+x+'</span></li>').join('')+'</ul></section>':'')
+ +(info.bilgi.length||H?'<section class="box" id="bilgi"><h2>Bilmen gerekenler</h2><ul class="u-info">'+[...info.bilgi,...(H?[kidRule,petRule]:[])].map(x=>'<li>'+IC.info+'<span>'+x+'</span></li>').join('')+'</ul></section>':'')
 
  +'<section class="box"><h2>İptal ve ödeme</h2><ul class="ticks">'
  +'<li>'+IC.check+'<div><b>'+S.cancel+'</b> <span id="cxl"></span></div></li>'
@@ -165,23 +187,31 @@ function cxl(){
   const c2=document.getElementById('cxl2');
   if(c2)c2.innerHTML=c?IC.shield+'<span>'+(c.past?'Bu tarihte ücretsiz iptal süresi doldu.':'<b>'+c.date+'</b> gününe kadar ücretsiz iptal')+'</span>':'';
 }
-cxl();
+cxl();stay();
 function drawCta(){
   /* kartlardaki fiyatla aynı: seviye indirimi (Kâşif %10) fiyata dahil, üstü çizili ilk fiyat */
-  const now=lvPrice(p.title,p.price),was=p.old||(lvOn(p.title)?p.price:0);
-  const meta=[picked,lvOn(p.title)&&'Kâşif fiyatı'].filter(Boolean).join(' · ');
+  /* otelde seçilen odanın gecelik fiyatı × gece */
+  const base=H?H.rooms[room].fiyat*nights:sec>=0?OP[sec][1]:p.price;
+  const now=lvPrice(p.title,base),was=H||sec>0?(lvOn(p.title)?base:0):p.old||(lvOn(p.title)?p.price:0);
+  const meta=[H?stayRange(picked,nights):picked,lvOn(p.title)&&'Kâşif fiyatı'].filter(Boolean).join(' · ');
   cta.innerHTML='<div class="pp">'+(was?'<span class="pp-o"><s>'+tl(was)+'</s><em>%'+Math.round((1-now/was)*100)+' indirim</em></span>':'')
-   +'<span class="pp-n"><strong>'+tl(now)+'</strong><small>'+p.unit+'</small></span>'+(meta?'<span class="pp-m">'+meta+'</span>':'')+'</div>'
-   +'<button type="button" class="btn green" id="ctaGo">'+(p.dates.length?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
+   +'<span class="pp-n"><strong>'+tl(now)+'</strong><small>'+(H?nights+' gece toplam':p.unit)+'</small></span>'+(meta?'<span class="pp-m">'+meta+'</span>':'')+'</div>'
+   +'<button type="button" class="btn green" id="ctaGo">'+(hasD?(picked?'Devam et':'Tarih seç'):'Rezervasyon yap')+'</button>';
 }
 drawCta();
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
-  if(p.dates.length&&!picked){goTo('tarihler');return}
-  location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
+  if(hasD&&!picked){goTo('tarihler');return}
+  location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')+(H?'&gece='+nights+'&oda='+room:'')+(sec>=0?'&sec='+sec:'')});
 document.getElementById('urun').addEventListener('click',e=>{
   const ad=e.target.closest('[data-all-d]');if(ad){allDates(ad);return}
-  const d=e.target.closest('[data-d]');
-  if(d){pick(d.dataset.d);return}
+  const d=e.target.closest('[data-gun]');
+  if(d){pick(d.dataset.gun);return}
+  const gc=e.target.closest('[data-gece]');
+  if(gc){nights=Math.max(1,Math.min(H.maxNights,nights+ +gc.dataset.gece));saveSel();stay();drawCta();return}
+  const od=e.target.closest('[data-oda]');
+  const se=e.target.closest('[data-sec]');
+  if(se){sec=+se.dataset.sec;document.querySelectorAll('[data-sec]').forEach(x=>x.setAttribute('aria-checked',x===se));saveSel();drawCta();return}
+  if(od){room=+od.dataset.oda;document.querySelectorAll('[data-oda]').forEach(x=>x.setAttribute('aria-checked',x===od));saveSel();drawCta();return}
   const m=e.target.closest('[data-prog]');
   if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);
     m.textContent=open?'Daha az göster':'Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0]);return}
