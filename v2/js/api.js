@@ -348,8 +348,13 @@ export function productDetails(p){
   const t=typeKey(p.type),d=DETAY[p.title]||{},[progTitle,placeTitle]=BASLIK[t];
   return {about:d.about||'',progTitle,program:d.program||[],placeTitle,place:d.yer||[p.place,''],
     dahil:d.dahil||[],haric:d.haric||[],bilgi:d.bilgi||[],
-    reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[]};
+    reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[],
+    /* türe göre ayrıntılı puanlar (değerlendirme formundakiyle aynı başlıklar), ÖRNEK: genel puandan türetilir */
+    aspects:p.count?(ALT[t]||ALT.mekan).map((k,i)=>[k,Math.min(10,Math.max(1,p.score+[.2,-.1,-.3,0][i]))]):[]};
 }
+const ALT={tur:['Rehber','Program','Ulaşım','Fiyat/performans'],otel:['Temizlik','Konum','Personel','Fiyat/performans'],
+  etkinlik:['Organizasyon','Ses ve sahne','Giriş','Fiyat/performans'],aktivite:['Ekip','Güvenlik','Organizasyon','Fiyat/performans'],
+  mekan:['Hizmet','Ortam','Temizlik','Fiyat/performans']};
 
 /* Molapuan: puan, rezervasyon sayısı, seviye yolu (görünüm: guest | gezgin | kasif) */
 export function getPoints(level){const [pts,n]=PUAN[level]||PUAN.guest;
