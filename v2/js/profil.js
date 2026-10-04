@@ -1,7 +1,7 @@
 /* Profil: sosyal kimlik + deneyim geçmişi + Molapuan (PROJE.md §10) */
 import { renderShell } from './shell.js';
 import { listPosts, findByTitle, ME } from './api.js';
-import { postMini, plink, ava, initPostActions } from './cards.js';
+import { plink, ava, initPostActions } from './cards.js';
 import { toast } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
 import { molapuan, initMolapuan } from './molapuan.js';
@@ -44,7 +44,8 @@ const acc=()=>'<section class="acc" aria-labelledby="h-acc"><div class="hd"><h2 
 
 const el=document.getElementById('pf');
 const TABS={
-  pay:()=>'<div class="pf-grid">'+mine.map(x=>postMini(x,{own:true})).join('')+'</div>',
+  /* sade ızgara: kare kutu, yalnızca fotoğraf (Bedir: "Paylaşımlar sekmesi daha sade olmalı") */
+  pay:()=>'<div class="pf-sq">'+mine.map(x=>'<a href="'+ROOT+'baglan/#'+x.id+'" style="background:'+x.bg+'" aria-label="'+(x.product?x.product.title+' paylaşımını aç':'Paylaşımı aç')+'"></a>').join('')+'</div>',
   den:()=>'<div class="pf-went">'+went.map(plink).join('')+'</div>',
   kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin Planlarım\'da.</p><a class="btn" href="'+ROOT+'planlarim/#favoriler">Favorilere git</a></div>'};
 el.innerHTML=molapuan('kasif')
