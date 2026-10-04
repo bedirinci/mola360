@@ -73,9 +73,11 @@ body{min-height:100vh;min-height:100dvh}
 .u-facts li+li{border-left:1px solid var(--line)}
 @media (max-width:374px){.u-facts li{padding:0 4px;font-size:var(--fs-sm)}}
 .u-facts svg{width:20px;height:20px;color:var(--ink);stroke-width:1.8}
-/* bütün kalkış tarihleri görünür: satır satır ızgara */
-.u-dsec .u-dates{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+/* kalkış tarihleri: dörtlü ızgara (ilk üç tarih + Tüm tarihler) */
+.u-dsec .u-dates{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .u-dsec .u-dates button{min-width:0;padding:8px 4px}
+.u-dates .more-d{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-xs);font-weight:var(--fw-bold);color:var(--navy);background:var(--soft);border-color:transparent;line-height:1.2}
+.u-dates .more-d svg{width:18px;height:18px}
 .u-cx{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:var(--fs-md);color:var(--mute)}
 .u-cx:empty{display:none}
 .u-cx svg{width:17px;height:17px;flex:none;color:var(--ink)}
