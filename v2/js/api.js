@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -395,3 +395,32 @@ export function sendMessage(k,{text='',urun='',davet=false,post=''}={}){
 /* yeni mesajda seçilebilecek kişiler: takip ettiklerin */
 export const FOLLOWING=['selin','mert','elif','deniz','kaan','zeynep'];
 export const listFollowing=()=>FOLLOWING.map(k=>({id:k,user:{...USERS[k],onay:ONAY.has(k)}}));
+
+/* Bildirimler: örnek bildirimler (BILDIRIM) + rezervasyonlardan hesaplananlar
+   (yaklaşan tur, kalan ödeme, değerlendirilmemiş geçmiş deneyim). Ödeme yapılınca,
+   değerlendirince ya da iptal edince ilgili bildirim kalkar. Okunanlar m360-bildirim'de;
+   eskiler (once) ve örnekte oku:1 olanlar zaten okunmuş.
+   cat: baglan | plan; g: bugun | hafta | once */
+const NK='m360-bildirim';
+const readNt=()=>{try{return JSON.parse(localStorage.getItem(NK))||[]}catch(e){return []}};
+const CAT={begeni:'baglan',yorum:'baglan',bahset:'baglan',takip:'baglan',davet:'baglan',istek:'baglan',gezgin:'baglan'};
+const who=k=>({...USERS[k],onay:ONAY.has(k)||ONERI.some(o=>o[0]===k&&o[2])});
+export function listNotifs(){
+  const oku=new Set(readNt()),day=today(),out=[];
+  listUpcoming().forEach(b=>{const left=b.day?Math.round((b.day-day)/864e5):-1;if(left<0||left>14)return;
+    out.push({id:'y-'+b.no,tur:'yaklasan',g:'bugun',ne:'09:00',product:b.product,left,slot:b.slot,meet:b.meet});
+    if(b.paid<b.total)out.push({id:'o-'+b.no,tur:'odeme',g:'bugun',ne:'09:00',product:b.product,rest:b.total-b.paid})});
+  const rv=readRv();
+  /* bağlı paylaşım silinmişse bildirim de gider */
+  BILDIRIM.filter(n=>!n.post||getPost(n.post)).forEach(n=>{
+    out.push({...n,users:(n.k||[]).map(who),post:n.post?getPost(n.post):null,product:n.urun?findByTitle(n.urun):null})});
+  /* değerlendirilmemiş geçmiş deneyimler: dönüş gününde gelmiş */
+  PAST.filter(b=>!rv[b.productId]).forEach(b=>{const p=getProduct(b.productId);
+    if(p)out.push({id:'d-'+b.productId,tur:'degerlendir',g:'once',ne:b.when.split('–').pop().trim().replace(/(\d+ \S{3})\S*/,'$1'),product:p})});
+  /* haftanın gezgini: en çok etkileşim alan paylaşım */
+  const wt=weekTraveler();
+  return out.filter(n=>n.tur!=='gezgin'||wt)
+    .map(n=>({...n,cat:CAT[n.tur]||'plan',read:oku.has(n.id)||!!n.oku||n.g==='once',...(n.tur==='gezgin'?{post:wt.post,users:[wt.post.user],total:wt.total,points:wt.points}:{})}));
+}
+export const unreadNotifs=()=>listNotifs().filter(n=>!n.read).length;
+export function markNotifs(ids){const s=new Set([...readNt(),...ids]);try{localStorage.setItem(NK,JSON.stringify([...s]))}catch(e){}}
