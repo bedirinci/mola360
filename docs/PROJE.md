@@ -1543,3 +1543,23 @@ güncellenecek yaşayan proje dokümanıdır.
   "Birlikte gidelim" giriş çekmecesini açar.
 - **UX sonucu:** İlham bir dokunuşla plana ya da ortak plana döner;
   paylaşım sahibi içeriğinin kontrolü kendinde.
+
+### 2026-10-04 — Başkalarının profili, yorum yanıtı, ince Haftanın gezgini
+
+- **Karar:** Bağlan'da bir kişinin adına ya da avatarına dokununca
+  `kisi/?u=kullanıcı adı` sayfası açılır: ad, onay rozeti, şehir, kısa
+  tanıtım, sayılar, yeşil "Takip et", Paylaşımlar ve Deneyimler sekmeleri.
+  Yorumlarda "Yanıtla" var; yanıt yorumun altında girintili görünür, yorum
+  kutusunun üstünde kime yanıt verildiği yazar. Haftanın gezgini kartı
+  ince beyaz karta döndü ve x ile kapanır (o hafta bir daha çıkmaz).
+- **Neden:** Bedir başkalarının hesabının nasıl göründüğünü sordu, yorum
+  yanıtının eksik olduğunu ve Haftanın gezgini kartının büyük olduğunu
+  söyledi.
+- **Etkilediği alanlar:** `v2/kisi/`, `v2/js/kisi.js` (yeni),
+  `v2/js/api.js` (`getUser`, `listUserPosts`, yorumda `to`),
+  `v2/js/data.js` (`PROFIL`, dört yeni paylaşım), `v2/js/cards.js`
+  (`userUrl`), `v2/js/gonderi.js`, `v2/js/baglan.js`.
+- **Teknik sonuç:** Yanıtlar `m360-yorum`'da `to` alanıyla tutulur; kapatılan
+  Haftanın gezgini `m360-hafta`'da.
+- **UX sonucu:** Bağlan'da insanlar gerçek profillere bağlanır; konuşma
+  yorumlar arasında sürer.

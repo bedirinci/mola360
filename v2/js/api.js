@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, HAFTA } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, HAFTA, PROFIL } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -177,13 +177,20 @@ const CK='m360-yorum';
 const myCm=id=>{try{return (JSON.parse(localStorage.getItem(CK))||{})[id]||[]}catch(e){return []}};
 export function listComments(post){
   const n=Math.min(post.comments||0,5),start=[...post.id].reduce((a,c)=>a+c.charCodeAt(0),0);
-  const base=Array.from({length:n},(_,i)=>{const [u,text,when]=YORUMLAR[(start+i)%YORUMLAR.length];return {user:{...USERS[u],onay:ONAY.has(u)},text,when,likes:(start*7+i*13)%40}})
+  const base=Array.from({length:n},(_,i)=>{const [u,text,when]=YORUMLAR[(start+i)%YORUMLAR.length];return {id:'b'+i,user:{...USERS[u],onay:ONAY.has(u)},text,when,likes:(start*7+i*13)%40}})
     .filter(c=>c.user.kul!==post.user.kul);
-  return [...base,...myCm(post.id).map(c=>({user:{...ME,onay:true},text:hx(c.text),when:ago(c.at),likes:0,mine:true}))];
+  /* to: yanıtlanan yorumun kimliği (yanıtlar o yorumun altında görünür) */
+  return [...base,...myCm(post.id).map(c=>({id:'m'+c.at,to:c.to||'',user:{...ME,onay:true},text:hx(c.text),when:ago(c.at),likes:0,mine:true}))];
 }
-export function addComment(id,text){text=String(text).trim().slice(0,300);if(!text)return null;
-  try{const all=JSON.parse(localStorage.getItem(CK))||{};all[id]=[...(all[id]||[]),{text,at:Date.now()}];localStorage.setItem(CK,JSON.stringify(all))}catch(e){return null}
-  return {user:{...ME,onay:true},text:hx(text),when:'Az önce',likes:0,mine:true}}
+export function addComment(id,text,to=''){text=String(text).trim().slice(0,300);if(!text)return null;const at=Date.now();
+  try{const all=JSON.parse(localStorage.getItem(CK))||{};all[id]=[...(all[id]||[]),{text,at,to}];localStorage.setItem(CK,JSON.stringify(all))}catch(e){return null}
+  return {id:'m'+at,to,user:{...ME,onay:true},text:hx(text),when:'Az önce',likes:0,mine:true}}
+
+/* Başkalarının profili (kisi/?u=kullanıcı adı) */
+export function getUser(kul){const k=Object.keys(USERS).find(x=>USERS[x].kul===kul);if(!k)return null;
+  const [city,bio,followers,following]=PROFIL[k]||['','',0,0];
+  return {key:k,...USERS[k],onay:ONAY.has(k),city,bio,followers,following}}
+export const listUserPosts=kul=>posts.filter(p=>p.user.kul===kul);
 
 /* Hikayeler: önce Mola360'ın kendi hikayeleri (gerçek ürünlerden: bu
    haftanın etkinlikleri, hafta sonu fırsatları, temalar), sonra takip

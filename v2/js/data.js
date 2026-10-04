@@ -137,6 +137,18 @@ export const USERS={
  ceren:{ad:'Ceren Yıldız',kul:'cerenkacamak',ini:'CY',renk:'#7A4E8C'},
  ozan:{ad:'Ozan Er',kul:'ozanpatika',ini:'OE',renk:'#4D7A3A'},
  irem:{ad:'İrem Koç',kul:'iremvebavul',ini:'İK',renk:'#A0573A'}};
+/* Başkalarının profili: şehir, kısa tanıtım, takipçi, takip */
+export const PROFIL={
+ deniz:['Ankara','Tarih ve müze turlarının peşinde. Her şehirde bir rehber arkadaşım var.',842,213],
+ selin:['İstanbul','İki kişilik kaçamaklar, erken kalkılan sabahlar.',1240,310],
+ mert:['Fethiye','Yamaç paraşütü, tekne, kamp. Hafta sonu evde durmam.',2310,402],
+ elif:['İzmir','Caz, Kordon ve iyi yemek. Akşam planı lazımsa bana sor.',968,355],
+ kaan:['Antalya','Arkadaş grubuyla doğa ve macera.',611,248],
+ zeynep:['Kocaeli','İki çocuk, bir bavul. Aile dostu oteller ve yaylalar.',1530,190],
+ burak:['İzmir','İzmir ve çevresinde ne yapılır, hepsini denedim.',734,288],
+ ceren:['Bursa','Kısa kaçamaklar, uzun yürüyüşler.',512,301],
+ ozan:['Trabzon','Patikalar, yaylalar, çadır.',689,144],
+ irem:['İstanbul','Konser, festival, şehir kaçamağı.',455,276]};
 /* Paylaşım sayfasındaki yorumlar: kişi, yorum, ne zaman */
 export const YORUMLAR=[
  ['deniz','Fotoğraflar harika! Hangi ayda gittiniz?','2 sa'],['elif','Listeme ekledim, bu yaz mutlaka.','5 sa'],
@@ -173,7 +185,16 @@ export const POSTS=[
  {u:'selin',yer:'Maşukiye, Sakarya',ne:'Dün',g:'masukiye',g2:['sapanca'],urun:'Maşukiye Dere Evi',gitti:1,
   metin:'Dere kenarında serpme kahvaltı, sonra göl kıyısında kısa bir yürüyüş. Pazar sabahı için tam kıvamında.',beg:77,yor:8},
  {u:'deniz',yer:'Kavaklıdere, Ankara',ne:'3 hafta önce',g:'harbiye',g2:['akustik'],urun:'Stand Up Gecesi',gitti:0,
-  metin:'Geçen ayki gösteriye gittik, salon kahkahadan yıkıldı. Bu cuma yine oradayız.',beg:58,yor:6}];
+  metin:'Geçen ayki gösteriye gittik, salon kahkahadan yıkıldı. Bu cuma yine oradayız.',beg:58,yor:6},
+ {u:'ceren',yer:'Uçhisar, Nevşehir',ne:'5 gün önce',g:'kapadokya',g2:['goreme'],urun:'Kapadokya Turu',gitti:1,
+  metin:'İlk kez balon izledim, hava soğuktu ama değdi. Akşam çömlek atölyesi de çok tatlıydı.',beg:91,yor:6},
+ {u:'burak',yer:'Alsancak, İzmir',ne:'2 gün önce',g:'kordon',g2:['caz'],urun:'Kordon Spa & Masaj',gitti:1,
+  metin:'Haftanın yorgunluğunu bir saatte attım. Çıkışta Kordon\'da yürüyüş şart.',beg:58,yor:4},
+ {u:'ozan',yer:'Uzungöl, Trabzon',ne:'1 hafta önce',g:'karadeniz',g2:['ayder'],urun:'Karadeniz Yaylaları Turu',gitti:1,
+  metin:'Üç yayla, bir sürü sis ve en güzel muhlama. Rehberimiz her patikayı biliyordu.',beg:146,yor:11},
+ {u:'irem',yer:'Alsancak, İzmir',ne:'4 gün önce',g:'caz',g2:['kordon'],urun:'Kordon Caz Akşamları',gitti:1,
+  metin:'Sahneye bu kadar yakın oturunca caz bambaşka. Bir dahaki ay yine geliyorum.',beg:67,yor:5}
+];
 
 /* Yerler: arama önerileri için. Bir ürün, adında ya da yerinde (kalkış
    şehri sayılmaz) bu adlardan biri geçiyorsa o yerdedir. Liste ÖRNEK;

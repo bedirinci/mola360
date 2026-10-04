@@ -366,3 +366,19 @@ main#urun .box:first-of-type{margin-top:24px}
 .cm-in input{flex:1;min-width:0;min-height:42px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--soft);font-size:var(--fs-input);color:var(--ink)}
 .cm-in button{flex:none;min-height:42px;padding:0 6px;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy)}
 .cm-in button:disabled{color:var(--mute);opacity:.6}
+/* Başkasının profili (kisi/): Takip et yeşil eylem; takip edince sade */
+.pf-acts .k-follow{min-height:44px;padding:10px 14px;border-radius:var(--r-md);background:var(--green);color:var(--navy);font-size:var(--fs-md);box-shadow:none}
+.pf-acts .k-follow[aria-pressed="true"]{background:rgba(255,255,255,.12);color:#fff}
+.pf-top .bar-l .bk-h{font-size:var(--fs-lg);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.cm-av{flex:none;display:block;border-radius:50%}
+.cm-u{font-weight:var(--fw-bold);color:inherit}
+.cm-rep{margin-left:10px;padding:4px 2px;font-size:var(--fs-xs);font-weight:var(--fw-bold);color:var(--mute)}
+.cm-sub{list-style:none;margin:0;padding:0}
+.cm-sub:not(:empty){margin-top:4px}
+.cm-sub .cmt{padding:6px 0 0}
+.cm-sub .ava.s{width:24px;height:24px;font-size:var(--fs-xs)}
+.cm-to{position:absolute;left:0;right:0;bottom:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px 6px 16px;background:var(--soft);border-top:1px solid var(--line);font-size:var(--fs-sm);color:var(--mute)}
+.cm-to[hidden]{display:none}
+.cm-to button{display:grid;place-items:center;width:28px;height:28px;color:var(--mute)}
+.cm-to svg{width:15px;height:15px;stroke-width:2.2}
+.cm-at{color:var(--navy);font-weight:var(--fw-semi)}
