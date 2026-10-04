@@ -1395,3 +1395,23 @@ güncellenecek yaşayan proje dokümanıdır.
   Menü dışarı dokununca ve Esc ile kapanır.
 - **UX sonucu:** Kullanıcı akışı kendine göre ayıklayabiliyor; kaydet ve
   bağlantı paylaşma tek yerden.
+
+### 2026-10-04 — Instagram tarzı paylaşım akışı (Bedir)
+
+- **Karar:** Paylaş'a dokununca doğrudan telefonun galerisi açılır.
+  Seçimden sonra tam ekran "Yeni paylaşım" gelir: büyük önizleme,
+  seçilenler şeridi (dokununca önizlenir, x ile çıkar, "Ekle" ile
+  galeriye döner), sağ üstte "İleri" (en az 2 görsel). Sonraki adım
+  "Bilgiler": not, bağlı deneyim, kiminle; sağ üstte "Paylaş".
+- **Neden:** Bedir Instagram'daki gibi doğrudan galeriyle başlayan bir
+  paylaşım istedi; eski çekmece önce boş bir form gösteriyordu.
+- **Etkilediği alanlar:** `v2/js/shell.js` (`pickAndShare`),
+  `v2/js/paylas.js` (yeniden yazıldı), `v2/css/components.css` (`.cmp*`).
+- **Teknik sonuç:** Web sayfası telefonun galerisini kendi içinde ızgara
+  olarak gösteremez; telefonun kendi görsel seçicisi açılır (iOS'ta
+  Fotoğraflar). Seçici dokunuşla aynı anda açılmalı, bu yüzden shell.js'te
+  ve modül yüklenmeden önce çağrılır; paylas.js boşta önceden yüklenir.
+  Adresten (`?paylas=`) gelince galeri kendiliğinden açılamaz; ekran
+  "Galeriden seç" ile gelir.
+- **UX sonucu:** Paylaşım iki dokunuşta görselle başlıyor; bilgiler
+  görselden sonra soruluyor.
