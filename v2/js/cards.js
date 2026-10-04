@@ -5,7 +5,7 @@ import { tl, ttl, makeSheet } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
-import { listPosts, deletePost, ME } from './api.js';
+import { listPosts, deletePost, getPost, ME } from './api.js';
 
 /* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
    Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
@@ -114,12 +114,13 @@ function openMenu(btn){
   const it=(k,ic,t)=>'<button type="button" role="menuitem" data-pm="'+k+'">'+ic+'<span>'+t+'</span></button>';
   btn.insertAdjacentHTML('afterend','<div class="pmenu" role="menu">'
     +it('save',IC.save,saved?'Kayıttan çıkar':'Kaydet')+it('link',IC.link,'Bağlantıyı kopyala')
-    +(btn.hasAttribute('data-mine')?it('del',IC.trash,'Gönderiyi sil'):it('hide',IC.eyeoff,'İlgilenmiyorum')+it('report',IC.flag,'Bildir'))+'</div>');
+    +(btn.hasAttribute('data-mine')?it('edit',IC.edit,'Gönderiyi düzenle')+it('del',IC.trash,'Gönderiyi sil'):it('hide',IC.eyeoff,'İlgilenmiyorum')+it('report',IC.flag,'Bildir'))+'</div>');
   btn.setAttribute('aria-expanded','true');btn.nextElementSibling.querySelector('button').focus();
 }
 function menuAct(k,post,toast){
   if(k==='save'){const s=post.querySelector('.act.save');if(s)s.click();return}
   if(k==='del'){askDelete(post,toast);return}
+  if(k==='edit'){const b=post.querySelector('.p-more');import('./paylas.js').then(m=>m.openEdit(b,post.dataset.post));return}
   if(k==='link'){const url=new URL(postUrl(post.dataset.post),location.href).href;
     if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
   if(k==='hide'){post.hidden=true;toast('Bu paylaşımı artık görmeyeceksin.','Geri al',()=>{post.hidden=false},5000);return}
@@ -144,6 +145,9 @@ function askDelete(post,toast){delPost=post;delToast=toast;
 
 /* Beğen, kaydet, takip et: taslakta yalnızca ekranda değişir */
 export function initPostActions(toast){
+  /* düzenlenen paylaşım ekrandaki her yerde yeniden çizilir */
+  document.addEventListener('m360:duzenlendi',e=>{const p=getPost(e.detail.id);if(!p)return;
+    document.querySelectorAll('.post[data-post="'+p.id+'"]').forEach(el=>{el.outerHTML=postCard(p)})});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.pmenu')){const b=document.querySelector('.pmenu').parentElement.querySelector('.p-more');closeMenu();if(b)b.focus()}});
   document.addEventListener('click',e=>{
     const mb=e.target.closest('.p-more');

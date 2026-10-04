@@ -1601,3 +1601,11 @@ güncellenecek yaşayan proje dokümanıdır.
   sayfasında zilin yanında Mesajlar ikonu ve okunmamış sohbet sayısı.
   Takip etmediğin birinin mesajı "İstekler"e düşer; kabul edene kadar
   okunduğu bilinmez. Misafirde ikon giriş çekmecesini açar.
+
+### 2026-10-04 — Gönderiyi düzenle
+
+- **Karar (Bedir):** Kendi gönderini düzenleyebilirsin. ⋯ menüsünde "Gönderiyi sil"in üstünde "Gönderiyi düzenle" var.
+- **Neden:** Paylaştıktan sonra yazıdaki bir hata ya da yanlış bağlanan deneyim için silip yeniden paylaşmak gerekiyordu.
+- **Etkilediği alanlar:** `v2/js/cards.js` (menü, yeniden çizim), `v2/js/paylas.js` (düzen modu), `v2/js/api.js` (`postDraft`, `updatePost`).
+- **Teknik sonuç:** "Deneyimini paylaş" çekmecesi düzen modunda açılır; yazı, bağlı deneyim ve kiminle değişir, fotoğraflar değişmez. Bu cihazdaki paylaşımlarda kayıt (`m360-paylas`), önceki paylaşımlarda `m360-duzen` güncellenir; `m360:duzenlendi` ile ekrandaki kart yeniden çizilir.
+- **UX sonucu:** "Kaydet" sonrası gönderi aynı yerde güncellenir, "Gönderi güncellendi." bilgisi çıkar.
