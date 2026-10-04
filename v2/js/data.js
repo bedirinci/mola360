@@ -261,3 +261,34 @@ export const HIKAYE=[
  {u:'elif',ne:'3 sa',yer:'Alsancak',urun:'Kordon Caz Akşamları',gitti:1,kare:[['caz','Kordon\'da ilk set başladı'],['kordon','Gün batımı ve caz']]},
  {u:'zeynep',ne:'6 sa',yer:'Ayder',urun:'Ayder Yayla Evi',gitti:1,kare:[['ayder','Sis kalkıyor, yayla uyanıyor'],['karadeniz','Sobada mısır ekmeği']]},
  {u:'kaan',ne:'9 sa',yer:'Manavgat',urun:'Köprülü Kanyon Rafting',gitti:0,kare:[['rafting','Kanyonda ilk dalga'],['sapanca','Nehir kenarında alabalık']]}];
+/* Mesajlar (ÖRNEK): Ayşe'nin sohbetleri, en yeniden eskiye. k: kişi (USERS),
+   ist: mesaj isteği (takip etmediği biri yazmış), yeni: okunmamış mesaj sayısı.
+   m: {gun:'Dün'} gün ayracı ya da [kim (o: karşı taraf, b: Ayşe), metin, saat, ek];
+   ek {urun:'Ürün adı'} deneyim kartı, davet:1 ile "Birlikte gidelim" daveti,
+   {post:'p1'} Bağlan paylaşımı. */
+export const SOHBET=[
+ {k:'selin',yeni:2,m:[{gun:'Dün'},
+   ['o','Kapadokya fotoğraflarına bayıldık! Hangi turla gitmiştin?','21:14'],
+   ['b','Bununla gittim, rehberimiz harikaydı:','21:20',{urun:'Kapadokya Turu'}],
+   ['o','Çok teşekkürler, hemen bakıyoruz 😊','21:31'],{gun:'Bugün'},
+   ['o','Biz de gittik, balonlar inanılmazdı!','10:40'],
+   ['o','','10:41',{post:'p1'}]]},
+ {k:'mert',yeni:1,m:[{gun:'Dün'},
+   ['o','Bunu birlikte yapalım mı?','18:22',{urun:'Ölüdeniz Yamaç Paraşütü',davet:1}],
+   ['b','Ben varım! Ekim sonu olur mu?','19:05'],{gun:'Bugün'},
+   ['o','Olur, 24 Ekim cumartesi ikimize de uyuyor.','09:12']]},
+ {k:'elif',m:[{gun:'Cuma'},
+   ['o','Cumartesi akşamı Kordon\'da mıyız?','17:40'],
+   ['b','Evet! Caz akşamına biletimi aldım 🎷','17:52'],
+   ['o','Süper, 19:30\'da girişte buluşalım.','17:55']]},
+ {k:'deniz',m:[{gun:'Çarşamba'},
+   ['o','Efes\'i soruyordun ya, bu paylaşımı gördün mü?','12:10',{post:'p4'}],
+   ['b','Gördüm, listeme ekledim. Teşekkürler 🙏','12:31']]},
+ {k:'zeynep',m:[{gun:'28 Eylül'},
+   ['b','Ayder\'de nerede kaldınız?','14:02'],
+   ['o','Yayla evinde kaldık, sabah sis kalkarken manzara bambaşka.','14:20',{urun:'Ayder Yayla Evi'}],
+   ['b','Harika, kaydettim!','14:22']]},
+ {k:'ceren',ist:1,yeni:1,m:[{gun:'Bugün'},
+   ['o','Merhaba Ayşe! Kapadokya paylaşımını gördüm. Kaldığın otelden memnun kaldın mı?','08:47']]},
+ {k:'ozan',ist:1,yeni:1,m:[{gun:'Dün'},
+   ['o','Selam! Doğa yürüyüşü paylaşımlarına bayıldım. Hafta sonu Belgrad Ormanı\'nda yürüyoruz, gelmek ister misin?','16:03']]}];

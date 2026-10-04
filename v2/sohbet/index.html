@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#152048">
+<title>mola360 — Sohbet</title>
+<meta name="description" content="Mola360 sohbeti.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/sayfalar.css">
+</head>
+<body class="no-nav ch-pg">
+<header class="pg-top slim ch-top">
+  <div class="bar">
+    <div class="bar-l"><a class="ib back" href="../mesajlar/" data-back aria-label="Geri"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></a><div class="ch-who" id="chWho"></div></div>
+    <div class="bar-i"><button class="ib" id="chMore" type="button" aria-label="Sohbet seçenekleri" aria-haspopup="dialog" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg></button></div>
+  </div>
+</header>
+<main id="ch"></main>
+<div class="ms-req" id="chReq" hidden></div>
+<form class="ms-in" id="chIn" hidden><button type="button" class="ms-add" id="chAdd" aria-label="Deneyim gönder" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button><label class="sr" for="chTxt">Mesaj yaz</label><input id="chTxt" type="text" placeholder="Mesaj yaz…" enterkeyhint="send" maxlength="1000" autocomplete="off"><button type="submit" class="ms-go" id="chGo" aria-label="Gönder" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 2.5 10.5 13.5"/><path d="M21.5 2.5 14.5 21.5l-4-8-8-4z"/></svg></button></form>
+
+<script type="module" src="../js/sohbet.js"></script>
+</body>
+</html>
