@@ -160,6 +160,14 @@ document.body.addEventListener('input',e=>{const x=e.target.closest('#plSheet [d
 document.addEventListener('m360:paylasildi',()=>{if(cur==='gecmis')show('gecmis')});
 const h=location.hash.slice(1);
 show(TABS[h]?h:'yaklasan');
+/* Bildirimlerden doğrudan: ?ac=bilet|meet|pay&no= rezervasyon no, ?ac=rate&id= ürün → ilgili çekmece açılır */
+const u=new URL(location.href),ac=u.searchParams.get('ac');
+if(ac){const no=u.searchParams.get('no'),id=u.searchParams.get('id');
+  if(ac==='rate')show('gecmis');else if(cur!=='yaklasan')show('yaklasan');
+  history.replaceState(history.state,'',u.pathname+'#'+cur);
+  const sel={bilet:'[data-bilet]',meet:'[data-meet]',pay:'[data-pay]'}[ac];
+  const t=ac==='rate'?el.querySelector('[data-rate="'+CSS.escape(id||'')+'"]'):sel&&el.querySelector('[data-no="'+CSS.escape(no||'')+'"] '+sel);
+  if(t)t.click()}
 /* aynı sayfadayken menüden gelen #favoriler ya da #yaklasan sekmeyi değiştirir */
 addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(TABS[k]&&k!==cur)show(k)});
 }
