@@ -29,6 +29,7 @@ if(!u){
    +(u.bio?'<p class="pf-bio">'+u.bio+'</p>':'')
    +'<div class="pf-stats">'+STAT(posts.length,'paylaşım','pay')+STAT(went.length,'deneyim','den')+STAT(n(u.followers),'takipçi')+STAT(n(u.following),'takip')+'</div>'
    +'<div class="pf-acts"><button type="button" class="btn green follow k-follow" aria-pressed="false">Takip et</button>'
+   +'<a class="btn ghost-d k-msg" href="'+ROOT+'sohbet/?k='+encodeURIComponent(u.key)+'" data-mesaj>Mesaj</a>'
    +'<button type="button" class="btn ghost-d sq" data-share aria-label="Profili paylaş">'+IC.share+'</button></div>';
   const TABS={
     pay:()=>posts.length?'<div class="pf-sq">'+posts.map(x=>'<a href="'+postUrl(x.id)+'" style="background:'+x.bg+'" aria-label="'+(x.product?x.product.title+' paylaşımını aç':'Paylaşımı aç')+'"></a>').join('')+'</div>'

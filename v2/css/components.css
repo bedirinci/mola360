@@ -696,3 +696,7 @@ html.kb .ps-add:has(input:focus-visible){outline:2px solid var(--navy);outline-o
 .ph-av{flex:none;display:block;border-radius:50%}
 .post-hd b a{color:inherit}
 .ppl-a{display:flex;flex-direction:column;align-items:center;max-width:100%;color:var(--ink)}
+
+/* Mesajlar: başlıktaki ikon ve okunmamış sohbet sayısı */
+.ib .ms-n{position:absolute;top:1px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);display:grid;place-items:center;background:var(--green);color:var(--navy);font-size:var(--fs-xs);font-weight:var(--fw-bold);line-height:1;box-shadow:0 0 0 2px var(--navy)}
+.ib .ms-n[hidden]{display:none}

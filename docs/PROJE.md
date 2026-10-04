@@ -1578,3 +1578,26 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Kart "720 etkileşim · +250 Molapuan" gösterir, sağda
   paylaşımın küçük görseli; "?" seçimin dökümünü (beğeni, yorum, kayıt,
   paylaşım) anlatır, x kartı o hafta için kapatır.
+
+### 2026-10-04 — Mesajlar eklendi, açılır menü kaldırıldı
+
+- **Karar (Bedir):** Mesajlar listesi ve sohbet sayfası eklenir; Mesajlar
+  ikonu sayfaların başlığına konur. Başlıktaki açılır (tam ekran) menü
+  iptal edilir; yerini Mesajlar ikonu alır.
+- **Neden:** Bağlan'daki "Birlikte gidelim" ve paylaşımlar bir kişiyle
+  konuşmaya dönüşebilmeli; menüdeki her şeyin alt menüde, Keşfet'te ya da
+  Profil'deki "Hesap ve ayarlar"da bir karşılığı var.
+- **Etkilediği alanlar:** `v2/mesajlar/`, `v2/sohbet/`, `v2/js/mesajlar.js`,
+  `v2/js/sohbet.js` (yeni), `v2/js/api.js` (`listChats`, `getChat`,
+  `sendMessage`, `unreadChats` …), `v2/js/data.js` (`SOHBET`),
+  `v2/js/birlikte.js` (`openSend`), `v2/js/cards.js`, `v2/js/giris.js`,
+  `v2/js/shell.js` (menü kaldırıldı), `v2/js/kisi.js` ("Mesaj"), bütün
+  sayfa başlıkları, `v2/js/urun.js`.
+- **Teknik sonuç:** Gönderilen mesajlar, okunanlar, kabul edilen ve silinen
+  sohbetler `m360-mesaj`'da. "Birlikte gidelim" ve paylaşımdaki Paylaş
+  (artık "Gönder" çekmecesi) seçilen kişilerin sohbetine düşer. Menünün
+  CSS'i geri dönüş kolay olsun diye duruyor.
+- **UX sonucu:** Keşfet, Bağlan, Planlarım, Profil, Liste ve kişi
+  sayfasında zilin yanında Mesajlar ikonu ve okunmamış sohbet sayısı.
+  Takip etmediğin birinin mesajı "İstekler"e düşer; kabul edene kadar
+  okunduğu bilinmez. Misafirde ikon giriş çekmecesini açar.
