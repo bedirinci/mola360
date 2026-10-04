@@ -61,20 +61,26 @@
 .empty-r b{display:block;color:var(--ink);font-weight:var(--fw-bold)}
 
 /* Yakınımda ne var? Kullanıcı isterse konum; yoksa şehir seçimi */
-/* davet kartı Molapuan kartıyla aynı dilde: beyaz, ince, gölgeli */
-.near{margin:20px 16px 0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
-.near-top{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
-/* Bedir'in Yakınımda ikonu (img/yakinimda.webp), Molapuan ikonu gibi 40px */
-.near-ic{flex:none;width:40px;height:40px;border-radius:50%}
-.near-t{flex:1;min-width:0;line-height:1.3}
-.near-t h2{font-size:calc(var(--fs-lg) - var(--fs-mp-down));font-weight:var(--fw-bold)}
-.near-t p{margin-top:2px;font-size:calc(var(--fs-md) - var(--fs-mp-down));line-height:1.4;color:var(--mute)}
-.near-go{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px 10px 14px;border-top:1px solid var(--line);text-align:left;color:var(--ink)}
-.near-go>span{flex:1;font-size:calc(var(--fs-md) - var(--fs-mp-down));font-weight:var(--fw-semi)}
-.near-arr{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff}
-.near-arr svg{width:16px;height:16px;stroke-width:2.6}
+/* davet kartı belirgin: açık lacivert zemin, sağda konum halkaları, yeşil eylem düğmesi */
+.near{margin:24px 16px 0;border-radius:var(--r-lg);background:linear-gradient(135deg,#F2F5FC 0%,#E4EAF7 100%);box-shadow:var(--shadow),inset 0 0 0 1px rgba(21,32,72,.06);overflow:hidden}
+.near-in{position:relative;display:flex;align-items:center;gap:8px;padding:16px 0 16px 16px;min-height:150px}
+.near-t{position:relative;z-index:1;flex:1;min-width:0;line-height:1.3}
+.near-t h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:-.01em;color:var(--ink)}
+.near-t p{margin-top:4px;max-width:210px;font-size:var(--fs-md);line-height:1.45;color:var(--mute)}
+.near-go{display:inline-flex;align-items:center;gap:7px;min-height:40px;margin-top:12px;padding:0 16px 0 13px;border-radius:var(--r-pill);background:var(--green);color:var(--navy);font-size:var(--fs-base);font-weight:var(--fw-bold);box-shadow:0 4px 12px rgba(140,198,63,.35);white-space:nowrap}
+.near-go svg{width:16px;height:16px;fill:currentColor;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
 .near-go[disabled]{opacity:.7}
-.near-alt{padding:10px 14px 14px;border-top:1px solid var(--line)}
+.near-note{display:block;margin-top:8px;font-size:var(--fs-xs);color:var(--mute)}
+/* Bedir'in Yakınımda ikonu (img/yakinimda.webp) üç halkanın ortasında */
+.near-map{position:relative;flex:none;width:118px;height:118px;margin-right:-8px;display:grid;place-items:center}
+.near-map i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(21,32,72,.10);background:rgba(255,255,255,.35)}
+.near-map i:nth-child(2){inset:16px;border-color:rgba(21,32,72,.13);background:rgba(255,255,255,.5)}
+.near-map i:nth-child(3){inset:32px;border-color:rgba(21,32,72,.16);background:rgba(255,255,255,.7)}
+.near-map .near-ic{position:relative;width:56px;height:56px;border-radius:50%;box-shadow:0 6px 16px rgba(21,32,72,.18)}
+@media (prefers-reduced-motion:no-preference){.near-map::before{content:"";position:absolute;inset:30px;border-radius:50%;border:2px solid rgba(140,198,63,.55);animation:nearPulse 2.8s ease-out infinite}}
+@keyframes nearPulse{0%{transform:scale(.7);opacity:1}100%{transform:scale(2.1);opacity:0}}
+@media (max-width:359px){.near-map{width:92px;height:92px}.near-map i:nth-child(2){inset:12px}.near-map i:nth-child(3){inset:24px}.near-map .near-ic{width:46px;height:46px}.near-t p{max-width:none}.near-go{padding:0 13px 0 11px;font-size:var(--fs-md)}}
+.near-alt{padding:12px 16px 16px;border-top:1px solid rgba(21,32,72,.08)}
 .near-alt p{font-size:calc(var(--fs-md) - var(--fs-mp-down));font-weight:var(--fw-medium);color:var(--ink)}
 .near-c{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .near-c button{min-height:40px;padding:0 14px;border-radius:var(--r-pill);background:var(--card);color:var(--ink);font-weight:var(--fw-semi);font-size:calc(var(--fs-md) - var(--fs-mp-down));box-shadow:inset 0 0 0 1px var(--line)}

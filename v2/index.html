@@ -46,7 +46,6 @@
 </div></div>
 
 <main>
-<div id="mpBox"></div>
 <section id="recent" aria-labelledby="h-rc" hidden>
   <div class="sec"><div class="hd"><h2 id="h-rc">Kaldığın yerden</h2><div class="more-l"><button type="button" class="clr" id="rcClear">Temizle</button><div class="arrows" data-for="rcRail"></div></div></div></div>
   <div class="rail recent" id="rcRail"></div>
@@ -62,21 +61,26 @@
   <div class="rail" id="timeRail"></div>
 </section>
 
+<div id="mpBox"></div>
+<section aria-labelledby="h-bg">
+  <div class="sec"><div class="hd"><h2 id="h-bg">İnsanlar bu hafta ne yaptı?</h2><div class="more-l"><a href="baglan/" class="all">Bağlan →</a><div class="arrows" data-for="postRail"></div></div></div></div>
+  <div class="rail" id="postRail"></div>
+</section>
+
 <section id="near" aria-labelledby="h-near">
   <div class="near" id="nearCard">
-    <div class="near-top"><img class="near-ic" src="img/yakinimda.webp" alt="" width="40" height="40"><div class="near-t"><h2 id="h-near">Yakınımda ne var?</h2><p>Çevrendeki deneyimleri uzaklığıyla gösterelim. Konumun kaydedilmez.</p></div></div>
-    <button type="button" class="near-go" id="nearGo"><span>Konumumu kullan</span><i class="near-arr" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></i></button>
+    <div class="near-in">
+      <div class="near-t"><h2 id="h-near">Yakınımda ne var?</h2><p>Çevrendeki tur, etkinlik ve mekânları uzaklığıyla gör.</p>
+        <button type="button" class="near-go" id="nearGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 21 3l-8 18-2-8z"/></svg><span>Konumumu kullan</span></button>
+        <small class="near-note">Konumun kaydedilmez.</small></div>
+      <div class="near-map" aria-hidden="true"><i></i><i></i><i></i><img class="near-ic" src="img/yakinimda.webp" alt="" width="56" height="56"></div>
+    </div>
     <div class="near-alt" id="nearAlt" hidden><p id="nearMsg"></p><div class="near-c" id="nearCities"></div></div>
   </div>
   <div id="nearOn" hidden>
     <div class="sec"><div class="hd near-hd"><h2>Yakınımda ne var?</h2><div class="near-loc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg><span id="nearLoc"></span><button type="button" class="near-x" id="nearOff" aria-label="Konumu kapat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="more-l"><div class="arrows" data-for="nearRail"></div></div></div></div>
     <div class="rail" id="nearRail"></div>
   </div>
-</section>
-
-<section aria-labelledby="h-bg">
-  <div class="sec"><div class="hd"><h2 id="h-bg">İnsanlar bu hafta ne yaptı?</h2><div class="more-l"><a href="baglan/" class="all">Bağlan →</a><div class="arrows" data-for="postRail"></div></div></div></div>
-  <div class="rail" id="postRail"></div>
 </section>
 
 <section aria-labelledby="h-wk">
