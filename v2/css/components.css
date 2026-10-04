@@ -783,3 +783,21 @@ html.sv-on,html.sv-on body{overflow:hidden}
 .sh-bg.hc-bg{z-index:71}
 .sheet.hc-sh{z-index:72}
 @media (prefers-reduced-motion:reduce){.hc{transition:none}}
+
+/* Takipçiler / Takip edilenler çekmecesi (takip.js): üstte sekmeler ve arama,
+   altta beyaz ince satırlar; Takip et yeşil (eylem), Takiptesin açık gri */
+.flw-seg{margin:4px 0 0}
+.flw-q{margin-top:10px}
+.flw-body{padding-top:0}
+.flw-r{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.flw-r:last-child{border-bottom:0}
+.flw-p{flex:1;min-width:0;display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.flw-p .ava{flex:none;width:44px;height:44px;font-size:var(--fs-md)}
+.flw-p .x{min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.25}
+.flw-p b{display:flex;align-items:center;gap:4px;font-size:var(--fs-md);font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flw-p small{font-size:var(--fs-sm);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flw-r .follow{flex:none;min-width:104px;min-height:36px;border-radius:var(--r-md);font-size:var(--fs-md)}
+.flw-r .follow.go{background:var(--green);color:var(--navy);box-shadow:none}
+.flw-me{flex:none;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);padding-right:4px}
+.flw-none{padding:32px 0;text-align:center;font-size:var(--fs-md);color:var(--mute)}
+.seg.light.flw-seg button[aria-pressed="true"]{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(21,32,72,.12)}
