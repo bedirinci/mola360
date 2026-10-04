@@ -498,3 +498,44 @@ html.kb .ps-add:has(input:focus-visible){outline:2px solid var(--navy);outline-o
 .m-play{position:absolute;left:12px;bottom:12px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(12,18,40,.55);color:#fff}
 .m-play svg{width:16px;height:16px;fill:#fff}
 .ps-q input::-webkit-search-cancel-button{display:none}
+
+/* Molapuan kartı (Keşfet, Profil): ince yatay kart */
+.mp{margin:20px 16px 0;border-radius:var(--r-lg);background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.mp-top{display:flex;align-items:center;gap:10px;padding:12px 12px 10px 14px}
+.mp-ic{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:var(--r-sm);background:var(--navy);color:var(--green)}
+.mp-ic svg{width:19px;height:19px;fill:currentColor;stroke-width:2}
+.mp-x{flex:1;min-width:0;line-height:1.2}
+.mp-x h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-x h2 b{font-weight:var(--fw-black);color:var(--green-ink);font-variant-numeric:tabular-nums}
+.mp-r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.mp-lv{display:inline-block;padding:2px 8px;border-radius:var(--r-pill);background:var(--navy);color:#fff;font-size:var(--fs-xs);font-weight:var(--fw-bold);white-space:nowrap}
+.mp-lv i{font-style:normal}
+/* dar telefonda rozet yalnızca seviye adı; avantaj seviye yolunda yazıyor */
+@media (max-width:359px){.mp-lv i{display:none}}
+.mp-lv.off{background:var(--green-soft);color:var(--green-ink)}
+.mp-how{flex:none;min-height:32px;margin:-6px 0;padding:0 2px;font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--ink);white-space:nowrap}
+.mp-next{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-top:1px solid var(--line);color:var(--ink)}
+.mp-next>span:first-child{flex:1;min-width:0;font-size:var(--fs-md);font-weight:var(--fw-semi);line-height:1.4}
+.mp-next em{font-style:normal;color:var(--green-ink);font-weight:var(--fw-bold)}
+.mp-go{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff}
+.mp-go svg{width:16px;height:16px;stroke-width:2.6}
+.mp-tg{display:flex;align-items:center;gap:8px;width:100%;min-height:40px;padding:2px 14px 10px;text-align:left;color:var(--mute)}
+.mp-tg svg{flex:none;width:18px;height:18px;stroke-width:2.4;transition:transform var(--t) var(--ease)}
+.mp-tg[aria-expanded="false"] svg{transform:rotate(180deg)}
+.mp-tg span{font-size:var(--fs-sm);font-weight:var(--fw-semi);line-height:1.35}
+.mp-tg small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-regular)}
+.mp-path{position:relative;padding:0 0 12px}
+.mp-bar{position:absolute;left:calc(100%/6);right:calc(100%/6);top:31px;height:5px;border-radius:var(--r-pill);background:var(--line);overflow:hidden}
+.mp-bar i{display:block;height:100%;border-radius:var(--r-pill);background:var(--green)}
+.mp-lvls{position:relative;display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.mp-lvls li{display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.mp-c{height:18px;font-size:var(--fs-xs);font-weight:var(--fw-bold);color:var(--mute)}
+.mp-lvls .cur .mp-c{color:var(--ink)}
+.mp-n{display:grid;place-items:center;width:26px;height:26px;margin:2px 0 6px;border-radius:50%;background:var(--soft);color:var(--mute);box-shadow:inset 0 0 0 2px var(--line)}
+.mp-n svg{width:13px;height:13px;stroke-width:2.4}
+.mp-lvls .on .mp-n{background:var(--green);color:var(--navy);box-shadow:none}
+.mp-lvls .cur .mp-n{background:var(--navy);color:var(--green);box-shadow:0 0 0 4px rgba(140,198,63,.3)}
+.mp-lvls .cur .mp-n svg{fill:currentColor;stroke-width:2}
+.mp-lvls b{font-size:var(--fs-md);font-weight:var(--fw-bold)}
+.mp-lvls .off b{color:var(--mute)}
+.mp-lvls small{font-size:var(--fs-xs);color:var(--mute)}

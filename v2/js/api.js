@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE } from './data.js';
 import { DETAY, BASLIK, YORUM } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -235,3 +235,7 @@ export function productDetails(p){
     dahil:d.dahil||[],haric:d.haric||[],bilgi:d.bilgi||[],
     reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[]};
 }
+
+/* Molapuan: puan, rezervasyon sayısı, seviye yolu (görünüm: guest | gezgin | kasif) */
+export function getPoints(level){const [pts,n]=PUAN[level]||PUAN.guest;
+  return {pts,n,levels:SEVIYE.map(([name,need,perk,to,goal])=>({name,need,perk,to,goal}))};}

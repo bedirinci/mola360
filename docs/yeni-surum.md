@@ -76,6 +76,7 @@ Kod düzeni:
   paylaşımlar, son bakılanlar, ürün içeriği). Bugün `js/data.js`
   içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
   türeyen `slug`. Backend gelince yalnızca içi değişecek.
+- `js/molapuan.js`: Molapuan kartı (ince yatay kart; puan, seviye rozeti, sıradaki hedef, açılıp kapanan seviye yolu). Keşfet'te arama kartının altında, Profil'de üstte. Veri `api.getPoints(level)`.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay; deneyimin paylaşımı varsa "N paylaşım", ürün sayfasındaki paylaşımlara gider), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
 - `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,
   dahil/hariç, buluşma noktası, örnek değerlendirmeler); sayfalar
