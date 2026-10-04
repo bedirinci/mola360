@@ -98,8 +98,8 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .nav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:var(--r-pill);font-size:var(--fs-xs);font-weight:var(--fw-semi);letter-spacing:.01em;color:var(--mute);position:relative}
 .nav svg{width:23px;height:23px}
 .nav a span{max-height:16px;line-height:16px;overflow:hidden;white-space:nowrap;transition:max-height var(--t-slow) var(--ease),opacity var(--t) var(--ease)}
-.nav a[aria-current]{background:rgba(21,32,72,.1);color:var(--navy);font-weight:var(--fw-bold)}
-/* seçili sekme: yarı saydam lacivert zemin, ikon dolgulu */
+.nav a[aria-current]{color:var(--navy);font-weight:var(--fw-bold)}
+/* seçili sekme: zemin yok, ikon dolgulu */
 .nav a[aria-current] svg .f{fill:currentColor}
 .nav a[aria-current] svg .w{stroke:#fff}
 .nav a[aria-current] svg .wf{fill:#fff}
