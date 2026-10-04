@@ -21,6 +21,13 @@ const oku = f => readFileSync(f, 'utf8');
 const bagları = f => [...oku(f).matchAll(/(?:href|src)="([^"]+)"/g)].map(m => m[1]);
 
 describe('v2', () => {
+  it('yatay kayan şeritler yalnızca sağa sola kayar (aşağı yukarı kaymaz)', () => {
+    kodlar.filter(f => f.endsWith('.css')).forEach(f => {
+      (oku(f).match(/[^{}]+\{[^}]*overflow-x:\s*(auto|scroll)[^}]*\}/g) || [])
+        .forEach(k => expect(k, relative(V2, f) + ': ' + k.trim().slice(0, 40)).toMatch(/overflow-y:\s*hidden/));
+    });
+  });
+
   it('birden çok sayfa var ve hepsi yayına hazır olana kadar arama motorlarına kapalı', () => {
     expect(sayfalar.length).toBeGreaterThan(1);
     sayfalar.forEach(f => expect(oku(f), relative(V2, f)).toMatch(/<meta name="robots" content="noindex, nofollow">/));
