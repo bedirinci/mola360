@@ -678,3 +678,10 @@ main#urun .box:first-of-type{margin-top:24px}
 .box p.err{color:#B42318;margin-top:2px}
 .bk-pr small i{white-space:nowrap}
 @media (max-width:359px){.bk-pr .stp button{width:38px;height:38px}.bk-pr .stp output{min-width:28px}}
+/* Rezervasyon: oda düzeni (konaklamalı tur) */
+.bk-room{display:flex;gap:12px;align-items:center;margin-top:12px;padding:12px 14px;border-radius:var(--r-md);background:var(--soft)}
+.bk-room svg{width:24px;height:24px;flex:none;color:var(--navy);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bk-room b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+.bk-room span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:2px}
+#bkRoom .bk-pr{margin-top:6px}
+.box p.bk-rn{font-size:var(--fs-sm);color:var(--ink);margin-top:4px}

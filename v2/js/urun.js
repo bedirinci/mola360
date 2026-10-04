@@ -89,8 +89,9 @@ document.getElementById('urun').innerHTML=
 
  /* turda kişi başı fiyat: yetişkin, çocuk, bebek (rezervasyondakiyle aynı) */
  +(S.people?'<section class="box"><h2>Kişi başı fiyat</h2><dl class="u-pp">'+S.people.rows.map(r=>{const f=r[3]===1?p.price:Math.round(p.price*r[3]/10)*10;
-     return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')+'</dl>'
-   +'<p class="u-pp-n">Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
+     return '<div><dt>'+r[1]+'<small>'+r[2].replace(/ · kucakta.*/,'')+'</small></dt><dd>'+(f?tl(lvPrice(p.title,f)):'Ücretsiz')+'</dd></div>'}).join('')
+     +(S.room?'<div><dt>Tek kişilik oda farkı<small>Kişi başı, tüm konaklama için</small></dt><dd>+'+tl(lvPrice(p.title,S.room.single))+'</dd></div>':'')+'</dl>'
+   +'<p class="u-pp-n">'+(S.room?'Fiyatlar iki kişilik odada kişi başı. ':'')+'Bebekler bir yetişkinin kucağında yolculuk eder.'+(lvOn(p.title)?' Fiyatlara Kâşif indirimin yansıdı.':'')+'</p></section>':'')
 
  +'<section class="box"><h2>'+(S.dep&&S.dep.city?'Kalkış noktaları ve saatleri':info.placeTitle)+'</h2>'
  +(S.dep&&S.dep.city

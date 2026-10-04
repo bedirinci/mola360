@@ -311,6 +311,8 @@ export function bookingSpec(p){
     people:t==='tur'?{max:9,rows:[['yetiskin','Yetişkin','12 yaş ve üzeri',1,null],['cocuk','Çocuk','3–11 yaş',.7,[3,11]],
       ['bebek','Bebek',p.tr==='ucak'?'0–2 yaş · kucakta':'0–2 yaş · kucakta, ücretsiz',p.tr==='ucak'?.1:0,[0,2]]]}:null,
     dep:t==='tur'?kalkis(p):null,
+    /* konaklamalı tur: fiyat iki kişilik odada kişi başı; tek kişilik oda farkı (ÖRNEK %30) */
+    room:t==='tur'&&/gece/.test(p.info||'')?{single:Math.round(p.price*.3/10)*10}:null,
     /* katılımcı kimliği: yurt dışında herkes için pasaport, yurt içinde yetişkinlerde T.C. kimlik */
     idDoc:t==='tur'?(p.abroad?'pasaport':'tc'):'',
     deposit:t==='tur'?.2:0,
