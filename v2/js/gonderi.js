@@ -66,4 +66,6 @@ if(!post){
   document.addEventListener('m360:silindi',()=>{form.hidden=true;
     const t=backTo(ROOT+'profil/');setTimeout(()=>{if(t&&(t.back||typeof t.go==='number'))goBack(t);else location.replace(t?t.url:ROOT+'profil/')},700)});
   if(location.hash==='#yorum')setTimeout(()=>txt.focus(),300);
+  /* bildirimden gelince yorumlara in */
+  if(location.hash==='#yorumlar')setTimeout(()=>document.getElementById('h-cm').scrollIntoView({block:'start'}),120);
 }

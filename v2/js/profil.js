@@ -32,21 +32,22 @@ document.getElementById('pfHead').innerHTML=
  +'<button type="button" class="btn ghost-d" data-soon>Düzenle</button>'
  +'<button type="button" class="btn ghost-d sq" data-share aria-label="Profili paylaş">'+IC.share+'</button></div>';
 
-/* Hesap ve ayarlar: beyaz, ince satırlar (Molapuan kartı dili). Henüz yapılmayanlar "Çok yakında." */
+/* Hesap ve ayarlar: beyaz, ince satırlar (Molapuan kartı dili). Henüz yapılmayanlar "Çok yakında."; adresi olan satır o sayfaya gider */
 const I=d=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
 const ACC=[
  ['Hesabım',[
   ['Kişisel bilgiler','Ad, telefon, e-posta',I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')],
   ['Ödeme yöntemleri','Kayıtlı kartın: •••• 4821',I('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>')],
   ['Kuponlarım','1 kupon kullanılabilir',I('<path d="M4 9V6h16v3a3 3 0 0 0 0 6v3H4v-3a3 3 0 0 0 0-6zM10 6v12"/>')],
-  ['Bildirimler','Rezervasyon, kampanya, Bağlan',I('<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>')]]],
+  ['Bildirimler','Rezervasyon, kampanya, Bağlan',I('<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'),'bildirimler/#ayarlar']]],
  ['Destek ve gizlilik',[
   ['Gizlilik ve güvenlik','Şifre, profil görünürlüğü',I('<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/>')],
   ['Yardım merkezi','Sık sorulanlar, bize yaz',I('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>')]]]];
 const OUT=I('<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/>');
 const acc=()=>'<section class="acc" aria-labelledby="h-acc"><div class="hd"><h2 id="h-acc">Hesap ve ayarlar</h2></div>'
  +ACC.map(([t,rows])=>'<h3 class="acc-h">'+t+'</h3><div class="acc-c">'
-   +rows.map(([a,b,ic])=>'<button type="button" class="acc-r" data-soon><i>'+ic+'</i><span><b>'+a+'</b><small>'+b+'</small></span>'+IC.right+'</button>').join('')+'</div>').join('')
+   +rows.map(([a,b,ic,href])=>{const in_='<i>'+ic+'</i><span><b>'+a+'</b><small>'+b+'</small></span>'+IC.right;
+     return href?'<a class="acc-r" href="'+ROOT+href+'">'+in_+'</a>':'<button type="button" class="acc-r" data-soon>'+in_+'</button>'}).join('')+'</div>').join('')
  +'<a class="acc-c acc-r acc-out" href="'+ROOT+'?gorunum=misafir"><i>'+OUT+'</i><span><b>Çıkış yap</b></span></a>'+'</section>';
 
 const el=document.getElementById('pf');

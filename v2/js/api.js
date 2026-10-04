@@ -413,7 +413,7 @@ const who=k=>({...USERS[k],onay:ONAY.has(k)||ONERI.some(o=>o[0]===k&&o[2])});
 export function listNotifs(){
   const oku=new Set(readNt()),day=today(),out=[];
   listUpcoming().forEach(b=>{const left=b.day?Math.round((b.day-day)/864e5):-1;if(left<0||left>14)return;
-    out.push({id:'y-'+b.no,tur:'yaklasan',g:'bugun',ne:'09:00',product:b.product,left,slot:b.slot,meet:b.meet});
+    out.push({id:'y-'+b.no,tur:'yaklasan',g:'bugun',ne:'09:00',product:b.product,left,slot:b.slot,meet:b.meet,day:b.day,no:b.no,rest:b.total-b.paid});
     if(b.paid<b.total)out.push({id:'o-'+b.no,tur:'odeme',g:'bugun',ne:'09:00',product:b.product,rest:b.total-b.paid})});
   const rv=readRv();
   /* bağlı paylaşım silinmişse bildirim de gider */
@@ -423,9 +423,18 @@ export function listNotifs(){
   PAST.filter(b=>!rv[b.productId]).forEach(b=>{const p=getProduct(b.productId);
     if(p)out.push({id:'d-'+b.productId,tur:'degerlendir',g:'once',ne:b.when.split('–').pop().trim().replace(/(\d+ \S{3})\S*/,'$1'),product:p})});
   /* haftanın gezgini: en çok etkileşim alan paylaşım */
-  const wt=weekTraveler();
-  return out.filter(n=>n.tur!=='gezgin'||wt)
+  const wt=weekTraveler(),off=notifOff();
+  return out.filter(n=>(n.tur!=='gezgin'||wt)&&!off.has(NGRUP[n.tur]))
     .map(n=>({...n,cat:CAT[n.tur]||'plan',read:oku.has(n.id)||!!n.oku||n.g==='once',...(n.tur==='gezgin'?{post:wt.post,users:[wt.post.user],total:wt.total,points:wt.points}:{})}));
 }
+/* Bildirim ayarları: kapatılan gruplar m360-bildirim-ayar'da. Rezervasyon
+   hatırlatmaları (yaklaşan, ödeme, değerlendirme) kapatılamaz. */
+export const NOTIF_GROUPS=[['begeni','Beğeniler','Paylaşımlarını beğenenler'],['yorum','Yorumlar ve bahsetmeler','Paylaşımına yazılanlar, senden bahsedenler'],
+  ['takip','Yeni takipçiler','Seni takip etmeye başlayanlar'],['mesaj','Davetler ve mesaj istekleri','Birlikte gidelim, takip etmediklerinden mesajlar'],
+  ['firsat','Favorilerinde indirim','Favorindeki bir deneyimin fiyatı düşünce'],['puan','Molapuan ve rozetler','Kazandığın puan, seviyen, haftanın gezgini']];
+const NGRUP={begeni:'begeni',yorum:'yorum',bahset:'yorum',takip:'takip',davet:'mesaj',istek:'mesaj',indirim:'firsat',puan:'puan',seviye:'puan',gezgin:'puan'};
+const NAK='m360-bildirim-ayar';
+export function notifOff(){try{return new Set(JSON.parse(localStorage.getItem(NAK))||[])}catch(e){return new Set()}}
+export function setNotif(k,on){const s=notifOff();on?s.delete(k):s.add(k);try{localStorage.setItem(NAK,JSON.stringify([...s]))}catch(e){}}
 export const unreadNotifs=()=>listNotifs().filter(n=>!n.read).length;
 export function markNotifs(ids){const s=new Set([...readNt(),...ids]);try{localStorage.setItem(NK,JSON.stringify([...s]))}catch(e){}}
