@@ -2,7 +2,7 @@
 import { renderShell, backLabel } from './shell.js';
 import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming } from './api.js';
 import { productCard, postMini, initPostActions } from './cards.js';
-import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
+import { tl, sc, word, toast, makeScroll, esc, makeSheet } from './ui.js';
 import { isFav, initFavorites, favSync } from './favorites.js';
 import { initLevelInfo, lvb, lvOn, lvPrice } from './level.js';
 import { renderHelp } from './help.js';
@@ -37,6 +37,26 @@ const kept=history.state&&history.state.tarih;
 const ds=upcoming(p.dates);
 /* tek kalkış kaldıysa o seçili gelir */
 let picked=kept&&ds.some(x=>x[0]+' '+x[1]===kept)?kept:firstDateIn(p,getSearch().tarih)||(ds.length===1?ds[0].join(' '):'');
+/* sayfada üç tarih görünür; çekmeceden sonraki bir tarih seçilirse üçüncü yerde o durur */
+const dKey=x=>x[0]+' '+x[1];
+const dBtn=x=>'<button type="button" role="radio" aria-checked="'+(dKey(x)===picked)+'" data-d="'+dKey(x)+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>';
+function dGrid(){let show=ds.slice(0,3);const at=ds.find(x=>dKey(x)===picked);if(at&&!show.includes(at))show=[ds[0],ds[1],at];
+  return show.map(dBtn).join('')+(ds.length>3?'<button type="button" class="more-d" data-all-d aria-haspopup="dialog" aria-expanded="false">'+IC.calendar+'<span>Tüm tarihler</span></button>':'')}
+const AY={Oca:'Ocak',Şub:'Şubat',Mar:'Mart',Nis:'Nisan',May:'Mayıs',Haz:'Haziran',Tem:'Temmuz',Ağu:'Ağustos',Eyl:'Eylül',Eki:'Ekim',Kas:'Kasım',Ara:'Aralık'};
+let dSh=null;
+function allDates(from){
+  if(!dSh){document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="udBg"></div><div class="sheet pl-sh" id="udSheet" role="dialog" aria-modal="true" aria-labelledby="udTtl">'
+     +'<div class="pl-top"><div class="sh-grab"></div><div class="sh-hd"><h3 id="udTtl">Tüm tarihler</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div></div><div class="pl-in"></div></div>');
+    const el=document.getElementById('udSheet');dSh=makeSheet(el,document.getElementById('udBg'),{drag:el.querySelector('.pl-top')});
+    el.addEventListener('click',e=>{const d=e.target.closest('[data-d]');if(d){pick(d.dataset.d);dSh.close()}})}
+  /* aylara bölünmüş dörtlü ızgara */
+  const by=[];ds.forEach(x=>{const m=AY[x[1].split(' ')[1]]||'';const g=by.find(b=>b[0]===m);g?g[1].push(x):by.push([m,[x]])});
+  const inn=document.querySelector('#udSheet .pl-in');
+  inn.innerHTML='<p class="u-dn">'+ds.length+' kalkış tarihi</p>'
+    +by.map(([m,l])=>'<h4 class="u-dm">'+m+'</h4><div class="u-dates u-dall" role="radiogroup" aria-label="'+m+' kalkışları">'+l.map(dBtn).join('')+'</div>').join('');
+  inn.scrollTop=0;dSh.open(from)}
+function pick(k){picked=k;const g=document.querySelector('#tarihler .u-dates');if(g)g.innerHTML=dGrid();
+  history.replaceState({...history.state,tarih:picked},'');drawCta();cxl()}
 const posts=listPosts({productId:p.id});
 const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
@@ -86,9 +106,9 @@ document.getElementById('urun').innerHTML=
    +'</section>':'')
 
  +(p.dates.length?'<section class="u-sec u-dsec" id="tarihler"><div class="hd"><h2>Tarih seç</h2></div><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
-   /* ilk üç tarih ve "Tüm tarihler"; dokununca diğerleri açılır (seçili tarih hep görünür) */
-   +ds.map((x,i)=>{const k=x[0]+' '+x[1];return '<button type="button" role="radio" aria-checked="'+(k===picked)+'" data-d="'+k+'"'+(i>2&&k!==picked?' hidden':'')+'><small>'+x[0]+'</small><b>'+x[1]+'</b></button>'}).join('')
-   +(ds.length>3?'<button type="button" class="more-d" data-all-d aria-expanded="false">'+IC.calendar+'<span>Tüm tarihler</span></button>':'')+'</div><p class="u-cx" id="cxl2"></p></section>':'')
+   /* ilk üç tarih ve "Tüm tarihler" (çekmecede bütün tarihler) */
+   +dGrid()
+   +'</div><p class="u-cx" id="cxl2"></p></section>':'')
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
@@ -160,9 +180,9 @@ cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo'))return;
   if(p.dates.length&&!picked){goTo('tarihler');return}
   location.href=ROOT+'rezervasyon/?id='+p.id+(picked?'&tarih='+encodeURIComponent(picked):'')});
 document.getElementById('urun').addEventListener('click',e=>{
-  const ad=e.target.closest('[data-all-d]');if(ad){ad.parentElement.querySelectorAll('[data-d][hidden]').forEach(x=>x.hidden=false);ad.remove();return}
+  const ad=e.target.closest('[data-all-d]');if(ad){allDates(ad);return}
   const d=e.target.closest('[data-d]');
-  if(d){document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-checked',x===d));picked=d.dataset.d;history.replaceState({...history.state,tarih:picked},'');drawCta();cxl();return}
+  if(d){pick(d.dataset.d);return}
   const m=e.target.closest('[data-prog]');
   if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);
     m.textContent=open?'Daha az göster':'Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0]);return}
