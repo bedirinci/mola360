@@ -1,8 +1,8 @@
-/* Ortak kabuk: her sayfada aynı olan parçalar. Alt menü, başlıktaki mesaj sayısı,
+/* Ortak kabuk: her sayfada aynı olan parçalar. Alt menü, başlıktaki mesaj sayısı ve zil,
    bildirim (toast) ve sayfa genelindeki dokunma/klavye davranışları.
    Sayfalar ayrı klasörlerde (baglan/, urun/ …); bağlar kök adrese göre kurulur. */
-import { unreadChats } from './api.js';
-import { initGestures, initKeyboardFocus, toast } from './ui.js';
+import { unreadChats, unreadNotifs } from './api.js';
+import { initGestures, initKeyboardFocus } from './ui.js';
 
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
@@ -45,7 +45,10 @@ export function applyLevel(){const l=getLevel(),m=l!=='guest';
   const t=document.getElementById('lvlTxt');if(t&&m)t.textContent=l==='kasif'?'Kâşif · 1.240 Molapuan':'Gezgin · 320 Molapuan';
   /* başlıktaki mesaj ikonu: okunmamış sohbet sayısı (misafirde yok) */
   const n=m?unreadChats():0;document.querySelectorAll('[data-mesaj-n]').forEach(x=>{x.textContent=n;x.hidden=!n;
-    x.parentElement.setAttribute('aria-label',n?'Mesajlar, '+n+' okunmamış sohbet':'Mesajlar')});}
+    x.parentElement.setAttribute('aria-label',n?'Mesajlar, '+n+' okunmamış sohbet':'Mesajlar')});
+  /* zil: okunmamış bildirim varsa nokta */
+  const b=m?unreadNotifs():0;document.querySelectorAll('[data-bildirim-n]').forEach(x=>{x.hidden=!b;
+    x.parentElement.setAttribute('aria-label',b?'Bildirimler, '+b+' okunmamış':'Bildirimler')});}
 
 export function renderShell(page,{nav=true}={}){
   const anchor=document.querySelector('script[type="module"]');
@@ -60,8 +63,8 @@ export function renderShell(page,{nav=true}={}){
   initGuestGate();
   document.addEventListener('m360:giris',applyLevel);
   initShare();
-  /* bildirimler henüz yok */
-  document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Yeni bildirimin yok.','Tamam',()=>{},3000)});
+  /* geri gelince (bfcache) zil ve mesaj sayısı güncellensin */
+  addEventListener('pageshow',e=>{if(e.persisted)applyLevel()});
   liveNow();setInterval(liveNow,60000);
   initBack();
 }
@@ -92,7 +95,7 @@ function initBack(){
     if(t.back)history.back();else location.href=t.url});
 }
 /* geri okunun yanındaki ad: dönülecek sayfa */
-const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim',gonderi:'Gönderi',mesajlar:'Mesajlar',sohbet:'Sohbet'};
+const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim',gonderi:'Gönderi',mesajlar:'Mesajlar',sohbet:'Sohbet',bildirimler:'Bildirimler'};
 export function backLabel(fallback){const t=backTo(fallback),u=new URL(t?t.url:fallback,location.href);
   if(!u.href.startsWith(R))return NAMES[''];return NAMES[u.pathname.slice(new URL(R).pathname.length).split('/')[0]]||'Geri'}
 /* geri nereye: {back:true} bir önceki sayfa tarayıcı geçmişinde hemen arkada;

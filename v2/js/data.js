@@ -295,3 +295,22 @@ export const SOHBET=[
    ['o','Merhaba Ayşe! Kapadokya paylaşımını gördüm. Kaldığın otelden memnun kaldın mı?','08:47']]},
  {k:'ozan',ist:1,yeni:1,m:[{gun:'Dün'},
    ['o','Selam! Doğa yürüyüşü paylaşımlarına bayıldım. Hafta sonu Belgrad Ormanı\'nda yürüyoruz, gelmek ister misin?','16:03']]}];
+/* Bildirimler (ÖRNEK): Ayşe'ye gelenler, en yeniden eskiye. Rezervasyon
+   hatırlatmaları (yaklaşan tur, kalan ödeme, değerlendirme) burada değil,
+   rezervasyonlardan hesaplanır (api.js listNotifs).
+   tur: begeni | yorum | bahset | takip | davet | istek | gezgin | indirim | puan | seviye
+   k: kişiler (USERS), n: öteki kişilerin sayısı, post: paylaşım id, urun: ürün adı,
+   ne: ne zaman, g: bugun | hafta | once, oku:1 zaten okunmuş */
+export const BILDIRIM=[
+ {id:'n1',tur:'begeni',k:['selin','mert'],n:246,post:'a1',ne:'12 dk',g:'bugun'},
+ {id:'n2',tur:'yorum',k:['deniz'],post:'a1',metin:'Fotoğraflar harika! Hangi ayda gittiniz?',ne:'2 sa',g:'bugun'},
+ {id:'n3',tur:'istek',k:['ceren'],ne:'3 sa',g:'bugun'},
+ {id:'n4',tur:'takip',k:['ceren'],ne:'3 sa',g:'bugun'},
+ {id:'n5',oku:1,tur:'davet',k:['mert'],urun:'Ölüdeniz Yamaç Paraşütü',ne:'Dün',g:'hafta'},
+ {id:'n6',oku:1,tur:'bahset',k:['elif'],post:'p3',metin:'@ayse.molada bir dahakine sen de gel!',ne:'Dün',g:'hafta'},
+ {id:'n7',oku:1,tur:'indirim',urun:'Efes ve Şirince Turu',ne:'2 g',g:'hafta'},
+ {id:'n8',oku:1,tur:'gezgin',ne:'3 g',g:'hafta'},
+ {id:'n9',oku:1,tur:'begeni',k:['zeynep','kaan'],n:39,post:'a2',ne:'4 g',g:'hafta'},
+ {id:'n10',oku:1,tur:'takip',k:['burak'],ne:'5 g',g:'hafta'},
+ {id:'n11',tur:'puan',urun:'Kapadokya Turu',puan:179,ne:'16 Eyl',g:'once'},
+ {id:'n12',tur:'seviye',ne:'16 Eyl',g:'once'}];
