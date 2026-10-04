@@ -95,7 +95,7 @@ document.addEventListener('click',e=>{const c=e.target.closest('.fc,.tab');if(!c
 
 /* Yeni sitede henüz yapılmamış sayfalar */
 document.addEventListener('click',e=>{const a=e.target.closest('a[href="#yakinda"]');if(!a)return;e.preventDefault();
-  toast('Bu sayfa yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},4000)});
+  toast('Çok yakında.','Tamam',()=>{},4000)});
 }
 
 /* Klavyeyle gezinirken odak çerçevesi görünsün, dokunurken görünmesin */

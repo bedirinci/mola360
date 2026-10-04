@@ -7,6 +7,7 @@ import { I } from './icons.js';
 import { initGestures, initKeyboardFocus, backLayer, toast } from './ui.js';
 
 import { ROOT } from './root.js';
+import { getLevel } from './level.js';
 export { ROOT };
 const R=ROOT;
 
@@ -104,6 +105,11 @@ function liveNow(){const on=isLive();
 }
 
 /* page: alt menüde seçili sekme. nav:false → alt menü yok (ürün sayfasındaki gibi kendi alt çubuğu olan sayfalar) */
+/* menüde üye ya da misafir bölümü, oturumdaki kullanıcıya göre */
+export function applyLevel(){const l=getLevel(),m=l!=='guest';
+  document.querySelectorAll('[data-member]').forEach(x=>x.hidden=!m);document.querySelectorAll('[data-guest]').forEach(x=>x.hidden=m);
+  const t=document.getElementById('lvlTxt');if(t&&m)t.textContent=l==='kasif'?'Kâşif · 1.240 Molapuan':'Gezgin · 320 Molapuan';}
+
 export function renderShell(page,{nav=true}={}){
   const anchor=document.querySelector('script[type="module"]');
   const tpl=document.createElement('template');
@@ -113,10 +119,11 @@ export function renderShell(page,{nav=true}={}){
   initGestures();
   initKeyboardFocus();
   initMenu();
+  applyLevel();
   if(nav)initDock(page);
   initShare();
   /* bildirimler henüz yok */
-  document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Bildirimler yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000)});
+  document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Yeni bildirimin yok.','Tamam',()=>{},3000)});
   liveNow();setInterval(liveNow,60000);
   /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
   document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;

@@ -62,7 +62,7 @@ export function postCard(x){
   const u=x.user;
   return '<article class="post" data-post="'+x.id+'">'
    +'<div class="post-hd">'+ava(u)+'<div class="x"><b>'+u.ad+'</b><small>@'+u.kul+' · '+[x.place,x.with,x.when].filter(Boolean).join(' · ')+'</small></div>'+(x.mine?'':'<button type="button" class="follow" aria-pressed="false">Takip et</button>')+'</div>'
-   +'<div class="media" style="background:'+x.bg+'">'+(x.sample?'<span class="ornek">ÖRNEK</span>':'')+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
+   +'<div class="media" style="background:'+x.bg+'">'+(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':'')
    +(x.media>1?'<span class="m-count">1/'+x.media+'</span>':'')+(x.video?'<span class="m-play" aria-label="Video">'+IC.play+'</span>':'')+'</div>'
    +'<div class="acts-row"><button type="button" class="act like" aria-pressed="false" aria-label="Beğen">'+IC.heart+'<span>'+x.likes+'</span></button>'
    +'<button type="button" class="act" aria-label="Yorumlar" data-soon>'+IC.comment+'<span>'+x.comments+'</span></button>'
@@ -73,9 +73,9 @@ export function postCard(x){
 }
 
 /* Rayda küçük paylaşım kartı (Keşfet ve ürün sayfası) */
-export function postMini(x){
+export function postMini(x,{own=false}={}){
   const u=x.user,p=x.product;
-  return '<article class="pmini" style="background:'+x.bg+'"><div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>'
+  return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?'<span class="went">'+IC.check+'Mola360 ile gitti</span>':''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
    +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
    +'<a class="lk2" href="'+ROOT+'baglan/#'+x.id+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
@@ -90,7 +90,7 @@ export function initPostActions(toast){
       if(b.classList.contains('save'))toast(on?'Paylaşım kaydedildi':'Kayıttan çıkarıldı','Tamam',()=>{},2500);
       return}
     const s=e.target.closest('[data-share]');
-    if(s){const url=location.href;if(navigator.share){navigator.share({title:'mola360',url}).catch(()=>{})}else toast('Paylaşım bağlantısı hazırlanıyor.','Tamam',()=>{},3000);return}
-    if(e.target.closest('.act[data-soon]'))toast('Yorumlar yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000);
+    if(s){const url=location.href;if(navigator.share){navigator.share({title:'mola360',url}).catch(()=>{})}else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{});return}
+    if(e.target.closest('.act[data-soon]'))toast('Çok yakında.','Tamam',()=>{},3000);
   });
 }

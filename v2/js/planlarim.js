@@ -27,7 +27,7 @@ const past=b=>'<article class="rz">'+head(b.product,b.when+' · '+b.who)
 /* Bu cihazda yapılan taslak rezervasyonlar (rezervasyon akışından) */
 const mine=b=>'<article class="rz">'+head(b.product,[b.date,b.slot].filter(Boolean).join(' · '))
   +'<div class="rz-rows"><div><small>Seçim</small><b>'+[b.opt,b.qty].filter(Boolean).join(' · ')+'</b></div>'
-  +'<div><small>Durum</small><b class="ok">'+(b.pay==='kapora'?'Kapora':'Tamamı')+' · taslak</b></div><div><small>'+(b.total>b.paid?'Kalan':'Toplam')+'</small><b>'+tl(b.total>b.paid?b.total-b.paid:b.total)+'</b></div></div>'
+  +'<div><small>Durum</small><b class="ok">'+(b.pay==='kapora'?'Kapora':'Tamamı')+'</b></div><div><small>'+(b.total>b.paid?'Kalan':'Toplam')+'</small><b>'+tl(b.total>b.paid?b.total-b.paid:b.total)+'</b></div></div>'
   +'<div class="rz-acts"><button type="button" class="btn ghost" data-soon>Biletim</button><button type="button" class="btn ghost" data-cancel="'+b.no+'">İptal et</button></div>'
   +'<p class="rz-no">Rezervasyon no '+b.no+' · ödeme alınmadı</p></article>';
 
@@ -36,8 +36,8 @@ const favs=()=>{const items=favList().map(findByTitle).filter(Boolean).reverse()
   :'<div class="empty"><span class="ei">'+IC.heart+'</span><b>Henüz favorin yok</b><p>Beğendiğin turu, oteli ya da etkinliği kalbe dokunarak sakla.</p><a class="btn" href="'+ROOT+'">Keşfetmeye başla</a></div>'};
 
 const TABS={
-  yaklasan:()=>'<p class="feed-note">Rezervasyonlar <span class="ornek">ÖRNEK</span></p><div class="rz-list">'+listBookings().map(mine).concat(UP.map(up)).join('')+'</div>',
-  gecmis:()=>'<p class="feed-note">Rezervasyonlar <span class="ornek">ÖRNEK</span></p><div class="rz-list">'+listPastBookings().map(past).join('')+'</div>',
+  yaklasan:()=>'<div class="rz-list">'+listBookings().map(mine).concat(UP.map(up)).join('')+'</div>',
+  gecmis:()=>'<div class="rz-list">'+listPastBookings().map(past).join('')+'</div>',
   favoriler:favs};
 
 const el=document.getElementById('plan');
@@ -49,8 +49,8 @@ function show(k){cur=k;
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
 el.addEventListener('click',e=>{const c=e.target.closest('[data-cancel]');
-  if(c){cancelBooking(c.dataset.cancel);show('yaklasan');toast('Taslak rezervasyon silindi.','Tamam',()=>{},3000);return}
-  if(e.target.closest('[data-soon]'))toast('Bu adım yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000)});
+  if(c){cancelBooking(c.dataset.cancel);show('yaklasan');toast('Rezervasyon iptal edildi.','Tamam',()=>{},3000);return}
+  if(e.target.closest('[data-soon]'))toast('Çok yakında.','Tamam',()=>{},3000)});
 /* Paylaşınca geçmişteki kart "paylaştın"a döner */
 document.addEventListener('m360:paylasildi',()=>{if(cur==='gecmis')show('gecmis')});
 const h=location.hash.slice(1);

@@ -95,7 +95,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .u-rev .big{background:var(--navy);color:#fff;font-size:var(--fs-2xl);font-weight:var(--fw-black);border-radius:var(--r-md) var(--r-md) var(--r-md) var(--r-xs);padding:8px 10px;font-variant-numeric:tabular-nums}
 .u-rev b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold)}
 .u-rev span{font-size:var(--fs-sm);color:var(--mute);line-height:1.4}
-.box h2 .ornek{margin-left:4px}
 
 /* Rezervasyonlar */
 .rz-list{display:flex;flex-direction:column;gap:14px;padding:0 16px}
@@ -121,18 +120,31 @@ main#urun .box:first-of-type{margin-top:24px}
 .rz-done svg{width:16px;height:16px;stroke-width:2.6}
 
 /* Profil */
-.pf-id{display:flex;align-items:center;gap:14px;margin-top:14px}
-.pf-id .x{min-width:0;line-height:1.35}
-.pf-id b{display:block;font-size:var(--fs-xl);font-weight:var(--fw-black);letter-spacing:-.01em}
+.pf-id{display:flex;align-items:center;gap:16px;margin-top:10px}
+.pf-id .ava.l{width:68px;height:68px;font-size:var(--fs-xl)}
+.pf-id .x{min-width:0;line-height:1.3}
+.pf-id .x>b{display:block;font-size:var(--fs-xl);font-weight:var(--fw-black);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-id .x>span{display:block;font-size:var(--fs-md);color:var(--navy-ink)}
-.pf-id .lvl{display:inline-flex!important;align-items:center;gap:4px;margin-top:4px;color:var(--green)!important;font-weight:var(--fw-bold);font-size:var(--fs-sm)}
-.pf-id .lvl svg{width:14px;height:14px;stroke-width:2.6}
-.pf-bio{margin-top:12px;font-size:var(--fs-md);line-height:1.5;color:#fff!important}
-.pf-stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:14px;padding:12px 0;border-radius:var(--r-md);background:rgba(255,255,255,.07);text-align:center}
-.pf-stats b{display:block;font-size:var(--fs-lg);font-weight:var(--fw-black);font-variant-numeric:tabular-nums}
+.pf-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pf-lv,.pf-loc{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px 0 7px;border-radius:var(--r-pill);font-size:var(--fs-xs);font-weight:var(--fw-bold)}
+.pf-lv{background:var(--green);color:var(--navy)}
+.pf-loc{background:rgba(255,255,255,.1);color:#fff}
+.pf-lv svg,.pf-loc svg{width:13px;height:13px;stroke-width:2.6}
+.pf-bio{margin-top:14px;font-size:var(--fs-md);line-height:1.5;color:#fff!important}
+.pf-stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:16px;padding:12px 0;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
+.pf-stats>*{display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff;line-height:1.2}
+.pf-stats>*+*{border-left:1px solid rgba(255,255,255,.1)}
+.pf-stats b{font-size:var(--fs-lg);font-weight:var(--fw-black);font-variant-numeric:tabular-nums}
 .pf-stats span{font-size:var(--fs-xs);color:var(--navy-ink)}
-.pf-acts{display:flex;gap:8px;margin-top:12px}
-.pf-acts .btn{flex:1;justify-content:center}
+.pf-acts{display:flex;gap:8px;margin-top:16px}
+.pf-acts .btn{justify-content:center}
+.pf-acts .btn.green{flex:1}
+.pf-acts .btn svg{width:18px;height:18px;stroke-width:2.4}
+.pf-acts .btn.sq{flex:none;width:46px;padding:0}
+.pf-acts .btn{white-space:nowrap}
+.pf-acts .sm{display:none}
+/* dar telefonda kısa etiket, tek satır */
+@media (max-width:359px){.pf-acts .lg{display:none}.pf-acts .sm{display:inline}}
 .btn.ghost-d{background:rgba(255,255,255,.1);color:#fff}
 #pfTabs{margin:16px 16px 0}
 #pfTabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:var(--fs-sm)}
@@ -141,6 +153,8 @@ main#urun .box:first-of-type{margin-top:24px}
 @media (max-width:359px){#pfTabs svg{display:none}}
 .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}
 .pf-grid .pmini{width:auto}
+.pmini.own{justify-content:flex-end}
+.pmini.own .went{position:absolute;left:10px;top:10px;display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:var(--r-pill);background:rgba(255,255,255,.95);color:var(--green-ink);font-size:var(--fs-xs);font-weight:var(--fw-bold)}
 .pf-went{padding:6px 2px 0}
 .pf-went .plink{background:var(--card);box-shadow:var(--shadow)}
 
