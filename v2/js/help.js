@@ -15,7 +15,7 @@ const HELP=`<section class="help" aria-labelledby="h-help">
     <button type="button" class="pick" id="cWhenBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="whenSheet"><span id="cWhenTxt">Hemen</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
     <input type="hidden" id="cWhen" value="Hemen">
     <button class="btn" type="submit">Aranma talebi gönder</button>
-    <p class="call-note">Taslakta talep gönderilmiyor; gerçek sitede uzmanımız seçtiğin saatte arar.</p>
+    <p class="call-note">Uzmanımız seçtiğin saatte arar.</p>
   </form>
   <p class="call-ok" id="callOk" hidden role="status"></p>
 </section>`;

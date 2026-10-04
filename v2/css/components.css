@@ -194,7 +194,6 @@ html.kb .dock :focus-visible{outline-offset:-2px}
 
 /* ---- iskelet bileşenleri (alt sayfalar) ---- */
 body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-.ornek{display:inline-block;vertical-align:middle;background:#FFF4D6;color:#7A5300;font-size:var(--fs-xs);font-weight:var(--fw-black);letter-spacing:.06em;padding:2px 6px;border-radius:var(--r-xs);line-height:1.3}
 
 /* alt sayfa başlığı: Keşfet'teki lacivert bandın kısa hali */
 .pg-top{background:var(--navy);color:#fff;padding:10px 16px 22px;border-radius:0 0 var(--r-xl) var(--r-xl)}
@@ -243,8 +242,7 @@ body.no-nav{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .follow{min-height:32px;padding:0 12px;border-radius:var(--r-pill);font-size:var(--fs-sm);font-weight:var(--fw-bold);color:var(--navy);box-shadow:inset 0 0 0 1px var(--line)}
 .follow[aria-pressed="true"]{background:var(--soft);color:var(--mute)}
 .post .media{aspect-ratio:4/5;position:relative}
-.post .media .ornek{position:absolute;left:12px;top:12px}
-.went{position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.95);color:var(--green-ink);font-size:var(--fs-xs);font-weight:var(--fw-bold);padding:5px 9px;border-radius:var(--r-pill)}
+.post .media .went{position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.95);color:var(--green-ink);font-size:var(--fs-xs);font-weight:var(--fw-bold);padding:5px 9px;border-radius:var(--r-pill)}
 .went svg{width:13px;height:13px;stroke-width:2.6}
 .acts-row{display:flex;align-items:center;gap:2px;padding:6px 8px 0}
 .act{display:inline-flex;align-items:center;gap:5px;min-height:40px;padding:0 8px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink);font-variant-numeric:tabular-nums}
@@ -425,10 +423,10 @@ html.kb .rc:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:
    fareyle üstüne gelince gölgesi büyür; hareket azaltılmışsa çökme olmaz. */
 /* başlıklarda text-wrap:balance yok: Safari sığan başlığı da ikinci satıra atıyordu */
 p{text-wrap:pretty}
-.vk,.tk,.th,.rc,.plink,.pmini,.post,.rz,.btn,.go,.fc,.tt,.tab,.cb,.ib,.dm,.stp button,.bk-opts button,.u-dates button,.arr,.nav a{transition:transform var(--t-fast) var(--ease),background-color var(--t) var(--ease),box-shadow var(--t) var(--ease),color var(--t) var(--ease),border-color var(--t) var(--ease)}
+.vk,.tk,.th,.rc,.plink,.pmini,.post,.rz,.btn,.go,.fc,.tt,.tab,.cb,.ib,.stp button,.bk-opts button,.u-dates button,.arr,.nav a{transition:transform var(--t-fast) var(--ease),background-color var(--t) var(--ease),box-shadow var(--t) var(--ease),color var(--t) var(--ease),border-color var(--t) var(--ease)}
 @media (prefers-reduced-motion:no-preference){
   .vk:active,.tk:active,.th:active,.pmini:active,.rz-hd:active{transform:scale(.98)}
-  .btn:active,.go:active,.fc:active,.tt:active,.tab:active,.dm:active,.stp button:active,.bk-opts button:active,.u-dates button:active,.nav a:active{transform:scale(.96)}
+  .btn:active,.go:active,.fc:active,.tt:active,.tab:active,.stp button:active,.bk-opts button:active,.u-dates button:active,.nav a:active{transform:scale(.96)}
   .cb:active,.ib:active,.arr:active{transform:scale(.9)}
 }
 @media (hover:hover) and (pointer:fine){
@@ -441,7 +439,7 @@ p{text-wrap:pretty}
   .cb:hover{background:#fff}
   .chip:hover,.btn.ghost:hover{box-shadow:inset 0 0 0 1px var(--navy)}
   .tab:hover:not([aria-selected="true"]){background:rgba(255,255,255,.1);color:#fff}
-  .seg button:hover:not([aria-pressed="true"]),.dm:hover:not([aria-pressed="true"]){background:var(--soft)}
+  .seg button:hover:not([aria-pressed="true"]){background:var(--soft)}
   .cats a:hover:not([aria-current]){color:var(--navy)}
   .all:hover,.foot a:hover{color:var(--navy);text-decoration:underline}
   .m-link:hover{text-decoration:underline;text-underline-offset:3px}

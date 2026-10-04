@@ -53,13 +53,13 @@ function step1(){
   +(S.slots.length?'<section class="box" id="bkSlot"><h2>Saat</h2>'+radios('Saat',S.slots.map(s=>[s,'Başlangıç',s]),st.slot)+'<p class="err" id="slotErr" hidden>Bir saat seç.</p></section>':'')
   +(S.opts.length?'<section class="box"><h2>'+(S.fixed?'Alan':'Seçenek')+'</h2><div class="bk-opts" role="radiogroup" aria-label="Seçenek">'
     +S.opts.map((o,i)=>'<button type="button" role="radio" aria-checked="'+(i===st.opt)+'" data-opt="'+i+'"><span>'+o[0]+'</span><b>'+tl(lvPrice(p.title,o[1]))+'</b></button>').join('')+'</div>'
-    +(S.fixed?'<p>Fiyat seçtiğin alan için minimum harcama; mekânda harcamandan düşülür. <span class="ornek">ÖRNEK KURAL</span></p>':'')+'</section>':'')
+    +(S.fixed?'<p>Fiyat seçtiğin alan için minimum harcama; mekânda harcamandan düşülür.</p>':'')+'</section>':'')
   +(S.qty?'<section class="box"><div class="bk-qty"><div><h2>'+S.qty.label+'</h2>'+(S.qty.note?'<p>'+S.qty.note+'</p>':'')+'</div>'
     +'<div class="stp"><button type="button" data-q="-1" aria-label="Azalt">−</button><output id="qty" aria-live="polite">'+st.qty+'</output><button type="button" data-q="1" aria-label="Artır">+</button></div></div></section>':'')
   +(S.deposit?'<section class="box"><h2>Nasıl ödemek istersin?</h2><div class="bk-opts" role="radiogroup" aria-label="Ödeme şekli">'
     +'<button type="button" role="radio" aria-checked="'+(st.pay==='kapora')+'" data-pay="kapora"><span>%20 kaporayla yerini ayırt<small>Bugün <i id="depNow">'+tl(Math.round(total()*S.deposit))+'</i>, kalanı kalkıştan 7 gün önce</small></span></button>'
     +'<button type="button" role="radio" aria-checked="'+(st.pay==='tam')+'" data-pay="tam"><span>Tamamını şimdi öde<small>Sonra hatırlaman gereken bir ödeme kalmaz</small></span></button></div>'
-    +'<p><span class="ornek">ÖRNEK KURAL</span></p></section>':'');
+    +'<p></p></section>':'');
 }
 
 function step2(){
@@ -87,10 +87,10 @@ function step3(){
   +'<div class="tot"><dt>Toplam</dt><dd>'+tl(total())+'</dd></div>'
   +(st.pay==='kapora'?'<div class="now"><dt>Bugün ödenecek (%20 kapora)</dt><dd>'+tl(now())+'</dd></div><div><dt>Kalan, kalkıştan 7 gün önce</dt><dd>'+tl(total()-now())+'</dd></div>':'')
   +'</dl><p>Gördüğün toplam, ödeyeceğin toplam: sonradan eklenen ücret yok.</p></section>'
-  +'<section class="box"><h2>İptal <span class="ornek">ÖRNEK KURAL</span></h2><ul class="ticks"><li>'+IC.check+'<div><b>'+S.cancel+'.</b> <span>'+cxl()+'</span></div></li></ul></section>'
-  +'<section class="box"><h2>Ödeme</h2><div class="bk-pay">'+IC.shield+'<p><b>Kartla güvenli ödeme (3D Secure)</b> ödeme altyapısıyla gelecek. Bu taslakta kart bilgisi istenmez ve ödeme alınmaz.</p></div>'
-  +'<ul class="ticks"><li>'+IC.check+'<div><b>3 taksit, vade farksız</b> <span>Anlaşmalı kartlarla. <span class="ornek">ÖRNEK</span></span></div></li>'
-  +'<li>'+IC.check+'<div><b>'+(getLevel()==='guest'?'Üyeler bu rezervasyondan '+pts+' Molapuan kazanır':'Bu rezervasyondan '+pts+' Molapuan kazanırsın')+'</b> <span>100 TL = 1 puan. <span class="ornek">ÖNERİ</span></span></div></li></ul>'
+  +'<section class="box"><h2>İptal</h2><ul class="ticks"><li>'+IC.check+'<div><b>'+S.cancel+'.</b> <span>'+cxl()+'</span></div></li></ul></section>'
+  +'<section class="box"><h2>Ödeme</h2><div class="bk-pay">'+IC.shield+'<p><b>Kartla güvenli ödeme (3D Secure)</b> Kart bilgilerini bankanın güvenli ödeme sayfasında girersin; kart bilgin Mola360\'ta saklanmaz.</p></div>'
+  +'<ul class="ticks"><li>'+IC.check+'<div><b>3 taksit, vade farksız</b> <span>Anlaşmalı kartlarla.</span></div></li>'
+  +'<li>'+IC.check+'<div><b>'+(getLevel()==='guest'?'Üyeler bu rezervasyondan '+pts+' Molapuan kazanır':'Bu rezervasyondan '+pts+' Molapuan kazanırsın')+'</b> <span>100 TL = 1 puan.</span></div></li></ul>'
   +'<label class="bk-ok"><input type="checkbox" id="okBox"'+(st.ok?' checked':'')+'><span><a href="#yakinda">Ön bilgilendirme formunu</a> ve <a href="#yakinda">mesafeli satış sözleşmesini</a> okudum, onaylıyorum.</span></label><p class="err" id="okErr" hidden>Devam etmek için sözleşmeyi onaylaman gerekiyor.</p></section>';
 }
 
@@ -100,9 +100,9 @@ function cxl(){const c=cancelBy(p,st.date);
 
 function done(r){
   return '<div class="bk-done"><span class="ei">'+IC.check+'</span><h2>Rezervasyonun alındı</h2><p>'+p.title+'<br>'+when()+(S.qty?' · '+qtyTxt():'')+'</p>'
-  +'<p class="no">Rezervasyon no <b>'+r.no+'</b> <span class="ornek">TASLAK · ödeme alınmadı</span></p></div>'
+  +'<p class="no">Rezervasyon no <b>'+r.no+'</b></p></div>'
   +'<section class="box"><h2>Sırada ne var?</h2><ul class="ticks">'
-  +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider. Taslakta e-posta gönderilmez.</span></div></li>'
+  +'<li>'+IC.check+'<div><b>Bilgiler e-postanda</b> <span>'+esc(st.email)+' adresine bilet ve buluşma bilgisi gider.</span></div></li>'
   +(st.pay==='kapora'?'<li>'+IC.check+'<div><b>Kalan '+tl(total()-now())+'</b> <span>Kalkıştan 7 gün önce hatırlatırız; Planlarım\'dan ödeyebilirsin.</span></div></li>':'')
   +'<li>'+IC.check+'<div><b>Döndükten sonra paylaş</b> <span>Paylaşımın bu deneyimin sayfasında ve Bağlan\'da "Mola360 ile gitti" rozetiyle görünür.</span></div></li></ul></section>'
   +'<div class="bk-acts"><a class="btn" href="'+ROOT+'planlarim/">Planlarım</a><button type="button" class="btn ghost" data-invite>'+IC.share+'Birlikte gideceklere gönder</button></div>';

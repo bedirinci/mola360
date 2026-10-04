@@ -65,7 +65,7 @@ function draw(){
   const list=listProducts({type:tur,...f});
   /* tema vitrini temanın kendi sırasıyla */
   if(th)list.sort((a,b)=>th.ids.indexOf(a.id)-th.ids.indexOf(b.id));
-  document.getElementById('lsCount').innerHTML=list.length+' deneyim <span class="ornek">ÖRNEK</span>';
+  document.getElementById('lsCount').innerHTML=list.length+' deneyim';
   const el=document.getElementById('list');
   /* boşsa: aynı arama başka kategoride sonuç veriyorsa oraya yönlendir */
   const other=!list.length&&tur?listProducts(f).length:0;
@@ -89,6 +89,6 @@ document.getElementById('filters').addEventListener('click',e=>{
   if(k){kimle=k.dataset.kimle===kimle?'':k.dataset.kimle;go();return}
   if(e.target.closest('[data-soon-f]'))toast('Bu filtre gerçek veriyle çalışacak.','Tamam',()=>{},3000);
 });
-document.querySelector('[data-soon-sort]').addEventListener('click',()=>toast('Sıralama seçenekleri yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000));
+document.querySelector('[data-soon-sort]').addEventListener('click',()=>toast('Çok yakında.','Tamam',()=>{},3000));
 filters();
 draw();

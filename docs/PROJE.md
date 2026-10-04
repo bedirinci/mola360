@@ -1157,3 +1157,40 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Kart kapalıyken yaklaşık 167px yüksekliğinde. Misafir
   "İlk rezervasyonunla Gezgin ol, puan kazanmaya başla!" görüyor.
   Ok düğmesi tüm deneyimler listesine götürüyor.
+
+### 2026-10-04 — Site yayındaymış gibi görünür; profil yenilendi
+
+- **Karar (Bedir):** Sitedeki bütün örnek yazıları kalkıyor ve site
+  yayındaymış gibi görünüyor. Profil sayfası daha iyi hale getiriliyor.
+- **Neden:** "ÖRNEK", "taslak", "önizleme" ve "hazırlanıyor" yazıları siteyi
+  yarım gösteriyordu.
+- **Etkilediği alanlar:**
+  - Bütün v2 sayfaları.
+  - Bağlayıcı kural 4 (`docs/yeni-surum.md`): örnek veri artık yalnızca
+    kodda işaretleniyor.
+  - `tests/v2.test.js`.
+  - `level.js`, `shell.js`, `profil.js`, `cards.js` (`postMini` için `own`
+    seçeneği).
+- **Teknik sonuç:**
+  - **Kaldırılanlar:**
+    - ÖRNEK, ÖRNEK KURAL, ÖRNEK İÇERİK, ÖNERİ ve TASLAK rozetleri;
+    - sayfa açıklamalarındaki "Önizleme" sözü;
+    - Keşfet'in altındaki "ÖRNEK VERİ" yazısı ve "Görünüm" düğmeleri;
+    - ödeme, e-posta ve uzman araması için yazılmış "taslakta" notları.
+  - **Kullanıcı:** oturumda Ayşe (Kâşif) var. Misafir ve Gezgin görünümü
+    `?gorunum=` adresiyle deneniyor.
+  - **Bildirimler:** "Yeni mola360'ta hazırlanıyor" bildirimleri "Çok
+    yakında." oldu. Zil "Yeni bildirimin yok." diyor. Paylaşım desteği
+    olmayan tarayıcıda bağlantı kopyalanıyor.
+  - **Test:** sayfalarda ÖRNEK rozeti, görünüm düğmesi, "Önizleme" ya da
+    "hazırlanıyor" kalmadığını denetliyor.
+- **Profil:**
+  - **Kimlik:** daha küçük avatar; seviye ve şehir için rozetler.
+  - **Sayılar:** kutu yerine çizgilerle ayrılıyor. Paylaşım ve deneyim
+    sayısına dokununca ilgili sekme açılıyor.
+  - **Düğmeler:** ana düğme "Deneyimini paylaş" (Bağlan döngüsü),
+    yanında "Düzenle" ve profil paylaşma.
+  - **Paylaşımlar:** kişinin kendi paylaşımlarında ad ve avatar tekrar
+    etmiyor; Mola360 ile gidilenlerde "Mola360 ile gitti" rozeti var.
+- **UX sonucu:** Site bitmiş bir ürün gibi okunuyor. Profilde en görünür
+  eylem paylaşmak. 320px'te ana düğme "Paylaş" diye kısalıyor.

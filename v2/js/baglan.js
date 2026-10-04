@@ -18,7 +18,7 @@ function show(k){
   const list=FEEDS[k]();
   feed.innerHTML=list.length?list.map(postCard).join('')
     :'<div class="empty"><span class="ei">'+IC.users+'</span><b>Henüz kimseyi takip etmiyorsun</b><p>Beğendiğin paylaşımlarda "Takip et"e dokun; onların yeni deneyimleri burada görünür.</p><button type="button" class="btn" data-feed-go="sen">Senin için akışına dön</button></div>';
-  if(k==='yakin')feed.insertAdjacentHTML('afterbegin','<p class="feed-note">Konum: İzmir <span class="ornek">ÖRNEK</span></p>');
+  if(k==='yakin')feed.insertAdjacentHTML('afterbegin','<p class="feed-note">Konum: İzmir</p>');
   document.querySelectorAll('[data-feed]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.feed===k));
 }
 document.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('[data-feed]');if(b)show(b.dataset.feed)});

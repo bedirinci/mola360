@@ -25,8 +25,10 @@ alanlar, teknik ve UX sonucuyla PROJE.md'nin **Karar kaydı**na yazılır.
    bileşende, aynı veri alanında karıştırılmaz.
 4. **Dark pattern yok.** Yanlış kıtlık, sahte sayaç, sahte bildirim,
    gizli ücret gösterilmez. Stok, uygunluk, değerlendirme, sosyal kanıt
-   ve kampanya süresi gerçek veriden gelir. Örnek veri ÖRNEK diye
-   işaretlenir.
+   ve kampanya süresi gerçek veriden gelir. Örnek veri kodda (`data.js`,
+   `icerik.js`) ÖRNEK diye işaretlenir. Arayüzde ÖRNEK rozeti, taslak notu
+   ya da önizleme düğmesi gösterilmez; site yayındaymış gibi görünür
+   (Bedir, 2026-10-04).
 5. **Kendi tasarım dili.** Unilayk yalnızca referans: rengi, logosu,
    bileşenleri kopyalanmaz. Tasarım sistemi (renk, tipografi, boşluk,
    köşe, gölge ve bileşenler) tokenlarla tanımlanır (PROJE.md §14).
@@ -42,7 +44,7 @@ alanlar, teknik ve UX sonucuyla PROJE.md'nin **Karar kaydı**na yazılır.
 
 Otomatik kontroller `tests/v2.test.js`'te.
 - Yeni sitede henüz yapılmamış sayfalara giden bağlar `#yakinda`;
-  dokununca "Bu sayfa yeni mola360'ta hazırlanıyor" bildirimi çıkar.
+  dokununca "Çok yakında." bildirimi çıkar.
   Sayfa yapıldıkça bağ gerçek adrese döner.
 - Yayına hazır olana kadar `noindex`.
 - `main` → GitHub Pages ile yayınlanıyor.
@@ -88,7 +90,7 @@ Kod düzeni:
 
 Notlar:
 
-- Veriler ÖRNEK ve sayfalarda öyle işaretli: ürün adları ve fiyatlar örnek
+- Veriler ÖRNEK; bu yalnızca kodda işaretli, sayfalarda etiket yok. Ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
 - Favoriler, son bakılanlar, son aramalar, "Yakınımda" seçimi, Keşfet'teki
@@ -108,11 +110,13 @@ Notlar:
   yaklaşık konumu (`GEO`) ÖRNEK; gerçekte işletme bilgisinden ve
   değerlendirmelerden gelecek.
 - Beğen, takip et, kaydet yalnızca ekranda değişir; kaydedilmez.
+- Oturumdaki kullanıcı Ayşe (Kâşif). Misafir ve Gezgin görünümü adresle
+  denenir: `?gorunum=misafir|gezgin|kasif` (sekme açık kaldıkça hatırlanır,
+  `sessionStorage` `m360-gorunum`). Keşfet'in altındaki görünüm düğmeleri
+  kaldırıldı.
 - Molapuan ve seviye indirimi ÖNERİ kurallarıyla gösteriliyor: 100 TL = 1
   puan, 1 puan = 1 TL, Kâşif %10, Mola Ustası %15. Seviye son 24 aydaki
   rezervasyon sayısıyla: Gezgin 1, Kâşif 3, Mola Ustası 6.
-- Keşfet'in altındaki "Görünüm: Misafir / Gezgin / Kâşif" düğmeleri
-  önizleme içindir.
 
 ## Fotoğraf kuralı
 

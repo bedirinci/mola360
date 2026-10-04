@@ -44,7 +44,7 @@ document.getElementById('urun').innerHTML=
  +'<button type="button" class="cb" data-share aria-label="Paylaş">'+IC.share+'</button>'
  +'<button type="button" class="cb" id="favP" data-fav="'+esc(p.title)+'" aria-pressed="'+isFav(p.title)+'" aria-label="Favorilere ekle">'+IC.heart+'</button>'
  +'<button type="button" class="cb" id="menuBtn" aria-label="Menüyü aç" aria-expanded="false" aria-controls="menu">'+IC.menu+'</button></div>'
- +'<span class="ug-n">1 / 8 · Görseller <span class="ornek">ÖRNEK</span></span></div>'
+ +'<span class="ug-n">1 / 8 · Görseller</span></div>'
  +'<section class="u-hd"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-score">'+(p.count?sc(p.score)+'<a href="#yorumlar">'+p.count.toLocaleString('tr-TR')+' değerlendirme</a>':'<span class="score new"><b>Yeni</b></span><span>Henüz değerlendirme yok</span>')+'</div>'
@@ -52,14 +52,14 @@ document.getElementById('urun').innerHTML=
 
  /* Bağlan köprüsü: ürün sayfasında gerçek insanların paylaşımları */
  +'<section class="u-sec" id="paylasimlar"><div class="hd"><h2>Bu deneyimi yaşayanlar</h2>'+(posts.length?'<a href="'+ROOT+'baglan/" class="all">Tümü →</a>':'')+'</div>'
- +(posts.length?'<p class="sub">'+posts.length+' paylaşım <span class="ornek">ÖRNEK</span></p></section><div class="rail" id="uPosts">'+posts.map(postMini).join('')+'</div>'
+ +(posts.length?'<p class="sub">'+posts.length+' paylaşım</p></section><div class="rail" id="uPosts">'+posts.map(postMini).join('')+'</div>'
    :'<div class="u-first">'+IC.users+'<p><b>Henüz paylaşım yok.</b> Bu deneyimi yaşayınca ilk paylaşan sen ol; paylaşımın bu sayfada görünsün.</p></div></section>')
 
  +(p.dates.length?'<section class="box" id="tarihler"><h2>Tarih seç</h2><p>Yaklaşan kalkışlar. Kontenjan ve fiyat tarih seçince netleşir.</p><div class="u-dates" role="radiogroup" aria-label="Kalkış tarihi">'
    +p.dates.map(x=>'<button type="button" role="radio" aria-checked="'+(x[0]+' '+x[1]===picked)+'" data-d="'+x[0]+' '+x[1]+'"><small>'+x[0]+'</small><b>'+x[1]+'</b></button>').join('')
    +'<button type="button" class="more-d" data-soon-cal>'+IC.calendar+'<span>'+p.more+' tarih</span></button></div></section>':'')
 
- +(info.about?'<section class="box"><h2>Hakkında <span class="ornek">ÖRNEK İÇERİK</span></h2><p class="u-about">'+info.about+'</p>'
+ +(info.about?'<section class="box"><h2>Hakkında</h2><p class="u-about">'+info.about+'</p>'
    +'</section>':'')
 
  +(info.program.length?'<section class="box"><h2>'+info.progTitle+'</h2><ol class="u-prog">'
@@ -72,13 +72,13 @@ document.getElementById('urun').innerHTML=
  +'<section class="box"><h2>'+info.placeTitle+'</h2><div class="u-place">'+I.pin+'<div><b>'+info.place[0]+'</b>'+(info.place[1]?'<p>'+info.place[1]+'</p>':'')+'</div></div>'
  +(info.bilgi.length?'<h3 class="u-h3">Bilmen gerekenler</h3><ul class="u-info">'+info.bilgi.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</section>'
 
- +'<section class="box"><h2>İptal ve ödeme <span class="ornek">ÖRNEK KURAL</span></h2><ul class="ticks">'
+ +'<section class="box"><h2>İptal ve ödeme</h2><ul class="ticks">'
  +'<li>'+IC.check+'<div><b>'+S.cancel+'</b> <span id="cxl"></span></div></li>'
  +(deposit?tick('%20 kaporayla yer ayırt','Bugün '+tl(deposit)+' öde, kalanını kalkıştan önce.'):'')
  +tick(TRUST.taksit[0],'Anlaşmalı kartlarla.')
  +tick('Toplam fiyat şeffaf','Ödeme adımında sonradan eklenen ücret yok.')+'</ul></section>'
 
- +'<section class="box" id="yorumlar"><h2>Değerlendirmeler'+(info.reviews.length?' <span class="ornek">ÖRNEK</span>':'')+'</h2>'
+ +'<section class="box" id="yorumlar"><h2>Değerlendirmeler'+(info.reviews.length?'':'')+'</h2>'
  +(p.count?'<div class="u-rev"><span class="big">'+p.score.toFixed(1).replace('.',',')+'</span><div><b>'+word(p.score)+'</b><span>'+p.count.toLocaleString('tr-TR')+' değerlendirme · yalnızca rezervasyonu tamamlayanlar yazabilir</span></div></div>'
    +'<div class="u-revs">'+info.reviews.map(r=>'<article class="rv"><div class="rv-h"><span class="ava s" style="--c:'+r.user.renk+'" aria-hidden="true">'+r.user.ini+'</span><div class="x"><b>'+r.user.ad+'</b><small>Rezervasyonla gitti</small></div><span class="rv-s">'+r.score.toFixed(1).replace('.',',')+'</span></div><p>'+r.text+'</p></article>').join('')+'</div>'
    :'<p>Bu deneyimi Mola360\'tan yaşayanlar değerlendirdikçe burada görünecek.</p>')+'</section>'
@@ -109,7 +109,7 @@ document.getElementById('urun').addEventListener('click',e=>{
   const m=e.target.closest('[data-prog]');
   if(m){const open=m.getAttribute('aria-expanded')!=='true';m.previousElementSibling.querySelectorAll('li').forEach((li,i)=>li.hidden=!open&&i>2);m.setAttribute('aria-expanded',open);
     m.textContent=open?'Daha az göster':'Tamamını gör · '+info.program.length+' '+unitOf(info.program[0][0]);return}
-  if(e.target.closest('[data-soon-cal]'))toast('Takvim yeni mola360\'ta hazırlanıyor.','Tamam',()=>{},3000);
+  if(e.target.closest('[data-soon-cal]'))toast('Çok yakında.','Tamam',()=>{},3000);
 });
 
 renderShell('urun',{nav:false});

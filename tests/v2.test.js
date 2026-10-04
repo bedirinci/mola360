@@ -144,11 +144,16 @@ describe('v2', () => {
     expect(api.kmTo(null, api.getProduct('kordon-caz-aksamlari'))).toBeNull();
   });
 
-  it('örnek veri ÖRNEK diye işaretli (kural 4)', () => {
+  it('örnek veri kodda ÖRNEK diye işaretli, arayüzde etiket yok (kural 4)', () => {
     expect(oku(join(V2, 'js/data.js'))).toMatch(/ÖRNEK/);
     expect(oku(join(V2, 'js/icerik.js'))).toMatch(/ÖRNEK/);
-    ['baglan', 'urun', 'liste', 'planlarim', 'profil'].forEach(s =>
-      expect(oku(join(V2, 'js', s + '.js')), s).toMatch(/ÖRNEK/));
+    /* site yayındaymış gibi görünür: ÖRNEK rozeti, taslak görünüm düğmeleri, "Önizleme" yok */
+    const dosyalar = [...readdirSync(join(V2, 'js')).map(f => join(V2, 'js', f)),
+      join(V2, 'index.html'), ...readdirSync(V2, { withFileTypes: true }).filter(d => d.isDirectory() && existsSync(join(V2, d.name, 'index.html'))).map(d => join(V2, d.name, 'index.html'))];
+    dosyalar.forEach(f => {
+      const t = oku(f);
+      expect(t, f).not.toMatch(/class="ornek"|class="demo"|Önizleme\.|yeni mola360\\'ta hazırlanıyor/);
+    });
   });
 
   it('alt menü dört sekme, arama yok; Paylaş ayrı düğme', () => {

@@ -4,9 +4,12 @@ import { STAR } from './icons.js';
 import { toast } from './ui.js';
 
 const LV=new Set(['Kapadokya Turu','Efes ve Şirince Turu','Göreme Mağara Otel','Sealight Resort','Kordon Spa & Masaj']);
-let LEVEL='guest';
+/* Oturumdaki kullanıcı Ayşe (Kâşif). Misafir ve Gezgin görünümü adresle denenir:
+   ?gorunum=misafir|gezgin|kasif (sekme açık kaldıkça hatırlanır). */
+const GK='m360-gorunum',GV={misafir:'guest',gezgin:'gezgin',kasif:'kasif'};
+let LEVEL=(()=>{try{const q=GV[new URLSearchParams(location.search).get('gorunum')];if(q){sessionStorage.setItem(GK,q);return q}
+  return GV[Object.keys(GV).find(k=>GV[k]===sessionStorage.getItem(GK))]||'kasif'}catch(e){return 'kasif'}})();
 export const getLevel=()=>LEVEL;
-export const setLevel=v=>{LEVEL=v};
 const LVTXT={guest:'Üyelere %15\'e varan indirim',gezgin:'Kâşif\'e %10 indirim',kasif:'Kâşif indirimi %10'};
 export const lvOn=t=>LEVEL==='kasif'&&LV.has(t);
 export const lvPrice=(t,p)=>lvOn(t)?Math.round(p*.9):p;
