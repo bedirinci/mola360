@@ -16,7 +16,6 @@ const el=document.getElementById('nt'),tabs=document.getElementById('ntTabs');
 const I=d=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
 const STAR=I('<path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/>');
 const PCT=I('<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>');
-const PIN=I('<path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>');
 const MP='<img src="'+ROOT+'img/molapuan.webp" alt="" width="44" height="44">';
 /* avatarın köşesindeki tür rozeti: ne olduğu ilk bakışta okunur (beyaz zemin, dolu ikon) */
 const BADGE={begeni:'<path d="M12 20.5s-8-4.6-8-10.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8 2.6c0 6-8 10.6-8 10.6z"/>',
@@ -57,15 +56,15 @@ function row(n){const r=parts(n);if(!r)return '';const [lead,text,href,right,btn
    +(btn?'<a class="nt-b" href="'+href+'" data-id="'+n.id+'">'+btn+'</a>':'')
    +(follow?'<button type="button" class="follow" aria-pressed="false" data-id="'+n.id+'">Takip et</button>':'')+'</li>'}
 
-/* Yaklaşan molan: satır değil, üstte sabit kart. Biletim ve kalan ödeme doğrudan Planlarım'daki çekmeceyi açar */
-const longDay=d=>d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'});
-const leftTxt=n=>n===0?'Bugün':n===1?'Yarın':n+' gün kaldı';
-const upCard=n=>{const p=n.product;
-  return '<section class="nt-up'+(n.read?'':' new')+'" aria-label="Yaklaşan molan"><a class="nt-up-a" href="'+ROOT+'planlarim/#yaklasan" data-id="'+n.id+'">'
-   +'<span class="pt" style="background:'+p.bg+'"></span><span class="x"><small>'+p.type.toLocaleUpperCase('tr')+'<em class="rz-cd">'+leftTxt(n.left)+'</em></small><b>'+p.title+'</b><span>'+(n.day?longDay(n.day)+' · ':'')+n.slot+'</span></span>'+IC.right+'</a>'
-   +(n.meet?'<a class="nt-up-m" href="'+plan('meet','no='+n.no)+'" data-id="'+n.id+'">'+PIN+'<span>Buluşma <b>'+n.meet.saat+'</b> · '+n.meet.yer+'</span></a>':'')
-   +'<div class="nt-up-b"><a class="btn ghost" href="'+plan('bilet','no='+n.no)+'" data-id="'+n.id+'">'+IC.ticket+'Biletim</a>'
-   +(n.rest>0?'<a class="btn green" href="'+plan('pay','no='+n.no)+'" data-id="'+n.id+'">Kalanı öde · '+tl(n.rest)+'</a>':'')+'</div></section>'};
+/* Yaklaşan molan ve kalan ödeme: öteki bildirimler gibi bir satır, Bugün'ün içinde saatine göre yerinde.
+   Öde, Planlarım'daki ödeme çekmecesini doğrudan açar; ödenince Biletim olur. */
+const CARD=I('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>');
+const leftTxt=n=>n===0?'bugün':n===1?'yarın':n+' gün sonra';
+const upCard=n=>{const p=n.product,pay=n.rest>0;
+  return '<li class="nt-r'+(n.read?'':' new')+'"><a class="nt-a" href="'+ROOT+'planlarim/#yaklasan" data-id="'+n.id+'">'+icon(pay?CARD:IC.calendar)
+   +'<span class="nt-x"><span class="nt-t"><b>'+p.title+'</b> '+leftTxt(n.left)+'. '+(pay?'Kalan <b>'+tl(n.rest)+'</b> ödemen var.':'Biletin hazır.')+'</span> <time>'+n.ne+'</time></span></a>'
+   +(pay?'<a class="nt-b green" href="'+plan('pay','no='+n.no)+'" data-id="'+n.id+'">Öde</a>'
+     :'<a class="nt-b" href="'+plan('bilet','no='+n.no)+'" data-id="'+n.id+'">Biletim</a>')+'</li>'};
 
 const GROUPS=[['bugun','Bugün'],['hafta','Bu hafta'],['once','Daha önce']];
 const EMPTY={hepsi:['Bildirimin yok','Biri paylaşımını beğenince, seni takip edince ya da molan yaklaşınca burada görürsün.'],
@@ -76,13 +75,13 @@ function show(){
   const all=listNotifs().filter(n=>n.tur!=='odeme');
   tabs.querySelectorAll('[data-t]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.t===tab);
     const c=b.querySelector('.ms-c'),k=all.filter(n=>!n.read&&(b.dataset.t==='hepsi'||n.cat===b.dataset.t)).length;if(c){c.textContent=k||'';c.hidden=!k}});
-  const list=tab==='hepsi'?all:all.filter(n=>n.cat===tab),ups=list.filter(n=>n.tur==='yaklasan'),rest=list.filter(n=>n.tur!=='yaklasan');
+  /* hatırlatma sabah 09:00'da gelir: Bugün'ün yeni bildirimlerinin altında */
+  const list=tab==='hepsi'?all:all.filter(n=>n.cat===tab),rest=[...list.filter(n=>n.tur!=='yaklasan'),...list.filter(n=>n.tur==='yaklasan')];
   if(!list.length){el.innerHTML='<div class="empty"><span class="ei">'+IC.bell+'</span><b>'+EMPTY[tab][0]+'</b><p>'+EMPTY[tab][1]+'</p></div>';return}
   const nNew=list.filter(n=>!n.read).length;let first=true;
-  el.innerHTML=ups.map(upCard).join('')
-   +GROUPS.map(([g,t])=>{const l=rest.filter(n=>n.g===g);if(!l.length)return '';
+  el.innerHTML=GROUPS.map(([g,t])=>{const l=rest.filter(n=>n.g===g);if(!l.length)return '';
      const h='<div class="nt-hd"><h2 class="nt-h">'+t+'</h2>'+(first&&nNew?'<button type="button" id="ntAll">Tümünü okundu say</button>':'')+'</div>';first=false;
-     return '<section aria-label="'+t+'">'+h+'<ul class="nt-l">'+l.map(row).join('')+'</ul></section>'}).join('');
+     return '<section aria-label="'+t+'">'+h+'<ul class="nt-l">'+l.map(n=>n.tur==='yaklasan'?upCard(n):row(n)).join('')+'</ul></section>'}).join('');
 }
 
 /* Bildirim ayarları: hangi bildirimleri almak istediğin. Profil > Hesap ve ayarlar > Bildirimler de buraya açılır (#ayarlar) */
