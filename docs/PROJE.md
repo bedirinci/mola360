@@ -1096,3 +1096,42 @@ güncellenecek yaşayan proje dokümanıdır.
   Dokunulan terim "Nereye"ye yazılıyor, yeniden dokununca kalkıyor.
 - **UX sonucu:** Arama kartı sade kalıyor. Ne arayacağını bilmeyen
   kullanıcı tek dokunuşla bir aramaya başlayabiliyor.
+
+### 2026-10-03 — Yakınımda: konum etiketi sağda, x ile kapanıyor
+
+- **Karar (Bedir):** "Yakınımda ne var?" açıkken konum etiketi (ör.
+  "Bursa çevresi") başlık satırının sağına yaslanıyor. Etiketin sonunda
+  bir x var.
+- **Neden:** Bölümü kapatmanın görünür ve tek dokunuşluk bir yolu olmalı.
+  Ayrı bir "Kapat" düğmesi satırı kalabalıklaştırıyordu.
+- **Etkilediği alanlar:** Keşfet ana sayfası, Yakınımda bölümü.
+- **Teknik sonuç:** x, kayıtlı konumu siler ve davet kartını geri getirir.
+  Odak "Konumumu kullan" düğmesine geçer. Raylar eski sırasına döner.
+- **UX sonucu:** Kullanıcı konumu tek dokunuşla kapatıyor. Başlık tek
+  satırda kalıyor, dar ekranda etiket metni kısalıyor.
+
+### 2026-10-03 — Profilde Molapuan kartı: puan, sıradaki hedef, seviye yolu
+
+- **Karar (Bedir):** Molapuan, Bedir'in gönderdiği bir sadakat kartı
+  örneğinden yola çıkan bir kartla gösteriliyor. İlk sürüm sade bulundu
+  ("daha kaliteli"). Son hali şöyle:
+  - Koyu lacivert üst bölümde büyük puan, TL karşılığı, seviye rozeti ve
+    "Nasıl kazanırım?" var.
+  - Altında yeşil bir kutuda sıradaki hedef yazıyor.
+  - En altta açılıp kapanan "Seviye yolun" var. Geçilen durak tikli, bulunulan
+    durak "Buradasın" ile vurgulu, kilitli durakta kilit simgesi var.
+- **Neden:** Kullanıcı ne kadar puanı olduğunu, sıradaki ödülü ve oraya ne
+  kadar kaldığını tek bakışta görmeli.
+- **Etkilediği alanlar:** Profil sayfası.
+- **Teknik sonuç:** Örnekteki kupon ödülleri yerine mevcut kurallar
+  kullanılıyor (ÖNERİ): 1 puan = 1 TL; seviye son 24 aydaki rezervasyon
+  sayısıyla belirleniyor (Gezgin 1, Kâşif 3, Mola Ustası 6).
+  - Seviye yolunda üç durak var. Her durakta gereken rezervasyon sayısı,
+    seviyenin adı ve avantajı yazıyor.
+  - Çubuk, ulaşılan durağa kadar dolu.
+  - Okuyuculara ilerleme çubuğu olarak bildiriliyor.
+  - Eski "ÖRNEK" etiketi karttan kalktı.
+- **UX sonucu:** Sıradaki hedef somut bir cümle (ör. "Mola Ustası'na 3
+  rezervasyon kaldı, %15 indirim seni bekliyor"). Ok düğmesi Keşfet'e
+  götürüyor.
+  Kart 320px genişlikte de taşmadan sığıyor.

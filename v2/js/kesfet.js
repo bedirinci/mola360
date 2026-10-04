@@ -82,6 +82,7 @@ function nearShow(pos,label,place){
   srch.setNear(place);pick();personal();
 }
 function nearOff(){nSet('');nearAt=null;srch.setNear(null);pick();personal();nOn.hidden=true;nCard.hidden=false;nAlt.hidden=true;nGo.disabled=false;nGo.querySelector('span').textContent='Konumumu kullan'}
+$('nearOff').addEventListener('click',()=>{nearOff();nGo.focus()});
 function nearCity(id){const d=getDestination(id),pos=placePos(id);if(!d||!pos)return nearOff();nSet('yer:'+id);nearShow(pos,d.name+' çevresi',id)}
 function nearFail(msg){nGo.disabled=false;nGo.querySelector('span').textContent='Tekrar dene';nAlt.hidden=false;$('nearMsg').textContent=msg}
 function nearGps(){
