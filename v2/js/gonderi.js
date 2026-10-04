@@ -1,6 +1,6 @@
 /* Paylaşımın kendi sayfası: paylaşım ve yorumları. Profil'deki kareler,
    Keşfet'teki küçük kartlar ve akıştaki yorum düğmesi buraya açılır. */
-import { renderShell, backTo } from './shell.js';
+import { renderShell, backTo, goBack } from './shell.js';
 import { getPost, listComments, addComment, ME } from './api.js';
 import { postCard, initPostActions, ava, userUrl } from './cards.js';
 import { initFavorites } from './favorites.js';
@@ -64,6 +64,6 @@ if(!post){
     txt.value='';go.disabled=true;to='';toBar.hidden=true;li.scrollIntoView({block:'nearest',behavior:'smooth'})});
   /* paylaşım silinince geldiği yere (yoksa Profil'e) dön */
   document.addEventListener('m360:silindi',()=>{form.hidden=true;
-    const t=backTo(ROOT+'profil/');setTimeout(()=>{if(t&&t.back)history.back();else location.replace(t?t.url:ROOT+'profil/')},700)});
+    const t=backTo(ROOT+'profil/');setTimeout(()=>{if(t&&(t.back||typeof t.go==='number'))goBack(t);else location.replace(t?t.url:ROOT+'profil/')},700)});
   if(location.hash==='#yorum')setTimeout(()=>txt.focus(),300);
 }

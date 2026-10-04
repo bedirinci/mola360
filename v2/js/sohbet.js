@@ -100,7 +100,7 @@ if(getLevel()==='guest'){
         +'<div class="op-c" hidden><p>Sohbet senin için silinsin mi? '+u.ad.split(' ')[0]+' mesajları görmeye devam eder.</p><div class="ms-req-b"><button type="button" class="btn ghost" data-o="vazgec">Vazgeç</button><button type="button" class="btn danger" data-o="evet">Sil</button></div></div></div>');
       osh=makeSheet($('opSheet'),$('opBg'));
       $('opSheet').addEventListener('click',ev=>{const b=ev.target.closest('[data-o]');if(!b)return;const a=b.dataset.o,c=$('opSheet').querySelector('.op-c'),l=$('opSheet').querySelector('.op-l');
-        if(a==='profil'){location.href=userUrl(u);return}
+        if(a==='profil'){osh.go(userUrl(u));return}
         if(a==='sessiz'){muted=!muted;b.querySelector('span').textContent=muted?'Sesi aç':'Sessize al';osh.close();toast(muted?'Bu sohbetin bildirimleri kapandı.':'Bildirimler yeniden açık.','Tamam',()=>{},3000);return}
         if(a==='bildir'){osh.close();toast('Bildirimin alındı, ekibimiz inceleyecek.','Tamam',()=>{},3500);return}
         if(a==='sil'){l.hidden=true;c.hidden=false;return}

@@ -71,7 +71,7 @@ function open(id){
   if(!sv)build();
   list=stories;cur=list.findIndex(s=>s.id===id);if(cur<0)return;fi=0;
   sv.hidden=false;document.documentElement.classList.add('sv-on');
-  if(!(history.state&&history.state.hk))history.pushState({...(history.state||{}),hk:1},'');
+  if(!(history.state&&history.state.hk)){const s=history.state||{};history.pushState({...s,hk:1,m360d:(s.m360d||0)+1},'')}
   show();requestAnimationFrame(()=>sv.classList.add('in'));
   sv.querySelector('.sv-x').focus({preventScroll:true});
 }

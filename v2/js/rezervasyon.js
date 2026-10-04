@@ -124,7 +124,7 @@ function draw(push){
   document.getElementById('steps').hidden=st.step===4;
   main.innerHTML=st.step===1?step1():st.step===2?step2():st.step===3?step3():done(last);
   if(st.step===1)refresh();else drawCta();
-  if(push)history.pushState({...history.state,s:st.step},'');
+  if(push)history.pushState({...history.state,s:st.step,m360d:((history.state||{}).m360d||0)+1},'');
   save();
   window.scrollTo(0,0);
 }
@@ -143,7 +143,7 @@ window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.s
 /* başlıktaki geri: ara adımda bir önceki adıma; ilk adımda geldiğin sayfaya (shell.js data-back);
    onaydan sonra deneyimin sayfasına */
 back.addEventListener('click',e=>{if(st.step>1&&st.step<4){e.preventDefault();history.back()}else if(st.step===4){e.preventDefault();location.href=productUrl}
-  else if(st.name||st.phone||st.email){e.preventDefault();exitSheet().open(back,document.getElementById('exStay'))}});
+  else if(['name','phone','email'].some(k=>st[k]&&st[k]!==ME_C[k])){e.preventDefault();exitSheet().open(back,document.getElementById('exStay'))}});
 
 /* İletişim bilgisi girildiyse çıkmadan önce sorulur; iki seçenek de açıkça görünür */
 let ex=null;
@@ -157,7 +157,7 @@ function exitSheet(){if(ex)return ex;
     try{sessionStorage.removeItem(KEY)}catch(e){}
     const t=backTo(productUrl);
     /* çekmecenin geçmiş adımı ile rezervasyon sayfası birlikte geçilir */
-    if(t&&t.back)history.go(-2);else ex.go(t?t.url:productUrl)});
+    if(t&&typeof t.go==='number')history.go(t.go);else if(t&&t.back)history.go(-2);else ex.go(t?t.url:productUrl)});
   return ex}
 
 const show=(id,msg)=>{const el=document.getElementById(id);if(!el)return;el.hidden=!msg;if(msg)el.textContent=msg};
@@ -171,7 +171,9 @@ function check2(){
   return !bad;
 }
 /* oturumdaki kullanıcının iletişim bilgileri (boş alanlara) */
-function fillMe(){const me={name:'Ayşe Yılmaz',phone:'0532 418 27 63',email:'ayse.yilmaz@mail.com'};for(const k in me)if(!st[k])st[k]=me[k];save()}
+/* hesaptaki bilgiler: yalnızca bunlar varken çıkarken sorulmaz */
+const ME_C={name:'Ayşe Yılmaz',phone:'0532 418 27 63',email:'ayse.yilmaz@mail.com'};
+function fillMe(){for(const k in ME_C)if(!st[k])st[k]=ME_C[k];save()}
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm)return;
   if(st.step===1){
     if(!st.date){show('dateErr','Devam etmek için bir tarih seç.');document.getElementById('bkDate').scrollIntoView({behavior:'smooth',block:'center'});return}

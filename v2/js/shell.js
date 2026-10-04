@@ -70,40 +70,67 @@ export function renderShell(page,{nav=true}={}){
 }
 
 /* Geri (başlıktaki ok): sitede gezilen sayfaların yolu bu sekmede tutulur
-   (sessionStorage), her sayfanın geçmiş kaydına sırası yazılır (m360i).
+   (sessionStorage), her sayfanın geçmiş kaydına yoldaki sırası (m360i) ve
+   tarayıcı geçmişindeki yeri (m360h) yazılır. Sayfanın kendi eklediği
+   kayıtlar (çekmece, hikaye, rezervasyon adımı) m360d ile sayılır.
    Geri bir önceki sayfaya döner; o sayfa bu sayfanın kendisi ya da bir
-   rezervasyon adımıysa (ürün → rezervasyon → ürün döngüsü) atlanır.
+   rezervasyon adımıysa atlanır. Bu sayfa yolda daha önce de açıldıysa
+   (deneyim → benzer deneyim → ilk deneyim) ilk açıldığı yerin öncesine
+   döner: geri hiçbir sayfayı iki kez göstermez, döngü olmaz. Atlanan
+   kayıtlar tarayıcı geçmişinde de atlanır (history.go), yeni kayıt
+   eklenmez; telefonun geri tuşu da aynı yolu izler.
    Önceki sayfa yoksa (siteye bu sayfadan girildiyse) bağın adresine gider. */
-const YOL='m360-yol',here=()=>location.pathname+location.search;
-const readYol=()=>{try{const y=JSON.parse(sessionStorage.getItem(YOL)||'[]');return Array.isArray(y)?y:[]}catch(e){return[]}};
-const saveYol=y=>{try{sessionStorage.setItem(YOL,JSON.stringify(y.slice(-40)))}catch(e){}};
+const YOL='m360-yol',YOLH='m360-yolh',here=()=>location.pathname+location.search;
+const readArr=k=>{try{const y=JSON.parse(sessionStorage.getItem(k)||'[]');return Array.isArray(y)?y:[]}catch(e){return[]}};
+const readYol=()=>readArr(YOL);
+const saveYol=(y,h)=>{try{sessionStorage.setItem(YOL,JSON.stringify(y.slice(-40)));if(h)sessionStorage.setItem(YOLH,JSON.stringify(h.slice(-40)))}catch(e){}};
 const skip=u=>u===here()||/\/rezervasyon\//.test(u);
+/* tarayıcı geçmişi 50 kayıtta dolar; sonrasında yer bilgisi güvenilmez */
+const hNow=()=>history.length<50?history.length-1:null;
 function markYol(){
-  let y=readYol(),i=history.state&&history.state.m360i;
-  if(typeof i==='number'&&i<=y.length){y=y.slice(0,i);}
-  else{const inside=document.referrer.startsWith(R)&&y.length;i=inside?y.length:0;if(!inside)y=[];
-    history.replaceState({...(history.state||{}),m360i:i},'')}
-  y[i]=here();saveYol(y);
+  let y=readYol(),h=readArr(YOLH),s=history.state||{},i=s.m360i;
+  if(typeof i==='number'&&i<=y.length){y=y.slice(0,i);h=h.slice(0,i)}
+  else{const inside=document.referrer.startsWith(R)&&y.length;i=inside?y.length:0;if(!inside){y=[];h=[]}
+    s={...s,m360i:i,m360h:hNow()};history.replaceState(s,'')}
+  while(h.length<i)h.push(null);
+  y[i]=here();h[i]=typeof s.m360h==='number'?s.m360h:null;saveYol(y,h);
 }
+/* açık çekmecenin ya da hikayenin geçmiş kaydı: içindeki bağdan başka sayfaya
+   gidilirse o kayıt yeni sayfayla değişir; geride boş (ölü) bir adım kalmaz */
+const layerOn=()=>{const s=history.state;return !!(s&&(s.m360ov||s.hk))};
 function initBack(){
+  /* sayfa yeniden yüklendiğinde açık katman kaydında kaldıysa (katman artık
+     kapalı) sayfanın kendi kaydına inilir; geri bir kez basılınca boşa gitmez */
+  const s=history.state;
+  if(layerOn()&&s.m360d>0){history.go(-s.m360d);return}
   markYol();
-  addEventListener('pageshow',e=>{if(e.persisted)markYol()});
+  addEventListener('pageshow',e=>{if(!e.persisted)return;
+    if(layerOn()&&!document.querySelector('.sheet.open,.sv:not([hidden])')&&history.state.m360d>0){history.go(-history.state.m360d);return}
+    markYol()});
   addEventListener('pagehide',()=>{const y=readYol(),i=history.state&&history.state.m360i;if(typeof i==='number'&&i<y.length){y[i]=here();saveYol(y)}});
   document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a||e.defaultPrevented)return;
     const t=backTo(a.href);if(!t)return;
-    e.preventDefault();
-    if(t.back)history.back();else location.href=t.url});
+    e.preventDefault();goBack(t)});
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href]');if(!a||e.defaultPrevented||!layerOn()||a.target||a.hasAttribute('download'))return;
+    const u=new URL(a.href,location.href);if(u.origin!==location.origin||(u.pathname+u.search===here()&&u.hash))return;
+    e.preventDefault();location.replace(u.href)});
 }
+/* backTo'nun sonucuna göre geri git */
+export function goBack(t){if(typeof t.go==='number')history.go(t.go);else if(t.back)history.back();else location.href=t.url}
 /* geri okunun yanındaki ad: dönülecek sayfa */
 const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim',gonderi:'Gönderi',mesajlar:'Mesajlar',sohbet:'Sohbet',bildirimler:'Bildirimler'};
 export function backLabel(fallback){const t=backTo(fallback),u=new URL(t?t.url:fallback,location.href);
   if(!u.href.startsWith(R))return NAMES[''];return NAMES[u.pathname.slice(new URL(R).pathname.length).split('/')[0]]||'Geri'}
-/* geri nereye: {back:true} bir önceki sayfa tarayıcı geçmişinde hemen arkada;
-   {url} o adrese gidilir; null: sitede önceki sayfa yok, bağın kendi adresi */
+/* geri nereye: {go:-n} tarayıcı geçmişinde n kayıt geri; {back:true} bir önceki
+   kayıt; {url} o adrese gidilir; null: sitede önceki sayfa yok, bağın kendi adresi */
 export function backTo(fallback){
-  const y=readYol(),i=history.state&&history.state.m360i;if(typeof i!=='number'||i<1)return null;
-  let j=i-1;while(j>=0&&skip(y[j]))j--;
-  return j===i-1?{back:true,url:y[j]}:{url:j>=0?y[j]:fallback};
+  const s=history.state||{},i=s.m360i;if(typeof i!=='number'||i<1)return null;
+  const y=readYol(),h=readArr(YOLH),f=y.indexOf(here());
+  let j=(f>=0&&f<i?f:i)-1;while(j>=0&&skip(y[j]))j--;
+  if(j<0)return {url:fallback};
+  const cur=typeof s.m360h==='number'?s.m360h+(s.m360d||0):null;
+  if(cur!==null&&typeof h[j]==='number'&&h[j]<cur)return {go:h[j]-cur,url:y[j]};
+  return j===i-1&&!s.m360d?{back:true,url:y[j]}:{url:y[j]};
 }
 
 /* Yüzen alt menü: aşağı kaydırınca küçülür (yalnızca ikonlar), yukarı
