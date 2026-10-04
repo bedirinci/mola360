@@ -42,7 +42,10 @@ const rank=(l,of=x=>x)=>l.map((x,i)=>[x,score(of(x)),i]).sort((a,b)=>a[1]-b[1]||
 
 /* Kaldığın yerden: yalnızca bakılmış ürün varsa görünür */
 const rc=$('recent');
-function recent(){const l=listRecent();rc.hidden=!l.length;if(l.length)fill($('rcRail'),l.map(recentCard).join(''))}
+/* geri ile dönünce raf ayrıldığın gibi kalır: arada yeni açılan raf sayfayı kaydırmasın (sonraki açılışta görünür) */
+const back=(performance.getEntriesByType('navigation')[0]||{}).type==='back_forward'&&history.state&&history.state.rc===false;
+function recent(){const l=back&&rc.hidden?[]:listRecent();rc.hidden=!l.length;if(l.length)fill($('rcRail'),l.map(recentCard).join(''));
+  history.replaceState({...history.state,rc:!rc.hidden},'')}
 $('rcClear').addEventListener('click',()=>{clearRecent();recent();toast('Son baktıkların temizlendi.','Tamam',()=>{},2500)});
 
 /* Ne kadar molan var? + Kiminle? (iki keşif filtresi birlikte) */

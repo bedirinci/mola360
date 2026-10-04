@@ -126,9 +126,44 @@ export function renderShell(page,{nav=true}={}){
   /* bildirimler henüz yok */
   document.addEventListener('click',e=>{if(e.target.closest('.ib[aria-label="Bildirimler"]'))toast('Yeni bildirimin yok.','Tamam',()=>{},3000)});
   liveNow();setInterval(liveNow,60000);
-  /* Geri: sitenin içinden gelindiyse bir önceki sayfaya, değilse bağın adresine */
-  document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a)return;
-    if(document.referrer.startsWith(R)&&history.length>1){e.preventDefault();history.back()}});
+  initBack();
+}
+
+/* Geri (başlıktaki ok): sitede gezilen sayfaların yolu bu sekmede tutulur
+   (sessionStorage), her sayfanın geçmiş kaydına sırası yazılır (m360i).
+   Geri bir önceki sayfaya döner; o sayfa bu sayfanın kendisi ya da bir
+   rezervasyon adımıysa (ürün → rezervasyon → ürün döngüsü) atlanır.
+   Önceki sayfa yoksa (siteye bu sayfadan girildiyse) bağın adresine gider. */
+const YOL='m360-yol',here=()=>location.pathname+location.search;
+const readYol=()=>{try{const y=JSON.parse(sessionStorage.getItem(YOL)||'[]');return Array.isArray(y)?y:[]}catch(e){return[]}};
+const saveYol=y=>{try{sessionStorage.setItem(YOL,JSON.stringify(y.slice(-40)))}catch(e){}};
+const skip=u=>u===here()||/\/rezervasyon\//.test(u);
+function markYol(){
+  let y=readYol(),i=history.state&&history.state.m360i;
+  if(typeof i==='number'&&i<=y.length){y=y.slice(0,i);}
+  else{const inside=document.referrer.startsWith(R)&&y.length;i=inside?y.length:0;if(!inside)y=[];
+    history.replaceState({...(history.state||{}),m360i:i},'')}
+  y[i]=here();saveYol(y);
+}
+function initBack(){
+  markYol();
+  addEventListener('pageshow',e=>{if(e.persisted)markYol()});
+  addEventListener('pagehide',()=>{const y=readYol(),i=history.state&&history.state.m360i;if(typeof i==='number'&&i<y.length){y[i]=here();saveYol(y)}});
+  document.addEventListener('click',e=>{const a=e.target.closest('[data-back]');if(!a||e.defaultPrevented)return;
+    const t=backTo(a.href);if(!t)return;
+    e.preventDefault();
+    if(t.back)history.back();else location.href=t.url});
+}
+/* geri okunun yanındaki ad: dönülecek sayfa */
+const NAMES={'':'Keşfet',baglan:'Bağlan',planlarim:'Planlarım',profil:'Profil',liste:'Liste',urun:'Deneyim'};
+export function backLabel(fallback){const t=backTo(fallback),u=new URL(t?t.url:fallback,location.href);
+  if(!u.href.startsWith(R))return NAMES[''];return NAMES[u.pathname.slice(new URL(R).pathname.length).split('/')[0]]||'Geri'}
+/* geri nereye: {back:true} bir önceki sayfa tarayıcı geçmişinde hemen arkada;
+   {url} o adrese gidilir; null: sitede önceki sayfa yok, bağın kendi adresi */
+export function backTo(fallback){
+  const y=readYol(),i=history.state&&history.state.m360i;if(typeof i!=='number'||i<1)return null;
+  let j=i-1;while(j>=0&&skip(y[j]))j--;
+  return j===i-1?{back:true,url:y[j]}:{url:j>=0?y[j]:fallback};
 }
 
 /* Yüzen alt menü: aşağı kaydırınca küçülür (yalnızca ikonlar), yukarı

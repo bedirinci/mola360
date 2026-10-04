@@ -37,7 +37,7 @@ const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 
 const h=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 const href=(t,s,k=kimle)=>'?'+[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
-const go=()=>{history.replaceState(null,'',href(tur,sure)==='?'?location.pathname:href(tur,sure));draw()};
+const go=()=>{history.replaceState(history.state,'',href(tur,sure)==='?'?location.pathname:href(tur,sure));draw()};
 
 /* aramadan gelen seçimler (yer, metin, tarih) en başta; dokununca kalkar */
 function filters(){
@@ -89,6 +89,11 @@ document.getElementById('filters').addEventListener('click',e=>{
   if(k){kimle=k.dataset.kimle===kimle?'':k.dataset.kimle;go();return}
   if(e.target.closest('[data-soon-f]'))toast('Bu filtre gerçek veriyle çalışacak.','Tamam',()=>{},3000);
 });
+/* kategori sekmesi sayfayı yeniden açmaz, adresi değiştirir: sekmeler
+   arasında gezmek geçmişe yeni sayfa eklemez, geri Liste'den önceki sayfaya döner */
+document.getElementById('cats').addEventListener('click',e=>{const a=e.target.closest('a[href]');if(!a)return;
+  e.preventDefault();tur=new URL(a.href).searchParams.get('tur')||'';go();
+  const n=document.querySelector('#cats [aria-current]');if(n){n.focus({preventScroll:true});n.scrollIntoView({block:'nearest',inline:'nearest'})}});
 document.querySelector('[data-soon-sort]').addEventListener('click',()=>toast('Çok yakında.','Tamam',()=>{},3000));
 filters();
 draw();
