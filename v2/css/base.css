@@ -16,5 +16,9 @@ html{touch-action:manipulation}
 a,button,select,input,label,.tk,.th,.tt,.chip,.fc,.tab,.nav a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button,.opt,.pick,.tab,.tt,.fc,.chip,.nav a,.m-link,.m-tile,.btn,.lvb,.heart,.type,.score,.th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nw{white-space:nowrap}
-body{font-size:var(--fs-base);line-height:1.5;letter-spacing:.005em;word-spacing:.03em;text-rendering:optimizeLegibility}
+body{font-size:var(--fs-base);line-height:var(--lh-body);letter-spacing:0;word-spacing:.03em;text-rendering:optimizeLegibility}
+/* satır kırma: başlık satırları dengeli bölünür, paragrafın son satırında
+   tek kelime kalmaz (destekleyen tarayıcıda; desteklemeyen olduğu gibi) */
+h1,h2,h3,h4{text-wrap:balance}
+p,li,dd,figcaption{text-wrap:pretty}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

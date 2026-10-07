@@ -17,3 +17,6 @@ $RECYCLE.BIN/
 
 # Node / test tooling
 node_modules/
+
+# npm run goruntu çıktısı
+.goruntu/

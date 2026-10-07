@@ -373,6 +373,15 @@ Yazı tipi (2026-10-07): cihazın kendi fontu. iPhone ve Mac'te San
 Francisco, Android'de Roboto, Windows'ta Segoe UI; web fontu yüklenmez
 (`tokens.css` `--font`). Boyut ve kalınlık yine tokenlardan.
 
+Yazı düzeni (2026-10-07): satır yüksekliği (`--lh-*`), harf aralığı
+(`--ls-*`) ve paragraf boşluğu (`--sp-head`, `--sp-para`) tokenlardan.
+- **Satır yüksekliği:** başlık sıkı (1.2–1.3), arayüz metni 1.4, paragraf
+  1.5, uzun okuma 1.6.
+- **Harf aralığı:** büyük başlık hafif sıkı, gövde 0, küçük yazı hafif
+  açık, büyük harfli etiket açık (.06em).
+- **Satır kırma:** başlıklar dengeli bölünür; paragrafın son satırında tek
+  kelime kalmaz.
+
 Tasarım sisteminde:
 
 - Renk tokenları
@@ -1954,3 +1963,59 @@ güncellenecek yaşayan proje dokümanıdır.
     koşulunu tek tek ürün açmadan okur.
   - Benzer kategorilere geçer.
   - Bağlantı paylaşılınca önizlemede kategorinin adı ve açıklaması çıkar.
+
+### 2026-10-07 — Yazı düzeni: satır yüksekliği, harf aralığı ve paragraf boşluğu tek ölçekte; hızlı çalışma düzeni (Bedir)
+
+- **Karar (Bedir):**
+  - "Harf arası boşluk, paragraf boşluğu ve benzeri şeyleri kullanıcı
+    deneyimi açısından daha uygun bir hale getir."
+  - "Bundan sonraki güncellemeler daha hızlı yapılabilmeli; eksiksiz,
+    doğru ve hızlı olmalı."
+- **Neden:**
+  - Harf aralığı 19, satır yüksekliği 18 farklı ham değerle dağınıktı:
+    aynı görevdeki yazılar sayfadan sayfaya farklı aralıkla duruyordu. Bir
+    kısmı px'ti, büyüklükle ölçeklenmiyordu. Aynı seçici için iki ayrı
+    değer yazılmış yerler vardı.
+  - İki satıra inen başlıkta son satırda tek kelime kalıyordu.
+  - Her istekte gönderim yolu soruluyor, görüntü almak için her seferinde
+    ayrı betik yazılıyordu.
+- **Etkilediği alanlar:**
+  - `v2/css/tokens.css`, `base.css`, `components.css`, `sayfalar.css`,
+    `kesfet.css`, `hikaye.css`;
+  - `tests/v2.test.js`;
+  - `scripts/goruntu.mjs` (yeni), `package.json`, `.gitignore`;
+  - `CLAUDE.md`.
+- **Teknik sonuç:**
+  - **Satır yüksekliği** yedi tokenla verilir:
+    - `--lh-none` 1;
+    - `--lh-tight` 1.2;
+    - `--lh-snug` 1.3: iki satıra inebilen başlıklar en az bu;
+    - `--lh-ui` 1.4;
+    - `--lh-body` 1.5;
+    - `--lh-read` 1.6: kutu metni, hakkında, SSS yanıtları;
+    - `--lh-loose` 1.8: alt bilgideki bağlar.
+  - **Harf aralığı** beş tokenla verilir: `--ls-tight` −.015em,
+    `--ls-snug` −.01em, `--ls-open` .01em, `--ls-caps` .06em,
+    `--ls-initials` −.04em. Gövde 0; .005'lik farklar kaldırıldı.
+  - **Değerlerin eşlenmesi:** 58 harf aralığı ve 124 satır yüksekliği
+    değeri en yakın tokena bağlandı. Büyük harfli bütün etiketler
+    (.03–.08em ve px değerleri) .06em'de birleşti.
+  - **Paragraf boşluğu:** kutu başlığından metne `--sp-head` (8 px; önce
+    6), ardışık paragraflar arası `--sp-para` (12 px).
+  - **Satır kırma:** başlıklarda `text-wrap: balance`, paragraflarda
+    `text-wrap: pretty`. Desteklemeyen tarayıcı olduğu gibi gösterir.
+  - **Test:** `line-height` ve `letter-spacing` ham değeri `tokens.css`
+    dışında yazılamaz; kullanılan her `--lh`, `--ls` ve `--sp` tokenı
+    tanımlı olmalı.
+  - **Hızlı çalışma:**
+    - `npm run hizli`: tarayıcısız testler, ~2 sn.
+    - `npm run goruntu`: kendi sunucusunu açar; görüntü alır, konsol
+      hatasını ve yana taşmayı söyler; 8 sayfa ~10 sn.
+    - `CLAUDE.md`'de varsayılan teslim akışı (yeni dal, PR, CI yeşilse
+      birleştir; ayrıca sorulmaz) ve dosya haritası.
+- **UX sonucu:**
+  - Aynı görevdeki yazı her sayfada aynı aralıkla durur.
+  - Okuma metinleri biraz daha ferah; başlıklar dengeli bölünür, son
+    satırda tek kelime kalmaz.
+  - Büyük harfli etiketler tek aralıkta.
+  - İstekler soru beklemeden teslim edilir.
