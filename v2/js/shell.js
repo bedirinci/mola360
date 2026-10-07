@@ -28,11 +28,12 @@ const navHtml=page=>'<div class="dock" id="dock"><nav class="nav" aria-label="Al
 const toastHtml='<div class="toast" id="toast" role="status" aria-live="polite"><span></span><button type="button"></button></div>';
 
 
-/* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
-export function isLive(){
-  let h;try{h=+new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Europe/Istanbul'}).format(new Date())}catch(e){h=new Date().getHours()}
-  return h>=9&&h<24;
+/* İstanbul'da saat kaç (uzmanlar oradan arar; cihaz başka saat diliminde olabilir) */
+export function istHour(){
+  try{return +new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Europe/Istanbul'}).format(new Date())}catch(e){return new Date().getHours()}
 }
+/* çevrimiçi göstergesi: İstanbul saatiyle 09:00 – 23:59 */
+export function isLive(){const h=istHour();return h>=9&&h<24}
 function liveNow(){const on=isLive();
   document.querySelectorAll('[data-live]').forEach(x=>{x.classList.toggle('off',!on);x.querySelector('[data-live-t]').textContent=on?'Çevrimiçi':'Çevrimdışı · 09:00\'da'});
   document.querySelectorAll('[data-live-dot]').forEach(x=>x.classList.toggle('off',!on));

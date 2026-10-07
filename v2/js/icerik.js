@@ -130,7 +130,7 @@ export const DETAY={
    ['10 dk','Brifing','Pilotunla tanışma ve güvenlik anlatımı.'],['20 dk','Uçuş','Ölüdeniz plajına iniş.']],
   yer:['Ölüdeniz, Fethiye','Fethiye ve Ölüdeniz\'deki otellerden ücretsiz alış; saati rezervasyonda seçersin.'],
   dahil:['Lisanslı pilotla tandem uçuş','Ekipman ve sigorta','Otel transferi'],haric:['Fotoğraf ve video paketi'],
-  bilgi:['120 kg üstü ve 7 yaş altı uçamaz.','Rüzgâr uygun değilse uçuş ertelenir ya da ücretin iade edilir.']},
+  bilgi:['110 kg üstü ve 7 yaş altı uçamaz.','Rüzgâr uygun değilse uçuş ertelenir ya da ücretin iade edilir.']},
 
  'Uludağ Kayak Dersi':{about:'Sertifikalı eğitmenle iki saatlik özel ders. İlk kez kayacaklar için güvenli bir başlangıç.',
   program:[['Buluşma','Kayak okulu','Ekipman teslimi ve ısınma.'],['30 dk','Temel teknikler','Durma, dönüş ve düşünce kalkma.'],['90 dk','Pistte uygulama','Başlangıç pistinde eğitmenle.']],
@@ -225,7 +225,7 @@ export const DETAY={
   bilgi:['Fiyat seçtiğin alanın minimum harcaması; yediğin içtiğin bundan düşülür.']},
 
  'Ayder Yayla Evi':{about:'Kaçkarlar\'ın eteğinde ahşap bir yayla evi. Sabah sisin içinden yayla, akşam şöminenin başında Karadeniz sofrası.',
-  program:[['Oda','Ahşap oda, yayla manzarası','Çift kişilik ya da aile odası; balkonlu.'],['Kahvaltı','Karadeniz kahvaltısı','Muhlama, yayla tereyağı ve köy yumurtası.'],['Çevre','Ayder kaplıcası 300 m','Gelin Tülü Şelalesi\'ne yürüyerek 15 dakika.']],
+  program:[['Oda','Ahşap oda, yayla manzarası','Çift kişilik ya da aile odası; balkonlu.'],['Kahvaltı','Karadeniz kahvaltısı','Muhlama, yayla tereyağı ve köy yumurtası.'],['Çevre','Ayder kaplıcası 300 m','Gelintülü Şelalesi\'ne yürüyerek 15 dakika.']],
   yer:['Ayder, Çamlıhemşin, Rize','Rize-Artvin Havalimanı\'na 85 km; otopark var.'],
   dahil:['Konaklama','Kahvaltı'],haric:['Akşam yemeği','Kaplıca girişi'],
   bilgi:['Yaylada akşamlar serin; kalın bir şey getir.','Giriş 14:00, çıkış 12:00.']},
@@ -255,9 +255,6 @@ export const DETAY={
   bilgi:['18 yaş sınırı var.','Fiyat masanın minimum harcaması; yediğin içtiğin bundan düşülür.']}
 };
 
-/* Tur kalkış noktaları (ÖRNEK): tur hangi şehirden çıkıyorsa o şehrin
-   durakları [saat, durak, adres, not]. Burada olmayan turda tek kalkış
-   noktası DETAY'daki "yer"den gelir. */
 /* Aktivite seansları ve paketleri, etkinlik bilet türleri (ÖRNEK):
    slots başlangıç saatleri, opts [ad, kişi ya da bilet başı fiyat], not kişi/bilet notu */
 export const SEANS={
@@ -270,7 +267,7 @@ export const SEANS={
  'Aspendos Opera ve Bale Festivali':{opts:[['Tribün',420],['Protokol tribünü',780]],not:'7 yaş ve üzeri herkes bilet alır.'},
  'Kordon Caz Akşamları':{opts:[['Genel giriş',480],['Sahne önü oturma',720]],not:'12 yaş altı ücretsiz, yetişkinle girer.'},
  'İstanbul Kahve Festivali':{opts:[['Günlük giriş',290],['Atölye dahil giriş',490]],not:'12 yaş altı ücretsiz.'},
- 'Stand Up Gecesi':{opts:[['Genel giriş',420],['Ön sıra',600]],not:'16 yaş ve üzeri.'},
+ 'Stand Up Gecesi':{opts:[['Genel giriş',420],['Ön sıra',600]],not:'18 yaş ve üzeri.'},
  'Çeşme Yaz Festivali':{opts:[['Günlük bilet',650],['İki günlük kombine',1100]],not:'12 yaş altı ücretsiz, yetişkinle girer.'}};
 
 /* Otel odaları ve kuralları (ÖRNEK): giriş ve çıkış saati, odalar
@@ -305,6 +302,9 @@ export const OTEL={
   olanak:['Şömineli salon','Ücretsiz Wi-Fi','Ücretsiz otopark','Karadeniz mutfağı restoranı'],
   cocuk:[6,300],evcil:true}};
 
+/* Tur kalkış noktaları (ÖRNEK): tur hangi şehirden çıkıyorsa o şehrin
+   durakları [saat, durak, adres, not]. Burada olmayan turda tek kalkış
+   noktası DETAY'daki "yer"den gelir. */
 export const KALKIS={
  'Efes ve Şirince Turu':['İzmir','Otobüsle',[
    ['07:40','Bornova Metro','Ege Üniversitesi metro çıkışı, Bornova','Otobüs metro çıkışının karşısında bekler.'],
