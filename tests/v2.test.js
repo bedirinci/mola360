@@ -95,6 +95,19 @@ describe('v2', () => {
     });
   });
 
+  it('satır yüksekliği ve harf aralığı tasarım tokenlarından geliyor', () => {
+    /* ham değer yalnızca tokens.css'te; başka yerde var(--lh-…) / var(--ls-…), ya da 0 */
+    const izin = { 'line-height': /^(var\(--lh-[a-z]+\)|normal|inherit)$/, 'letter-spacing': /^(var\(--ls-[a-z]+\)|0|normal|inherit)$/ };
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f) && !f.endsWith('tokens.css')).forEach(f => {
+      const ham = [...oku(f).matchAll(/(line-height|letter-spacing):\s*([^;}"']+)/g)].map(m => [m[1], m[2].trim()]).filter(([k, v]) => !izin[k].test(v));
+      expect(ham.map(x => x.join(':')), relative(V2, f)).toEqual([]);
+    });
+    /* kullanılan her token tanımlı */
+    const tok = oku(join(V2, 'css', 'tokens.css'));
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f)).forEach(f => [...oku(f).matchAll(/var\((--(?:lh|ls|sp)-[a-z]+)\)/g)]
+      .forEach(m => expect(tok, relative(V2, f) + ': ' + m[1]).toContain(m[1] + ':')));
+  });
+
   it('arama yer, metin ve tarihle süzüyor; kategori ayrı kalıyor (kural 3)', async () => {
     const api = await import('../v2/js/api.js');
     expect(api.suggest('kapa').dests.map(d => d.id)).toContain('kapadokya');
