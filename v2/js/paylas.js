@@ -5,13 +5,12 @@
    ile gitti" rozeti alır; başka bir deneyime bağlanan almaz. Taslakta
    paylaşım yalnızca bu cihazda tutulur (api.js createPost). */
 import { listPastBookings, suggest, getProduct, createPost, getPost, postDraft, updatePost, POST_MIN } from './api.js';
-import { makeSheet, toast } from './ui.js';
+import { makeSheet, toast, esc } from './ui.js';
 import { IC, PIN } from './icons.js';
 import { ROOT } from './root.js';
 
 const MAX=10,NOTE=300;
 const WITH=['Tek başıma','Sevgilimle','Arkadaşlarla','Ailemle','Çocuklarla','İş arkadaşlarımla'];
-const h=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 
 const HTML=`<div class="sh-bg" id="psBg"></div>
 <div class="sheet tall ps" id="psSheet" role="dialog" aria-modal="true" aria-labelledby="psTtl">
@@ -84,8 +83,8 @@ function drawPick(){
      +past.map(b=>row(b.product,{went:true,sub:b.when})).join('')+'</div>':'';
   /* sitede olmayan deneyim: yazılan ad seçenek olarak çıkar, sağında + (Bedir) */
   const exact=found.some(p=>p.title.toLocaleLowerCase('tr')===q.toLocaleLowerCase('tr'));
-  const add=q&&!exact&&q!==st.custom?'<button type="button" class="ps-opt ps-new" data-new><span class="pt">'+PIN+'</span><span class="x"><b>'+h(q)+'</b><small>Yeni deneyim olarak ekle</small></span><i aria-hidden="true">'+IC.plus+'</i></button>':'';
-  const mine=st.custom?'<button type="button" class="ps-opt ps-new" role="radio" aria-checked="true" data-custom><span class="pt">'+PIN+'</span><span class="x"><b>'+h(st.custom)+'</b><small>Mola360 dışı deneyim</small></span><i aria-hidden="true"></i></button>':'';
+  const add=q&&!exact&&q!==st.custom?'<button type="button" class="ps-opt ps-new" data-new><span class="pt">'+PIN+'</span><span class="x"><b>'+esc(q)+'</b><small>Yeni deneyim olarak ekle</small></span><i aria-hidden="true">'+IC.plus+'</i></button>':'';
+  const mine=st.custom?'<button type="button" class="ps-opt ps-new" role="radio" aria-checked="true" data-custom><span class="pt">'+PIN+'</span><span class="x"><b>'+esc(st.custom)+'</b><small>Mola360 dışı deneyim</small></span><i aria-hidden="true"></i></button>':'';
   $('psSel').innerHTML=sel||mine?'<div class="ps-list" role="radiogroup" aria-label="Seçtiğin deneyim">'+(sel?row(sel,{sub:sel.type+' · '+sel.place.split(' · ')[0]}):mine)+'</div>':'';
   $('psRes').innerHTML=(found.length||add?'<div class="ps-list" aria-label="Arama sonuçları">'+found.map(p=>row(p,{sub:p.type+' · '+p.place.split(' · ')[0]})).join('')+add+'</div>':'')
    +(sel||found.length||add||mine?'<p class="ps-hint">Mola360 dışından gittiğin deneyimde rozet görünmez.</p>':'');

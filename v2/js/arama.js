@@ -5,7 +5,7 @@
    aramayı etkilemez. Formun altında sekmeye göre popüler aramalar var;
    yakındaki yer "Nereye?"nin başında önerilir. Veri yalnızca api.js'ten. */
 import { I } from './icons.js';
-import { makeSheet } from './ui.js';
+import { makeSheet, esc } from './ui.js';
 import { listDestinations, getDestination, suggest, listProducts, listSearches, saveSearch, clearSearches, getSearch, setSearch, productUrl, norm, listPopular, WHEN, TYPES } from './api.js';
 import { ROOT } from './root.js';
 
@@ -25,11 +25,10 @@ const BASE={y:2,c:0,o:1,b:2,k:2};
 
 const FOLD={ı:'i',ğ:'g',ü:'u',ş:'s',ö:'o',ç:'c',â:'a',î:'i',û:'u'};
 const fold=t=>[...t].map(c=>{const l=c.toLocaleLowerCase('tr');return l.length===1?FOLD[l]||l:c}).join('');
-const h=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 /* yazılan kısmı kalın göster (Türkçe harf farkı yok sayılır) */
-function mark(text,q){const f=fold(text),n=norm(q);if(!n)return h(text);
+function mark(text,q){const f=fold(text),n=norm(q);if(!n)return esc(text);
   let i=f.startsWith(n)?0:f.indexOf(' '+n)+1;if(i<=0)i=f.indexOf(n);
-  return i<0?h(text):h(text.slice(0,i))+'<mark>'+h(text.slice(i,i+n.length))+'</mark>'+h(text.slice(i+n.length))}
+  return i<0?esc(text):esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+n.length))+'</mark>'+esc(text.slice(i+n.length))}
 
 const X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 const TREND='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>';
@@ -93,7 +92,7 @@ function fields(){
   f3.querySelector('small').textContent=v[3];f3.querySelector('span').textContent=whoTxt();
   $('go').textContent=v[4];
   const P=listPopular(st.tur),key=P.map(x=>x.label).join();
-  if(pop.dataset.k!==key){pop.dataset.k=key;pop.innerHTML=P.map((x,i)=>'<button type="button" class="pc" data-pop="'+i+'" aria-pressed="false">'+I.pin+'<span>'+h(x.label)+'</span></button>').join('');pop.scrollLeft=0;pop.dispatchEvent(new Event('scroll'))}
+  if(pop.dataset.k!==key){pop.dataset.k=key;pop.innerHTML=P.map((x,i)=>'<button type="button" class="pc" data-pop="'+i+'" aria-pressed="false">'+I.pin+'<span>'+esc(x.label)+'</span></button>').join('');pop.scrollLeft=0;pop.dispatchEvent(new Event('scroll'))}
   pop.querySelectorAll('.pc').forEach((b,i)=>b.setAttribute('aria-pressed',P[i].yer?st.yer===P[i].yer:!st.yer&&st.ara===P[i].ara));
   document.querySelectorAll('.tab').forEach(x=>{const on=x.dataset.tab===st.tur;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;
     if(on)$('searchPanel').setAttribute('aria-labelledby',x.id)});
@@ -102,7 +101,7 @@ function fields(){
 /* Nereye: yazdıkça yerler ve deneyimler; boşken son aramalar ve yerler */
 const where=makeSheet($('whereSheet'),$('whereBg'),{drag:$('whereDrag')});
 const destRow=(d,q)=>'<button type="button" class="sr-row" data-yer="'+d.id+'"><span class="sr-ic">'+I.pin+'</span><span class="x"><b>'+mark(d.name,q)+'</b><small>'+d.sub+'</small></span><em>'+d.count+' '+unit()+'</em></button>';
-const prodRow=(p,q)=>'<a class="sr-row" href="'+productUrl(ROOT,p.title)+'"><span class="sr-th" style="background:'+p.bg+'"></span><span class="x"><b>'+mark(p.title,q)+'</b><small>'+p.type+' · '+h(p.place.split(' · ')[0])+'</small></span></a>';
+const prodRow=(p,q)=>'<a class="sr-row" href="'+productUrl(ROOT,p.title)+'"><span class="sr-th" style="background:'+p.bg+'"></span><span class="x"><b>'+mark(p.title,q)+'</b><small>'+p.type+' · '+esc(p.place.split(' · ')[0])+'</small></span></a>';
 const head=(t,extra)=>'<div class="sr-hd"><h4>'+t+'</h4>'+(extra||'')+'</div>';
 function drawWhere(){
   const q=inp.value.trim();clr.hidden=!q;
@@ -110,7 +109,7 @@ function drawWhere(){
   if(!q){
     const rs=listSearches();
     if(rs.length)html+=head('Son aramaların','<button type="button" class="clr" data-clear-recent>Temizle</button>')
-      +rs.map((r,i)=>'<button type="button" class="sr-row" data-recent="'+i+'"><span class="sr-ic">'+I.clock+'</span><span class="x"><b>'+h(r.title)+'</b><small>'+h(r.sub)+'</small></span></button>').join('');
+      +rs.map((r,i)=>'<button type="button" class="sr-row" data-recent="'+i+'"><span class="sr-ic">'+I.clock+'</span><span class="x"><b>'+esc(r.title)+'</b><small>'+esc(r.sub)+'</small></span></button>').join('');
     /* yakınımda açıksa o yer en başta */
     const nd=st.near&&st.yer!==st.near&&listDestinations({type:st.tur}).find(d=>d.id===st.near);
     if(nd)html+=head('Yakınında')+destRow(nd,'');
@@ -120,12 +119,12 @@ function drawWhere(){
     const r=suggest(q,{type:st.tur});
     if(r.dests.length)html+=head('Yerler')+r.dests.map(d=>destRow(d,q)).join('');
     if(r.products.length)html+=head(T()[2])+r.products.map(p=>prodRow(p,q)).join('');
-    if(r.total)html+='<button type="button" class="sr-row all" data-all><span class="sr-ic">'+LOOP+'</span><span class="x"><b>“'+h(q)+'” için tüm sonuçlar</b><small>'+r.total+' '+unit()+'</small></span>'+I.chev+'</button>';
+    if(r.total)html+='<button type="button" class="sr-row all" data-all><span class="sr-ic">'+LOOP+'</span><span class="x"><b>“'+esc(q)+'” için tüm sonuçlar</b><small>'+r.total+' '+unit()+'</small></span>'+I.chev+'</button>';
     say=r.dests.length+' yer, '+r.total+' '+unit()+' bulundu';
     if(!r.dests.length&&!r.total){
       /* bu kategoride yoksa diğer kategorilere bak */
       const o=suggest(q);
-      html+='<div class="sr-none"><b>'+T()[2]+' içinde “'+h(q)+'” yok</b><p>'+(o.total?'Başka kategorilerde '+o.total+' sonuç var.':'Şehir, bölge ya da deneyim adıyla dene.')+'</p></div>'
+      html+='<div class="sr-none"><b>'+T()[2]+' içinde “'+esc(q)+'” yok</b><p>'+(o.total?'Başka kategorilerde '+o.total+' sonuç var.':'Şehir, bölge ya da deneyim adıyla dene.')+'</p></div>'
         +(o.total?head('Başka kategorilerde')+o.products.map(p=>prodRow(p,q)).join(''):head('Yerler')+listDestinations({type:st.tur}).map(d=>destRow(d,'')).join(''));
       say=o.total?'Bu kategoride sonuç yok, başka kategorilerde '+o.total+' sonuç var':'Sonuç yok';
     }
