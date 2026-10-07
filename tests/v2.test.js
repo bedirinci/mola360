@@ -4,7 +4,7 @@
    verisini, motorlarını ve sayfalarını kullanmıyor, ona bağ vermiyor.
    v2 birden çok sayfadan oluşuyor (v2/index.html, v2/baglan/, v2/urun/ …);
    ortak stil v2/css/, betikler v2/js/ altında. Kurallar her dosya için. */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -119,15 +119,86 @@ describe('v2', () => {
     sayfa.forEach(({ slug, html }) => expect(oku(join(V2, slug, 'index.html')) === html, slug + ': npm run kategoriler').toBe(true));
     /* sayfada başlık, açıklama, asıl adres, ana başlık ve ürün bağlantıları HTML'de */
     const k = oku(join(V2, 'karadeniz-turlari', 'index.html'));
-    expect(k).toContain('<title>Karadeniz turları — mola360</title>');
+    expect(k).toContain('<title>Karadeniz turları — fiyatlar ve tarihler | mola360</title>');
     expect(k).toContain('<link rel="canonical" href="https://bedirinci.github.io/mola360/v2/karadeniz-turlari/">');
     expect(k).toContain('<h1 id="lsTitle">Karadeniz turları</h1>');
     expect(k).toContain('href="../urun/?id=karadeniz-yaylalari-turu"');
     expect(s).toContain('<a class="kl" href="karadeniz-turlari/"');
+    /* site haritasında Keşfet ve bütün kategori sayfaları */
+    const { siteHaritasi, SITE } = await import('../scripts/kategoriler.mjs');
+    expect(oku(join(V2, 'sitemap.xml')), 'npm run kategoriler').toBe(await siteHaritasi());
+    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]))
+      .toEqual([SITE, ...sayfa.map(x => SITE + x.slug + '/')]);
     /* her sekmenin bölümü var; yalnızca ilki (Turlar) açık */
     const api = await import('../v2/js/api.js');
     expect([...s.matchAll(/class="koll-g" data-tur="([a-z]+)"[^>]*?( hidden)?>/g)].map(m => m[1] + (m[2] ? '-' : '+')))
       .toEqual(api.TYPES.map(([t], i) => t + (i ? '-' : '+')));
+  });
+
+  it('kategori sayfaları arama motoruna hazır: başlık, açıklama, önizleme, yapısal veri, sayfa yolu, SSS', async () => {
+    const { kategoriSayfalari, SITE } = await import('../scripts/kategoriler.mjs');
+    const api = await import('../v2/js/api.js');
+    const coz = t => t.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const meta = (html, k) => { const m = new RegExp('<meta (?:name|property)="' + k + '" content="([^"]*)">').exec(html); return m && coz(m[1]); };
+    const basliklar = new Set(), aciklamalar = new Set(), sayfalar = await kategoriSayfalari();
+    for (const { slug, html } of sayfalar) {
+      const c = api.TYPES.flatMap(([t]) => api.listCollections(t)).find(x => x.slug === slug), url = SITE + slug + '/';
+      const baslik = coz(/<title>([^<]*)<\/title>/.exec(html)[1]), desc = meta(html, 'description');
+      /* başlık önce kategorinin adı; açıklama 160 harfi aşmıyor; ikisi de sayfaya özgü */
+      expect(baslik, slug).toBe(api.collectionTitle(c));
+      expect(baslik.startsWith(c.name + ' — '), slug).toBe(true);
+      expect(desc.length, slug).toBeLessThanOrEqual(160);
+      expect(desc.startsWith(c.name), slug).toBe(true);
+      basliklar.add(baslik); aciklamalar.add(desc);
+      expect(html.match(/<h1[ >]/g), slug + ': tek ana başlık').toHaveLength(1);
+      /* paylaşım önizlemesi asıl adresle aynı */
+      expect(html, slug).toContain('<link rel="canonical" href="' + url + '">');
+      expect(meta(html, 'og:url'), slug).toBe(url);
+      expect(meta(html, 'og:title'), slug).toBe(baslik.replace(/ \| mola360$/, ''));
+      expect(meta(html, 'og:description'), slug).toBe(desc);
+      expect(meta(html, 'og:locale'), slug).toBe('tr_TR');
+      /* yapısal veri: geçerli JSON; liste kartlarla, SSS görünen sorularla aynı */
+      const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1]);
+      const g = Object.fromEntries(ld['@graph'].map(x => [x['@type'], x]));
+      expect(Object.keys(g), slug).toEqual(['CollectionPage', 'BreadcrumbList', 'ItemList', 'FAQPage']);
+      expect(g.CollectionPage.url, slug).toBe(url);
+      const kartlar = [...html.matchAll(/<a class="lk" href="\.\.\/urun\/\?id=([^"]+)"/g)].map(m => m[1]);
+      expect(g.ItemList.itemListElement.map(x => x.url), slug).toEqual(kartlar.map(id => SITE + 'urun/?id=' + id));
+      expect(g.ItemList.numberOfItems, slug).toBe(kartlar.length);
+      expect(g.BreadcrumbList.itemListElement.map(x => x.name), slug).toEqual(['Keşfet', api.TYPES.find(t => t[0] === c.q.tur)[2], c.name]);
+      const sorular = [...html.matchAll(/<summary><h3>([^<]+)<\/h3>/g)].map(m => coz(m[1]));
+      const yanitlar = [...html.matchAll(/<\/summary><p>([^<]+)<\/p>/g)].map(m => coz(m[1]));
+      expect(g.FAQPage.mainEntity.map(x => x.name), slug).toEqual(sorular);
+      expect(g.FAQPage.mainEntity.map(x => x.acceptedAnswer.text), slug).toEqual(yanitlar);
+      expect(sorular.length, slug).toBeGreaterThanOrEqual(3);
+      /* görünen sayfa yolu ve kategoriyi anlatan bölümler (liste.js süzgeçte gizler) */
+      expect(html, slug).toContain('<nav class="bc" aria-label="Sayfa yolu" data-kat>');
+      expect(html, slug).toContain('<body data-q="' + Object.entries(c.q).map(([k, v]) => k + '=' + v).join('&amp;') + '" data-kat="' + slug + '">');
+      expect(html.match(/<section class="box kat-seo"[^>]* data-kat>/g).length, slug).toBeGreaterThanOrEqual(2);
+      /* ilgili kategoriler var olan sayfalara gider */
+      [...html.matchAll(/<li><a href="\.\.\/([a-z0-9-]+)\/">/g)].forEach(m => expect(existsSync(join(V2, m[1], 'index.html')), slug + ' → ' + m[1]).toBe(true));
+    }
+    expect(basliklar.size, 'her sayfanın başlığı kendine').toBe(sayfalar.length);
+    expect(aciklamalar.size, 'her sayfanın açıklaması kendine').toBe(sayfalar.length);
+  });
+
+  it('kategori sayfaları tarihten bağımsız: sabit HTML ertesi gün eskimez', async () => {
+    /* tarih bugüne göre hesaplanır (etkinlik günü); sayfaya yazılsaydı her gün değişirdi */
+    const AY = /\b\d{1,2} (Oca|Şub|Mar|Nis|May|Haz|Tem|Ağu|Eyl|Eki|Kas|Ara)\b/;
+    const once = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
+    once.forEach(({ slug, html }) => expect(html.match(AY), slug + ': sayfada gün').toBeNull());
+    /* saat 45 gün ileri: üretilen sayfalar aynı */
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(Date.now() + 45 * 864e5));
+      vi.resetModules();
+      const sonra = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
+      expect(sonra.map(x => x.slug)).toEqual(once.map(x => x.slug));
+      sonra.forEach(({ slug, html }, i) => expect(html === once[i].html, slug + ': tarih değişince sayfa değişti').toBe(true));
+    } finally {
+      vi.useRealTimers();
+      vi.resetModules();
+    }
   });
 
   it('arama kartının koleksiyonları: her sekmede gerçek, kategori ve süzgeç ayrı (kural 3)', async () => {

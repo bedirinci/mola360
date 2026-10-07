@@ -412,6 +412,7 @@ v2/
 ├── baglan/ urun/ liste/ rezervasyon/ planlarim/ profil/
 ├── gonderi/ kisi/ mesajlar/ sohbet/ bildirimler/
 ├── karadeniz-turlari/ …   kategori sayfaları (43; scripts/kategoriler.mjs üretir)
+├── sitemap.xml           site haritası: Keşfet ve kategori sayfaları (aynı betik üretir)
 ├── css/
 │   ├── tokens.css        tasarım tokenları (tek ölçek)
 │   ├── base.css
@@ -1883,3 +1884,73 @@ güncellenecek yaşayan proje dokümanıdır.
   - Karttan açılan sayfa kartın adıyla başlar, adres çubuğunda okunur bir
     adres durur.
   - Sayfanın içeriği JavaScript yüklenmeden de görünür.
+
+### 2026-10-07 — Kategori sayfaları arama motoruna uygun: başlık, yapısal veri, SSS, sayfa yolu; tarihten bağımsız (Bedir)
+
+- **Karar (Bedir):** "Eklediğimiz kategorilerin açılan sayfası SEO'ya
+  uyumlu bir sayfa olmalı."
+- **Neden:**
+  - Sayfada yalnızca ad, kısa açıklama ve kartlar vardı. Arama motoruna
+    sayfanın neyi anlattığını söyleyen metin, yapısal veri ve iç bağlar
+    yoktu. Tek deneyimli kategoride sayfa çok inceydi.
+  - Hata: etkinlik kartındaki gün ("Cum 9 Eki") bugüne göre hesaplanıyor
+    ve sabit HTML'e yazılıyordu. Sayfa ertesi gün eskiyor, diskteki
+    sayfaların veriyle aynı olduğunu denetleyen test de tarih ilerleyince
+    kırılacaktı.
+- **Etkilediği alanlar:**
+  - `scripts/kategoriler.mjs` (sayfa bölümleri, site haritası);
+  - 43 kategori sayfası ve `v2/sitemap.xml` (yeni, üretilen);
+  - `v2/js/api.js` (`collectionTitle`), `v2/js/liste.js`;
+  - `v2/css/sayfalar.css`;
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`.
+- **Teknik sonuç:** Hepsi veriden üretilir, hiçbirinde tarih yoktur.
+  - **Başlık:** önce kategori, sonra türüne göre sayfada bulunan
+    ("Karadeniz turları — fiyatlar ve tarihler | mola360"; otelde oda
+    seçenekleri, etkinlikte bilet fiyatları). `api.collectionTitle` hem
+    üreticide hem Liste'de kullanılır.
+  - **Açıklama:** en çok 160 harf: ad, sığdığı kadar deneyim, başlangıç
+    fiyatı.
+  - **Paylaşım önizlemesi:** Open Graph (`og:title`, `og:description`,
+    `og:url` asıl adresle aynı, `tr_TR`) ve `twitter:card`. Görsel yok:
+    ürünlerin fotoğrafı yok, logo önizleme için çok küçük.
+  - **Yapısal veri (JSON-LD):** koleksiyon sayfası (`CollectionPage`),
+    ürün listesi (`ItemList`, kartlarla aynı sırada ürün adresleri), sayfa
+    yolu (`BreadcrumbList`: Keşfet › Turlar › Karadeniz turları) ve sık
+    sorulan sorular (`FAQPage`, görünen sorularla birebir aynı).
+  - **Görünen sayfa yolu** başlığın üstünde (Keşfet › Turlar).
+  - **Listenin altında üç bölüm:**
+    - "… hakkında": deneyimlerin adları ürün sayfalarına bağlı, her
+      sayfada ne bulunduğu.
+    - "Sık sorulan sorular": fiyat aralığı ve en uygun seçenek; turda
+      kalkış şehirleri, süreler ve vize; otelde konum ve pansiyon;
+      etkinlikte yer ve saat; aktivitede konum ve süre; mekânda konum ve
+      seçenekler; iptal koşulu (`bookingSpec`).
+    - "İlgili kategoriler": aynı yer ya da temanın başka türleri
+      (Karadeniz turları → Karadeniz otelleri), sonra aynı türün
+      kategorileri.
+  - **Liste'de gizleme:** bu bölümler `data-kat` taşır. Süre, kiminle,
+    tarih ya da başka sekme seçilince liste kategorinin tamamı olmaz;
+    `liste.js` bölümleri gizler.
+  - **Etkinlik kartı:** sabit HTML'de yalnızca saat ("20:00"); günü
+    JavaScript çizince gelir.
+  - **Site haritası:** `v2/sitemap.xml` (Keşfet ve 43 kategori sayfası).
+    `robots.txt` yazılamıyor: site alanın kökünde değil
+    (`bedirinci.github.io/mola360/`). Harita Search Console'dan
+    gönderilir.
+  - **Testler:**
+    - her sayfada başlık, açıklama (≤160), tek `h1`, asıl adres ve Open
+      Graph denetlenir;
+    - JSON-LD geçerli; liste kartlarla, SSS görünen sorularla aynı;
+    - ilgili kategoriler var olan sayfalara gider;
+    - sayfada gün yok; saat 45 gün ileri alınınca üretilen sayfalar
+      değişmiyor;
+    - tarayıcıda süzgeç seçilince bölümler gizleniyor.
+  - **Açık konu:** `noindex, nofollow` duruyor (Bedir: şimdilik kalsın).
+    Kaldırılınca bu sayfalar dizine girmeye hazır.
+- **UX sonucu:**
+  - Kullanıcı sayfanın nerede olduğunu (Keşfet › Turlar) görür, tek
+    dokunuşla geri çıkar.
+  - Listeden sonra fiyat aralığını, kalkış şehrini, süreyi ve iptal
+    koşulunu tek tek ürün açmadan okur.
+  - Benzer kategorilere geçer.
+  - Bağlantı paylaşılınca önizlemede kategorinin adı ve açıklaması çıkar.

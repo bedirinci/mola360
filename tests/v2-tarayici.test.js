@@ -164,9 +164,14 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
     await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
     expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
-    expect(await page.title()).toBe('Kültür turları — mola360');
+    expect(await page.title()).toBe('Kültür turları — fiyatlar ve tarihler | mola360');
     expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe(base + 'kultur-turlari/');
     expect(await page.$$eval('#list .vk', a => a.length)).toBeGreaterThan(0);
+    /* sayfa yolu, açıklama, SSS ve ilgili kategoriler açık; SSS açılır kapanır */
+    const kat = () => page.$$eval('body [data-kat]', a => a.map(e => e.hidden));
+    expect(await kat()).toEqual([false, false, false, false]);
+    await page.click('.kat-seo details summary');
+    expect(await page.$eval('.kat-seo details', d => d.open)).toBe(true);
     /* Keşfet'teki kart bu sayfaya gider */
     await page.goto(base, { waitUntil: 'networkidle' });
     expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="kultur-turlari/"]', 'href')).toBe('kultur-turlari/');
@@ -174,6 +179,9 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     /* süre seçilince adres Liste'ye döner, seçim korunur */
     await page.click('[data-sure="hs"]');
     expect(page.url()).toBe(base + 'liste/?tema=kultur&tur=tur&sure=hs');
+    /* liste artık kategorinin tamamı değil: kategoriyi anlatan bölümler gizlenir, sayfa kalır */
+    expect(await kat()).toEqual([true, true, true, true]);
+    expect(await page.$eval('body', b => b.hidden)).toBe(false);
     expect(sorun).toEqual([]);
     await ctx.close();
   }, 30000);

@@ -138,6 +138,9 @@ export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f])=>{const
   return {name,slug:slug(name),q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:''}}).filter(c=>c.count);
 /* Liste adresi bir koleksiyona denk geliyorsa o koleksiyon (başlık kartla aynı: "Karadeniz turları") */
 export const findCollection=(type,{yer='',tema=''}={})=>listCollections(type).find(c=>(c.q.yer||'')===yer&&(c.q.tema||'')===tema)||null;
+/* Kategori sayfasının başlığı: önce kategori, sonra sayfada ne bulunacağı (arama motorları için) */
+const KAT_EK={tur:'fiyatlar ve tarihler',otel:'fiyatlar ve oda seçenekleri',etkinlik:'bilet fiyatları ve tarihler',aktivite:'fiyatlar ve seanslar',mekan:'fiyatlar ve rezervasyon'};
+export const collectionTitle=c=>c.name+' — '+(KAT_EK[c.q.tur]||'fiyatlar')+' | mola360';
 
 /* Arama önerileri: önce adı yazılanla başlayan yerler ve deneyimler */
 export function suggest(text,{type}={}){
