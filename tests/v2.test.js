@@ -94,9 +94,10 @@ describe('v2', () => {
     const kap = api.listProducts({ yer: 'kapadokya' });
     expect(kap.length).toBeGreaterThan(0);
     expect(api.listProducts({ type: 'tur', yer: 'kapadokya' }).every(p => p.type === 'Tur')).toBe(true);
-    /* tarihi olan ürün pencereye düşmeli: Kapadokya Turu bu hafta sonu kalkmıyor (ilk kalkış 5 Ekim) */
-    expect(api.listProducts({ yer: 'kapadokya', type: 'tur', tarih: 'bu-hs' })).toEqual([]);
-    expect(api.firstDateIn(api.getProduct('kapadokya-turu'), 'gelecek-hs')).toBe('Cum 9 Eki');
+    /* tarihi olan ürün pencereye düşmeli (gün gün sınama tests/v2-takvim.test.js'te, saat sabitlenmiş) */
+    const [a, b] = api.WHEN.find(w => w[0] === 'bu-hs').slice(3);
+    api.listProducts({ type: 'tur', tarih: 'bu-hs' }).forEach(p =>
+      expect(p.dates.some(x => { const d = api.parseDay(x[1]); return d >= a && d <= b; }), p.title).toBe(true));
   });
 
   it('ürün sayfasında her deneyimin içeriği var, iptal günü tarihe göre', async () => {
@@ -105,9 +106,10 @@ describe('v2', () => {
       const d = api.productDetails(p);
       expect(d.about && (d.program.length || (api.bookingSpec(p).hotel || {rooms: []}).rooms.length) && d.dahil.length && d.place[0], p.title).toBeTruthy();
     });
-    const k = api.getProduct('kapadokya-turu');
-    expect(api.cancelBy(k, 'Pzt 12 Eki')).toEqual({ date: '5 Ekim Pazartesi', past: false });
-    expect(api.cancelBy(k, 'Pzt 5 Eki').past).toBe(true);
+    /* son ücretsiz iptal günü: turda kalkıştan 7 gün önce (bugüne göre; sabit gün sınaması v2-takvim'de) */
+    const k = api.getProduct('kapadokya-turu'), lbl = d => d.getDate() + ' ' + ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()];
+    expect(api.cancelBy(k, lbl(api.addDays(api.today(), 10))).past).toBe(false);
+    expect(api.cancelBy(k, lbl(api.addDays(api.today(), 3))).past).toBe(true);
   });
 
   it('keşfet: kiminle seçenekleri, tür karışık temalar, sahnede ve yakınımda', async () => {
@@ -159,7 +161,7 @@ describe('v2', () => {
       join(V2, 'index.html'), ...readdirSync(V2, { withFileTypes: true }).filter(d => d.isDirectory() && existsSync(join(V2, d.name, 'index.html'))).map(d => join(V2, d.name, 'index.html'))];
     dosyalar.forEach(f => {
       const t = oku(f);
-      expect(t, f).not.toMatch(/class="ornek"|class="demo"|Önizleme\.|yeni mola360\\'ta hazırlanıyor/);
+      expect(t, f).not.toMatch(/class="ornek"|class="demo"|Önizleme\.|yeni mola360\\'ta hazırlanıyor|\(Taslak:/);
     });
   });
 
@@ -179,6 +181,18 @@ describe('v2', () => {
     expect(past.length).toBeGreaterThan(0);
     past.forEach(b => expect(b.product, b.productId).toBeTruthy());
     expect(api.createPost({ productId: 'yok' })).toBe(null);
+    /* Ayşe'nin önceki paylaşımları dahil: rozet yalnızca geçmiş rezervasyondaki deneyimde */
+    const went = new Set(past.map(b => b.productId));
+    const rozetli = api.listProfilePosts().filter(p => p.verified);
+    expect(rozetli.length).toBeGreaterThan(0);
+    rozetli.forEach(p => expect(went.has(p.product.id), p.id + ' ' + p.product.id).toBe(true));
+  });
+
+  it('kullanıcının yazdığı metin HTML\'e kaçışlanarak basılır; kaçış yardımcısı tek', async () => {
+    const { esc } = await import('../v2/js/ui.js');
+    expect(esc(`<img src=x onerror="a('b')">&`)).toBe('&lt;img src=x onerror=&quot;a(&#39;b&#39;)&quot;&gt;&amp;');
+    /* sayfalar kendi kopyasını tutmaz (eksik kopyalar hataya yol açmıştı); api.js'teki hx ui.js'i içe aktaramadığı için ayrı */
+    readdirSync(join(V2, 'js')).filter(f => f !== 'ui.js').forEach(f => expect(oku(join(V2, 'js', f)), f).not.toMatch(/const (h|esc)=t=>String\(t\)/));
   });
 });
 

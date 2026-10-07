@@ -23,6 +23,7 @@ ayder:'linear-gradient(160deg,#CFE6C2,#5E9A6A 50%,#3B5C70)',kaleici:'linear-grad
 akustik:'linear-gradient(160deg,#2A2446,#5B4A8E 55%,#E0B070)',masukiye:'linear-gradient(160deg,#D5E8B8,#5F9A54 50%,#2F5A4E)'};
 
 /* Puanlar örnek katalogdaki 5'lik ortalamaların 10'luğa çevrilmiş hali; kalkış ve etkinlik tarihleri örnek.
+   Tarihler 1 Ekim 2026 haftası için yazıldı; api.js onları haftanın aynı günlerinde bugüne taşır.
    Yorum sayısı olmayan üründe puan gösterilmiyor, "Yeni" yazıyor. */
 export const ITEMS=[
  {k:'Aktivite',b:'saat',t:'İstanbul Boğaz Turu',a:'Eminönü, İstanbul',facts:['2 saat','Standart paket'],p:650,g:'bogaz'},
@@ -38,16 +39,16 @@ export const ITEMS=[
  {k:'Tur',b:'gun',t:'Sapanca ve Maşukiye Turu',a:'İstanbul çıkışlı · 07:30',info:'Günübirlik',tr:'otobus',p:780,s:9.2,c:75,g:'sapanca',dates:[['Cmt','3 Eki'],['Cmt','10 Eki'],['Cmt','17 Eki']],more:'+9'},
  {k:'Aktivite',b:'gun',t:'Köprülü Kanyon Rafting',a:'Manavgat, Antalya',facts:['Yarım gün','Standart paket'],p:850,s:9.6,c:440,g:'rafting'},
  {k:'Tur',b:'gun',t:'Pamukkale ve Hierapolis',a:'İzmir çıkışlı · 12 saat',info:'Günübirlik',p:1890,g:'pamukkale',dates:[['Cmt','3 Eki'],['Çar','7 Eki'],['Cmt','10 Eki']],more:'+14'},
- {k:'Tur',b:'hs',t:'Ege Adaları Balayı Kaçamağı',a:'Sakız Adası · İzmir çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,reg:'avrupa',p:7450,s:9.8,c:288,g:'ege',dates:[['Cum','2 Eki'],['Cum','9 Eki'],['Cum','16 Eki']],more:'+4'},
+ {k:'Tur',b:'hs',t:'Ege Adaları Balayı Kaçamağı',a:'Sakız Adası · İzmir çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:7450,s:9.8,c:288,g:'ege',dates:[['Cum','2 Eki'],['Cum','9 Eki'],['Cum','16 Eki']],more:'+4'},
  {k:'Otel',b:'hs',t:'Göreme Mağara Otel',a:'Göreme, Nevşehir',facts:['2 – 4 Eki · 2 gece','Kahvaltı dahil'],p:4900,s:9.4,c:96,g:'goreme',u:'2 gece toplam'},
  {k:'Otel',b:'hs',t:'Sealight Resort',a:'Kemer, Antalya',facts:['2 – 4 Eki · 2 gece','Her şey dahil'],p:4200,s:9.2,c:340,g:'sealight',u:'2 gece toplam'},
- {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · Ayvalık çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,reg:'avrupa',p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3',sample:1},
- {k:'Tur',b:'uzun',t:'Batum ve Acara Turu',a:'Batum, Gürcistan · Trabzon çıkışlı',info:'3 gece 4 gün',tr:'otobus',visa:'Kimlikle geçiş',abroad:1,reg:'kafkas',p:6900,g:'batum',dates:[['Per','8 Eki'],['Per','15 Eki'],['Per','22 Eki']],more:'+5',sample:1},
- {k:'Tur',b:'uzun',t:'Balkanlar: Saraybosna ve Mostar',a:'Bosna-Hersek · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Vizesiz',abroad:1,reg:'avrupa',p:18900,g:'balkan',dates:[['Pzt','12 Eki'],['Pzt','26 Eki'],['Pzt','9 Kas']],more:'+2',sample:1},
- {k:'Tur',b:'uzun',t:'Dubai Turu',a:'Birleşik Arap Emirlikleri · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'E-vize',visaReq:1,abroad:1,reg:'uzak',p:32900,g:'dubai',dates:[['Per','15 Eki'],['Per','29 Eki'],['Per','12 Kas']],more:'+6',sample:1},
- {k:'Tur',b:'uzun',t:'İtalya: Roma, Floransa ve Venedik',a:'İtalya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:39900,g:'italya',dates:[['Cmt','17 Eki'],['Cmt','31 Eki'],['Cmt','14 Kas']],more:'+4',sample:1},
- {k:'Tur',b:'uzun',t:'İspanya: Barselona ve Madrid',a:'İspanya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:41500,g:'ispanya',dates:[['Paz','18 Eki'],['Paz','1 Kas'],['Paz','15 Kas']],more:'+3',sample:1},
- {k:'Tur',b:'uzun',t:'Fransa: Paris ve Loire Şatoları',a:'Fransa · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,reg:'avrupa',p:36750,g:'fransa',dates:[['Cum','23 Eki'],['Cum','6 Kas'],['Cum','20 Kas']],more:'+4',sample:1},
+ {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · Ayvalık çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3'},
+ {k:'Tur',b:'uzun',t:'Batum ve Acara Turu',a:'Batum, Gürcistan · Trabzon çıkışlı',info:'3 gece 4 gün',tr:'otobus',visa:'Kimlikle geçiş',abroad:1,p:6900,g:'batum',dates:[['Per','8 Eki'],['Per','15 Eki'],['Per','22 Eki']],more:'+5'},
+ {k:'Tur',b:'uzun',t:'Balkanlar: Saraybosna ve Mostar',a:'Bosna-Hersek · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Vizesiz',abroad:1,p:18900,g:'balkan',dates:[['Pzt','12 Eki'],['Pzt','26 Eki'],['Pzt','9 Kas']],more:'+2'},
+ {k:'Tur',b:'uzun',t:'Dubai Turu',a:'Birleşik Arap Emirlikleri · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'E-vize',visaReq:1,abroad:1,p:32900,g:'dubai',dates:[['Per','15 Eki'],['Per','29 Eki'],['Per','12 Kas']],more:'+6'},
+ {k:'Tur',b:'uzun',t:'İtalya: Roma, Floransa ve Venedik',a:'İtalya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:39900,g:'italya',dates:[['Cmt','17 Eki'],['Cmt','31 Eki'],['Cmt','14 Kas']],more:'+4'},
+ {k:'Tur',b:'uzun',t:'İspanya: Barselona ve Madrid',a:'İspanya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:41500,g:'ispanya',dates:[['Paz','18 Eki'],['Paz','1 Kas'],['Paz','15 Kas']],more:'+3'},
+ {k:'Tur',b:'uzun',t:'Fransa: Paris ve Loire Şatoları',a:'Fransa · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:36750,g:'fransa',dates:[['Cum','23 Eki'],['Cum','6 Kas'],['Cum','20 Kas']],more:'+4'},
  {k:'Tur',b:'uzun',t:'Kapadokya Turu',a:'Göreme · İstanbul çıkışlı',info:'3 gece 4 gün',tr:'ucak',p:8990,old:10900,s:9.4,c:974,g:'kapadokya',dates:[['Pzt','5 Eki'],['Cum','9 Eki'],['Pzt','12 Eki']],more:'+8'},
  {k:'Tur',b:'uzun',t:'Karadeniz Yaylaları Turu',a:'Ayder, Rize · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',p:12500,g:'karadeniz',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+6'},
  {k:'Tur',b:'uzun',t:'Turistik Doğu Ekspresi',a:'Kars · Ankara çıkışlı',info:'5 gece 6 gün',tr:'tren',p:9750,s:9.2,c:450,g:'dogu',dates:[['Sal','20 Eki'],['Sal','3 Kas'],['Sal','17 Kas']],more:'+5'},
@@ -55,7 +56,6 @@ export const ITEMS=[
 ];
 /* Ne kadar molan var? [adres anahtarı, seçenek, liste başlığı] */
 export const BUCKETS=[['saat','Birkaç saat','Birkaç saate sığanlar'],['gun','Bir gün','Bir güne sığanlar'],['hs','Hafta sonu','Hafta sonuna sığanlar'],['uzun','4 gün +','Uzun molalar']];
-export const PL={Tur:'Turlar',Otel:'Oteller',Etkinlik:'Etkinlikler',Aktivite:'Aktiviteler','Mekân':'Mekânlar'};
 
 /* Bölümler: etkinlik, otel, mekân */
 export const EV=[['CUM','2','Konser','Harbiye Açıkhava Konserleri','21:00 · Harbiye, İstanbul',890,'harbiye'],
@@ -73,11 +73,6 @@ export const VN=[{t:'Kordon Spa & Masaj',a:'Alsancak, İzmir · Masaj salonu',s:
  {t:'Kaleiçi Konak Restoran',a:'Kaleiçi, Antalya · Tarihi konakta akşam yemeği',s:9.4,c:268,g:'kaleici',mode:'Masa rezervasyonu',slots:['19:00','21:00'],opts:[['Akşam menüsü',1350],['Şarap eşleşmeli menü',1950]]},
  {t:'Erciyes Dağ Evi',a:'Erciyes, Kayseri · Şömineli dağ evi',s:9.0,c:154,g:'dagevi',mode:'Masa rezervasyonu',slots:['10:00','13:00','19:00'],opts:[['Fondü menüsü',900],['Dağ kahvaltısı',550]]},
  {t:'Kadıköy Akustik Sahne',a:'Kadıköy, İstanbul · Canlı müzik ve bar',s:9.2,c:530,g:'akustik',mode:'Masa rezervasyonu',u:'min. harcama',opts:[['Masa · 2 kişi',900],['Loca · 6 kişi',3600]]}];
-
-/* Yurt dışı bölümünün sırası */
-export const ABO=['Ege Adaları Balayı Kaçamağı','İtalya: Roma, Floransa ve Venedik','Dubai Turu','Balkanlar: Saraybosna ve Mostar','İspanya: Barselona ve Madrid','Midilli Adası Kaçamağı','Fransa: Paris ve Loire Şatoları','Batum ve Acara Turu'];
-
-/* Arama kutusu: sekmeye göre alan adları */
 
 /* Tam ekran menü: ürün türleri */
 export const MENU=[['Turlar','tur','Günübirlik, hafta sonu, uzun'],['Oteller','otel','Butik, termal, resort'],
@@ -185,7 +180,7 @@ export const POSTS=[
   metin:'Dört koy, iki yüzme molası, teknede ızgara balık. Akşama tuzlu ve mutlu döndük.',beg:203,yor:21},
  {u:'elif',yer:'Kaleiçi, Antalya',ne:'6 gün önce',g:'kaleici',g2:['kahve'],urun:'Kaleiçi Konak Restoran',gitti:0,
   metin:'Avluda yemek, sonra dar sokaklarda yürüyüş. Doğum günü için güzel bir akşamdı.',beg:64,yor:7},
- {u:'selin',yer:'Maşukiye, Sakarya',ne:'Dün',g:'masukiye',g2:['sapanca'],urun:'Maşukiye Dere Evi',gitti:1,
+ {u:'selin',yer:'Maşukiye, Kocaeli',ne:'Dün',g:'masukiye',g2:['sapanca'],urun:'Maşukiye Dere Evi',gitti:1,
   metin:'Dere kenarında serpme kahvaltı, sonra göl kıyısında kısa bir yürüyüş. Pazar sabahı için tam kıvamında.',beg:77,yor:8},
  {u:'deniz',yer:'Kavaklıdere, Ankara',ne:'3 hafta önce',g:'harbiye',g2:['akustik'],urun:'Stand Up Gecesi',gitti:0,
   metin:'Geçen ayki gösteriye gittik, salon kahkahadan yıkıldı. Bu cuma yine oradayız.',beg:58,yor:6},
@@ -209,7 +204,7 @@ export const DESTS=[
  ['antalya','Antalya','Akdeniz · Kemer, Kaleiçi',['Antalya','Kemer','Manavgat','Aspendos','Kaleiçi']],
  ['mugla','Muğla','Ege · Bodrum, Fethiye',['Muğla','Bodrum','Fethiye','Ölüdeniz']],
  ['pamukkale','Pamukkale','Denizli',['Pamukkale','Hierapolis','Denizli']],
- ['sapanca','Sapanca','Sakarya · Maşukiye',['Sapanca','Maşukiye']],
+ ['sapanca','Sapanca','Sapanca Gölü · Maşukiye',['Sapanca','Maşukiye']],
  ['bursa','Bursa','Uludağ',['Bursa','Uludağ']],
  ['yalova','Yalova','Marmara · termal',['Yalova']],
  ['ankara','Ankara','İç Anadolu',['Ankara']],
@@ -241,14 +236,6 @@ export const GEO={'Eminönü':[41.017,28.970],'Harbiye':[41.045,28.988],'Maçka'
  'Bodrum':[37.034,27.430],'Fethiye':[36.621,29.116],'Pamukkale':[37.920,29.120],'Maşukiye':[40.700,30.150],'Sapanca':[40.690,30.268],'Uludağ':[40.100,29.130],'Bursa':[40.183,29.067],
  'Termal':[40.609,29.172],'Yalova':[40.655,29.270],'Ankara':[39.920,32.854],'Erciyes':[38.530,35.450],'Kayseri':[38.720,35.480],'Ayder':[40.953,41.100],'Rize':[41.025,40.517],'Kars':[40.601,43.097],
  'Sakız':[38.368,26.136],'Midilli':[39.110,26.555],'Batum':[41.643,41.637],'Saraybosna':[43.856,18.413],'Dubai':[25.205,55.271],'İtalya':[41.903,12.496],'İspanya':[41.390,2.170],'Fransa':[48.857,2.352]};
-
-/* Ne zaman: arama penceresi. Örnek takvim 3 Ekim 2026'da yaşıyor.
-   [adres anahtarı, ad, alt satır, başlangıç, bitiş] (ay 0'dan) */
-export const WHEN=[
- ['bu-hs','Bu hafta sonu','2 – 4 Ekim',[2026,9,2],[2026,9,4]],
- ['gelecek-hs','Gelecek hafta sonu','9 – 11 Ekim',[2026,9,9],[2026,9,11]],
- ['ekim','Ekim içinde','1 – 31 Ekim',[2026,9,1],[2026,9,31]],
- ['kasim','Kasım içinde','1 – 30 Kasım',[2026,10,1],[2026,10,30]]];
 
 /* ÖRNEK Molapuan durumu, taslak görünümüne göre: [puan, son 24 aydaki rezervasyon].
    Seviye eşikleri (ÖNERİ): Gezgin 1, Kâşif 3, Mola Ustası 6 rezervasyon. */
