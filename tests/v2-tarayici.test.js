@@ -110,36 +110,53 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     await ctx.close();
   }, 30000);
 
-  it('Keşfet: arama kartı yana kayar, ipucu oturumda bir kez, koleksiyonlar sekmeyle eşleşir', async () => {
-    const ctx = await baglam(), sorun = [];
-    const ac = async () => { const page = await ctx.newPage(); sorun.push(izle(page)); await page.goto(base, { waitUntil: 'networkidle' }); return page; };
-    const ipucu = page => page.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 3000 }).then(() => true, () => false);
-    const kartlar = page => page.$$eval('#kollG .kl', a => a.map(x => x.getAttribute('href')));
+  it('Keşfet: arama kartı yana kayar, ipucu her açılışta ve sekme değişince, kategoriler sekmeyle eşleşir', async () => {
+    const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
+    const sx = f => page.evaluate(f);
+    const oynuyor = () => sx(() => document.getElementById('sx').classList.contains('nudge'));
+    const ipucu = () => page.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 3000 }).then(() => true, () => false);
+    const bitti = () => page.waitForFunction(() => !document.getElementById('sx').classList.contains('nudge'), null, { timeout: 4000 });
+    const kartlar = () => page.$$eval('#kollG .kl', a => a.map(x => x.getAttribute('href')));
 
-    /* ilk açılış: ipucu oynar; ikinci sayfada seçili sekmenin (Turlar) koleksiyonları */
-    const page = await ac();
-    expect(await ipucu(page)).toBe(true);
-    expect((await kartlar(page)).every(h => h.includes('liste/?tur=tur'))).toBe(true);
+    /* açılış: ipucu oynar; kartlar seçili sekmenin (Turlar) kategorileri */
+    await page.goto(base, { waitUntil: 'networkidle' });
+    expect(await ipucu()).toBe(true);
+    expect((await kartlar()).every(h => h.includes('liste/?tur=tur'))).toBe(true);
     expect(await page.textContent('#kollH')).toBe('Tur çeşitleri');
-    /* sekme değişince kartlar da değişir */
+    await bitti();
+    /* sekme değişince kartlar değişir, ipucu yeniden oynar */
     await page.click('#tab-otel');
-    expect((await kartlar(page)).every(h => h.includes('liste/?tur=otel'))).toBe(true);
+    expect((await kartlar()).every(h => h.includes('liste/?tur=otel'))).toBe(true);
     expect(await page.textContent('#kollH')).toBe('Otel çeşitleri');
-    /* aynı oturumda yeniden açılınca ipucu yok */
+    expect(await ipucu()).toBe(true);
+    await bitti();
+    /* her girişte yeniden */
     await page.reload({ waitUntil: 'networkidle' });
-    expect(await ipucu(page)).toBe(false);
+    expect(await ipucu()).toBe(true);
+    await bitti();
 
-    /* yeni oturumda yine oynar; kullanıcı kendisi kaydırınca bir daha hiç */
-    const p2 = await ac();
-    expect(await ipucu(p2)).toBe(true);
-    await p2.evaluate(() => document.getElementById('sx').scrollTo({ left: 9999 }));
-    await p2.waitForFunction(() => localStorage.getItem('m360-kaydir') === '1');
-    expect(await p2.evaluate(() => document.getElementById('sx').classList.contains('nudge'))).toBe(false);
-    const p3 = await ac();
-    expect(await ipucu(p3)).toBe(false);
-    expect(sorun.flat()).toEqual([]);
+    /* şeridin sonunda son kart kenar boşluğu (16 px) kadar içeride; sütunlar küsuratlı, kaydırma tam sayı */
+    await sx(() => document.getElementById('sx').scrollTo({ left: 99999 }));
+    await page.waitForTimeout(300);
+    const bosluk = await sx(() => innerWidth - Math.max(...[...document.querySelectorAll('#kollG .kl')].map(k => k.getBoundingClientRect().right)));
+    expect(bosluk).toBeGreaterThanOrEqual(15);
+    expect(bosluk).toBeLessThan(18);
+    /* kartlardayken sekme değişince yalnızca kartlar yenilenir (form görünmüyor) */
+    await page.click('#tab-etkinlik');
+    expect((await kartlar()).every(h => h.includes('liste/?tur=etkinlik'))).toBe(true);
+    await page.waitForTimeout(600);
+    expect(await oynuyor()).toBe(false);
+    expect(sorun).toEqual([]);
     await ctx.close();
-  }, 30000);
+
+    /* hareketi azalt açıksa ipucu yok */
+    const sakin = await browser.newContext({ viewport: { width: 360, height: 780 }, reducedMotion: 'reduce' });
+    const p2 = await sakin.newPage();
+    await p2.goto(base, { waitUntil: 'networkidle' });
+    await p2.click('#tab-otel');
+    expect(await p2.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 1500 }).then(() => true, () => false)).toBe(false);
+    await sakin.close();
+  }, 40000);
 
   it('rezervasyon özetinde ad ve e-posta yazıldığı gibi', async () => {
     const { ctx, page, sorun, xss } = await ile({}, 'rezervasyon/?id=kum-beach-club');

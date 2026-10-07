@@ -60,7 +60,7 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar, popüler aramalar; ne zaman; kaç kişi). Arama kartı yana kayar: formun ardından seçili sekmenin bütün koleksiyonları gelir (ör. Yurt dışı, Kültür, Karadeniz turları; yer ya da temayla, boş olan gösterilmez), temalar gibi yana kayan kartlar: üç sıra, yalnızca adı; sekme değişince kartlar da değişir. Kayabildiği oturumun ilk açılışında kartın iki kez kısa kıpırdamasıyla gösterilir, kullanıcı kendisi kaydırınca bir daha gösterilmez. "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Molapuan kartı, Bağlan önizlemesi, "Yakınımda ne var?" (konum ya da şehir), "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar. Kiminle aramaya binmez, yalnızca rayların içindeki sırayı belirler; konum yalnızca "Yakınımda" rayını doldurur, yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit |
+| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar, popüler aramalar; ne zaman; kaç kişi). Arama kartı yana kayar: formun ardından seçili sekmenin bütün koleksiyonları gelir (ör. Yurt dışı, Kültür, Karadeniz turları; yer ya da temayla, boş olan gösterilmez), temalar gibi yana kayan kartlar: üç sıra, yalnızca adı; sekme değişince kartlar da değişir. Kayabildiği her açılışta ve sekme her değiştiğinde kartın iki kez kısa kıpırdamasıyla gösterilir (hareketi azalt açıksa gösterilmez). "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Molapuan kartı, Bağlan önizlemesi, "Yakınımda ne var?" (konum ya da şehir), "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar. Kiminle aramaya binmez, yalnızca rayların içindeki sırayı belirler; konum yalnızca "Yakınımda" rayını doldurur, yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit |
 | Bağlan | `v2/baglan/` | Hikayeler (Mola360'ın ve takip edilenlerin; tam ekran oluşturucu), Haftanın gezgini, paylaşım akışı (her paylaşım bağlı olduğu ürünle; beğen, yorum, Gönder, kaydet, ⋯ menüsü), "Ben de gitmek istiyorum", "Birlikte gidelim", "Yeni insanlar keşfet" |
 | Gönderi | `v2/gonderi/?id=` | Paylaşım ve yorumları; yanıt, kendi gönderini düzenle ya da sil |
 | Kişi | `v2/kisi/?u=` | Başkasının profili: paylaşımları, Mola360 ile yaşadığı deneyimler, takip, mesaj |
@@ -118,8 +118,7 @@ Notlar:
   (`m360-yorum`), mesajlar (`m360-mesaj`), takip ettiklerin (`m360-takip`),
   bildirimler ve ayarları (`m360-bildirim`, `m360-bildirim-ayar`), kapatılan
   Haftanın gezgini (`m360-hafta`), Molapuan kartının açık kalması
-  (`m360-mp`), arama kartını kendin yana kaydırdığın (`m360-kaydir`; bu
-  oturumda ipucunun gösterildiği `sessionStorage` `m360-kaydir`). Konumun kendisi ve konumdan çıkan yer saklanmaz. Aramadaki tarih ve kişi sayısı sekme
+  (`m360-mp`). Konumun kendisi ve konumdan çıkan yer saklanmaz. Aramadaki tarih ve kişi sayısı sekme
   açık kaldıkça (`sessionStorage`, `m360-arama`) liste, ürün ve
   rezervasyon sayfalarına taşınır; başlıktaki geri okunun yolu da öyle
   (`m360-yol`, `m360-yolh`). Yarım kalan rezervasyon (seçimler ve form,

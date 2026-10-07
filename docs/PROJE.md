@@ -1793,3 +1793,35 @@ güncellenecek yaşayan proje dokümanıdır.
   - Güneydoğu turu katalogda olmadığı için "Güneydoğu turları" kartı
     yok; katalogda tur eklenince kart da `KOLEKSIYON`'a bir satırla
     eklenir.
+
+### 2026-10-07 — Kaydırma ipucu her açılışta ve sekme değişince; şeridin sonunda boşluk (Bedir)
+
+- **Karar (Bedir):** Arama kartındaki kaydırma ipucu siteye her girişte ve
+  bölüm (Turlar, Oteller …) her değiştiğinde çalışır. Kategorilerin sonuna
+  gelindiğinde son kart sağ kenara yapışık durmaz.
+- **Neden:** İpucu oturumda bir kez ve elle kaydırınca hiç gösterilmeyince
+  kategorilerin varlığı sonraki girişlerde ve sekme değişince
+  hatırlatılmıyordu. Son kartın kenara yapışması şeridin bittiğini değil
+  kesildiğini düşündürüyordu.
+- **Etkilediği alanlar:** `v2/js/koleksiyon.js`, `v2/css/kesfet.css`,
+  `tests/v2-tarayici.test.js`, `docs/yeni-surum.md`. Bir önceki kararın
+  (aynı gün, arama kartı yana kayar) ipucu kuralının yerini alır.
+- **Teknik sonuç:**
+  - İpucu sayfa açıldıktan 0,7 sn sonra ve sekme değişince 0,25 sn sonra
+    oynar; oynuyorsa baştan başlar.
+  - Form görünmüyorsa (kartlara geçilmişse ya da kart ekranın dışındaysa)
+    oynamaz; kartlardayken sekme değişince yalnızca kartlar yenilenir.
+  - Dokunmak ya da kaydırmak oynayanı durdurur. "Hareketi azalt" açıksa
+    hiç oynamaz.
+  - `m360-kaydir` anahtarları artık kullanılmıyor.
+  - Şeridin sonundaki boşluk, kartları taşıyan kutunun iç dolgusu oldu
+    (16 px). Önceki sıfır genişlikli son öğe Safari'de büyük olasılıkla
+    kaydırma alanına sayılmıyordu ve son kart kenara yapışıyordu.
+  - Tarayıcı testi şunları sınar:
+    - ipucunun açılışta, sekme değişince ve yeniden açılışta oynadığı;
+    - kartlardayken oynamadığı;
+    - "hareketi azalt" açıkken oynamadığı;
+    - şeridin sonundaki boşluk.
+- **UX sonucu:** Her girişte ve her sekme değişiminde kart kısa bir
+  kıpırdamayla kaydırılabildiğini gösterir. Şeridin sonunda son kart da
+  baştaki gibi 16 px içeride durur.
