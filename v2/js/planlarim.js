@@ -1,7 +1,7 @@
 /* Planlarım: yaklaşan ve geçmiş rezervasyonlar ile favoriler tek yerde.
    Geçmiş deneyim, döngünün kapandığı yer: paylaş (paylas.js), değerlendir. */
 import { renderShell } from './shell.js';
-import { findByTitle, listUpcoming, cancelBooking, payRemaining, listPastBookings, rateBooking, parseDay, today, typeKey } from './api.js';
+import { findByTitle, urunUrl, listUpcoming, cancelBooking, payRemaining, listPastBookings, rateBooking, parseDay, today, typeKey } from './api.js';
 import { productCard } from './cards.js';
 import { favList, initFavorites, favSync } from './favorites.js';
 import { toast, tl, makeSheet, sc, esc } from './ui.js';
@@ -26,7 +26,7 @@ const qtyLabel=p=>({otel:'Oda',etkinlik:'Bilet'})[typeKey(p.type)]||'Kişi';
 const due=b=>b.total-b.paid;
 const mapsUrl=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
 
-const head=(p,line,cd)=>'<a class="rz-hd" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><div class="x"><small>'+p.type.toLocaleUpperCase('tr')+(cd?'<em class="rz-cd">'+cd+'</em>':'')+'</small><b>'+p.title+'</b><span>'+line+'</span></div>'+IC.right+'</a>';
+const head=(p,line,cd)=>'<a class="rz-hd" href="'+urunUrl(ROOT,p)+'"><span class="pt" style="background:'+p.bg+'"></span><div class="x"><small>'+p.type.toLocaleUpperCase('tr')+(cd?'<em class="rz-cd">'+cd+'</em>':'')+'</small><b>'+p.title+'</b><span>'+line+'</span></div>'+IC.right+'</a>';
 
 const up=b=>{const p=b.product,rest=due(b);
   return '<article class="rz" data-no="'+b.no+'">'+head(p,when(b),left(b.day))

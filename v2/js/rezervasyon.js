@@ -3,7 +3,7 @@
    ödeme alınmaz ve kart bilgisi istenmez; rezervasyon yalnızca bu cihazda
    tutulur. Toplam fiyat baştan sona aynı: sonradan eklenen ücret yok. */
 import { renderShell, backTo } from './shell.js';
-import { getProduct, bookingSpec, createBooking, cancelBy, getSearch, typeKey, parseDay, addDays, longDate } from './api.js';
+import { getProduct, urunUrl, bookingSpec, createBooking, cancelBy, getSearch, typeKey, parseDay, addDays, longDate } from './api.js';
 import { dateGrid, openDates } from './tarihler.js';
 import { tl, esc, toast, makeSheet } from './ui.js';
 import { lvOn, lvPrice, getLevel } from './level.js';
@@ -23,7 +23,7 @@ if(!p){
 
 function start(){
 const S=bookingSpec(p);
-const productUrl=ROOT+'urun/?id='+p.id;
+const productUrl=urunUrl(ROOT,p);
 back.href=productUrl;
 document.title='mola360 — Rezervasyon · '+p.title;
 

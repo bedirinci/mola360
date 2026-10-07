@@ -1,7 +1,7 @@
 /* Bağlan hikayeleri: akışın üstünde ince bir satır ve tam ekran izleyici.
    Satırda önce "Hikayen", sonra Mola360'ın hikayeleri (sahnede, hafta sonu,
    temalar), sonra takip edilenler. Her karenin altında bağlı deneyim. */
-import { listStories, myStory, ME } from './api.js';
+import { listStories, myStory, urunUrl, ME } from './api.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
 import { lvOn, lvPrice } from './level.js';
 import { ROOT } from './root.js';
@@ -94,7 +94,7 @@ function step(d){
 function card(p,{mola,deal}={}){
   if(!p)return '';
   const off=deal&&lvOn(p.title),st=p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'';
-  return '<a class="sv-card" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+  return '<a class="sv-card" href="'+urunUrl(ROOT,p)+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
    +(mola
      ?'<b class="pr">'+(off?'<s>'+tl(p.price)+'</s>':'')+tl(lvPrice(p.title,p.price))+'<i>'+(p.unit==='bilet'?'\'den':' '+p.unit)+'</i></b><small>'+(off?'<span class="off">%10 indirim</span>':st)+'<span class="w">'+p.type+'</span></small>'
      :'<b>'+p.title+'</b><small>'+st+'<span class="w">'+p.type+' · '+placeOf(p)+'</span></small>')
