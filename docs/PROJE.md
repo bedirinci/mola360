@@ -1835,6 +1835,7 @@ güncellenecek yaşayan proje dokümanıdır.
     (`v2/karadeniz-turlari/`, `v2/kultur-turlari/` …). Keşfet'teki kartlar
     bu sayfalara gider.
   - Kartlar yatayda daha dar, üzerindeki yazı daha küçük.
+  - Kaydırma ipucunun kayması biraz azalır.
   - `noindex, nofollow` şimdilik kalır.
 - **Neden:**
   - Kartlar JavaScript ile çiziliyordu ve `liste/?tur=tur&yer=karadeniz`
@@ -1872,6 +1873,8 @@ güncellenecek yaşayan proje dokümanıdır.
     olduğunu denetler; veri değişip üretilmezse CI kırılır.
   - **Kartlar:** sütun ekranın 1/2,5'i (360 px'te 145'ten 127 px'e), yazı
     15'ten 13 px'e indi.
+  - **İpucu:** form ve kartlar iki kez 30 px sola gidip döner (40 px'ti);
+    ilk kartların kenarı daha az görünür.
   - **Açık konu:** v2'nin bütün sayfaları `noindex, nofollow` taşıyor (Bedir:
     şimdilik kalsın; veriler ÖRNEK). Kaldırılmadıkça arama motorları siteyi
     dizine eklemez. `robots.txt` ve site haritası yok.

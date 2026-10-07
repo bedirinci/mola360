@@ -28,7 +28,7 @@
 @keyframes kollIn{from{opacity:0;transform:translateY(4px)}}
 .koll-g.swap{animation:kollIn var(--t) var(--ease)}
 /* ipucu: form ve kartlar birlikte iki kez kısa sola kıpırdar, ilk kartların kenarı görünür */
-@keyframes sxNudge{0%,50%,100%{transform:none}25%,75%{transform:translateX(-40px)}}
+@keyframes sxNudge{0%,50%,100%{transform:none}25%,75%{transform:translateX(-30px)}}
 .sx.nudge>.search,.sx.nudge>.koll{animation:sxNudge 1.6s ease-in-out}
 .fld{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-md);text-align:left;width:100%}
 .fld svg{width:21px;height:21px;color:var(--navy)}
