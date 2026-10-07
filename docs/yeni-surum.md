@@ -74,7 +74,8 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 Kod düzeni:
 
-- `css/tokens.css` (tasarım tokenları: renk, 8 adımlı yazı ölçeği
+- `css/tokens.css` (tasarım tokenları: renk, yazı tipi `--font` (cihazın
+  kendi fontu, web fontu yok), 8 adımlı yazı ölçeği
   `--fs-*` ve ekranla küçülen bölüm başlıkları `--fs-h2`, `--fs-h3`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
   köşe için ham px yalnızca burada; test başka yerde yakalar.
 - `base.css`, `components.css`

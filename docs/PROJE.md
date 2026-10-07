@@ -369,6 +369,10 @@ Renk kuralı (2026-10-04): her renge tek görev.
 - Geri kalan her şey (kategori etiketi, rozet, tik, boş durum) beyaz,
   gri ya da koyu yazı.
 
+Yazı tipi (2026-10-07): cihazın kendi fontu. iPhone ve Mac'te San
+Francisco, Android'de Roboto, Windows'ta Segoe UI; web fontu yüklenmez
+(`tokens.css` `--font`). Boyut ve kalınlık yine tokenlardan.
+
 Tasarım sisteminde:
 
 - Renk tokenları
@@ -1687,3 +1691,44 @@ güncellenecek yaşayan proje dokümanıdır.
   çıkar; paylaşınca "Mola360 ile gitti" rozeti alır, yani yaşa → paylaş
   döngüsü kullanıcının kendi rezervasyonuyla da çalışıyor. Görsel tasarım
   değişmedi.
+
+### 2026-10-07 — Yazı tipi: cihazın kendi fontu (Bedir)
+
+- **Karar (Bedir):** "Jakarta'yı kaldır, sistemin kendi fontları
+  kullanılsın." Plus Jakarta Sans kalktı. Site cihazın sistem fontuyla
+  yazılır: iPhone ve Mac'te San Francisco, Android'de Roboto, Windows'ta
+  Segoe UI.
+- **Neden:** Sayılar metnin geri kalanından farklı bir yazı tipiyle
+  yazılmış gibi görünüyordu. Fiyat, puan, saat ve tarih gibi 39 yerde
+  rakamlar eşit genişlikte (`tabular-nums`). Plus Jakarta Sans'ta bu
+  ayar açıkken "1" ayaklı, daktilo biçimine geçiyor. Sistem fontu
+  cihazın kendi uygulamalarıyla aynı görünür; yazı tipi indirilmediği
+  için dışarıya istek de gitmez.
+- **Etkilediği alanlar:**
+  - `v2/css/tokens.css` (`--font`);
+  - 12 v2 sayfasının başlığı (Google Fonts bağları kalktı);
+  - `v2/css/components.css` (telefon kutusundaki ayarın açıklaması);
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`;
+  - bu belgenin §14'ü ve `docs/yeni-surum.md`.
+- **Teknik sonuç:**
+  - `--font` şu sırayı izler: `system-ui`, `-apple-system`,
+    `"Segoe UI"`, `Roboto`, `"Helvetica Neue"`, `"Noto Sans"`, `Arial`,
+    `sans-serif`.
+  - Boyut ve kalınlık tokenları (`--fs-*`, `--fw-*`) değişmedi. Sistem
+    fontunda olmayan bir kalınlıkta tarayıcı en yakınını seçer.
+  - Eşit genişlikli rakam ayarı duruyor. Sistem fontunda rakamın
+    biçimini değiştirmiyor, yalnızca hizalıyor.
+  - Telefon kutusunda yazı tipinin bağlama göre harf değiştirmesi kapalı
+    kalıyor. Bazı fontlar "05xx" yer tutucusundaki x'i çarpı işaretine
+    çeviriyor.
+  - Testler:
+    - `tokens.css` `--font`'un `system-ui` ile başladığını denetliyor;
+    - hiçbir dosyada web fontu (`@font-face`, `@import`, Google Fonts)
+      olmamalı;
+    - tarayıcı testi sayfanın dışarıya istek atmadığını denetliyor.
+- **UX sonucu:**
+  - Site telefonun kendi uygulamaları gibi görünür; sayılar metinle aynı
+    yazı tipinde.
+  - Açılışta yazı tipinin sonradan gelip metni kaydırması kalktı.
+  - Boyutlar, kalınlıklar ve renkler aynı. Harf genişlikleri cihaza göre
+    biraz değişir; 136 sayfa 320 – 440 px'te taşmadan açılıyor.

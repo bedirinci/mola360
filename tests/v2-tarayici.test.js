@@ -4,7 +4,7 @@
    Sayfa başına: konsol hatası, yakalanmamış hata, yüklenemeyen dosya,
    yatay taşma, başlıksız (h1) ya da boş sayfa olmamalı. Sayfalar örnek
    veriden çıkar: her ürün, her ürünün rezervasyonu, her kişi, her sohbet,
-   her paylaşım. Yazı tipi isteği dışarı çıkmaz (boş yanıtlanır).
+   her paylaşım. Sayfa dışarıya istek atmaz (yazı tipi cihazın kendi fontu).
 
    Tarayıcı kurulu değilse atlanır (npx playwright install chromium); CI
    kurar (.github/workflows/ci.yml). */
@@ -34,13 +34,10 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
   });
   afterAll(async () => { if (browser) await browser.close(); if (server) server.close(); });
 
-  const baglam = async () => {
-    const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' });
-    await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-    return ctx;
-  };
+  const baglam = () => browser.newContext({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' });
   const izle = page => {
     const sorun = [];
+    page.on('request', r => { if (/^https?:/.test(r.url()) && !r.url().startsWith(new URL(base).origin)) sorun.push('dış istek: ' + r.url()); });
     page.on('console', m => { if (m.type() === 'error') sorun.push('konsol: ' + m.text()); });
     page.on('pageerror', e => sorun.push('hata: ' + e.message));
     page.on('requestfailed', r => sorun.push('yüklenemedi: ' + r.url()));

@@ -5,7 +5,9 @@
   --ink:#141A2E; --mute:#5F6780; --line:#E4E7EF; --soft:#F4F5F9; --card:#FFFFFF; --page:#FFFFFF;
   --gold:#F0A81C; /* puan yıldızı (Bedir: bir ton açık) */
   --blue:#1D8CF0; /* onaylı kullanıcı rozeti */
-  --font:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  /* yazı tipi cihazın kendi fontu (Bedir): iPhone ve Mac'te San Francisco,
+     Android'de Roboto, Windows'ta Segoe UI. Web fontu yüklenmez. */
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif;
 
   /* yazı ölçeği: 8 adım (~×1.15). Giriş alanları --fs-input */
   --fs-xs:11.5px;    /* etiket, rozet, büyük harfli üst satır */

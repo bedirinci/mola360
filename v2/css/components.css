@@ -454,6 +454,7 @@ html.kb .rc:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:
 .call input,.call select{font:inherit;font-size:var(--fs-input);padding:11px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .call .btn{justify-content:center;margin-top:8px;background:var(--green);color:var(--navy)}
 .call-note{font-size:var(--fs-xs)!important}
+/* bazı yazı tipleri rakamdan sonraki x'i çarpı işaretine çevirir: "05xx" yer tutucusu bozulmasın */
 .call input{font-feature-settings:"calt" 0,"liga" 0}
 .call input::placeholder{font-feature-settings:"calt" 0,"liga" 0;color:#8A91A3}
 .pick{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;font-size:var(--fs-base);padding:11px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--ink)}
