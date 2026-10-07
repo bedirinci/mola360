@@ -5,6 +5,7 @@
   "description": "Gezi, etkinlik ve konaklama rezervasyon platformu.",
   "scripts": {
     "dev": "node scripts/sunucu.js",
+    "kategoriler": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/kategoriler.mjs",
     "test": "vitest run"
   },
   "devDependencies": {

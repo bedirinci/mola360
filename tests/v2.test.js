@@ -61,7 +61,8 @@ describe('v2', () => {
 
   it('dış bağlar yalnızca izinli adreslere', () => {
     sayfalar.forEach(f => new Set(bagları(f).filter(b => /^https?:/.test(b)).map(b => new URL(b).host))
-      .forEach(h => expect(['wa.me']).toContain(h)));
+      /* sitenin kendi yayın adresi yalnızca kategori sayfalarının asıl adresinde (canonical) */
+      .forEach(h => expect(['wa.me', 'bedirinci.github.io']).toContain(h)));
   });
 
   it('yazı tipi cihazın kendi fontu; web fontu yüklenmiyor', () => {
@@ -107,6 +108,28 @@ describe('v2', () => {
       expect(p.dates.some(x => { const d = api.parseDay(x[1]); return d >= a && d <= b; }), p.title).toBe(true));
   });
 
+  it('kategori bağlantıları sayfanın HTML\'inde ve veriyle aynı (arama motorları için)', async () => {
+    const { kategoriHtml, kategoriSayfalari, uretilmis, BAS, SON } = await import('../scripts/kategoriler.mjs');
+    const s = oku(join(V2, 'index.html')), a = s.indexOf(BAS), b = s.indexOf(SON);
+    expect(a > 0 && b > a, 'v2/index.html kategori işaretleri').toBe(true);
+    expect(s.slice(a + BAS.length, b).trim(), 'veri değişti: npm run kategoriler').toBe((await kategoriHtml()).trim());
+    /* her kategorinin kendi sayfası (v2/karadeniz-turlari/): diskteki veriyle aynı, eskiyen yok */
+    const sayfa = await kategoriSayfalari();
+    expect(uretilmis().sort(), 'npm run kategoriler').toEqual(sayfa.map(x => x.slug).sort());
+    sayfa.forEach(({ slug, html }) => expect(oku(join(V2, slug, 'index.html')) === html, slug + ': npm run kategoriler').toBe(true));
+    /* sayfada başlık, açıklama, asıl adres, ana başlık ve ürün bağlantıları HTML'de */
+    const k = oku(join(V2, 'karadeniz-turlari', 'index.html'));
+    expect(k).toContain('<title>Karadeniz turları — mola360</title>');
+    expect(k).toContain('<link rel="canonical" href="https://bedirinci.github.io/mola360/v2/karadeniz-turlari/">');
+    expect(k).toContain('<h1 id="lsTitle">Karadeniz turları</h1>');
+    expect(k).toContain('href="../urun/?id=karadeniz-yaylalari-turu"');
+    expect(s).toContain('<a class="kl" href="karadeniz-turlari/"');
+    /* her sekmenin bölümü var; yalnızca ilki (Turlar) açık */
+    const api = await import('../v2/js/api.js');
+    expect([...s.matchAll(/class="koll-g" data-tur="([a-z]+)"[^>]*?( hidden)?>/g)].map(m => m[1] + (m[2] ? '-' : '+')))
+      .toEqual(api.TYPES.map(([t], i) => t + (i ? '-' : '+')));
+  });
+
   it('arama kartının koleksiyonları: her sekmede gerçek, kategori ve süzgeç ayrı (kural 3)', async () => {
     const api = await import('../v2/js/api.js');
     api.TYPES.forEach(([t]) => {
@@ -124,6 +147,9 @@ describe('v2', () => {
         expect(c.bg, c.name).toBeTruthy();
       });
     });
+    /* liste sayfası kartın adını başlık yapar */
+    expect(api.findCollection('tur', { yer: 'karadeniz' })).toMatchObject({ name: 'Karadeniz turları', slug: 'karadeniz-turlari' });
+    expect(api.findCollection('otel', { tema: 'kultur' })).toBe(null);
     /* yurt dışı bir yer olarak aranabiliyor: bütün yurt dışı turları */
     expect(api.listProducts({ yer: 'yurt-disi' }).map(p => p.id).sort())
       .toEqual(api.listProducts({ type: 'tur' }).filter(p => p.abroad).map(p => p.id).sort());

@@ -66,6 +66,7 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 | Kişi | `v2/kisi/?u=` | Başkasının profili: paylaşımları, Mola360 ile yaşadığı deneyimler, takip, mesaj |
 | Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, bölüm sekmeleri, tarih seçimi (ilk üç tarih ve "Tüm tarihler" çekmecesi), otelde gece ve odalar, seçenek/bilet/paket, hakkında, program, dahil/hariç, kişi başı fiyat, kalkış noktaları ya da konum, bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirmeler, SSS, "Bu deneyimi yaşayanlar" (`#paylasimlar`), benzer deneyimler |
 | Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet ya da yaşa göre kişi, kalkış noktası, oda düzeni, kapora) → iletişim ve katılımcı bilgileri → özet, iptal ve ödeme → onay. Ödeme alınmaz, kart bilgisi istenmez |
+| Kategori sayfası | `v2/karadeniz-turlari/` … | Her kategorinin kendi adresli sayfası: Liste'nin aynısı; başlık, açıklama, asıl adres, ana başlık ve ürün bağlantıları HTML'de. Seçim değişince Liste adresine geçer |
 | Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar. `tema` seçiliyse sayfa temanın vitrini: kapak, iki cümlelik giriş, yalnızca temada olan kategoriler, temanın sırasıyla deneyimler ve araya "Bu temada paylaşılanlar" |
 | Planlarım | `v2/planlarim/` | Yaklaşan (bilet ve karekod, buluşma noktası, kalan ödeme, iptal), Geçmiş (paylaş, değerlendir; tarihi geçen rezervasyon buraya geçer), Favoriler. Eski `favoriler/` ve `rezervasyonlar/` adresleri buraya yönlenir |
 | Profil | `v2/profil/` | Kimlik, sayılar (takipçi ve takip çekmecesi), Molapuan, paylaşımlar, Mola360 ile yaşanan deneyimler, kaydedilenler, hesap ve ayarlar |
@@ -91,8 +92,13 @@ Kod düzeni:
   Bugün `js/data.js` içindeki ÖRNEK veriyi tek ürün şekline çeviriyor;
   ürün kimliği addan türeyen `slug`. Backend gelince yalnızca içi değişecek.
 - `js/koleksiyon.js`: Keşfet'te yana kayan arama kartında formun ardından
-  gelen koleksiyonlar (seçili sekmenin, `api.listCollections`, veri
-  `KOLEKSIYON`) ve kayabildiğini gösteren ipucu.
+  gelen kategoriler ve kayabildiğini gösteren ipucu. Modül yalnızca seçili
+  sekmenin bölümünü gösterir.
+- Kategori sayfaları (`v2/karadeniz-turlari/` gibi, 43 sayfa) ve Keşfet'teki
+  bütün sekmelerin kategori bağlantıları arama motorları için HTML'de durur.
+  `scripts/kategoriler.mjs` (`npm run kategoriler`) veriden (`KOLEKSIYON`,
+  `api.listCollections`) ve Liste sayfası şablonundan üretir; veri ya da
+  `v2/liste/index.html` değişince yeniden çalıştırılır, test eşitliği denetler.
 - `js/molapuan.js`: Molapuan kartı (ince yatay kart; puan, seviye rozeti, sıradaki hedef, açılıp kapanan seviye yolu). Keşfet'te arama kartının altında, Profil'de üstte. Veri `api.getPoints(level)`.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay; deneyimin paylaşımı varsa "N paylaşım", ürün sayfasındaki paylaşımlara gider), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
 - `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,

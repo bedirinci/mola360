@@ -14,7 +14,7 @@ import { existsSync } from 'node:fs';
 import { chromium } from 'playwright';
 import sunucu from '../scripts/sunucu.js';
 import { USERS } from '../v2/js/data.js';
-import { listProducts, listPosts } from '../v2/js/api.js';
+import { listProducts, listPosts, listCollections, TYPES } from '../v2/js/api.js';
 
 const VAR = existsSync(chromium.executablePath());
 const SAYFALAR = ['', 'baglan/', 'liste/', 'liste/?tur=otel', 'liste/?tarih=bu-hs', 'liste/?tema=doga', 'liste/?yer=kapadokya&tur=tur', 'liste/?ara=deniz',
@@ -22,7 +22,8 @@ const SAYFALAR = ['', 'baglan/', 'liste/', 'liste/?tur=otel', 'liste/?tarih=bu-h
   'urun/?id=yok', 'rezervasyon/', 'gonderi/?id=yok', 'kisi/?u=yok', 'sohbet/?k=yok', 'profil/?gorunum=misafir', 'planlarim/?gorunum=gezgin',
   ...listProducts().flatMap(p => ['urun/?id=' + p.id, 'rezervasyon/?id=' + p.id]),
   ...Object.values(USERS).map(u => 'kisi/?u=' + u.kul), ...Object.keys(USERS).map(k => 'sohbet/?k=' + k),
-  ...listPosts().map(p => 'gonderi/?id=' + p.id), 'gonderi/?id=a1', 'gonderi/?id=a4'];
+  ...listPosts().map(p => 'gonderi/?id=' + p.id), 'gonderi/?id=a1', 'gonderi/?id=a4',
+  ...TYPES.flatMap(([t]) => listCollections(t).map(c => c.slug + '/'))];
 
 describe.skipIf(!VAR)('v2 tarayıcıda', () => {
   let server, base, browser;
@@ -116,18 +117,19 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     const oynuyor = () => sx(() => document.getElementById('sx').classList.contains('nudge'));
     const ipucu = () => page.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 3000 }).then(() => true, () => false);
     const bitti = () => page.waitForFunction(() => !document.getElementById('sx').classList.contains('nudge'), null, { timeout: 4000 });
-    const kartlar = () => page.$$eval('#kollG .kl', a => a.map(x => x.getAttribute('href')));
+    const kartlar = () => page.$$eval('.koll-g:not([hidden]) .kl', a => a.map(x => x.getAttribute('href')));
 
     /* açılış: ipucu oynar; kartlar seçili sekmenin (Turlar) kategorileri */
     await page.goto(base, { waitUntil: 'networkidle' });
     expect(await ipucu()).toBe(true);
-    expect((await kartlar()).every(h => h.includes('liste/?tur=tur'))).toBe(true);
-    expect(await page.textContent('#kollH')).toBe('Tur çeşitleri');
+    const adres = t => listCollections(t).map(c => c.slug + '/');
+    expect(await kartlar()).toEqual(adres('tur'));
+    expect(await page.textContent('.koll-g:not([hidden]) h2')).toBe('Tur çeşitleri');
     await bitti();
     /* sekme değişince kartlar değişir, ipucu yeniden oynar */
     await page.click('#tab-otel');
-    expect((await kartlar()).every(h => h.includes('liste/?tur=otel'))).toBe(true);
-    expect(await page.textContent('#kollH')).toBe('Otel çeşitleri');
+    expect(await kartlar()).toEqual(adres('otel'));
+    expect(await page.textContent('.koll-g:not([hidden]) h2')).toBe('Otel çeşitleri');
     expect(await ipucu()).toBe(true);
     await bitti();
     /* her girişte yeniden */
@@ -138,12 +140,12 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     /* şeridin sonunda son kart kenar boşluğu (16 px) kadar içeride; sütunlar küsuratlı, kaydırma tam sayı */
     await sx(() => document.getElementById('sx').scrollTo({ left: 99999 }));
     await page.waitForTimeout(300);
-    const bosluk = await sx(() => innerWidth - Math.max(...[...document.querySelectorAll('#kollG .kl')].map(k => k.getBoundingClientRect().right)));
+    const bosluk = await sx(() => innerWidth - Math.max(...[...document.querySelectorAll('.koll-g:not([hidden]) .kl')].map(k => k.getBoundingClientRect().right)));
     expect(bosluk).toBeGreaterThanOrEqual(15);
     expect(bosluk).toBeLessThan(18);
     /* kartlardayken sekme değişince yalnızca kartlar yenilenir (form görünmüyor) */
     await page.click('#tab-etkinlik');
-    expect((await kartlar()).every(h => h.includes('liste/?tur=etkinlik'))).toBe(true);
+    expect(await kartlar()).toEqual(adres('etkinlik'));
     await page.waitForTimeout(600);
     expect(await oynuyor()).toBe(false);
     expect(sorun).toEqual([]);
@@ -157,6 +159,24 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     expect(await p2.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 1500 }).then(() => true, () => false)).toBe(false);
     await sakin.close();
   }, 40000);
+
+  it('kategori sayfası: kendi adresinde açılır, seçim değişince Liste adresine geçer', async () => {
+    const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
+    await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
+    expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
+    expect(await page.title()).toBe('Kültür turları — mola360');
+    expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe(base + 'kultur-turlari/');
+    expect(await page.$$eval('#list .vk', a => a.length)).toBeGreaterThan(0);
+    /* Keşfet'teki kart bu sayfaya gider */
+    await page.goto(base, { waitUntil: 'networkidle' });
+    expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="kultur-turlari/"]', 'href')).toBe('kultur-turlari/');
+    await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
+    /* süre seçilince adres Liste'ye döner, seçim korunur */
+    await page.click('[data-sure="hs"]');
+    expect(page.url()).toBe(base + 'liste/?tema=kultur&tur=tur&sure=hs');
+    expect(sorun).toEqual([]);
+    await ctx.close();
+  }, 30000);
 
   it('rezervasyon özetinde ad ve e-posta yazıldığı gibi', async () => {
     const { ctx, page, sorun, xss } = await ile({}, 'rezervasyon/?id=kum-beach-club');
