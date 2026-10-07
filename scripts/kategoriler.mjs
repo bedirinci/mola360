@@ -15,8 +15,11 @@
    Graph), yapısal veri (JSON-LD: koleksiyon sayfası, ürün listesi, sayfa
    yolu, SSS), görünen sayfa yolu, veriden yazılmış açıklama ve sık sorulan
    sorular, ilgili kategorilere bağlar ve site haritası (v2/sitemap.xml).
-   Sayfanın bu bölümleri data-kat taşır; seçim kategoriden ayrılınca
-   liste.js gizler.
+   Üst kısım her kategoride aynı: kapak, sayfa yolu, başlık, giriş metni
+   (KOLEKSIYON'un üçüncü öğesi). Kategori satırı ve kiminle süzgeçleri
+   yok; süre süzgeci yalnızca kategoride olan süreler (liste.js). Süre
+   seçilince adres kategori sayfasında kalır (?sure=hs); listenin altındaki
+   bölümler (data-kat) liste kategorinin tamamı olmadığı için gizlenir.
 
    Sayfa tarihten bağımsızdır: tarih bugüne göre hesaplanır (etkinlik
    kartındaki gün), sabit HTML'e yazılsa ertesi gün eskirdi. Kartta
@@ -153,11 +156,15 @@ export async function kategoriSayfalari() {
       + '\n<meta property="og:title" content="' + h(baslik.replace(/ \| mola360$/, '')) + '">\n<meta property="og:description" content="' + h(desc) + '">'
       + '\n<meta property="og:url" content="' + url + '">\n<meta name="twitter:card" content="summary">\n' + LD(ld));
     s = tek(s, '<body>', '<body data-q="' + h(q(c.q)) + '" data-kat="' + c.slug + '">');
-    s = tek(s, '<header class="pg-top slim">', th ? '<header class="pg-top slim cover" style="--g:' + yerel(th.bg) + '">' : '<header class="pg-top slim">');
+    /* üst kısım her kategoride aynı: kapak (temanın ya da ilk deneyimin görseli),
+       sayfa yolu, başlık ve kategorinin kendi giriş metni */
+    s = tek(s, '<header class="pg-top slim">', '<header class="pg-top slim cover" style="--g:' + yerel(c.bg) + '">');
     /* görünen sayfa yolu başlığın üstünde; son adım (bu sayfa) başlığın kendisi */
-    s = tek(s, '<h1 id="lsTitle">Keşfet</h1>', '<nav class="bc" aria-label="Sayfa yolu" data-kat><ol><li><a href="../">Keşfet</a></li><li><a href="../liste/?tur=' + tur + '">' + TURLER + '</a></li></ol></nav>\n  '
+    s = tek(s, '<h1 id="lsTitle">Keşfet</h1>', '<nav class="bc" aria-label="Sayfa yolu"><ol><li><a href="../">Keşfet</a></li><li><a href="../liste/?tur=' + tur + '">' + TURLER + '</a></li></ol></nav>\n  '
       + '<h1 id="lsTitle">' + h(c.name) + '</h1>');
-    s = tek(s, '<p id="lsSub"></p>', th ? '<p id="lsSub">' + h(th.intro) + '</p>' : '<p id="lsSub" hidden></p>');
+    s = tek(s, '<p id="lsSub"></p>', '<p id="lsSub">' + h(c.intro) + '</p>');
+    /* kategori satırı (Tümü, Turlar, Oteller …) yok: sayfada yalnızca bu kategorinin deneyimleri */
+    s = tek(s, '<nav class="cats" aria-label="Kategori" id="cats"></nav>\n', '');
     s = tek(s, '<span id="lsCount"></span>', '<span id="lsCount">' + l.length + ' deneyim</span>');
     s = tek(s, '<div class="stack" id="list"></div>', '<div class="stack" id="list">' + yerel(l.map(kart).join('')) + '</div>\n'
       + '<section class="box kat-seo" aria-labelledby="kat-h" data-kat><h2 id="kat-h">' + h(c.name) + ' hakkında</h2>'

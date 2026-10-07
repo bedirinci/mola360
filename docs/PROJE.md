@@ -2019,3 +2019,54 @@ güncellenecek yaşayan proje dokümanıdır.
     satırda tek kelime kalmaz.
   - Büyük harfli etiketler tek aralıkta.
   - İstekler soru beklemeden teslim edilir.
+
+### 2026-10-07 — Kategori sayfasının üst kısmı her kategoride aynı; sayfada yalnızca kategorinin deneyimleri ve süzgeçleri (Bedir)
+
+- **Karar (Bedir):**
+  - "Kategorilerin tümünün üst kısmını bu şekilde yap: sayfa yolu,
+    kategori başlığı ve alt metin." Örnek: Konser ve festival sayfası.
+  - "Turların kategorisini seçtiğimde açılan sayfada Tümü, Turlar,
+    Oteller, Tek başıma, Sevgilimle vs. olmayacak. Sadece seçilen
+    kategorideki ürünler ve filtreler olacak."
+- **Neden:**
+  - Yalnızca tema kategorilerinde kapak ve giriş metni vardı. Yer
+    kategorileri (Karadeniz turları, İstanbul etkinlikleri …) düz lacivert
+    başlıkla, metinsiz açılıyordu.
+  - Tema kategorileri temanın metnini paylaşıyordu: Balayı turları,
+    otelleri ve mekânları aynı metni gösteriyordu.
+  - Sayfada Liste'nin kategori satırı ve kiminle süzgeçleri vardı. Bunlar
+    kullanıcıyı kategoriden çıkarıyordu. Süre süzgeci ise kategoride
+    olmayan süreleri de sunuyordu.
+- **Etkilediği alanlar:**
+  - `v2/js/data.js` (`KOLEKSIYON` üçüncü öğe: giriş metni);
+  - `v2/js/api.js` (`listCollections` → `intro`);
+  - `v2/js/liste.js`;
+  - `scripts/kategoriler.mjs` ve 43 kategori sayfası;
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`.
+- **Teknik sonuç:**
+  - **Üst kısım** her kategoride aynı:
+    - kapak: temanın görseli, yoksa ilk deneyimin görseli;
+    - sayfa yolu, `h1`;
+    - giriş metni: kategoriye özgü iki cümle, 43 sayfada 43 ayrı metin
+      (test denetler).
+  - **Sabit HTML:** üst kısım HTML'de sabit; `liste.js` kategori
+    sayfasında başlığa, girişe ve kapağa dokunmaz. Kategori satırı
+    (`#cats`) sayfaya hiç yazılmaz.
+  - **Süzgeçler:**
+    - kiminle süzgeci yok;
+    - süre süzgeci yalnızca kategoride olan süreleri gösterir; tek süre
+      varsa hiç yoktur;
+    - yer kategorinin kendisi olduğu için kaldırılacak seçim çipi
+      olarak çıkmaz;
+    - "Yakınımda" ve "Fiyat aralığı" kalır.
+  - **Süre seçimi:** adres kategori sayfasında kalır
+    (`kultur-turlari/?sure=uzun`); asıl adres (canonical) yalın kategori
+    adresi. Liste kategorinin tamamı olmadığı için listenin altındaki
+    "hakkında", SSS ve ilgili kategoriler gizlenir. Sayfa yolu her zaman
+    görünür.
+- **UX sonucu:**
+  - Kategoriye giren kullanıcı nerede olduğunu (sayfa yolu), ne bulacağını
+    (başlık, giriş) görür.
+  - Yalnızca o kategorinin deneyimleri arasında süzer; sekmeler ve
+    ilgisiz süzgeçler onu başka listeye götürmez.
+  - Boş sonuç veren süre seçeneği yoktur.
