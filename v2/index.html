@@ -33,6 +33,8 @@
 </header>
 
 <div role="search" aria-label="Deneyim ara"><div id="searchPanel" role="tabpanel" aria-labelledby="tab-tur">
+<!-- yatay kayar: arama formu, ardından seçili sekmenin koleksiyonları (koleksiyon.js) -->
+<div class="sx" id="sx">
 <form class="search" id="search" onsubmit="event.preventDefault()">
   <button type="button" class="fld" id="f1"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><div><small>NEREYE</small><span class="hint">Şehir, bölge veya tur adı</span></div></button>
   <div class="split">
@@ -41,6 +43,8 @@
   </div>
   <button class="go" id="go" type="submit">Molamı bul</button>
 </form>
+<section class="koll" id="koll" aria-labelledby="kollH"><h2 class="sr" id="kollH">Tur çeşitleri</h2><div class="koll-g" id="kollG"></div></section>
+</div>
 </div></div>
 
 <main>

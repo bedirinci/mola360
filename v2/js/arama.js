@@ -57,7 +57,8 @@ const SHEETS=`<div class="sh-bg" id="whereBg" aria-hidden="true"></div>
   <button type="button" class="btn who-ok" data-x>Tamam</button>
 </div>`;
 
-export function initSearch(){
+/* onTab: sekme değişince (Keşfet'te koleksiyonlar onunla eşlenir) */
+export function initSearch({onTab}={}){
 document.querySelector('script[type="module"]').insertAdjacentHTML('beforebegin',SHEETS);
 const $=id=>document.getElementById(id);
 const f1=$('f1'),f2=$('f2'),f3=$('f3'),inp=$('whereIn'),list=$('whereList'),clr=$('whereClr');
@@ -187,7 +188,7 @@ $('whoList').addEventListener('click',e=>{const b=e.target.closest('[data-who]')
 function fit(){WHO[st.tur].forEach(([k,,,lo,hi])=>{n[k]=Math.max(lo,Math.min(hi,n[k]))});
   if(st.tur==='otel')n.o=Math.max(n.o,Math.ceil(n.y/2));
   if(st.tur==='tur')n.c=Math.min(n.c,9-n.y)}
-function pick(t){st.tur=t.dataset.tab;fit();fields();remember()}
+function pick(t){st.tur=t.dataset.tab;fit();fields();remember();if(onTab)onTab(st.tur)}
 const tabs=document.querySelector('.tabs');
 tabs.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)pick(t)});
 /* sekme kalıbı: oklar, Home ve End sekmeler arasında gezer ve seçer */
@@ -209,7 +210,7 @@ pop.addEventListener('click',e=>{const b=e.target.closest('[data-pop]');if(!b)re
 
 f1x.addEventListener('click',()=>{st.yer='';st.ara='';fields();remember();f1.focus({preventScroll:true})});
 
-fields();
+fields();if(onTab)onTab(st.tur);
 /* Keşfet'ten: yakındaki yer belli olunca */
 return {setNear:id=>{st.near=id||null}};
 }

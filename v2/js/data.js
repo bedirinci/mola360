@@ -211,6 +211,7 @@ export const DESTS=[
  ['kayseri','Kayseri','İç Anadolu · Erciyes',['Kayseri','Erciyes']],
  ['karadeniz','Karadeniz','Rize · Ayder',['Karadeniz','Rize','Ayder']],
  ['kars','Kars','Doğu Anadolu',['Kars','Doğu Ekspresi']],
+ ['yurt-disi','Yurt dışı','Adalar, Kafkasya, Balkanlar, Avrupa, Dubai',['Sakız','Midilli','Gürcistan','Batum','Balkanlar','Bosna','Saraybosna','Dubai','İtalya','İspanya','Fransa']],
  ['yunan-adalari','Yunan adaları','Yurt dışı · Sakız, Midilli',['Sakız','Midilli']],
  ['gurcistan','Gürcistan','Yurt dışı · Batum',['Gürcistan','Batum']],
  ['balkanlar','Balkanlar','Yurt dışı · Saraybosna, Mostar',['Balkanlar','Bosna','Saraybosna']],
@@ -226,6 +227,22 @@ export const POP={tur:['Kapadokya','Karadeniz','Yunan adaları','Balkanlar','Dub
  etkinlik:['İstanbul','İzmir','Konser','Festival','Stand up'],
  aktivite:['Yamaç paraşütü','Tekne turu','Rafting','Kayak','Boğaz'],
  mekan:['Spa','Beach club','Restoran','Akustik','Dağ evi']};
+
+/* Keşfet'te arama kartı sola kaydırılınca: seçili sekmenin koleksiyonları
+   [ad, liste süzgeci]. Kategori sekmeden gelir, süzgeç yalnızca yer ya da
+   tema (kural 3). Deneyimi olmayan koleksiyon gösterilmez. ÖRNEK */
+export const KOLEKSIYON={
+ tur:[['Yurt dışı turları',{yer:'yurt-disi'}],['Kültür turları',{tema:'kultur'}],['Karadeniz turları',{yer:'karadeniz'}],['Doğa turları',{tema:'doga'}],
+  ['Kapadokya turları',{yer:'kapadokya'}],['Macera turları',{tema:'macera'}],['Kış turları',{tema:'kis'}],['Balayı turları',{tema:'balayi'}],
+  ['Yunan adaları turları',{yer:'yunan-adalari'}],['Doğu Anadolu turları',{yer:'kars'}]],
+ otel:[['Balayı otelleri',{tema:'balayi'}],['Deniz kenarı oteller',{tema:'deniz'}],['Termal oteller',{tema:'termal'}],['Doğada konaklama',{tema:'doga'}],
+  ['Kış otelleri',{tema:'kis'}],['Kapadokya otelleri',{yer:'kapadokya'}],['Antalya otelleri',{yer:'antalya'}],['İzmir otelleri',{yer:'izmir'}],['Karadeniz otelleri',{yer:'karadeniz'}]],
+ etkinlik:[['Konser ve festival',{tema:'festival'}],['Sahne ve gösteri',{tema:'sahne'}],['Gece etkinlikleri',{tema:'gece'}],['İstanbul etkinlikleri',{yer:'istanbul'}],
+  ['İzmir etkinlikleri',{yer:'izmir'}],['Ankara etkinlikleri',{yer:'ankara'}],['Antalya etkinlikleri',{yer:'antalya'}],['Lezzet etkinlikleri',{tema:'lezzet'}]],
+ aktivite:[['Macera ve spor',{tema:'macera'}],['Deniz ve tekne',{tema:'deniz'}],['Doğa aktiviteleri',{tema:'doga'}],['Kayak',{tema:'kis'}],
+  ['Muğla aktiviteleri',{yer:'mugla'}],['İstanbul aktiviteleri',{yer:'istanbul'}],['Antalya aktiviteleri',{yer:'antalya'}]],
+ mekan:[['Yeme içme',{tema:'lezzet'}],['Gece mekânları',{tema:'gece'}],['Canlı müzik',{tema:'sahne'}],['Spa ve masaj',{tema:'termal'}],['Balayı mekânları',{tema:'balayi'}],
+  ['Doğada mekânlar',{tema:'doga'}],['İstanbul mekânları',{yer:'istanbul'}],['İzmir mekânları',{yer:'izmir'}],['Antalya mekânları',{yer:'antalya'}]]};
 
 /* Yakınımda: yer adlarının yaklaşık koordinatları [enlem, boylam]. Ürünün
    konumu adında ya da yerinde geçen ilk addan (özelden genele sıralı).

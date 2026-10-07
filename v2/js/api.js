@@ -3,7 +3,7 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, GEO, IMG, POP, KOLEKSIYON, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM, KALKIS, OTEL, SEANS } from './icerik.js';
 import { ROOT } from './root.js';
 
@@ -128,6 +128,13 @@ export function listPopular(type){
     return d?{label,yer:d.id,ara:''}:{label,yer:'',ara:label}})
     .filter(x=>listProducts({type,yer:x.yer,ara:x.ara}).length);
 }
+
+/* Koleksiyonlar (Keşfet'te arama kartının ikinci sayfası): seçili kategoride
+   yer ya da temaya göre; sayı gerçek, deneyimi olmayan çıkmaz. Görsel temanın
+   kapağı, yoksa koleksiyondaki ilk deneyimin görseli. q: liste adresinin
+   parametreleri (kategori ve süzgeç ayrı) */
+export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f])=>{const l=listProducts({type,...f}),th=f.tema&&getTheme(f.tema);
+  return {name,q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:''}}).filter(c=>c.count);
 
 /* Arama önerileri: önce adı yazılanla başlayan yerler ve deneyimler */
 export function suggest(text,{type}={}){
