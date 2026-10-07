@@ -12,6 +12,21 @@ import { z } from 'zod';
 const ortam = process.env.NODE_ENV || 'development';
 const uretim = ortam === 'production';
 
+/* Evet/hayır değişkeni. z.coerce.boolean() KULLANILMIYOR: o, boş olmayan her
+   metni — "false" ve "0" dahil — true sayar; COOKIE_SECURE=false yazan
+   geliştiricinin çerezi yine Secure çıkar ve telefondan yerel IP ile
+   açılan panelde oturum hiç tutmaz. Tanınmayan değer açılışta hata verir. */
+const EVET = ['true', '1', 'yes', 'on', 'evet'];
+const HAYIR = ['false', '0', 'no', 'off', 'hayir', 'hayır'];
+export function evetHayir(varsayilan) {
+  return z.preprocess((v) => {
+    if (v === undefined || v === '') return varsayilan;
+    if (typeof v !== 'string') return v;
+    const k = v.trim().toLowerCase();
+    return EVET.includes(k) ? true : HAYIR.includes(k) ? false : v;
+  }, z.boolean({ invalid_type_error: 'true ya da false olmalı' }));
+}
+
 const sema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
@@ -26,7 +41,9 @@ const sema = z.object({
   SITE_ORIGIN: z.string().default('http://localhost:8000'),
   PUBLIC_BASE_URL: z.string().default('https://bedirinci.github.io/mola360'),
   /* Çerez yalnızca HTTPS üzerinden gitsin mi. Üretimde zorunlu true. */
-  COOKIE_SECURE: z.coerce.boolean().default(uretim),
+  COOKIE_SECURE: uretim
+    ? evetHayir(true).refine(v => v, 'Üretimde COOKIE_SECURE true olmalı')
+    : evetHayir(false),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
   /* Giriş denemesi sınırları. */
   LOGIN_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
