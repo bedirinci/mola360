@@ -134,8 +134,8 @@ export function listPopular(type){
    kapağı, yoksa koleksiyondaki ilk deneyimin görseli. q: liste süzgeci
    (kategori ve süzgeç ayrı); slug: kendi sayfasının adresi (v2/karadeniz-turlari/,
    scripts/kategoriler.mjs üretir) */
-export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f])=>{const l=listProducts({type,...f}),th=f.tema&&getTheme(f.tema);
-  return {name,slug:slug(name),q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:''}}).filter(c=>c.count);
+export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f,intro])=>{const l=listProducts({type,...f}),th=f.tema&&getTheme(f.tema);
+  return {name,slug:slug(name),q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:'',intro:intro||(th?th.intro:'')}}).filter(c=>c.count);
 /* Liste adresi bir koleksiyona denk geliyorsa o koleksiyon (başlık kartla aynı: "Karadeniz turları") */
 export const findCollection=(type,{yer='',tema=''}={})=>listCollections(type).find(c=>(c.q.yer||'')===yer&&(c.q.tema||'')===tema)||null;
 /* Kategori sayfasının başlığı: önce kategori, sonra sayfada ne bulunacağı (arama motorları için) */
