@@ -61,7 +61,14 @@ describe('v2', () => {
 
   it('dış bağlar yalnızca izinli adreslere', () => {
     sayfalar.forEach(f => new Set(bagları(f).filter(b => /^https?:/.test(b)).map(b => new URL(b).host))
-      .forEach(h => expect(['fonts.googleapis.com', 'wa.me']).toContain(h)));
+      .forEach(h => expect(['wa.me']).toContain(h)));
+  });
+
+  it('yazı tipi cihazın kendi fontu; web fontu yüklenmiyor', () => {
+    /* Bedir 2026-10-07: Plus Jakarta Sans kalktı (PROJE.md karar kaydı) */
+    expect(oku(join(V2, 'css', 'tokens.css'))).toMatch(/--font:system-ui,/);
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f)).forEach(f =>
+      expect(oku(f), relative(V2, f)).not.toMatch(/@font-face|@import|fonts\.googleapis|fonts\.gstatic|Jakarta/));
   });
 
   it('her sayfa ortak tokenları ve kendi modülünü yüklüyor', () => {
