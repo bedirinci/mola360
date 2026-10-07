@@ -4,7 +4,7 @@
    (docs/yeni-surum.md kural 3). Tema seçiliyse sayfa temanın vitrini olur:
    kapak, iki cümlelik giriş, temadaki kategoriler ve paylaşımlar. */
 import { renderShell } from './shell.js';
-import { listProducts, listPosts, getTheme, getDestination, getSearch, findCollection, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
+import { listProducts, listPosts, getTheme, getDestination, getSearch, findCollection, collectionTitle, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
 import { ROOT } from './root.js';
 import { productCard, postMini } from './cards.js';
 import { toast, esc } from './ui.js';
@@ -15,7 +15,7 @@ initFavorites();
 
 /* Kategori sayfası (v2/karadeniz-turlari/ gibi, scripts/kategoriler.mjs üretir):
    seçim sayfanın kendisinde (body data-q); seçim değişince Liste adresine geçilir */
-const PG=document.body.dataset.q!=null;
+const PG=document.body.dataset.q!=null,KAT=document.body.dataset.kat||'';
 const q=new URLSearchParams(location.search||document.body.dataset.q||'');
 let tur=TYPES.some(t=>t[0]===q.get('tur'))?q.get('tur'):'';
 let sure=BUCKETS.some(b=>b[0]===q.get('sure'))?q.get('sure'):'';
@@ -84,7 +84,10 @@ function draw(){
      +(other?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="'+(PG?ROOT+'liste/':'')+'?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&')+'">Filtreleri kaldır</a>')+'</div>';
   favSync();
   /* kategoriye denk gelen sayfa: başlıkta önce kategori, asıl adres kategori sayfası (arama motorları için) */
-  document.title=K?K.name+' — mola360':'mola360 — '+title;
+  document.title=K?collectionTitle(K):'mola360 — '+title;
+  /* kategori sayfasının kendi bölümleri (sayfa yolu, açıklama, SSS): liste kategorinin tamamı değilse (başka seçim, süzgeç) gizlenir */
+  const tam=!!K&&K.slug===KAT&&!sure&&!kimle&&!tarih;
+  document.querySelectorAll('body [data-kat]').forEach(e=>{e.hidden=!tam});
   let cn=document.querySelector('link[rel=canonical]');
   if(K){if(!cn){cn=document.createElement('link');cn.rel='canonical';document.head.appendChild(cn)}cn.href=ROOT+K.slug+'/'}else if(cn)cn.remove();
 }
