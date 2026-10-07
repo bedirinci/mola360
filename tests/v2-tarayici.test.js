@@ -110,6 +110,37 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     await ctx.close();
   }, 30000);
 
+  it('Keşfet: arama kartı yana kayar, ipucu oturumda bir kez, koleksiyonlar sekmeyle eşleşir', async () => {
+    const ctx = await baglam(), sorun = [];
+    const ac = async () => { const page = await ctx.newPage(); sorun.push(izle(page)); await page.goto(base, { waitUntil: 'networkidle' }); return page; };
+    const ipucu = page => page.waitForFunction(() => document.getElementById('sx').classList.contains('nudge'), null, { timeout: 3000 }).then(() => true, () => false);
+    const kartlar = page => page.$$eval('#kollG .kl', a => a.map(x => x.getAttribute('href')));
+
+    /* ilk açılış: ipucu oynar; ikinci sayfada seçili sekmenin (Turlar) koleksiyonları */
+    const page = await ac();
+    expect(await ipucu(page)).toBe(true);
+    expect((await kartlar(page)).every(h => h.includes('liste/?tur=tur'))).toBe(true);
+    expect(await page.textContent('#kollH')).toBe('Tur çeşitleri');
+    /* sekme değişince kartlar da değişir */
+    await page.click('#tab-otel');
+    expect((await kartlar(page)).every(h => h.includes('liste/?tur=otel'))).toBe(true);
+    expect(await page.textContent('#kollH')).toBe('Otel çeşitleri');
+    /* aynı oturumda yeniden açılınca ipucu yok */
+    await page.reload({ waitUntil: 'networkidle' });
+    expect(await ipucu(page)).toBe(false);
+
+    /* yeni oturumda yine oynar; kullanıcı kendisi kaydırınca bir daha hiç */
+    const p2 = await ac();
+    expect(await ipucu(p2)).toBe(true);
+    await p2.evaluate(() => document.getElementById('sx').scrollTo({ left: 9999 }));
+    await p2.waitForFunction(() => localStorage.getItem('m360-kaydir') === '1');
+    expect(await p2.evaluate(() => document.getElementById('sx').classList.contains('nudge'))).toBe(false);
+    const p3 = await ac();
+    expect(await ipucu(p3)).toBe(false);
+    expect(sorun.flat()).toEqual([]);
+    await ctx.close();
+  }, 30000);
+
   it('rezervasyon özetinde ad ve e-posta yazıldığı gibi', async () => {
     const { ctx, page, sorun, xss } = await ile({}, 'rezervasyon/?id=kum-beach-club');
     await page.click('#bkDate [data-gun]');

@@ -107,6 +107,28 @@ describe('v2', () => {
       expect(p.dates.some(x => { const d = api.parseDay(x[1]); return d >= a && d <= b; }), p.title).toBe(true));
   });
 
+  it('arama kartının koleksiyonları: her sekmede gerçek, kategori ve süzgeç ayrı (kural 3)', async () => {
+    const api = await import('../v2/js/api.js');
+    api.TYPES.forEach(([t]) => {
+      const l = api.listCollections(t);
+      expect(l.length, t).toBeGreaterThan(0);
+      l.forEach(c => {
+        /* adresin kategorisi sekmenin kendisi; süzgeç yalnızca yer ya da tema, gerçekten var */
+        const { tur, ...f } = c.q;
+        expect(tur, c.name).toBe(t);
+        expect(Object.keys(f), c.name).toHaveLength(1);
+        expect(f.yer ? api.getDestination(f.yer) : api.getTheme(f.tema), c.name).toBeTruthy();
+        /* sayı, liste sayfasının göstereceğiyle aynı; görseli var */
+        expect(c.count, c.name).toBe(api.listProducts({ type: t, ...f }).length);
+        expect(c.count, c.name).toBeGreaterThan(0);
+        expect(c.bg, c.name).toBeTruthy();
+      });
+    });
+    /* yurt dışı bir yer olarak aranabiliyor: bütün yurt dışı turları */
+    expect(api.listProducts({ yer: 'yurt-disi' }).map(p => p.id).sort())
+      .toEqual(api.listProducts({ type: 'tur' }).filter(p => p.abroad).map(p => p.id).sort());
+  });
+
   it('ürün sayfasında her deneyimin içeriği var, iptal günü tarihe göre', async () => {
     const api = await import('../v2/js/api.js');
     api.listProducts().forEach(p => {

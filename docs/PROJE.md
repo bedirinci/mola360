@@ -1732,3 +1732,64 @@ güncellenecek yaşayan proje dokümanıdır.
   - Açılışta yazı tipinin sonradan gelip metni kaydırması kalktı.
   - Boyutlar, kalınlıklar ve renkler aynı. Harf genişlikleri cihaza göre
     biraz değişir; 136 sayfa 320 – 440 px'te taşmadan açılıyor.
+
+### 2026-10-07 — Keşfet: arama kartı yana kayar, sekmeye göre koleksiyonlar (Bedir)
+
+- **Karar (Bedir):**
+  - Arama kartı yatay kayar. Sola kaydırınca formun ardından seçili
+    sekmenin bütün koleksiyon kartları gelir: Turlar'da yurt dışı, kültür,
+    Karadeniz turları gibi; Oteller'de otel, Etkinlikler'de etkinlik
+    koleksiyonları. Kartlar Keşfet'teki temalar gibi yana kayar; üç sıra,
+    üzerinde yalnızca adı yazar ("8 tur" gibi sayı yok), "Tüm turlar"
+    kartı yok. İçerik sekmeyle eşleşir.
+  - Kartın kaydırılabildiği, sayfa açılınca bir kez, kartın iki kez kısa
+    sağa-sola kıpırdamasıyla gösterilir. Kullanıcı kendisi kaydırınca
+    ipucu bir daha çalışmaz.
+- **Neden:** Kategori sekmesi seçildikten sonra "bu kategoride neler var"
+  sorusunun cevabı arama formunun arkasında kalıyordu. Koleksiyonlar
+  aramadan önce bir göz atma yolu açıyor. Kaydırılabildiği görünmezse
+  bulunmaz; kısa bir ipucu bunu gösterir.
+- **Etkilediği alanlar:**
+  - `v2/index.html` (arama formu ve koleksiyonlar yatay kayan
+    kapsayıcıda) ve `v2/css/kesfet.css`;
+  - `v2/js/koleksiyon.js` (yeni);
+  - `v2/js/arama.js` (`initSearch({onTab})`) ve `v2/js/kesfet.js`;
+  - `v2/js/api.js` (`listCollections`);
+  - `v2/js/data.js` (`KOLEKSIYON`, `yurt-disi` yeri);
+  - testler ve `docs/yeni-surum.md`.
+- **Teknik sonuç:**
+  - **Kaydırma:** tek bir yatay kaydırma var. Form ve kart sütunları
+    kaydırınca yerine oturur (scroll-snap). Kartlar formun yüksekliğinde
+    üç sıradır, sayfa boyu değişmez. Sütun genişliği kaydırıcıdan (`cqw`):
+    iki sütun ve bir sonrakinin kenarı görünür, şeridin sonunda son sütun
+    kenar boşluğuna oturur. İç içe ikinci
+    bir kaydırıcı yok; formdaki popüler arama çipleri kendi içinde kaymaya
+    devam eder.
+  - **Kartlar:** her sekmede o sekmenin bütün koleksiyonları (bugün 7 – 10).
+    Koleksiyon kategoriye yalnızca yer ya da tema ekler, liste
+    adresinde ikisi ayrı parametredir (kural 3). Kartta sayı yazmaz ama
+    deneyimi olmayan koleksiyon gösterilmez (kural 4).
+    Kartın görseli temanın kapağı ya da koleksiyondaki ilk deneyim.
+  - **Yurt dışı:** artık bir yer olarak da aranabiliyor (`yurt-disi`,
+    bütün yurt dışı turları).
+  - **İpucu:**
+    - Oturumun ilk açılışında, sayfa açıldıktan 0,7 sn sonra çalışır;
+      kart görünmüyorsa çalışmaz.
+    - Form ve kartlar birlikte iki kez 40 px sola gidip döner (1,6 sn).
+    - Elle kaydırınca `localStorage` `m360-kaydir` yazılır ve ipucu bir
+      daha çalışmaz; dokunmak oynayanı da durdurur.
+    - Aynı oturumda tekrar etmez (`sessionStorage` `m360-kaydir`).
+    - "Hareketi azalt" açıksa çalışmaz.
+  - **Test:** her sekmenin koleksiyonları gerçek ve kural 3'e uygun.
+    Tarayıcı testi ipucunun oturumda bir kez oynadığını, elle kaydırınca
+    bir daha oynamadığını ve kartların sekmeyle değiştiğini sınar.
+- **UX sonucu:**
+  - Arama kartı ilk bakışta eskisi gibi; kartlar dururken görünmez.
+  - İpucu anında ilk kartların kenarı görünür.
+  - Bir kez kaydırınca iki sütun kart ve sağda bir sonrakinin kenarı
+    görünür; kaydırdıkça bütün koleksiyonlar gelir, sağa kaydırınca forma
+    dönülür. Kartlar ekran okuyucuda
+    "Tur çeşitleri" başlığıyla okunur.
+  - Güneydoğu turu katalogda olmadığı için "Güneydoğu turları" kartı
+    yok; katalogda tur eklenince kart da `KOLEKSIYON`'a bir satırla
+    eklenir.

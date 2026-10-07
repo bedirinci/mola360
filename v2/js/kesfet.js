@@ -1,4 +1,5 @@
-/* Keşfet (anasayfa): arama (arama.js), kaldığın yerden, "Ne kadar molan var?" +
+/* Keşfet (anasayfa): arama (arama.js; yana kaydırınca koleksiyonlar,
+   koleksiyon.js), kaldığın yerden, "Ne kadar molan var?" +
    kiminle, yakınımda, Bağlan önizlemesi, "Bu hafta sonu için", sahnede,
    temalar. Bölümler bilerek az: her biri tek bir soruya cevap veriyor. Veri
    yalnızca api.js'ten okunur.
@@ -30,8 +31,10 @@ let curB=BUCKETS.some(b=>b[0]===mem.b)?mem.b:'hs',curK=WITH.some(w=>w[0]===mem.k
 /* Arama ayrı yüklenir: arama modülünde bir sorun olsa (ör. yayından hemen
    sonra tarayıcı eski ve yeni dosyaları karıştırırsa) raylar ve kartlar
    yine çizilir */
-let srch={setNear(){}};
-import('./arama.js').then(m=>{srch=m.initSearch();if(nearAt)srch.setNear(nearAt[2]);
+let srch={setNear(){}},kol=null;
+/* Arama kartı yatay kayar: ikinci sayfada seçili sekmenin koleksiyonları (koleksiyon.js) */
+import('./koleksiyon.js').then(m=>{kol=m.initCollections()}).catch(e=>console.error(e));
+import('./arama.js').then(m=>{srch=m.initSearch({onTab:t=>{if(kol)kol.show(t)}});if(nearAt)srch.setNear(nearAt[2]);
   document.querySelectorAll('.pchips').forEach(el=>makeScroll(el))}).catch(e=>console.error(e));
 
 /* Kişiye göre sıra: kiminle seçimine uyanlar öne; aynı derecedekiler kendi
