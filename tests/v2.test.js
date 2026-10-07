@@ -153,7 +153,7 @@ describe('v2', () => {
     const api = await import('../v2/js/api.js');
     const coz = t => t.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const meta = (html, k) => { const m = new RegExp('<meta (?:name|property)="' + k + '" content="([^"]*)">').exec(html); return m && coz(m[1]); };
-    const basliklar = new Set(), aciklamalar = new Set(), sayfalar = await kategoriSayfalari();
+    const basliklar = new Set(), aciklamalar = new Set(), girisler = new Set(), sayfalar = await kategoriSayfalari();
     for (const { slug, html } of sayfalar) {
       const c = api.TYPES.flatMap(([t]) => api.listCollections(t)).find(x => x.slug === slug), url = SITE + slug + '/';
       const baslik = coz(/<title>([^<]*)<\/title>/.exec(html)[1]), desc = meta(html, 'description');
@@ -185,7 +185,13 @@ describe('v2', () => {
       expect(g.FAQPage.mainEntity.map(x => x.acceptedAnswer.text), slug).toEqual(yanitlar);
       expect(sorular.length, slug).toBeGreaterThanOrEqual(3);
       /* görünen sayfa yolu ve kategoriyi anlatan bölümler (liste.js süzgeçte gizler) */
-      expect(html, slug).toContain('<nav class="bc" aria-label="Sayfa yolu" data-kat>');
+      /* üst kısım her kategoride aynı: kapak, sayfa yolu, başlık, kategorinin kendi giriş metni; kategori satırı yok */
+      expect(html, slug).toContain('<header class="pg-top slim cover" style="--g:');
+      expect(html, slug).toContain('<nav class="bc" aria-label="Sayfa yolu"><ol><li><a href="../">Keşfet</a></li>');
+      expect(c.intro.length, slug + ': giriş metni').toBeGreaterThan(40);
+      expect(html, slug).toContain('<p id="lsSub">' + c.intro.replace(/'/g, '&#39;').replace(/&(?!#39;)/g, '&amp;') + '</p>');
+      expect(html, slug).not.toContain('id="cats"');
+      girisler.add(c.intro);
       expect(html, slug).toContain('<body data-q="' + Object.entries(c.q).map(([k, v]) => k + '=' + v).join('&amp;') + '" data-kat="' + slug + '">');
       expect(html.match(/<section class="box kat-seo"[^>]* data-kat>/g).length, slug).toBeGreaterThanOrEqual(2);
       /* ilgili kategoriler var olan sayfalara gider */
@@ -193,6 +199,7 @@ describe('v2', () => {
     }
     expect(basliklar.size, 'her sayfanın başlığı kendine').toBe(sayfalar.length);
     expect(aciklamalar.size, 'her sayfanın açıklaması kendine').toBe(sayfalar.length);
+    expect(girisler.size, 'her sayfanın giriş metni kendine').toBe(sayfalar.length);
   });
 
   it('kategori sayfaları tarihten bağımsız: sabit HTML ertesi gün eskimez', async () => {

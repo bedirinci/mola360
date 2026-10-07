@@ -170,7 +170,7 @@ export const listCollections=type=>listCities().flatMap(c=>listCityPages(c.id)).
    60 harfi aşarsa yalnızca ad ve marka */
 const KAT_EK={tur:'fiyatlar ve tarihler',otel:'fiyatlar ve oda seçenekleri',etkinlik:'bilet fiyatları ve tarihler',aktivite:'fiyatlar ve seanslar',mekan:'fiyatlar ve rezervasyon'};
 const kisa=(ad,ek)=>{const t=ad+' — '+ek+' | mola360';return t.length<=60?t:ad+' | mola360'};
-export const pageTitle=pg=>kisa(pg.name,pg.kind==='sehir'?'etkinlik, mekân, otel ve turlar':pg.q.tur?KAT_EK[pg.q.tur]:'fikirler ve fiyatlar');
+export const pageTitle=pg=>kisa(pg.name,pg.kind==='sehir'?'etkinlik, mekân ve otel':pg.q.tur?KAT_EK[pg.q.tur]:'fikirler ve fiyatlar');
 export const productTitle=p=>{const t=typeKey(p.type),yer=p.place.split(' · ')[0];
   return kisa(p.title,t==='tur'?p.place.split(' · ').filter(x=>x!==yer||!/çıkışlı/.test(x)).join(', ').replace(/^.*?(\S+ çıkışlı)$/,'$1')+(p.info?', '+p.info.toLocaleLowerCase('tr'):''):t==='etkinlik'?yer+', bilet':yer)};
 

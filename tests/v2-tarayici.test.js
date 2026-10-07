@@ -160,28 +160,46 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     await sakin.close();
   }, 40000);
 
-  it('kategori sayfası: kendi adresinde açılır, seçim değişince Liste adresine geçer', async () => {
+  it('kategori sayfası: kendi adresinde açılır; yalnızca kategorinin deneyimleri ve süzgeçleri', async () => {
+    const api = await import('../v2/js/api.js');
     const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
     await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
+    /* üst kısım HTML'deki gibi kalır: kapak, sayfa yolu, başlık, giriş */
     expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
+    expect(await page.textContent('.bc')).toBe('KeşfetTurlar');
+    const K = api.listCollections('tur').find(c => c.slug === 'kultur-turlari');
+    expect(await page.textContent('#lsSub')).toBe(K.intro);
+    expect(await page.$eval('header.pg-top', h => h.classList.contains('cover'))).toBe(true);
     expect(await page.title()).toBe('Kültür turları — fiyatlar ve tarihler | mola360');
     expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe(base + 'kultur-turlari/');
-    expect(await page.$$eval('#list .vk', a => a.length)).toBeGreaterThan(0);
-    /* sayfa yolu, açıklama, SSS ve ilgili kategoriler açık; SSS açılır kapanır */
+    /* kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca kategoride olan süreler */
+    expect(await page.$('#cats')).toBeNull();
+    expect(await page.$$('[data-kimle]')).toHaveLength(0);
+    const l = api.listProducts({ type: 'tur', tema: 'kultur' });
+    expect(await page.$$eval('[data-sure]', a => a.map(b => b.dataset.sure))).toEqual(api.BUCKETS.map(b => b[0]).filter(b => l.some(p => p.b === b)));
+    expect(await page.$$eval('#list .vk', a => a.length)).toBe(l.length);
+    /* açıklama, SSS ve ilgili kategoriler açık; SSS açılır kapanır */
     const kat = () => page.$$eval('body [data-kat]', a => a.map(e => e.hidden));
-    expect(await kat()).toEqual([false, false, false, false]);
+    expect(await kat()).toEqual([false, false, false]);
     await page.click('.kat-seo details summary');
     expect(await page.$eval('.kat-seo details', d => d.open)).toBe(true);
     /* Keşfet'teki kart bu sayfaya gider */
     await page.goto(base, { waitUntil: 'networkidle' });
     expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="kultur-turlari/"]', 'href')).toBe('kultur-turlari/');
     await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
-    /* süre seçilince adres Liste'ye döner, seçim korunur */
-    await page.click('[data-sure="hs"]');
-    expect(page.url()).toBe(base + 'liste/?tema=kultur&tur=tur&sure=hs');
-    /* liste artık kategorinin tamamı değil: kategoriyi anlatan bölümler gizlenir, sayfa kalır */
-    expect(await kat()).toEqual([true, true, true, true]);
-    expect(await page.$eval('body', b => b.hidden)).toBe(false);
+    /* süre seçilince adres kategori sayfasında kalır; liste kategorinin tamamı olmadığı için alttaki bölümler gizlenir */
+    const sure = await page.getAttribute('[data-sure]', 'data-sure');
+    await page.click('[data-sure="' + sure + '"]');
+    expect(page.url()).toBe(base + 'kultur-turlari/?sure=' + sure);
+    expect(await page.$$eval('#list .vk', a => a.length)).toBe(l.filter(p => p.b === sure).length);
+    expect(await kat()).toEqual([true, true, true]);
+    expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
+    /* adresle açılınca da süre seçili gelir; süre kalkınca adres yalın */
+    await page.goto(base + 'kultur-turlari/?sure=' + sure, { waitUntil: 'networkidle' });
+    expect(await page.getAttribute('[data-sure="' + sure + '"]', 'aria-pressed')).toBe('true');
+    await page.click('[data-sure="' + sure + '"]');
+    expect(page.url()).toBe(base + 'kultur-turlari/');
+    expect(await kat()).toEqual([false, false, false]);
     expect(sorun).toEqual([]);
     await ctx.close();
   }, 30000);
