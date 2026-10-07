@@ -62,7 +62,8 @@ function onClick(e){
   const a=e.target.closest('[data-sva]');
   if(a){const k=a.dataset.sva;
     if(k==='like'){const on=a.getAttribute('aria-pressed')!=='true';a.setAttribute('aria-pressed',on)}
-    if(k==='share'){const url=location.href.split('#')[0];if(navigator.share)navigator.share({title:'mola360',url}).catch(()=>{});else toast('Bağlantı kopyalandı.','Tamam',()=>{},3000)}
+    if(k==='share'){const url=location.href.split('#')[0];if(navigator.share)navigator.share({title:'mola360',url}).catch(()=>{});
+      else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Bağlantı kopyalandı.','Tamam',()=>{},3000),()=>{})}
     return}
   if(e.target.closest('.sv-tap.next'))step(1);
   else if(e.target.closest('.sv-tap.prev'))step(-1);

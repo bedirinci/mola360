@@ -5,14 +5,13 @@
    yer, altta "Deneyimi gör" kartı, Mola360'tan gidilen deneyimde "Mola360
    ile gitti". Taslakta hikaye yalnızca bu cihazda tutulur (api.js createStory). */
 import { listPastBookings, suggest, getProduct, createStory, listDestinations, ME } from './api.js';
-import { backLayer, makeSheet, toast } from './ui.js';
+import { backLayer, makeSheet, toast, esc } from './ui.js';
 import { IC, PIN, STAR } from './icons.js';
 import { ROOT } from './root.js';
 import { ava } from './cards.js';
 import { thumbOf } from './paylas.js';
 
 const NOTE=150;
-const h=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 const LOGO_K='<img src="'+ROOT+'logo-koyu.webp" alt="Mola360" width="44" height="18">';
 const BG='linear-gradient(165deg,#2B3A75,#152048 60%,#0B1020)';
 const TAG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>';
@@ -74,7 +73,7 @@ function card(){
   if(!p&&!st.custom)return '';
   const st1=p&&p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'';
   return '<div class="sv-card hc-card"><button type="button" class="hc-cardb" data-tool="deneyim" aria-label="Deneyimi değiştir"></button>'
-   +'<span class="pt" style="background:'+(p?p.bg:'linear-gradient(160deg,#D5DCEA,#8E9AB6)')+'"></span><span class="x"><b>'+(p?p.title:h(st.custom))+'</b>'
+   +'<span class="pt" style="background:'+(p?p.bg:'linear-gradient(160deg,#D5DCEA,#8E9AB6)')+'"></span><span class="x"><b>'+(p?p.title:esc(st.custom))+'</b>'
    +'<small>'+(p?st1+'<span class="w">'+p.type+' · '+p.place.split(' · ')[0]+'</span>':'<span class="w">Mola360 dışı deneyim</span>')+'</small></span>'
    +(p?'<span class="sv-go">Deneyimi gör</span>':'')
    +'<button type="button" class="hc-rm" data-rm="deneyim" aria-label="Deneyimi kaldır">'+IC.close+'</button></div>';
@@ -89,8 +88,8 @@ function draw(){
   const went=!!st.productId&&pastIds().includes(st.productId);
   $('hcBody').innerHTML=(went?'<span class="went">'+LOGO_K+' ile gitti</span>':'')
    +(st.text||st.place?'<div class="sv-cap'+(st.box?' box':'')+'">'
-     +(st.text?'<button type="button" class="hc-txt" data-tool="yazi" aria-label="Yazıyı düzenle"><p>'+h(st.text)+'</p></button>':'')
-     +(st.place?'<span class="loc">'+PIN+h(st.place)+'<button type="button" class="hc-rm s" data-rm="konum" aria-label="Konumu kaldır">'+IC.close+'</button></span>':'')+'</div>':'')
+     +(st.text?'<button type="button" class="hc-txt" data-tool="yazi" aria-label="Yazıyı düzenle"><p>'+esc(st.text)+'</p></button>':'')
+     +(st.place?'<span class="loc">'+PIN+esc(st.place)+'<button type="button" class="hc-rm s" data-rm="konum" aria-label="Konumu kaldır">'+IC.close+'</button></span>':'')+'</div>':'')
    +card();
 }
 
@@ -114,7 +113,7 @@ function drawD(){
   const exact=found.some(p=>p.title.toLocaleLowerCase('tr')===q.toLocaleLowerCase('tr'));
   $('hdPast').innerHTML=past.length&&!q?'<p class="ps-lbl" id="hdL1">Mola360 ile gittiklerin</p><div class="ps-list" role="radiogroup" aria-labelledby="hdL1">'
      +past.map(b=>row(b.product,{went:true,sub:b.when})).join('')+'</div><p class="ps-lbl">Başka bir deneyim</p>':'';
-  const add=q&&!exact?'<button type="button" class="ps-opt ps-new" data-new><span class="pt">'+PIN+'</span><span class="x"><b>'+h(q)+'</b><small>Yeni deneyim olarak ekle</small></span><i aria-hidden="true">'+IC.plus+'</i></button>':'';
+  const add=q&&!exact?'<button type="button" class="ps-opt ps-new" data-new><span class="pt">'+PIN+'</span><span class="x"><b>'+esc(q)+'</b><small>Yeni deneyim olarak ekle</small></span><i aria-hidden="true">'+IC.plus+'</i></button>':'';
   $('hdRes').innerHTML=found.length||add?'<div class="ps-list" aria-label="Arama sonuçları">'+found.map(p=>row(p,{sub:p.type+' · '+p.place.split(' · ')[0]})).join('')+add+'</div>'
     +'<p class="ps-hint">Mola360 dışından gittiğin deneyimde rozet görünmez.</p>':'';
 }
@@ -138,8 +137,8 @@ function places(){
 function drawL(){
   const q=st.lq.trim(),l=places(),exact=l.some(x=>x.name.toLocaleLowerCase('tr')===q.toLocaleLowerCase('tr'));
   $('hlRes').innerHTML=(q?'':'<p class="ps-lbl">Önerilen yerler</p>')+'<div class="ps-list" aria-label="Yerler">'
-   +l.map(x=>'<button type="button" class="ps-opt ps-new hc-pl" data-place="'+h(x.name)+'"><span class="pt">'+PIN+'</span><span class="x"><b>'+h(x.name)+'</b><small>'+h(x.sub||'')+'</small></span></button>').join('')
-   +(q&&!exact?'<button type="button" class="ps-opt ps-new hc-pl" data-place="'+h(q.slice(0,40))+'"><span class="pt">'+PIN+'</span><span class="x"><b>'+h(q)+'</b><small>Bu adla ekle</small></span></button>':'')+'</div>';
+   +l.map(x=>'<button type="button" class="ps-opt ps-new hc-pl" data-place="'+esc(x.name)+'"><span class="pt">'+PIN+'</span><span class="x"><b>'+esc(x.name)+'</b><small>'+esc(x.sub||'')+'</small></span></button>').join('')
+   +(q&&!exact?'<button type="button" class="ps-opt ps-new hc-pl" data-place="'+esc(q.slice(0,40))+'"><span class="pt">'+PIN+'</span><span class="x"><b>'+esc(q)+'</b><small>Bu adla ekle</small></span></button>':'')+'</div>';
 }
 
 function build(){

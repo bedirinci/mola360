@@ -6,9 +6,11 @@ import { productUrl } from './api.js';
 export const tl=n=>n.toLocaleString('tr-TR')+' TL';
 export const word=s=>s>=9.5?'Olağanüstü':s>=9?'Harika':s>=8.5?'Çok iyi':'İyi';
 export const sc=(s,c)=>'<span class="score"><b>'+s.toFixed(1).replace('.',',')+'</b>'+word(s)+'</span>';
-export const esc=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+/* Metni HTML'e (öğe içine de özniteliğe de) güvenle basmak için: kullanıcının
+   yazdığı her şey (ad, not, mesaj, yorum) innerHTML'e bundan geçerek girer */
+export const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 /* Kart başlığı ürün sayfasına bağlanır; bağın ::after'ı kartın tamamını kaplar */
-export const ttl=t=>'<a class="lk" href="'+productUrl(ROOT,t)+'" title="'+t.replace(/"/g,'&quot;')+'">'+t+'</a>';
+export const ttl=t=>'<a class="lk" href="'+productUrl(ROOT,t)+'" title="'+esc(t)+'">'+esc(t)+'</a>';
 export const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b></span>';
 
 let toastT;

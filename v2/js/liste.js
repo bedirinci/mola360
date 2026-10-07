@@ -6,7 +6,7 @@
 import { renderShell } from './shell.js';
 import { listProducts, listPosts, getTheme, getDestination, getSearch, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
 import { productCard, postMini } from './cards.js';
-import { toast } from './ui.js';
+import { toast, esc } from './ui.js';
 import { initFavorites, favSync } from './favorites.js';
 
 renderShell('kesfet');
@@ -34,7 +34,6 @@ const themePosts=()=>th?listPosts().filter(x=>x.product&&th.ids.includes(x.produ
 const SURE=BUCKETS; /* süre adları tek yerden (Keşfet ile aynı) */
 const OTHER=['Yakınımda','Fiyat aralığı'];
 const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
-const h=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 const href=(t,s,k=kimle)=>'?'+[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
 const go=()=>{history.replaceState(history.state,'',href(tur,sure)==='?'?location.pathname:href(tur,sure));draw()};
@@ -42,7 +41,7 @@ const go=()=>{history.replaceState(history.state,'',href(tur,sure)==='?'?locatio
 /* aramadan gelen seçimler (yer, metin, tarih) en başta; dokununca kalkar */
 function filters(){
   const D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
-  const off=(k,label)=>'<button type="button" class="fc off" aria-pressed="true" data-off="'+k+'" aria-label="'+h(label)+' seçimini kaldır">'+h(label)+X+'</button>';
+  const off=(k,label)=>'<button type="button" class="fc off" aria-pressed="true" data-off="'+k+'" aria-label="'+esc(label)+' seçimini kaldır">'+esc(label)+X+'</button>';
   document.getElementById('filters').innerHTML=(D?off('yer',D.name):'')+(ara?off('ara','“'+ara+'”'):'')+(WH?off('tarih',WH[2]):'')
     +SURE.map(x=>'<button type="button" class="fc" aria-pressed="false" data-sure="'+x[0]+'">'+x[1]+'</button>').join('')
     +WITH.map(w=>'<button type="button" class="fc" aria-pressed="false" data-kimle="'+w[0]+'">'+w[1]+'</button>').join('')

@@ -35,6 +35,10 @@ npm run dev      # http://localhost:8000/v2/
 npm test
 ```
 
+Tarayıcı testleri (`tests/v2-tarayici.test.js`) Chromium ister; bir kez
+`npx playwright install chromium` ile kurulur. Kurulu değilse o testler
+atlanır, diğerleri çalışır.
+
 Backend için:
 
 ```bash
@@ -49,4 +53,4 @@ Site **yalnızca `main` dalından** yayınlanır
 Backend ve `arsiv/` yayına çıkmaz. Bir dala push etmek yayındaki siteyi
 değiştirmez.
 
-Her push ve PR'da testler çalışır (`.github/workflows/ci.yml`).
+`main`'e her push'ta ve her PR'da testler çalışır (`.github/workflows/ci.yml`).

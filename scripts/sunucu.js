@@ -35,7 +35,8 @@ const TIPLER = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
-/* Adresten disk yolu. Saf fonksiyon: tests/sunucu.test.js doğrudan çağırır.
+/* Adresten disk yolu. Saf fonksiyon; v2'nin tarayıcı testleri
+   (tests/v2-tarayici.test.js) sun ile bu sunucuyu kurar.
 
    İki kural var ve ikisi de GitHub Pages'in davranışı:
      /otel/kordon-butik-otel/  -> otel/kordon-butik-otel/index.html

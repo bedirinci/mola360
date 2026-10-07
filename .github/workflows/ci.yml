@@ -25,6 +25,11 @@ jobs:
       - name: Bagimliliklari yukle
         run: npm ci
 
+      # v2'nin tarayici testleri (tests/v2-tarayici.test.js) butun sayfalari
+      # gercek Chromium'da acar; tarayici yoksa o testler atlanir.
+      - name: Tarayiciyi kur
+        run: npx playwright install --with-deps chromium
+
       - name: Testleri calistir
         run: npm test
 

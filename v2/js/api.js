@@ -3,12 +3,13 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, WHEN, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM, KALKIS, OTEL, SEANS } from './icerik.js';
 import { ROOT } from './root.js';
 
-/* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil) */
-export { BUCKETS, WITH, WHEN };
+/* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil); ne zaman
+   aşağıda bugünden hesaplanır (WHEN) */
+export { BUCKETS, WITH };
 
 const TR_MAP={ı:'i',ğ:'g',ü:'u',ş:'s',ö:'o',ç:'c',â:'a',î:'i',û:'u'};
 /* Arama karşılaştırması: Türkçe harf ve büyük/küçük harf farkı yok sayılır */
@@ -19,16 +20,35 @@ export const slug=t=>t.toLocaleLowerCase('tr').replace(/[ığüşöçâîû]/g,c
 export const TYPES=[['tur','Tur','Turlar'],['otel','Otel','Oteller'],['etkinlik','Etkinlik','Etkinlikler'],['aktivite','Aktivite','Aktiviteler'],['mekan','Mekân','Mekânlar']];
 export const typeKey=k=>(TYPES.find(t=>t[1]===k)||TYPES[0])[0];
 
+/* ---- Takvim ----
+   Bugün cihazın tarihi; backend gelince sunucudan. Örnek veri 1 Ekim 2026
+   haftası için yazıldı (ÖRNEK): tur kalkışları haftanın aynı günlerinde
+   kalarak bugünün haftasına taşınır; etkinlikler, otel konaklaması ve arama
+   pencereleri de bugünden hesaplanır. Böylece örnek takvim eskimez, geçmiş
+   bir gün seçilebilir görünmez. */
+const GUN=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],AY3=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+export const today=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
+export const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const dayLbl=d=>[GUN[d.getDay()],d.getDate()+' '+AY3[d.getMonth()]];
+const MON={oca:0,sub:1,mar:2,nis:3,may:4,haz:5,tem:6,agu:7,eyl:8,eki:9,kas:10,ara:11};
+const dm=t=>norm(t||'').match(/(?:^| )(\d{1,2}) (?:\d{1,2} )?(oca|sub|mar|nis|may|haz|tem|agu|eyl|eki|kas|ara)(?: |$)/);
+/* "Cum 9 Eki" gibi etiketten tarih. Etikette yıl yok: bugüne en yakın yıl
+   seçilir (aralıkta "5 Oca" gelecek yılın 5 Ocak'ı) */
+export function parseDay(t){const m=dm(t);if(!m)return null;const t0=today(),y=t0.getFullYear();
+  return [y-1,y,y+1].map(Y=>new Date(Y,MON[m[2]],+m[1])).reduce((a,b)=>Math.abs(b-t0)<Math.abs(a-t0)?b:a)}
+/* örnek verinin haftası (1 Ekim 2026'nın pazartesisi) ile bugünün haftası arası, gün */
+const monday=d=>addDays(d,-((d.getDay()+6)%7));
+const SHIFT=Math.max(0,Math.round((monday(today())-new Date(2026,8,28))/(7*864e5)))*7;
 /* Kalkış tarihleri: veride ilk üçü var; "+N" kadar tarih aynı haftalık düzenle
-   (ilk üçün gün sırası tekrar ederek) devam eder. Ürün sayfası hepsini gösterir. */
+   (ilk üçün gün sırası tekrar ederek) devam eder; hepsi bugünün haftasına
+   taşınır. Ürün sayfası hepsini gösterir. */
 function moreDates(ds,more){
-  const n=parseInt(more,10)||0,G=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],A=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-  const day=t=>{const m=t.match(/(\d+) (\S+)/);return m?new Date(2026,A.indexOf(m[2]),+m[1]):null};
-  const base=ds.map(x=>day(x[1]));
-  if(!n||!base.length||base.some(d=>!d))return ds;
-  const W=7*864e5,period=(Math.floor((base[base.length-1]-base[0])/W)+1)*W,out=[...ds];
-  for(let i=0;i<n;i++){const d=new Date(+base[i%base.length]+period*(Math.floor(i/base.length)+1));out.push([G[d.getDay()],d.getDate()+' '+A[d.getMonth()]])}
-  return out}
+  const n=parseInt(more,10)||0,base=ds.map(x=>{const m=dm(x[1]);return m?new Date(2026,MON[m[2]],+m[1]):null});
+  if(!base.length||base.some(d=>!d))return ds;
+  const span=Math.round((base[base.length-1]-base[0])/864e5),period=(Math.floor(span/7)+1)*7,out=[...base];
+  for(let i=0;i<n;i++)out.push(addDays(base[i%base.length],period*(Math.floor(i/base.length)+1)));
+  return out.map(d=>dayLbl(addDays(d,SHIFT)))}
 const fromItem=x=>({id:slug(x.t),type:x.k,title:x.t,place:x.a,price:x.p,old:x.old,unit:x.u||'kişi başı',score:x.s||0,count:x.c||0,
   bg:G[x.g],facts:x.facts||[],dates:moreDates(x.dates||[],x.more),more:x.more,info:x.info,tr:x.tr,visa:x.visa,visaReq:!!x.visaReq,b:x.b,abroad:!!x.abroad,cat:x.cat,sample:true});
 const all=new Map();
@@ -73,12 +93,19 @@ const haystack=p=>{if(!hay.has(p.id))hay.set(p.id,' '+norm([p.title,where(p),p.t
   ...p.dest.map(i=>getDestination(i)).flatMap(d=>[d.name,d.sub]),...themes.filter(t=>t.ids.includes(p.id)).map(t=>t.name)].join(' ')));return hay.get(p.id)};
 const hit=(h,q)=>norm(q).split(' ').filter(Boolean).every(w=>h.includes(w.length<4?' '+w:w));
 
-/* Ne zaman: tarihi olan ürün (tur kalkışı, etkinlik) pencereye düşmeli;
-   otel, aktivite ve mekân her gün açık sayılır (ÖRNEK) */
-const MON={oca:0,sub:1,mar:2,nis:3,may:4,haz:5,tem:6,agu:7,eyl:8,eki:9,kas:10,ara:11};
-export function parseDay(t){const m=norm(t||'').match(/(?:^| )(\d{1,2}) (?:\d{1,2} )?(oca|sub|mar|nis|may|haz|tem|agu|eyl|eki|kas|ara)(?: |$)/);return m?new Date(2026,MON[m[2]],+m[1]):null}
+/* Ne zaman: arama pencereleri bugünden hesaplanır. [adres anahtarı, ad, alt
+   satır, başlangıç, bitiş]. Hafta sonu cuma – pazar; hafta sonundaysak
+   bugünden pazara. Aylar: bu ayın kalanı ve gelecek ay. */
+const range=(a,b)=>a.getMonth()===b.getMonth()?(a.getDate()===b.getDate()?'':a.getDate()+' – ')+b.getDate()+' '+AY[b.getMonth()]
+  :a.getDate()+' '+AY[a.getMonth()]+' – '+b.getDate()+' '+AY[b.getMonth()];
+export const WHEN=(()=>{const t=today(),w=t.getDay(),fri=addDays(t,w===6?-1:w===0?-2:5-w),y=t.getFullYear(),m=t.getMonth();
+  const nx=new Date(y,m+1,1),mk=(id,name,a,b)=>[id,name,range(a,b),a,b];
+  return [mk('bu-hs','Bu hafta sonu',t>fri?t:fri,addDays(fri,2)),mk('gelecek-hs','Gelecek hafta sonu',addDays(fri,7),addDays(fri,9)),
+    mk(slug(AY[m]),AY[m]+' içinde',t,new Date(y,m+1,0)),mk(slug(AY[nx.getMonth()]),AY[nx.getMonth()]+' içinde',nx,new Date(y,m+2,0))]})();
+/* Tarihi olan ürün (tur kalkışı, etkinlik) pencereye düşmeli; otel, aktivite
+   ve mekân her gün açık sayılır (ÖRNEK) */
 const productDays=p=>p.dates.length?p.dates.map(d=>parseDay(d[1])):typeKey(p.type)==='etkinlik'?[parseDay(p.facts[0])]:null;
-const win=id=>{const w=WHEN.find(x=>x[0]===id);return w&&[new Date(...w[3]),new Date(...w[4])]};
+const win=id=>{const w=WHEN.find(x=>x[0]===id);return w&&[w[3],w[4]]};
 const inWin=(d,w)=>d&&d>=w[0]&&d<=w[1];
 export function availableIn(p,tarih){const w=win(tarih);if(!w)return true;const ds=productDays(p);return !ds||ds.some(d=>inWin(d,w))}
 /* Ürünün seçilen penceredeki ilk kalkışı (ürün sayfasında hazır seçili gelir) */
@@ -175,13 +202,14 @@ export const listPosts=({productId}={})=>{const l=[...listMyPosts(),...posts];re
    Silinen önceki paylaşımlar m360-silinen'de tutulur. */
 const DK='m360-silinen';
 const gone=()=>{try{return new Set(JSON.parse(localStorage.getItem(DK))||[])}catch(e){return new Set()}};
-const ayse=()=>posts.slice(0,4).map((p,i)=>withEdit({...p,id:'a'+(i+1),user:{...ME,onay:true},mine:true}));
+/* önceki paylaşımlarda da rozet yalnızca Mola360'tan yaşanmış deneyimde (kural 4) */
+const ayse=()=>{const w=wentIds();return posts.slice(0,4).map((p,i)=>withEdit({...p,id:'a'+(i+1),user:{...ME,onay:w.size>0},mine:true,verified:!!p.product&&w.has(p.product.id)}))};
 /* Gönderiyi düzenle: yazı, bağlı deneyim ve kiminle değişir; fotoğraflar değişmez.
    Bu cihazdaki paylaşımlarda kaydın kendisi, önceki paylaşımlarda m360-duzen güncellenir. */
 const EK='m360-duzen';
 const edits=()=>{try{return JSON.parse(localStorage.getItem(EK))||{}}catch(e){return {}}};
 function withEdit(p){const e=edits()[p.id];if(!e)return p;const pr=getProduct(e.productId);
-  return {...p,text:hx(e.text||''),with:hx(e.with||''),product:pr,place:pr&&p.product&&p.product.id===pr.id?p.place:pr?pr.place.split(' · ')[0]:hx(e.title||''),verified:!!pr&&PAST.some(b=>b.productId===pr.id)}}
+  return {...p,text:hx(e.text||''),with:hx(e.with||''),product:pr,place:pr&&p.product&&p.product.id===pr.id?p.place:pr?pr.place.split(' · ')[0]:hx(e.title||''),verified:!!pr&&wentIds().has(pr.id)}}
 /* düzenleme çekmecesi için ham değerler */
 export function postDraft(id){
   const r=readPs().find(x=>x.id===id);if(r)return {productId:r.productId||'',title:r.title||'',text:r.text||'',with:r.with||''};
@@ -257,17 +285,24 @@ export const weekTraveler=()=>{
 export const listSuggestions=()=>ONERI.map(([u,why,gitti])=>({id:u,user:{...USERS[u],onay:!!gitti||ONAY.has(u)},why}));
 export const ME={ad:'Ayşe Yılmaz',kul:'ayse.molada',ini:'AY',renk:'#223066'};
 
-/* Geçmiş rezervasyonlar (ÖRNEK): yaşanmış deneyimler. Paylaşımdaki
-   "Mola360 ile gitti" rozeti yalnızca bunlardan birine bağlanınca çıkar. */
+/* Geçmiş rezervasyonlar: yaşanmış deneyimler. Hesaptaki örnekler (ÖRNEK) ve
+   bu cihazda yapılıp tarihi geçenler, yeniden eskiye; aynı deneyim bir kez.
+   Paylaşımdaki "Mola360 ile gitti" rozeti yalnızca bunlardan birine bağlanınca çıkar. */
 const PAST=[{productId:'kapadokya-turu',when:'12 – 15 Eylül',who:'2 yetişkin'},{productId:'kordon-caz-aksamlari',when:'5 Eylül',who:'2 bilet',shared:true}];
-export const listPastBookings=()=>PAST.map(b=>({...b,product:getProduct(b.productId),
-  shared:!!b.shared||listMyPosts().some(p=>p.product&&p.product.id===b.productId),review:readRv()[b.productId]||null})).filter(b=>b.product);
+function pastList(){const d=readDk(),t=today(),seen=new Set();
+  const done=readBk().filter(b=>!d.iptal.includes(b.no)).map(b=>[b,endOf(b)]).filter(([,e])=>e&&e<t).sort((x,y)=>y[1]-x[1])
+    .map(([b])=>({productId:b.productId,no:b.no,when:whenOf(b),who:b.qty}));
+  return [...done,...PAST].filter(b=>getProduct(b.productId)&&!seen.has(b.productId)&&seen.add(b.productId))}
+const wentIds=()=>new Set(pastList().map(b=>b.productId));
+export const listPastBookings=()=>{const rv=readRv(),ps=readPs();
+  return pastList().map(b=>({...b,product:getProduct(b.productId),shared:!!b.shared||ps.some(x=>x.productId===b.productId),review:rv[b.productId]||null}))};
 
 /* Paylaşımlar: taslakta yalnızca bu cihazda tutulur, görseller küçültülmüş
    önizleme olarak. Backend gelince yükleme ve akış oradan. */
 const PK='m360-paylas';
 const readPs=()=>{try{return JSON.parse(localStorage.getItem(PK))||[]}catch(e){return []}};
-const hx=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+/* kullanıcının yazdığı metin HTML'e kaçışlanmış okunur (ui.js esc ile aynı kural; ui.js bu dosyayı içe aktardığı için burada) */
+const hx=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const okThumb=t=>/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(t||'');
 const ago=t=>{const m=Math.floor((Date.now()-t)/60000);return m<1?'Az önce':m<60?m+' dk önce':m<1440?Math.floor(m/60)+' sa önce':Math.floor(m/1440)+' gün önce'};
 /* Paylaşımın görselleri: kaydedilen önizlemeler; yer kalmadığı için
@@ -276,17 +311,17 @@ export const POST_MIN=2;
 const OUT_BG='linear-gradient(160deg,#D5DCEA,#8E9AB6)';
 const picsOf=(x,p)=>{const t=(x.thumbs||[]).filter(okThumb).map(u=>'url('+u+') center/cover,'+p.bg);
   while(t.length<POST_MIN)t.push(p.bg);return t};
-export function listMyPosts(){
+export function listMyPosts(){const w=wentIds();
   return readPs().map(x=>{const p=getProduct(x.productId);
     /* Mola360 dışı deneyim: kart yok, adı yer satırında */
     if(!p){if(!x.title)return null;const o={bg:OUT_BG};
-      return {id:x.id,user:{...ME,onay:PAST.length>0},place:hx(x.title),when:ago(x.created),with:hx(x.with||''),
+      return {id:x.id,user:{...ME,onay:w.size>0},place:hx(x.title),when:ago(x.created),with:hx(x.with||''),
         bg:x.thumbs&&okThumb(x.thumbs[0])?'url('+x.thumbs[0]+') center/cover,'+o.bg:o.bg,media:x.media||1,video:!!x.video,
         pics:picsOf(x,o),text:hx(x.text||''),likes:0,comments:0,verified:false,product:null,mine:true}}
-    return {id:x.id,user:{...ME,onay:PAST.length>0},place:p.place.split(' · ')[0],when:ago(x.created),with:hx(x.with||''),
+    return {id:x.id,user:{...ME,onay:w.size>0},place:p.place.split(' · ')[0],when:ago(x.created),with:hx(x.with||''),
       bg:x.thumbs&&okThumb(x.thumbs[0])?'url('+x.thumbs[0]+') center/cover,'+p.bg:p.bg,media:x.media||1,video:!!x.video,
       pics:picsOf(x,p),
-      text:hx(x.text||''),likes:0,comments:0,verified:PAST.some(b=>b.productId===p.id),product:p,mine:true}}).filter(Boolean);
+      text:hx(x.text||''),likes:0,comments:0,verified:w.has(p.id),product:p,mine:true}}).filter(Boolean);
 }
 /* Rozet buradan değil, bağlanan deneyimin geçmiş rezervasyonlarda olmasından gelir */
 /* title: sitede olmayan, kullanıcının yazdığı deneyim (ürüne bağlı değil) */
@@ -314,25 +349,22 @@ export function createStory({productId='',title='',text='',place='',box=false,th
   return true;
 }
 export function myStory(){
-  const l=readHk();if(!l.length)return null;const last=l[l.length-1];
+  const l=readHk();if(!l.length)return null;const last=l[l.length-1],w=wentIds();
   const frames=l.flatMap(x=>{const p=getProduct(x.productId),bg=p?p.bg:OUT_BG,t=x.thumbs.length?x.thumbs:[''];
     /* yer etiketi seçilmediyse eski hikayelerdeki gibi deneyimin yeri */
     const place=x.place!=null?hx(x.place):p?p.place.split(' · ')[0]:hx(x.title||'');
-    return t.map(u=>({bg:u?'url('+u+') center/cover,'+bg:bg,text:hx(x.text||''),box:!!x.box,place,verified:!!p&&PAST.some(b=>b.productId===p.id),product:p||null}))});
-  return {id:'h-me',kind:'kisi',mine:true,user:{...ME,onay:PAST.length>0},when:ago(last.created),frames};
+    return t.map(u=>({bg:u?'url('+u+') center/cover,'+bg:bg,text:hx(x.text||''),box:!!x.box,place,verified:!!p&&w.has(p.id),product:p||null}))});
+  return {id:'h-me',kind:'kisi',mine:true,user:{...ME,onay:w.size>0},when:ago(last.created),frames};
 }
 
 /* Rezervasyon: ürün türüne göre tarih, saat, seçenek ve adet. Kurallar
    (kapora, iptal, adet sınırları, saatler) ÖRNEK; v2'nin kuralları
    yazılınca buradan değişecek. */
-/* Örnek takvim 1 Ekim 2026 Perşembe'de yaşıyor; backend gelince bugünün tarihi */
-const TODAY=new Date(2026,9,1);
 const CANCEL_DAYS={tur:7,otel:3,etkinlik:2};
 /* Seçilen tarihe göre son ücretsiz iptal günü; süre dolduysa past */
 export function cancelBy(p,label){const d=parseDay(label);if(!d)return null;
   const by=new Date(d);by.setDate(by.getDate()-(CANCEL_DAYS[typeKey(p.type)]||1));
   return {date:by.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'}),past:by<today()}}
-const NEXT_DAYS=[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki'],['Paz','11 Eki']];
 const CANCEL={tur:'Kalkıştan 7 gün öncesine kadar ücretsiz iptal',otel:'Girişten 3 gün öncesine kadar ücretsiz iptal',etkinlik:'Etkinlikten 48 saat öncesine kadar ücretsiz iptal'};
 export function bookingSpec(p){
   const t=typeKey(p.type);
@@ -365,10 +397,7 @@ export function bookingSpec(p){
 /* Otel: giriş günleri (yarından itibaren 60 gün), odalar, olanaklar, çocuk ve
    evcil hayvan kuralları. Oda fiyatı gecelik ve odanın; 2 yaş altı bebek ücretsiz
    ve kişi sayısına girmez. Bilgisi yazılmamış otelde tek oda tipi (ÖRNEK) */
-const GUN=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],AY3=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-const dayLbl=d=>[GUN[d.getDay()],d.getDate()+' '+AY3[d.getMonth()]];
 const rolling=n=>Array.from({length:n},(_,i)=>dayLbl(addDays(today(),i+1)));
-export const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 function hotel(p){
   const o=OTEL[p.title]||{giris:'14:00',cikis:'12:00',odalar:[['Standart oda','Çift kişilik',2,Math.round(p.price/2),[]]],olanak:[],cocuk:[6,0],evcil:false};
   return {giris:o.giris,cikis:o.cikis,olanak:o.olanak,evcil:o.evcil,free:o.cocuk[0],extra:o.cocuk[1],maxNights:14,
@@ -391,30 +420,37 @@ function kalkis(p){
   return {city:'',how:'',stops:[{saat:'',yer:y[0],adres:'',not:y[1]}]};
 }
 
-/* Taslak rezervasyonlar: ödeme alınmaz, yalnızca bu cihazda tutulur */
+/* Taslak rezervasyonlar: ödeme alınmaz, yalnızca bu cihazda tutulur. Günü
+   yılıyla birlikte de yazılır (at), etiketteki yıl belirsizliği karışmasın. */
 const BK='m360-rez';
 const readBk=()=>{try{return JSON.parse(localStorage.getItem(BK))||[]}catch(e){return []}};
 const writeBk=l=>{try{localStorage.setItem(BK,JSON.stringify(l))}catch(e){}};
-export function createBooking(b){
-  const r={...b,no:'M360-T'+String(Math.floor(10000+Math.random()*90000)),created:Date.now(),draft:true};
+const p2=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const fromIso=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],m[2]-1,+m[3]):null};
+export function createBooking(b){const d=parseDay(b.date);
+  const r={...b,...(d?{at:iso(d)}:{}),no:'M360-T'+String(Math.floor(10000+Math.random()*90000)),created:Date.now(),draft:true};
   writeBk([r,...readBk()]);return r;
 }
-export const listBookings=()=>readBk().map(b=>({...b,product:getProduct(b.productId)})).filter(b=>b.product);
+/* rezervasyonun günü ve bittiği gün (konaklamada çıkış günü) */
+const dayOf=b=>fromIso(b.at)||parseDay(b.date);
+const endOf=b=>{const d=dayOf(b);if(!d)return null;const n=/(\d+) gece/.exec(b.date||'');return n?addDays(d,+n[1]):d};
+/* geçmişte görünen tarih: "10 Ekim" ya da konaklamada "9 – 11 Ekim" */
+const whenOf=b=>{const a=dayOf(b),e=endOf(b);return !a?b.date:e>a?range(a,e):a.getDate()+' '+AY[a.getMonth()]};
 
-/* Bugün: örnek takvimin ilk gününden önceye düşmez; backend gelince sunucudan */
-export const today=()=>{const n=new Date(),d=new Date(n.getFullYear(),n.getMonth(),n.getDate());return d<TODAY?new Date(TODAY):d};
-
-/* Yaklaşan rezervasyonlar (ÖRNEK): hesaptaki rezervasyon ve bu cihazda
-   yapılanlar, tarihe göre. İptal ve kalan ödeme bu cihazda tutulur. */
-const UPCOMING=[{productId:'pamukkale-ve-hierapolis',date:'Cmt 10 Eki',slot:'07:30',qty:'2 yetişkin',total:3780,paid:756,pay:'kapora',no:'M360-48211',
-  meet:{yer:'Konak Saat Kulesi önü',adres:'Konak Meydanı, Konak, İzmir',saat:'07:15',not:'Rehberin Murat Bey, Mola360 bayrağıyla seni otobüsün önünde karşılar. Kimliğini yanına al.'}}];
+/* Yaklaşan rezervasyonlar: hesaptaki örnek rezervasyon (ÖRNEK: Pamukkale
+   turunun en az 3 gün sonraki kalkışı) ve bu cihazda yapılanlar, tarihe göre.
+   Bittiği gün geçen rezervasyon Geçmiş'e geçer. İptal ve kalan ödeme bu cihazda tutulur. */
+const UPCOMING=(()=>{const p=getProduct('pamukkale-ve-hierapolis'),t=addDays(today(),3),d=p&&upcoming(p.dates).find(x=>parseDay(x[1])>=t);
+  return d?[{productId:p.id,date:d.join(' '),at:iso(parseDay(d[1])),slot:'07:30',qty:'2 yetişkin',total:3780,paid:756,pay:'kapora',no:'M360-48211',
+    meet:{yer:'Konak Saat Kulesi önü',adres:'Konak Meydanı, Konak, İzmir',saat:'07:15',not:'Rehberin Murat Bey, Mola360 bayrağıyla seni otobüsün önünde karşılar. Kimliğini yanına al.'}}]:[]})();
 const RDK='m360-rez-durum';
 const readDk=()=>{try{return {iptal:[],odeme:{},...JSON.parse(localStorage.getItem(RDK))}}catch(e){return {iptal:[],odeme:{}}}};
 const writeDk=d=>{try{localStorage.setItem(RDK,JSON.stringify(d))}catch(e){}};
-export function listUpcoming(){const d=readDk();
+export function listUpcoming(){const d=readDk(),t=today();
   return [...readBk(),...UPCOMING].filter(b=>!d.iptal.includes(b.no))
-    .map(b=>({...b,paid:d.odeme[b.no]??b.paid,product:getProduct(b.productId),day:parseDay(b.date)}))
-    .filter(b=>b.product).sort((a,b)=>(a.day||0)-(b.day||0)||String(a.slot).localeCompare(String(b.slot)))}
+    .map(b=>({...b,paid:d.odeme[b.no]??b.paid,product:getProduct(b.productId),day:dayOf(b),end:endOf(b)}))
+    .filter(b=>b.product&&!(b.end&&b.end<t)).sort((a,b)=>(a.day||0)-(b.day||0)||String(a.slot).localeCompare(String(b.slot)))}
 export function cancelBooking(no){writeBk(readBk().filter(b=>b.no!==no));const d=readDk();d.iptal=[...new Set([...d.iptal,no])];writeDk(d)}
 export function payRemaining(no){const b=listUpcoming().find(x=>x.no===no);if(!b)return;const d=readDk();d.odeme[no]=b.total;writeDk(d)}
 
@@ -511,7 +547,7 @@ export function listNotifs(){
   BILDIRIM.filter(n=>!n.post||getPost(n.post)).forEach(n=>{
     out.push({...n,users:(n.k||[]).map(who),post:n.post?getPost(n.post):null,product:n.urun?findByTitle(n.urun):null})});
   /* değerlendirilmemiş geçmiş deneyimler: dönüş gününde gelmiş */
-  PAST.filter(b=>!rv[b.productId]).forEach(b=>{const p=getProduct(b.productId);
+  pastList().filter(b=>!rv[b.productId]).forEach(b=>{const p=getProduct(b.productId);
     if(p)out.push({id:'d-'+b.productId,tur:'degerlendir',g:'once',ne:b.when.split('–').pop().trim().replace(/(\d+ \S{3})\S*/,'$1'),product:p})});
   /* haftanın gezgini: en çok etkileşim alan paylaşım */
   const wt=weekTraveler(),off=notifOff();

@@ -68,7 +68,8 @@ const stopOf=()=>DEP&&st.stop>=0?DEP.stops[st.stop]:null;
 const when=()=>HR?st.date+' · '+st.gece+' gece':[st.date,(stopOf()||{}).saat||st.slot].filter(Boolean).join(' · ');
 /* katılımcılar: kişi sayısına göre; bilgiler "yetiskin-0" gibi anahtarla tutulur */
 const people=()=>ROWS.flatMap(r=>Array.from({length:st.ppl[r[0]]},(_,i)=>({key:r[0]+'-'+i,rol:r[0],label:r[1],n:i+1,many:st.ppl[r[0]]>1,yas:r[4]})));
-const ME_TC='18427350998';
+/* hesaptaki kimlik numarasından yalnızca son dört hane gösterilir (ÖRNEK); tam numara arayüzde tutulmaz */
+const ME_TC_SON='4127';
 const meOn=k=>st.ben&&(k==='yetiskin-0'||k==='oda-0');
 
 /* otel: oda kapasitesine 2 yaş ve üzeri herkes girer (yaşı seçilmemiş çocuk da);
@@ -155,7 +156,7 @@ function pxBox(){
    +people().map(x=>{const k=x.key,v=st.pax[k]||{},me=k==='yetiskin-0';
      return '<fieldset class="bk-px"><legend>'+(x.many?x.n+'. ':'')+x.label+'</legend>'
       +(me?'<label class="bk-ck"><input type="checkbox" id="pxBen"'+(st.ben?' checked':'')+'><span>Bu kişi benim</span></label>'
-        +'<p class="bk-me" id="pxMe"><b>'+esc(st.name||'Adın soyadın')+'</b>'+(tc&&acc?'<span>T.C. kimlik no •••••••'+ME_TC.slice(-4)+' · hesabından</span>':'')+'</p>':'')
+        +'<p class="bk-me" id="pxMe"><b>'+esc(st.name||'Adın soyadın')+'</b>'+(tc&&acc?'<span>T.C. kimlik no •••••••'+ME_TC_SON+' · hesabından</span>':'')+'</p>':'')
       +fld(k,'ad','Ad soyad','type="text" autocomplete="'+(me?'name':'off')+'" maxlength="60"')
       +(x.yas?'<div class="bk-f" data-w="'+k+'-yas"><label for="px-'+k+'-yas">Yaşı</label><select id="px-'+k+'-yas" data-px="'+k+'" data-f="yas"><option value="">Seç</option>'
           +Array.from({length:x.yas[1]-x.yas[0]+1},(_,i)=>x.yas[0]+i).map(y=>'<option value="'+y+'"'+(String(v.yas)===String(y)?' selected':'')+'>'+(y?y+' yaş':'1 yaşından küçük')+'</option>').join('')
@@ -214,7 +215,7 @@ function step3(){
   const ci=parseDay(st.date),names=HR?hNames().map(x=>esc(meOn(x.key)?st.name:(st.pax[x.key]||{}).ad)).join('<br>'):'';
   const rows=HR?[['Giriş',ci?longDate(ci)+' · '+HR.giris:st.date],['Çıkış',outDay()?longDate(outDay())+' · '+HR.cikis:''],['Konaklama',st.gece+' gece'],
     ['Oda',st.rc+' × '+RT().ad],['Misafir',guestTxt()+(st.yas.length?' <small>('+st.yas.map(a=>+a?a+' yaş':'bebek').join(', ')+')</small>':'')],['Odada kalan',names],
-    st.varis&&['Varış',st.varis],st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean):[['Tarih',so?st.date:when()],RM&&['Oda',roomTxt(rooms())],so&&['Kalkış',(so.saat?so.saat+' · ':'')+so.yer],
+    st.varis&&['Varış',esc(st.varis)],st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean):[['Tarih',so?st.date:when()],RM&&['Oda',roomTxt(rooms())],so&&['Kalkış',(so.saat?so.saat+' · ':'')+so.yer],
     S.opts.length&&[S.fixed?'Alan':{etkinlik:'Bilet türü',aktivite:'Paket'}[typeKey(p.type)]||'Seçenek',S.opts[st.opt][0]],S.qty&&[S.qty.label,qtyTxt()],
     PP&&['Kişi',qtyTxt()],PP&&['Katılımcılar',people().map(x=>esc(meOn(x.key)?st.name:(st.pax[x.key]||{}).ad)+(x.yas?' <small>('+(+(st.pax[x.key]||{}).yas?(st.pax[x.key]||{}).yas+' yaş':'bebek')+')</small>':'')).join('<br>')],
     PP&&st.note.trim()&&['Özel istek',esc(st.note.trim())]].filter(Boolean);
@@ -288,10 +289,17 @@ const was=history.state&&history.state.s;
 if(was===4){location.replace(ROOT+'planlarim/');return}
 let restored=false;
 try{const d=was&&JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){Object.assign(st,d,{step:was});restored=true;
+  /* yarım kalan rezervasyonun günü bu arada geçmiş ya da kalkmış olabilir: seçilebilir değilse yeniden seçilir */
+  if(!S.dates.some(x=>dateKey(x)===st.date))st.date=S.dates.length===1?dateKey(S.dates[0]):'';
+  if(!S.slots.includes(st.slot))st.slot=S.slots.length===1?S.slots[0]:'';
   if(!S.opts[st.opt])st.opt=S.opts.length?0:-1;st.qty=S.qty?Math.max(S.qty.min,Math.min(S.qty.max,+st.qty||1)):1;
   if(PP&&!(st.ppl&&st.ppl.yetiskin>=1))st.ppl={yetiskin:2,cocuk:0,bebek:0};
   if(HR&&!(st.ms&&st.ms.yetiskin>=1&&Array.isArray(st.yas)&&HR.rooms[st.oda]&&st.gece>=1)){st.ms={yetiskin:2,cocuk:0};st.yas=[];st.oda=0;st.gece=2;st.rc=1}if(!DEP||!DEP.stops[st.stop])st.stop=DEP&&DEP.stops.length===1?0:-1;if(!st.pax)st.pax={};if(!(st.sgl>=0))st.sgl=0}}catch(e){}
 if(!restored)history.replaceState({...history.state,s:1},'');
+/* seçim adımında zorunlu olan bir seçim eksik mi (gün, saat, kalkış noktası) */
+const needPick=()=>!!((S.dates.length&&!st.date)||(S.slots.length&&!st.slot)||(DEP&&st.stop<0));
+/* geri yüklenen rezervasyonda seçim artık geçerli değilse seçim adımından devam edilir */
+if(restored&&st.step>1&&st.step<4&&needPick()){st.step=1;history.replaceState({...history.state,s:1},'')}
 /* aynı adımda kalan geri (açık menüyü kapatan geri tuşu) adımı yeniden çizmez */
 window.addEventListener('popstate',e=>{const s=e.state&&e.state.s||1;if(s===st.step)return;if(st.step===4){location.href=ROOT+'planlarim/';return}st.step=s;draw(false)});
 /* başlıktaki geri: ara adımda bir önceki adıma; ilk adımda geldiğin sayfaya (shell.js data-back);
@@ -344,6 +352,8 @@ function check2(){
 const ME_C={name:'Ayşe Yılmaz',phone:'0532 418 27 63',email:'ayse.yilmaz@mail.com'};
 function fillMe(){for(const k in ME_C)if(!st[k])st[k]=ME_C[k];save()}
 cta.addEventListener('click',e=>{if(!e.target.closest('#ctaGo')||Date.now()<calm)return;
+  /* geri tuşuyla dönülen ara adımda seçim eksikse ödemeye geçilmez */
+  if(st.step>1&&st.step<4&&needPick()){st.step=1;history.replaceState({...history.state,s:1},'');draw(false);return}
   if(st.step===1){
     if(!st.date){show('dateErr','Devam etmek için bir tarih seç.');document.getElementById('bkDate').scrollIntoView({behavior:'smooth',block:'center'});return}
     if(HR){if(st.yas.some(a=>a==='')){show('kyErr','Çocukların yaşını seç; fiyat ve oda düzeni buna göre hesaplanır.');document.getElementById('bkGuest').scrollIntoView({behavior:'smooth',block:'center'});return}

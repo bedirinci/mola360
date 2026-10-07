@@ -4,7 +4,7 @@
 import { renderShell } from './shell.js';
 import { listChats, listFollowing, setMuted, setArchived, deleteChat } from './api.js';
 import { ava } from './cards.js';
-import { makeSheet, toast } from './ui.js';
+import { makeSheet, toast, esc } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
@@ -13,7 +13,7 @@ renderShell('baglan',{nav:false});
 
 const el=document.getElementById('ms'),tabs=document.getElementById('msTabs');
 const chatUrl=k=>ROOT+'sohbet/?k='+encodeURIComponent(k);
-/* son mesajın özeti: kart gönderildiyse ne olduğu */
+/* son mesajın özeti: kart gönderildiyse ne olduğu. Düz metin; satıra esc ile basılır */
 function preview(c){const m=[...c.msgs].reverse().find(x=>!x.day);if(!m)return '';
   const t=m.invite&&m.product?'Birlikte gidelim: '+m.product.title:m.product&&!m.text?m.product.title:m.post&&!m.text?'Bir paylaşım gönderdi':m.text||(m.product?m.product.title:'');
   return (m.who==='b'?'Sen: ':'')+t}
@@ -26,7 +26,7 @@ const act=(a,ic,t,cls)=>'<button type="button" class="sw-b'+(cls?' '+cls:'')+'" 
 const row=c=>(c.request?'<li>':'<li class="ms-sw" data-k="'+c.id+'"><div class="sw-a" aria-hidden="true">'+act('more',IC.more,'Daha fazla')
   +act('mute',c.muted?IC.bell:IC.mute,c.muted?'Sesi aç':'Sessize al')+act('arch',IC.archive,c.archived?'Çıkar':'Arşivle','arch')+'</div>')
   +'<a class="ms-r'+(c.unread?' new':'')+'" href="'+chatUrl(c.id)+'">'+ava(c.user,'m')
-  +'<span class="x"><b>'+c.user.ad+(c.user.onay?VERIFIED:'')+(c.muted?'<i class="ms-mu" role="img" aria-label="Sessize alındı">'+IC.mute+'</i>':'')+'</b><span class="pv">'+preview(c)+'</span></span>'
+  +'<span class="x"><b>'+c.user.ad+(c.user.onay?VERIFIED:'')+(c.muted?'<i class="ms-mu" role="img" aria-label="Sessize alındı">'+IC.mute+'</i>':'')+'</b><span class="pv">'+esc(preview(c))+'</span></span>'
   +'<span class="ms-t"><small>'+c.when+'</small>'+(c.unread?'<i aria-label="'+c.unread+' yeni mesaj">'+c.unread+'</i>':status(c))+'</span></a></li>';
 
 let tab='sohbet',q='';
@@ -44,7 +44,7 @@ function show(){
   document.getElementById('msArH').hidden=tab!=='arsiv';
   const none=document.getElementById('msNone');
   none.hidden=!!list.length;
-  none.innerHTML=q?'<p class="ms-nq">"'+q.replace(/</g,'&lt;')+'" ile eşleşen sohbet yok.</p>'
+  none.innerHTML=q?'<p class="ms-nq">"'+esc(q)+'" ile eşleşen sohbet yok.</p>'
     :tab==='arsiv'?'<div class="empty"><span class="ei">'+IC.archive+'</span><b>Arşivin boş</b><p>Sola kaydırıp "Arşivle"ye dokunduğun sohbetler burada durur.</p></div>'
     :tab==='istek'?'<div class="empty"><span class="ei">'+IC.shield+'</span><b>Mesaj isteğin yok</b><p>Takip etmediğin biri yazınca mesajı burada görürsün. Kabul edene kadar mesajını okuduğunu bilmez.</p></div>'
     :'<div class="empty"><span class="ei">'+IC.send+'</span><b>Henüz mesajın yok</b><p>Bir paylaşımı arkadaşına gönder ya da "Birlikte gidelim" de; sohbetiniz burada başlar.</p><button type="button" class="btn" data-new>Yeni mesaj</button></div>';
@@ -143,7 +143,7 @@ function openMore(k,c,from){mk=k;
       const a=b.dataset.mo,sh=document.getElementById('moSheet'),l=sh.querySelector('.op-l'),cf=sh.querySelector('.op-c');
       if(a==='profil'){location.href=ROOT+'kisi/?u='+encodeURIComponent(msh.u.kul);return}
       if(a==='okunmadi'){msh.close();toast('Çok yakında.','Tamam',()=>{},3000);return}
-      if(a==='bildir'){msh.close();toast('Bildirimin alındı, ekibimiz inceleyecek.','Tamam',()=>{},3500);return}
+      if(a==='bildir'){msh.close();toast('Çok yakında.','Tamam',()=>{},3000);return}
       if(a==='sil'){l.hidden=true;cf.hidden=false;return}
       if(a==='vazgec'){l.hidden=false;cf.hidden=true;return}
       if(a==='evet'){deleteChat(mk);msh.close();openRow=null;show();toast('Sohbet silindi.','Tamam',()=>{},2500)}});

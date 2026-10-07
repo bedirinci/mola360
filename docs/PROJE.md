@@ -397,32 +397,35 @@ tanımlanacaktır.
 
 ## 15. Teknik Mevcut Durum
 
-Mevcut V2 frontend'i kapsamlı bir HTML prototipi niteliğindedir.
-
-Mevcut V2'de HTML, CSS ve JavaScript aynı dosyada bulunmaktadır.
-
-V2'nin sonraki aşamada modülerleştirilmesi planlanmaktadır.
-
-Hedef ayrım:
+V2 frontend'i çok sayfalı, derlemesiz bir arayüz: HTML, CSS ve JavaScript
+ayrı dosyalarda, her sayfa kendi klasöründe, betikler ES modülü. Aşağıdaki
+hedef ayrım 2026-10-03'te uygulandı (Karar kaydı); `components/` klasörü
+yerine bileşenler `js/cards.js` ve `js/shell.js` içinde fonksiyon.
 
 ```
 v2/
-├── index.html
+├── index.html            Keşfet
+├── baglan/ urun/ liste/ rezervasyon/ planlarim/ profil/
+├── gonderi/ kisi/ mesajlar/ sohbet/ bildirimler/
 ├── css/
-│   ├── tokens.css
+│   ├── tokens.css        tasarım tokenları (tek ölçek)
 │   ├── base.css
-│   ├── components.css
-│   ├── discover.css
-│   └── responsive.css
-├── js/
-│   ├── app.js
-│   ├── api.js
-│   ├── navigation.js
-│   ├── discover.js
-│   ├── favorites.js
-│   └── ...
-└── components/
+│   ├── components.css    ortak bileşenler
+│   ├── kesfet.css
+│   ├── sayfalar.css
+│   └── hikaye.css
+└── js/
+    ├── api.js            tek veri katmanı (backend gelince içi değişir)
+    ├── data.js icerik.js ÖRNEK veri
+    ├── shell.js ui.js cards.js …   ortak parçalar
+    └── kesfet.js baglan.js urun.js …   sayfa modülleri
 ```
+
+Veri bugün yalnızca tarayıcıda (örnek veri ve `localStorage`). `api.js`'in
+fonksiyonları senkron; sunucu gelince asenkron olacakları için çağıran
+sayfalar da `await`'e geçecek: "yalnızca içi değişir" sözü veri biçimi için
+geçerli, çağrı biçimi için değil. Bu geçiş backend'in ilk uç noktalarıyla
+birlikte yapılacak.
 
 Framework değişikliği ayrıca değerlendirilecektir; mevcut prototip
 doğrudan başka bir framework'e taşınmadan önce mimari analizi
@@ -1617,3 +1620,70 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Etkilediği alanlar:** `v2/js/hikaye-olustur.js` (yeni), `v2/js/paylas.js` (hikaye modu kaldırıldı, `mode:'hikaye'` oluşturucuyu açar), `v2/js/api.js` (`createStory` yer ve yazı biçimi saklar), `v2/js/hikaye.js` (yer ve rozet kare başına), `v2/css/components.css` (hikaye öğeleri ve oluşturucu; izleyiciyle ortak kart/yazı stilleri buraya taşındı).
 - **Teknik sonuç:** Önce bir fotoğraf ya da video seçilir. Üstte Yazı (düz ya da beyaz zemin), Deneyim, Konum, Değiştir araçları. Deneyim seçilince konum boşsa deneyimin yeri gelir. Mola360'tan gidilen deneyimde "Mola360 ile gitti" görünür. Kayıt bu cihazda (`m360-hikayem`), 24 saat.
 - **UX sonucu:** Ekranda görülen, Bağlan'daki hikaye izleyicisinin aynısıdır (ortada yazı, altında yer, altta "Deneyimi gör" kartı). Yeşil "Hikayene ekle" ile paylaşılır. Gönderi çekmecesi ("Deneyimini paylaş") değişmedi.
+
+### 2026-10-07 — Kapsamlı inceleme: takvim bugüne bağlandı, kullanıcı metni güvenle basılıyor
+
+- **Karar (Bedir: "Websiteyi tamamen analiz et ve bütün sorunları düzelt"):**
+  - Takvim bugünden hesaplanır. Aramadaki "Bu hafta sonu", "Gelecek hafta
+    sonu", bu ayın kalanı ve gelecek ay; tur kalkışları (1 Ekim 2026 haftası
+    için yazıldı, haftanın aynı günlerinde bugünün haftasına taşınır);
+    hesaptaki örnek rezervasyon. Tarihi geçen rezervasyon Yaklaşan'dan
+    Geçmiş'e geçer.
+  - Kullanıcının yazdığı metin (ad, e-posta, not, mesaj, değerlendirme,
+    yorum) her ekranda düz metin olarak görünür.
+  - Profil: Molapuan kartı oturumdaki görünüme göre; deneyim sayısı ve
+    "Mola360 ile gitti" rozeti geçmiş rezervasyonlardan (kural 4).
+  - Uzman aramasındaki "(Taslak: gerçek talep gönderilmedi.)" notu
+    2026-10-04 kararı gereği kalktı; aranma saatleri İstanbul saatiyle.
+    Mesajlar ve sohbetteki "Bildir" artık "Çok yakında." der: gönderilmeyen
+    bir bildirim için "alındı" denmez (§20).
+  - İçerik çelişkileri giderildi: yamaç paraşütünde 110 kg, stand upta 18
+    yaş, Maşukiye Kocaeli'de, "Gelintülü Şelalesi".
+- **Neden:** İnceleme şunları gösterdi. v2 testi sabit tarih yazdığı için
+  7 Ekim'de kırıldı; "Bu hafta sonu" 2 – 4 Ekim'de kalmıştı ve Keşfet'teki
+  "Bu hafta sonu için"in Etkinlik sekmesi boştu; birkaç güne kadar örnek
+  rezervasyon da geçmişte kalacaktı. Rezervasyon özeti, mesaj listesi ve
+  değerlendirme çekmecesi yazılan metni HTML olarak işliyordu (`<b>` gibi
+  bir işaret içeren not ekranı bozuyor, kod çalıştırabiliyordu). Hikayedeki
+  Paylaş, paylaşım desteği olmayan tarayıcıda kopyalamadan "Bağlantı
+  kopyalandı" diyordu. Profil gezgin görünümünde Kâşif kartı,
+  Planlarım'dan farklı deneyim sayısı ve Mola360'tan gidilmemiş iki
+  paylaşımda rozet gösteriyordu. Backend'de `COOKIE_SECURE=false` yazmak
+  çerezi yine Secure yapıyordu.
+- **Etkilediği alanlar:** `v2/js/api.js` (takvim, `WHEN`, rezervasyonlar,
+  rozet), `v2/js/data.js` (sabit `WHEN` kalktı, içerik), `v2/js/icerik.js`,
+  `v2/js/ui.js` (`esc`), `rezervasyon.js`, `mesajlar.js`, `sohbet.js`,
+  `planlarim.js`, `profil.js`, `cards.js`, `help.js`, `shell.js`
+  (`istHour`), `hikaye.js`, yerel kaçış kopyaları kaldırılan `arama.js`,
+  `liste.js`, `takip.js`, `paylas.js`, `hikaye-olustur.js`;
+  `backend/src/config/index.js`; `tests/`, `backend/tests/config.test.js`,
+  `.github/workflows/ci.yml`, `package.json` (playwright);
+  `docs/yeni-surum.md`, `docs/yonetim-sistemi.md`, bu belgenin §15'i.
+- **Teknik sonuç:**
+  - Etikette yıl yok ("Cum 9 Eki"); bugüne en yakın yıl seçilir, yeni
+    rezervasyon ayrıca yılıyla (`at`) saklanır. Geçmiş, örnek geçmiş
+    rezervasyonlar ile bu cihazda bitenlerin birleşimi; rozet ve
+    değerlendirme hatırlatması ondan okunur.
+  - innerHTML'e giren kullanıcı metni `ui.js`'teki tek `esc`'ten geçer;
+    sayfalardaki eksik kopyalar kaldırıldı. `api.js`'teki `hx` aynı kuralı
+    uygular (ui.js'i içe aktaramaz).
+  - Yarım kalan rezervasyon yenilendiğinde gün ya da saat artık seçilemez
+    durumdaysa seçim adımından devam edilir; seçim eksikken ödemeye
+    geçilmez. T.C. kimlik numarasının tamamı kodda tutulmuyor, yalnızca son
+    dört hane.
+  - Takvim dosyası (.ics): otelde giriş saati, saatsiz etkinlikte tüm gün;
+    virgüllü başlık bozulmuyor.
+  - Hikayede Paylaş bağlantıyı gerçekten kopyalar (gönderi kartındaki
+    gibi). Kullanılmayan kod kalktı: `PL`, `ABO`, `CLOCK`, `IC.sliders`,
+    ürünlerdeki `reg` ve tekrar eden `sample` alanları.
+  - Backend: evet/hayır değişkenleri doğru ayrıştırılır, tanınmayan değer
+    açılışı durdurur; üretimde `COOKIE_SECURE` kapatılamaz.
+  - Testler: `tests/v2-takvim.test.js` saati sabitleyerek farklı günlerde
+    (yıl dönümü dahil) takvimi sınar; `tests/v2-tarayici.test.js` bütün
+    sayfaları (130'dan fazla) gerçek Chromium'da açar ve kullanıcı metninin
+    hiçbir ekranda HTML olarak çalışmadığını sınar. CI Chromium'u kurar.
+- **UX sonucu:** Tarihler hep ileride; "Bu hafta sonu" gerçekten bu hafta
+  sonu. Yaşanan bir rezervasyon Geçmiş'te "Paylaş" ve "Değerlendir" ile
+  çıkar; paylaşınca "Mola360 ile gitti" rozeti alır, yani yaşa → paylaş
+  döngüsü kullanıcının kendi rezervasyonuyla da çalışıyor. Görsel tasarım
+  değişmedi.

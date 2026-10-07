@@ -226,14 +226,16 @@ ekliyor.
 
 ## Şu an ne çalışıyor
 
-- 19 göç, 84 tablo, gerçek PostgreSQL (019: sınıflandırma — çoklu
+- 20 göç, 84 tablo, gerçek PostgreSQL (019: sınıflandırma — çoklu
   kategori, tema, koleksiyon, liste sayfası, özellik, para birimi)
 - Kimlik doğrulama: scrypt, sunucu oturumu, hesap kilidi, hız sınırı,
   oturum sonlandırma, şifre değişikliğinde toplu çıkış
 - RBAC: 7 rol, 34 izin, middleware seviyesinde uygulama
 - Denetim kaydı (öncesi/sonrası farkı)
 - Mevcut 7 içeriğin tam göçü, sıfır kayıp
-- 82 backend testi, gerçek veritabanına karşı
+- 88 backend testi, gerçek veritabanına karşı (ortam değişkenlerinin
+  açılıştaki doğrulaması dahil: `COOKIE_SECURE=false` gerçekten kapalı,
+  üretimde kapatılamıyor)
 
 ## Henüz olmayan
 
