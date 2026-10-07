@@ -131,10 +131,13 @@ export function listPopular(type){
 
 /* Koleksiyonlar (Keşfet'te arama kartının ikinci sayfası): seçili kategoride
    yer ya da temaya göre; sayı gerçek, deneyimi olmayan çıkmaz. Görsel temanın
-   kapağı, yoksa koleksiyondaki ilk deneyimin görseli. q: liste adresinin
-   parametreleri (kategori ve süzgeç ayrı) */
+   kapağı, yoksa koleksiyondaki ilk deneyimin görseli. q: liste süzgeci
+   (kategori ve süzgeç ayrı); slug: kendi sayfasının adresi (v2/karadeniz-turlari/,
+   scripts/kategoriler.mjs üretir) */
 export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f])=>{const l=listProducts({type,...f}),th=f.tema&&getTheme(f.tema);
-  return {name,q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:''}}).filter(c=>c.count);
+  return {name,slug:slug(name),q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:''}}).filter(c=>c.count);
+/* Liste adresi bir koleksiyona denk geliyorsa o koleksiyon (başlık kartla aynı: "Karadeniz turları") */
+export const findCollection=(type,{yer='',tema=''}={})=>listCollections(type).find(c=>(c.q.yer||'')===yer&&(c.q.tema||'')===tema)||null;
 
 /* Arama önerileri: önce adı yazılanla başlayan yerler ve deneyimler */
 export function suggest(text,{type}={}){

@@ -411,6 +411,7 @@ v2/
 ├── index.html            Keşfet
 ├── baglan/ urun/ liste/ rezervasyon/ planlarim/ profil/
 ├── gonderi/ kisi/ mesajlar/ sohbet/ bildirimler/
+├── karadeniz-turlari/ …   kategori sayfaları (43; scripts/kategoriler.mjs üretir)
 ├── css/
 │   ├── tokens.css        tasarım tokenları (tek ölçek)
 │   ├── base.css
@@ -1825,3 +1826,60 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Her girişte ve her sekme değişiminde kart kısa bir
   kıpırdamayla kaydırılabildiğini gösterir. Şeridin sonunda son kart da
   baştaki gibi 16 px içeride durur.
+
+### 2026-10-07 — Her kategorinin kendi sayfası ve adresi; bağlantılar HTML'de; kartlar daha dar (Bedir)
+
+- **Karar (Bedir):**
+  - "Burası SEO açısından çok önemli." Bağlantılar arama motorlarına
+    uygun üretilir: her kategorinin kendi sayfası ve okunur adresi var
+    (`v2/karadeniz-turlari/`, `v2/kultur-turlari/` …). Keşfet'teki kartlar
+    bu sayfalara gider.
+  - Kartlar yatayda daha dar, üzerindeki yazı daha küçük.
+  - Kaydırma ipucunun kayması biraz azalır.
+  - `noindex, nofollow` şimdilik kalır.
+- **Neden:**
+  - Kartlar JavaScript ile çiziliyordu ve `liste/?tur=tur&yer=karadeniz`
+    gibi sorgulu adreslere gidiyordu. Sorgulu adres kelime taşımıyor;
+    sayfanın başlığı, açıklaması ve içeriği JavaScript'le geliyordu.
+    JavaScript'i geç ya da hiç çalıştırmayan arama motorları (Türkiye'de
+    Yandex de) bunları görmüyordu.
+  - Kartlar yatayda uzun, yazıları büyük duruyordu.
+- **Etkilediği alanlar:**
+  - 43 kategori sayfası (`v2/<kategori>/index.html`, üretilen);
+  - `v2/index.html` (bütün sekmelerin kategori bağlantıları);
+  - `scripts/kategoriler.mjs` (yeni) ve `package.json` (`npm run kategoriler`);
+  - `v2/js/liste.js`, `v2/js/koleksiyon.js`, `v2/css/kesfet.css`;
+  - `v2/js/api.js` (`slug`, `findCollection`);
+  - testler, `docs/yeni-surum.md`, bu belgenin §15'i.
+- **Teknik sonuç:**
+  - **Kategori sayfası:** Liste sayfasının aynısıdır (`v2/liste/index.html`
+    şablon), seçimi `body data-q`'dan okur. Adres kategorinin adından
+    türer (Türkçe harfler sadeleşir). Kendine ait şunlar HTML'dedir:
+    - `<title>` ("Karadeniz turları — mola360", önce kategori);
+    - açıklama (kategori ve ilk deneyimlerin adları);
+    - asıl adres (`canonical`, yayın adresiyle);
+    - `h1`, tema kapağı ve girişi, deneyim sayısı;
+    - ürün kartları ve bağlantıları.
+    JavaScript sayfayı aynı içerikle yeniden çizer. Süre, kiminle ya da
+    başka bir sekme seçilince adres Liste'ye geçer
+    (`liste/?tema=kultur&tur=tur&sure=hs`).
+  - **Sorgulu adres:** bir kategoriye denk gelen Liste adresinde başlık
+    kategorinin adı, asıl adres kategori sayfası.
+  - **Keşfet:** her sekmenin bölümü ve bağlantıları HTML'de; Turlar açık,
+    ötekiler `hidden`, `koleksiyon.js` seçili sekmeninkini gösterir.
+  - **Üretim:** `npm run kategoriler` kategori sayfalarını ve Keşfet'teki
+    bağlantıları veriden üretir, eskiyen sayfayı siler, sitenin kendi
+    sayfasıyla çakışan adı reddeder. Test diskteki sayfaların veriyle aynı
+    olduğunu denetler; veri değişip üretilmezse CI kırılır.
+  - **Kartlar:** sütun ekranın 1/2,5'i (360 px'te 145'ten 127 px'e), yazı
+    15'ten 13 px'e indi.
+  - **İpucu:** form ve kartlar iki kez 30 px sola gidip döner (40 px'ti);
+    ilk kartların kenarı daha az görünür.
+  - **Açık konu:** v2'nin bütün sayfaları `noindex, nofollow` taşıyor (Bedir:
+    şimdilik kalsın; veriler ÖRNEK). Kaldırılmadıkça arama motorları siteyi
+    dizine eklemez. `robots.txt` ve site haritası yok.
+- **UX sonucu:**
+  - Kartlar daha dar ve sakin; üçüncü sütunun yarısı görünür.
+  - Karttan açılan sayfa kartın adıyla başlar, adres çubuğunda okunur bir
+    adres durur.
+  - Sayfanın içeriği JavaScript yüklenmeden de görünür.

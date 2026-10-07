@@ -4,7 +4,8 @@
    (docs/yeni-surum.md kural 3). Tema seçiliyse sayfa temanın vitrini olur:
    kapak, iki cümlelik giriş, temadaki kategoriler ve paylaşımlar. */
 import { renderShell } from './shell.js';
-import { listProducts, listPosts, getTheme, getDestination, getSearch, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
+import { listProducts, listPosts, getTheme, getDestination, getSearch, findCollection, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
+import { ROOT } from './root.js';
 import { productCard, postMini } from './cards.js';
 import { toast, esc } from './ui.js';
 import { initFavorites, favSync } from './favorites.js';
@@ -12,7 +13,10 @@ import { initFavorites, favSync } from './favorites.js';
 renderShell('kesfet');
 initFavorites();
 
-const q=new URLSearchParams(location.search);
+/* Kategori sayfası (v2/karadeniz-turlari/ gibi, scripts/kategoriler.mjs üretir):
+   seçim sayfanın kendisinde (body data-q); seçim değişince Liste adresine geçilir */
+const PG=document.body.dataset.q!=null;
+const q=new URLSearchParams(location.search||document.body.dataset.q||'');
 let tur=TYPES.some(t=>t[0]===q.get('tur'))?q.get('tur'):'';
 let sure=BUCKETS.some(b=>b[0]===q.get('sure'))?q.get('sure'):'';
 let kimle=WITH.some(w=>w[0]===q.get('kimle'))?q.get('kimle'):'';
@@ -35,8 +39,9 @@ const SURE=BUCKETS; /* süre adları tek yerden (Keşfet ile aynı) */
 const OTHER=['Yakınımda','Fiyat aralığı'];
 const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
-const href=(t,s,k=kimle)=>'?'+[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
-const go=()=>{history.replaceState(history.state,'',href(tur,sure)==='?'?location.pathname:href(tur,sure));draw()};
+const href=(t,s,k=kimle)=>{const x=[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
+  return PG?ROOT+'liste/'+(x?'?'+x:''):'?'+x};
+const go=()=>{const h=href(tur,sure);history.replaceState(history.state,'',h==='?'?location.pathname:h);draw()};
 
 /* aramadan gelen seçimler (yer, metin, tarih) en başta; dokununca kalkar */
 function filters(){
@@ -51,9 +56,11 @@ function draw(){
   const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
   const lead=D?D.name:ara?'“'+ara+'”':'';
-  const title=th?th.name:lead||(T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
+  /* Keşfet'teki kategori kartından gelindiyse başlık kartın adı (Karadeniz turları) */
+  const K=tur&&!ara?findCollection(tur,{yer,tema:th?th.id:''}):null;
+  const title=K?K.name:th?th.name:lead||(T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
   /* temada seçimler filtre satırında görünür; alt satır temanın girişi */
-  const rest=th?th.intro:[lead&&th&&th.name,(lead||th)&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
+  const rest=th?th.intro:[lead&&th&&th.name,(lead||th)&&!K&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
   document.getElementById('lsTitle').textContent=title;
   const sub=document.getElementById('lsSub');sub.textContent=rest;sub.hidden=!rest;
   document.getElementById('cats').innerHTML='<a href="'+href('',sure)+'"'+(tur?'':' aria-current="true"')+'>Tümü</a>'
@@ -74,9 +81,12 @@ function draw(){
     +'<div class="rail">'+ps.map(postMini).join('')+'</div></section>');
   el.innerHTML=list.length?cards.join('')
     :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>'+(other?'Aynı seçimle başka kategorilerde '+other+' deneyim var.':'Filtreleri kaldırmayı ya da başka bir kategoriye bakmayı dene.')+'</p>'
-     +(other?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&')+'">Filtreleri kaldır</a>')+'</div>';
+     +(other?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="'+(PG?ROOT+'liste/':'')+'?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&')+'">Filtreleri kaldır</a>')+'</div>';
   favSync();
-  document.title='mola360 — '+title;
+  /* kategoriye denk gelen sayfa: başlıkta önce kategori, asıl adres kategori sayfası (arama motorları için) */
+  document.title=K?K.name+' — mola360':'mola360 — '+title;
+  let cn=document.querySelector('link[rel=canonical]');
+  if(K){if(!cn){cn=document.createElement('link');cn.rel='canonical';document.head.appendChild(cn)}cn.href=ROOT+K.slug+'/'}else if(cn)cn.remove();
 }
 document.getElementById('filters').addEventListener('click',e=>{
   const o=e.target.closest('[data-off]');
