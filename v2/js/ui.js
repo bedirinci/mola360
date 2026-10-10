@@ -15,6 +15,10 @@ export const scoreOrNew=(s,c)=>s&&c?sc(s,c):'<span class="score new"><b>Yeni</b>
 
 let toastT;
 export function toast(msg,act,fn,ms){const el=document.getElementById('toast');el.querySelector('span').textContent=msg;const b=el.querySelector('button');b.textContent=act;b.onclick=()=>{fn();el.classList.remove('show')};
+  /* sayfanın altındaki sabit çubuğun (alt menü, fiyat, yanıt kutusu) hemen üstünde; yoksa ekranın altında */
+  const vh=window.visualViewport?visualViewport.height+visualViewport.offsetTop:innerHeight;let top=vh;
+  document.querySelectorAll('.dock,.cta-bar,.cm-in,.ms-in,.ms-req').forEach(b=>{const r=b.getBoundingClientRect();if(r.height&&r.bottom>vh-40&&r.top<top)top=r.top});
+  el.style.bottom=top<vh?(innerHeight-top+12)+'px':'calc(16px + env(safe-area-inset-bottom,0px))';
   el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),ms||3500)}
 
 /* kaydırılabilir alanlar: fareyle sürükleme ve oklar */

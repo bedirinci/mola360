@@ -498,18 +498,23 @@ main#urun .box:first-of-type{margin-top:24px}
 .ms-r .pv{display:block;margin-top:2px;font-size:var(--fs-md);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ms-r.new b{font-weight:var(--fw-bold)}
 .ms-r.new .pv{color:var(--ink);font-weight:var(--fw-semi)}
-.ms-t{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px;align-self:stretch;justify-content:center}
-.ms-t small{font-size:var(--fs-sm);color:var(--mute);white-space:nowrap}
-.ms-r.new .ms-t small{color:var(--navy);font-weight:var(--fw-semi)}
-.ms-t i{min-width:20px;height:20px;padding:0 6px;border-radius:var(--r-pill);display:grid;place-items:center;background:var(--navy);color:#fff;font-style:normal;font-size:var(--fs-xs);font-weight:var(--fw-bold)}
-.ms-mu{display:inline-grid;margin-left:5px;color:var(--mute)}
-.ms-mu svg{width:14px;height:14px;stroke-width:2}
+.ms-r .l1,.ms-r .l2{display:flex;align-items:center;gap:10px;min-width:0}
+.ms-r .l1 b{flex:1;min-width:0;overflow:hidden}
+.ms-r .l1 small{flex:none;font-size:var(--fs-sm);color:var(--mute);white-space:nowrap}
+.ms-r.new .l1 small{color:var(--navy);font-weight:var(--fw-semi)}
+.ms-r .l2{margin-top:2px;min-height:20px}
+.ms-r .l2 .pv{flex:1;min-width:0;margin-top:0}
+.ms-r .l2>i,.ms-r .l2>.ms-st{flex:none}
+.ms-r .l2>i{min-width:20px;height:20px;padding:0 6px;border-radius:var(--r-pill);display:grid;place-items:center;background:var(--navy);color:#fff;font-style:normal;font-size:var(--fs-xs);font-weight:var(--fw-bold)}
+.ms-mu{flex:none;display:inline-grid;margin-left:6px;color:var(--mute)}
+.ms-mu svg{width:15px;height:15px;stroke-width:2}
 /* son mesajın durumu: gönderildi (halka), iletildi (dolu gri), görüldü (minik avatar) */
 .ms-st{display:grid;place-items:center;width:18px;height:18px;color:var(--mute)}
 .ms-st svg{width:18px;height:18px;stroke-width:1.8}
 .ms-st.dl svg circle{fill:#9AA1B5;stroke:#9AA1B5}
 .ms-st.dl svg path{stroke:#fff;stroke-width:2.2}
-.ms-st.seen .ava.xs{flex:none;width:26px;height:26px;font-size:var(--fs-xs);transform:scale(.62);box-shadow:none}
+.ms-st.seen{position:relative}
+.ms-st.seen .ava.xs{flex:none;width:26px;height:26px;font-size:var(--fs-xs);position:absolute;top:-4px;right:0;transform:scale(.69);transform-origin:right center;box-shadow:none}
 /* sola kaydırma: satırın altında üç işlem */
 .ms-sw{position:relative;overflow:hidden}
 .ms-sw .ms-r{position:relative;z-index:1;background:var(--page);touch-action:pan-y;will-change:transform}
@@ -538,8 +543,11 @@ main#urun .box:first-of-type{margin-top:24px}
 .dp-l>li>button>svg:last-child{color:var(--navy)}
 
 /* Sohbet */
-.ch-pg{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
-.ch-top{position:sticky;top:0;z-index:12;border-radius:0;padding-bottom:10px}
+/* Sohbet ekranı kaymaz: gövde görünen alana sabit (klavye açıkken de), yalnızca mesajlar kayar */
+body.ch-pg{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100dvh);min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+.ch-pg>#ch{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+.ch-pg>.ms-in,.ch-pg>.ms-req{position:static;transform:none;flex:none}
+.ch-top{flex:none;position:relative;z-index:12;border-radius:0;padding-bottom:10px}
 .ch-who{min-width:0}
 .ch-who a{display:flex;align-items:center;gap:10px;min-width:0;color:#fff}
 .ch-who .ava.s{width:36px;height:36px;font-size:var(--fs-xs);box-shadow:0 0 0 1.5px rgba(255,255,255,.85)}
@@ -568,7 +576,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .ms-m.they:not(.last) .bb{border-bottom-left-radius:var(--r-xs)}
 .ms-m.me:not(.first) .bb{border-top-right-radius:var(--r-xs)}
 .ms-m.me:not(.last) .bb{border-bottom-right-radius:var(--r-xs)}
-.ms-seen{text-align:right;margin:2px 6px 0;font-size:var(--fs-xs);color:var(--mute);list-style:none}
 /* deneyim kartı mesajda: ince beyaz kart */
 .ms-pc{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;width:248px;max-width:100%;padding:8px;border-radius:var(--r-lg);background:var(--card);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink)}
 .ms-pi{width:56px;height:56px;border-radius:var(--r-sm)}
@@ -604,7 +611,6 @@ main#urun .box:first-of-type{margin-top:24px}
 .ms-req p b{color:var(--ink);font-weight:var(--fw-bold)}
 .ms-req-b{display:flex;gap:8px;margin-top:12px}
 .ms-req-b .btn{flex:1;justify-content:center;min-height:44px;font-size:var(--fs-base)}
-.ch-pg:has(.ms-req:not([hidden])){padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 /* sohbet seçenekleri */
 .op-l{list-style:none;margin:4px -16px 0;padding:0}
 .op-l button{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;padding:0 16px;font-size:var(--fs-base);text-align:left}

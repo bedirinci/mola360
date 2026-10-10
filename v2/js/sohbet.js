@@ -31,20 +31,23 @@ const pst=x=>'<a class="ms-ps" href="'+postUrl(x.id)+'"><span class="ms-ph">'+av
 /* mesajlar: aynı kişinin art arda gelenleri bir grup; grubun sonunda saat,
    karşı tarafınkinde avatar */
 function render(){
-  const l=chat.msgs,out=[];
+  const l=chat.msgs,out=[],li=l.map(m=>!m.day).lastIndexOf(true);
+  const st=!chat.request&&{gonderildi:'Gönderildi',iletildi:'İletildi',goruldu:'Görüldü'}[chat.status];
   l.forEach((m,i)=>{
     if(m.day){out.push('<li class="ms-day"><span>'+m.day+'</span></li>');return}
     const nx=l[i+1],last=!nx||nx.day||nx.who!==m.who,pv=l[i-1],first=!pv||pv.day||pv.who!==m.who;
     const body=(m.product?pcard(m.product,m.invite):'')+(m.post?pst(m.post):'')+(m.text?'<p class="bb">'+esc(m.text)+'</p>':'');
     out.push('<li class="ms-m '+(m.who==='b'?'me':'they')+(first?' first':'')+(last?' last':'')+'">'
       +(m.who==='o'?(last?ava(chat.user,'s'):'<span class="ava-sp"></span>'):'')
-      +'<div class="ms-b">'+body+(last?'<small>'+m.at+'</small>':'')+'</div></li>');
+      +'<div class="ms-b">'+body+(last?'<small>'+m.at+(i===li&&m.who==='b'&&st?' · '+st:'')+'</small>':'')+'</div></li>');
   });
-  const lm=[...l].reverse().find(m=>!m.day);
-  if(lm&&lm.who==='b'&&!chat.request)out.push('<li class="ms-seen">'+({gonderildi:'Gönderildi',iletildi:'İletildi',goruldu:'Görüldü'}[chat.status]||'')+'</li>');
   main.innerHTML='<ul class="ms-c-l" id="chL">'+('<li class="ms-start">'+ava(chat.user,'l')+'<b>'+chat.user.ad+(chat.user.onay?VERIFIED:'')+'</b><small>@'+chat.user.kul+'</small><a class="btn ghost" href="'+userUrl(chat.user)+'">Profili gör</a></li>')+out.join('')+'</ul>';
 }
-const toEnd=smooth=>requestAnimationFrame(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:smooth?'smooth':'auto'}));
+/* sayfa kaymaz: gövde görünen alan kadar (klavye açıkken de), yalnızca mesajlar kayar */
+const fit=()=>{const v=window.visualViewport,b=document.body.style;if(!v)return;const end=main.scrollHeight-main.scrollTop-main.clientHeight<40;
+  b.setProperty('--vvh',v.height+'px');b.setProperty('--vvt',v.offsetTop+'px');if(end)main.scrollTop=main.scrollHeight};
+if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',fit);fit()}
+const toEnd=smooth=>requestAnimationFrame(()=>main.scrollTo({top:main.scrollHeight,behavior:smooth?'smooth':'auto'}));
 
 if(getLevel()==='guest'){
   $('chWho').innerHTML='<h1 class="bk-h">Mesajlar</h1>';
@@ -65,14 +68,14 @@ if(getLevel()==='guest'){
     $('chReq').innerHTML='<p><b>'+u.ad+' takip ettiklerin arasında değil.</b> Kabul edersen birbirinize yazabilirsiniz. Kabul edene kadar mesajı okuduğunu bilmez.</p>'
       +'<div class="ms-req-b"><button type="button" class="btn ghost" data-req="sil">Sil</button><button type="button" class="btn green" data-req="kabul">Kabul et</button></div>';
     $('chReq').addEventListener('click',e=>{const b=e.target.closest('[data-req]');if(!b)return;
-      if(b.dataset.req==='kabul'){acceptChat(k);markRead(k);chat=getChat(k);$('chReq').hidden=true;form.hidden=false;render();toEnd();txt.focus()}
+      if(b.dataset.req==='kabul'){acceptChat(k);markRead(k);chat=getChat(k);$('chReq').hidden=true;form.hidden=false;render();toEnd();txt.focus({preventScroll:true})}
       else{deleteChat(k);toast('İstek silindi.','Tamam',()=>{},2500);setTimeout(()=>location.replace(ROOT+'mesajlar/#istekler'),600)}});
   }else{markRead(k);form.hidden=false}
   toEnd();
 
   txt.addEventListener('input',()=>{go.disabled=!txt.value.trim()});
   form.addEventListener('submit',e=>{e.preventDefault();if(!sendMessage(k,{text:txt.value}))return;
-    txt.value='';go.disabled=true;chat=getChat(k);render();toEnd(true);txt.focus()});
+    txt.value='';go.disabled=true;chat=getChat(k);render();toEnd(true);txt.focus({preventScroll:true})});
 
   /* + : deneyim gönder (favoriler, son baktıkların, sonra çok sevilenler) */
   let dsh=null;
