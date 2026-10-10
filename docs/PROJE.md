@@ -2271,10 +2271,33 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
   `.ls-grid` tek sütun), `components.css` (liste kartı, puan kutusu),
   `cards.js` (puan `<b>`, sözcüğü `<em>`; yer satırı `.vk-pl`, çipler
-  `.vk-ch`, ok `.vk-go` yalnızca büyük kartta; `.vk-fc` ücretsiz iptal
+  `.vk-ch` yalnızca büyük kartta (yeşil ok 2026-10-10 akşam kaldırıldı); `.vk-fc` ücretsiz iptal
   ve `.vk-p em` Kâşif fiyatı liste ve büyük kartta; Yakınımda sıralamasında
   uzaklık yer satırında; otelde tarih çipi yok, SEO
   sayfası tarihsiz kalır);
   görünüm düğmesinin ikonu büyük kart.
 - **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
   çıkarır, liste karşılaştırmayı kolaylaştırır.
+
+### 2026-10-10 — Ayrıntılı Filtreler çekmecesi; büyük kartta yeşil ok yok
+
+- **Karar:** Liste ve şehir sayfalarındaki Filtreler çekmecesi ilk
+  sürümün süzgeçlerini örnek alır: Fiyat aralığı, Süre, Kiminle, Puan
+  (9, 8,5, 8 ve üzeri), Özellikler (kültür, doğa, deniz manzaralı…),
+  Ulaşım, Kalkış şehri (turlar), Fırsatlar (indirimli). Her seçeneğin
+  yanında seçilirse kaç deneyim kalacağı yazar; boş kalan ya da hiçbir
+  şeyi daraltmayan seçenek, seçeneği kalmayan grup gösterilmez; gruplar
+  ince çizgiyle ayrılır. Büyük kartta fiyatın yanındaki yeşil ok kalktı.
+  Büyük kartın görseli iki yandan eşit boşluklu.
+- **Neden:** Bedir filtreleri daha ayrıntılı ve kaliteli istedi, ilk
+  sürümü örnek gösterdi; yeşil oku istemedi; iPhone'da büyük kartın
+  görseli kartın sağ kenarına dayanıyordu.
+- **Etkilediği alanlar:** bütün liste sayfaları ve şehir sayfaları.
+- **Teknik sonuç:** `liste.js` `EX` (ek filtre tanımları: seçenekler
+  listeden, yüklem), taslak sonucu `fin()`; ek filtreler adreste yok (fiyat
+  gibi yalnızca bu açılışta), seçili olanlar listenin üstünde × çipi ve
+  Filtreler sayısında. Kalkış adı ürünün yer satırından. `sayfalar.css`
+  `.ls-grid .vk::before` genişliği açık yazılı (Safari en-boy oranlı
+  ::before'da sağ boşluğu yok sayıyordu).
+- **UX sonucu:** Kullanıcı seçmeden önce kaç sonuç kalacağını görür,
+  sıfır sonuçlu seçim yapamaz.
