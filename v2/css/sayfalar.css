@@ -831,11 +831,7 @@ body.ch-pg{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100
 .u-amen{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:12px}
 .u-amen li{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-sm);line-height:var(--lh-snug)}
 .u-amen svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--navy)}
-/* V1'den taşınan ürün ayrıntıları: güven rozetleri, öne çıkanlar, takvim, menü, konaklama, ekstralar, yakındaki yerler, saatler */
-.u-trust{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 16px 0;padding:0}
-.u-trust button{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 10px;border-radius:var(--r-md);background:var(--soft);text-align:left;font-size:var(--fs-sm);font-weight:var(--fw-semi);line-height:var(--lh-snug);color:var(--ink)}
-.u-trust svg{width:18px;height:18px;flex:none;color:var(--navy);stroke-width:1.8}
-.u-trust li:last-child svg{fill:var(--gold);color:var(--gold);stroke:none}
+/* V1'den taşınan ürün ayrıntıları: öne çıkanlar, takvim, konaklama, ekstralar, yakındaki yerler, saatler */
 .box .u-h3{font-size:var(--fs-h3);font-weight:var(--fw-bold);line-height:var(--lh-snug);margin-top:16px}
 .u-one{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:0}
 .u-one li{display:flex;gap:10px;align-items:flex-start;font-size:var(--fs-md);line-height:var(--lh-body)}
@@ -851,10 +847,6 @@ body.ch-pg{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100
 .u-cal .d b{font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy);white-space:nowrap}
 .u-cal div b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold);line-height:var(--lh-snug)}
 .u-cal div span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:1px}
-.u-menu{margin-top:2px}
-.u-menu div{padding:8px 0}
-.u-menu dt{font-size:var(--fs-md);font-weight:var(--fw-medium)}
-.u-menu dd{font-size:var(--fs-md)}
 .u-dur{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:3px;font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--mute);line-height:var(--lh-ui)}
 .u-dur svg{width:14px;height:14px;margin-right:4px;vertical-align:-2px;display:inline}
 .u-dur em{font-style:normal;font-size:var(--fs-xs);font-weight:var(--fw-semi);padding:2px 8px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink)}

@@ -5,7 +5,7 @@
    price, unit, score, count. */
 import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, OZ, THEMES, DESTS, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM, KALKIS, OTEL, SEANS } from './icerik.js';
-import { ONE, YANINA, EK as EKSTRA, KONAK, DURAK, DONUS, ONEMLI, SART, HAVA, KURAL, ULASIM, YAGMUR, TAKVIM, KONUM, PANSIYON, ODADA, SAAT, MENU } from './ayrinti.js';
+import { ONE, YANINA, EK as EKSTRA, KONAK, DURAK, DONUS, ONEMLI, SART, HAVA, KURAL, ULASIM, YAGMUR, TAKVIM, KONUM, PANSIYON, ODADA, SAAT } from './ayrinti.js';
 import { SEHIRLER, SAYFA, GENEL, TUR_YOL, OZ_AD, ESIK } from './sehirler.js';
 import { ROOT } from './root.js';
 
@@ -527,7 +527,7 @@ export function productDetails(p){
     onemli:[...(ONEMLI[p.title]||[]),...(t==='tur'?['Tur en az 6 kişiyle yapılır. Katılım yetmezse en geç 48 saat önce haber verilir; ödemenin tamamı iade edilir ya da başka bir tarihe aktarılır.']:[])],
     sart:SART[p.title]||[],kural:KURAL[p.title]||[],ulasim:ULASIM[p.title]||[],yagmur:YAGMUR[p.title]||'',hava:HAVA[p.title]||'',
     konak:KONAK[p.title]||null,durak:DURAK[p.title]||[],donus:DONUS[p.title]||donus(t,d.program),konum:KONUM[p.title]||null,
-    takvim:TAKVIM[p.title]||[],saat:SAAT[p.title]||null,menu:MENU[p.title]||[],
+    takvim:TAKVIM[p.title]||[],saat:SAAT[p.title]||null,
     reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[],
     /* türe göre ayrıntılı puanlar (değerlendirme formundakiyle aynı başlıklar), ÖRNEK: genel puandan türetilir */
     aspects:p.count?(ALT[t]||ALT.mekan).map((k,i)=>[k,Math.min(10,Math.max(1,p.score+[.2,-.1,-.3,0][i]))]):[]};

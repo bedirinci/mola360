@@ -2307,10 +2307,9 @@ güncellenecek yaşayan proje dokümanıdır.
 
 - **Karar:** İlk sürümde olup v2'de eksik kalan 18 ürün içeriği alanı
   eklendi (Bedir seçti; inceleme `docs/v1-urun-icerigi.md`, proje
-  dosyalarında). Bütün türler: Öne çıkanlar (Hakkında içinde), güven
-  rozetleri (Anında onay, tura göre %20 kapora / Mobil bilet / Otelde
-  ödeme yok / Masan ayrılır, 3 taksit, Molapuan; dokununca açıklama),
-  Ekstralar (ücretli ek hizmetler). Tur: Konaklama kutusu (otel, yıldız,
+  dosyalarında). Bütün türler: Öne çıkanlar (Hakkında içinde),
+  Ekstralar (ücretli ek hizmetler). Güven rozetleri denendi, Bedir
+  kaldırttı. Tur: Konaklama kutusu (otel, yıldız,
   gece, pansiyon), program duraklarında süre ve rozet (Ücretli, Yemek
   dahil…), kalkış günleri ("Pazartesi ve Cuma kalkışlı"), dönüş satırı,
   önemli koşullar (minimum katılım dahil), Yanına al, Programı indir
@@ -2318,8 +2317,8 @@ güncellenecek yaşayan proje dokümanıdır.
   "Odada / Tesiste". Etkinlik: kurallar, nasıl gidilir, yağmur yağarsa,
   öğrenci bileti, festival ve konser serisi için program takvimi.
   Aktivite: katılım şartları, hava koşulu iadesi. Mekân: bugün açık mı,
-  çalışma saatleri, fiyat seviyesi (₺₺₺), menü, minimum harcamanın
-  harcamadan düşmesi.
+  çalışma saatleri, fiyat seviyesi (₺₺₺), minimum harcamanın harcamadan
+  düşmesi. Mekân menüsü denendi, Bedir kaldırttı.
 - **Neden:** Bedir ilk sürümün ürün içeriğini inceletti ve listedeki
   maddeleri seçti. Künye kartını genişletme maddesini seçmedi.
 - **Etkilediği alanlar:** ürün sayfası, rezervasyon (Ekstralar,

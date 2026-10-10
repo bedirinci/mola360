@@ -1,6 +1,6 @@
 /* Ürün sayfasının ayrıntı içeriği (ÖRNEK): öne çıkanlar, yanına al, ek hizmetler,
    önemli koşullar, katılım şartları, kurallar, konum ve yakındaki yerler, pansiyon,
-   çalışma saatleri, menü… Anahtar ürün adıdır. Gerçekte işletmeden gelecek.
+   çalışma saatleri… Anahtar ürün adıdır. Gerçekte işletmeden gelecek.
    Yazılmamış alan ürün sayfasında görünmez ya da api.js türe göre varsayılan verir. */
 
 /* Öne çıkanlar: "neden bu deneyim", 3 kısa madde */
@@ -316,18 +316,3 @@ export const SAAT={
  'Alsancak Akustik Sahne':{h:[null,['20:00','01:00'],['20:00','01:00'],['20:00','01:00'],['20:00','02:00'],['20:00','02:00'],['20:00','01:00']],f:'₺₺'},
  'Kıbrıs Şehitleri Caz Bar':{h:[null,['20:00','02:00'],['20:00','02:00'],['20:00','02:00'],['20:00','03:00'],['20:00','03:00'],['20:00','02:00']],f:'₺₺₺'},
  'Balçova Termal Hamam':{h:H7('08:00','22:00'),f:'₺'}};
-
-/* Mekân: menü [bölüm, [[ad, fiyat]]] */
-export const MENU={
- 'Kemeraltı Han Kahvesi':[['Kahve',[['Közde Türk kahvesi',120],['Damla sakızlı kahve',140],['Dibek kahvesi',130]]],['Kahvaltı',[['Han kahvaltısı',420],['Menemen',220],['Boyoz ve yumurta',180]]]],
- 'Alaçatı Taş Avlu Kahvaltı':[['Kahvaltı',[['Serpme kahvaltı · kişi',750],['Ege otlu kahvaltı · 2 kişi',1400]]],['Ekstra',[['Otlu gözleme',260],['Sakızlı muhallebi',190]]]],
- 'Bostanlı Sahil Kahvaltısı':[['Kahvaltı',[['Serpme kahvaltı · kişi',560],['Gözleme ve çay',240]]],['Sıcak',[['Sucuklu yumurta',230],['Pişi tabağı',210]]]],
- 'Bornova Köşk Bahçesi':[['Kahvaltı',[['Köşk kahvaltısı',620],['Brunch tabağı',480]]],['Tatlı',[['Bornova lokması',160],['Köşk keki',140]]]],
- 'Sığacık Liman Balıkçısı':[['Başlangıç',[['Deniz börülcesi',260],['Ahtapot salata',420],['Balık köftesi',340]]],['Ana yemek',[['Günün balığı (kg)',2200],['Kalamar tava',480]]]],
- 'Urla İskele Balıkçısı':[['Başlangıç',[['Urla enginarı',320],['Ahtapot ızgara',780],['Levrek marin',380]]],['Ana yemek',[['Günün balığı (kg)',2400],['Karides güveç',560]]]],
- 'Çeşme Liman Meyhanesi':[['Soğuk meze',[['Girit ezmesi',220],['Atom',180],['Fava',200]]],['Ara sıcak',[['Paçanga böreği',280],['Kalamar tava',460]]]],
- 'Asansör Teras Restoran':[['Başlangıç',[['Ege otları tabağı',340],['Levrek carpaccio',420]]],['Ana yemek',[['Kuzu incik',890],['Deniz mahsullü risotto',720]]],['Tatlı',[['Sakızlı muhallebi',220],['Fırın sütlaç',200]]]],
- 'Kordon Meyhanesi':[['Soğuk meze',[['Humus',190],['Haydari',170],['Deniz börülcesi',240]]],['Ara sıcak',[['Arnavut ciğeri',380],['Midye tava',360]]]],
- 'Kum Beach Club':[['Yemek',[['Ahtapot ızgara',780],['Deniz mahsullü makarna',640],['Kulüp sandviç',420]]],['İçecek',[['Ev limonatası',180],['Kokteyl',420]]]],
- 'Alsancak Akustik Sahne':[['Tabaklar',[['Peynir tabağı',380],['Patates kroket',240]]],['İçecek',[['Yerel bira',190],['Kadeh şarap',260]]]],
- 'Kıbrıs Şehitleri Caz Bar':[['Tabaklar',[['Bruschetta tabağı',280],['Peynir ve şarküteri',460]]],['Kokteyl',[['Negroni',420],['Caz bar imza kokteyli',460]]]]};
