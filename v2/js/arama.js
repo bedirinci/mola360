@@ -189,7 +189,9 @@ $('whoList').addEventListener('click',e=>{const b=e.target.closest('[data-who]')
 function fit(){WHO[st.tur].forEach(([k,,,lo,hi])=>{n[k]=Math.max(lo,Math.min(hi,n[k]))});
   if(st.tur==='otel')n.o=Math.max(n.o,Math.ceil(n.y/2));
   if(st.tur==='tur')n.c=Math.min(n.c,9-n.y)}
-function pick(t){st.tur=t.dataset.tab;fit();fields();remember();if(onTab)onTab(st.tur)}
+/* sekme değişince önceki sekmenin popüler aramasından gelen seçim kalkar (Bedir) */
+function pick(t){const P=listPopular(st.tur);if(P.some(x=>x.yer?st.yer===x.yer:!st.yer&&st.ara===x.ara)&&(st.yer||st.ara)){st.yer='';st.ara=''}
+  st.tur=t.dataset.tab;fit();fields();remember();if(onTab)onTab(st.tur)}
 const tabs=document.querySelector('.tabs');
 tabs.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)pick(t)});
 /* sekme kalıbı: oklar, Home ve End sekmeler arasında gezer ve seçer */
