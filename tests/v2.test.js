@@ -121,129 +121,174 @@ describe('v2', () => {
       expect(p.dates.some(x => { const d = api.parseDay(x[1]); return d >= a && d <= b; }), p.title).toBe(true));
   });
 
-  it('kategori bağlantıları sayfanın HTML\'inde ve veriyle aynı (arama motorları için)', async () => {
-    const { kategoriHtml, kategoriSayfalari, uretilmis, BAS, SON } = await import('../scripts/kategoriler.mjs');
-    const s = oku(join(V2, 'index.html')), a = s.indexOf(BAS), b = s.indexOf(SON);
-    expect(a > 0 && b > a, 'v2/index.html kategori işaretleri').toBe(true);
-    expect(s.slice(a + BAS.length, b).trim(), 'veri değişti: npm run kategoriler').toBe((await kategoriHtml()).trim());
-    /* her kategorinin kendi sayfası (v2/karadeniz-turlari/): diskteki veriyle aynı, eskiyen yok */
-    const sayfa = await kategoriSayfalari();
-    expect(uretilmis().sort(), 'npm run kategoriler').toEqual(sayfa.map(x => x.slug).sort());
-    sayfa.forEach(({ slug, html }) => expect(oku(join(V2, slug, 'index.html')) === html, slug + ': npm run kategoriler').toBe(true));
-    /* sayfada başlık, açıklama, asıl adres, ana başlık ve ürün bağlantıları HTML'de */
-    const k = oku(join(V2, 'karadeniz-turlari', 'index.html'));
-    expect(k).toContain('<title>Karadeniz turları — fiyatlar ve tarihler | mola360</title>');
-    expect(k).toContain('<link rel="canonical" href="https://bedirinci.github.io/mola360/v2/karadeniz-turlari/">');
-    expect(k).toContain('<h1 id="lsTitle">Karadeniz turları</h1>');
-    expect(k).toContain('href="../urun/?id=karadeniz-yaylalari-turu"');
-    expect(s).toContain('<a class="kl" href="karadeniz-turlari/"');
-    /* site haritasında Keşfet ve bütün kategori sayfaları */
-    const { siteHaritasi, SITE } = await import('../scripts/kategoriler.mjs');
-    expect(oku(join(V2, 'sitemap.xml')), 'npm run kategoriler').toBe(await siteHaritasi());
-    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]))
-      .toEqual([SITE, ...sayfa.map(x => SITE + x.slug + '/')]);
-    /* her sekmenin bölümü var; yalnızca ilki (Turlar) açık */
+  it('SEO sayfaları diskte üreticiyle aynı; Keşfet bağları, site haritası ve robots veriyle aynı', async () => {
+    const seo = await import('../scripts/seo.mjs');
+    const s = oku(join(V2, 'index.html'));
+    for (const [a, b, f, ad] of [[seo.BAS, seo.SON, seo.kategoriHtml, 'kategori'], [seo.SBAS, seo.SSON, seo.sehirHtml, 'şehir']]) {
+      const i = s.indexOf(a), j = s.indexOf(b);
+      expect(i > 0 && j > i, 'v2/index.html ' + ad + ' işaretleri').toBe(true);
+      expect(s.slice(i + a.length, j).trim(), ad + ': npm run seo').toBe((await f()).trim());
+    }
+    /* üretilen her sayfa diskte aynı; eskiyen ya da elle eklenmiş üretilmiş sayfa yok */
+    const sayfa = await seo.seoSayfalari();
+    expect(seo.uretilmis().sort(), 'npm run seo').toEqual(sayfa.map(x => x.yol).sort());
+    sayfa.forEach(({ yol, html }) => expect(oku(join(V2, yol, 'index.html')) === html, yol + ': npm run seo').toBe(true));
+    /* site haritası: Keşfet, bütün sayfalar ve deneyimler */
+    expect(oku(join(V2, 'sitemap.xml')), 'npm run seo').toBe(await seo.siteHaritasi());
+    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1])).toEqual([seo.SITE, ...sayfa.map(x => seo.SITE + x.yol)]);
+    /* robots: her sayfa tek politikaya uyar (YAYIN kapalıyken hepsi kapalı) */
+    seo.sayfaDosyalari().forEach(f => { const h = oku(join(V2, f)); expect(h, f).toContain('<meta name="robots" content="' + seo.robotsOf(f, h.includes(seo.IZ)) + '">'); });
+    /* her sekmenin koleksiyon bölümü var; yalnızca ilki (Turlar) açık */
     const api = await import('../v2/js/api.js');
     expect([...s.matchAll(/class="koll-g" data-tur="([a-z]+)"[^>]*?( hidden)?>/g)].map(m => m[1] + (m[2] ? '-' : '+')))
       .toEqual(api.TYPES.map(([t], i) => t + (i ? '-' : '+')));
+    expect(s).toContain('<a class="kl" href="izmir/mekanlar/kahvalti/"');
+    expect(s).toContain('<a href="izmir/" class="all">Tümü →</a>');
   });
 
-  it('kategori sayfaları arama motoruna hazır: başlık, açıklama, önizleme, yapısal veri, sayfa yolu, SSS', async () => {
-    const { kategoriSayfalari, SITE } = await import('../scripts/kategoriler.mjs');
-    const api = await import('../v2/js/api.js');
+  it('sayfa ağacı: eşik, kapı sayfası yok, ad ve girişler kendine özgü; deneyim adresleri doğru ağaçta', async () => {
+    const api = await import('../v2/js/api.js'), S = await import('../v2/js/sehirler.js');
+    const tum = api.listPages(), alt = tum.filter(pg => pg.kind !== 'sehir');
+    /* her sayfa en az ESIK deneyimle; iki sayfa birebir aynı deneyimleri göstermez (docs/seo.md) */
+    alt.forEach(pg => expect(pg.count, pg.path).toBeGreaterThanOrEqual(S.ESIK));
+    const kume = alt.map(pg => [...pg.ids].sort().join());
+    expect(new Set(kume).size, 'aynı deneyimleri gösteren iki sayfa').toBe(kume.length);
+    for (const k of ['path', 'name', 'intro']) expect(new Set(tum.map(pg => pg[k])).size, k + ' kendine özgü').toBe(tum.length);
+    tum.forEach(pg => expect(pg.intro.length, pg.path + ': giriş metni').toBeGreaterThan(60));
+    expect(tum.map(pg => pg.path)).toEqual(expect.arrayContaining(['izmir/', 'izmir/mekanlar/', 'izmir/mekanlar/kahvalti/', 'izmir/sevgiliyle-yapilacaklar/',
+      'izmir/alsancak/', 'izmir/oteller/', 'oteller/', 'turlar/', 'turlar/izmir-cikisli/', 'turlar/yurt-disi/']));
+    /* kural 3: sayfanın süzgeci tür ve en çok bir süzgeç (niyette kiminle + şehrin içi) */
+    tum.forEach(pg => { const { tur, sehir, ...f } = pg.q; expect(Object.keys(f).length, pg.path).toBeLessThanOrEqual(pg.kind === 'niyet' ? 2 : 1); });
+    /* mekân, etkinlik ve aktivite İzmir'de, şehrin altında; oteller ve turlar bütün şehirlerden, kendi ağacında (Bedir 2026-10-08) */
+    ['mekan', 'etkinlik', 'aktivite'].forEach(t => api.listProducts({ type: t }).forEach(p => {
+      expect(p.sehir, p.title).toBe('izmir');
+      expect(p.path, p.title).toBe('izmir/' + S.TUR_YOL[t] + '/' + p.id + '/');
+    }));
+    api.listProducts({ type: 'otel' }).forEach(p => expect(p.path).toBe('oteller/' + p.id + '/'));
+    api.listProducts({ type: 'tur' }).forEach(p => expect(p.path).toBe('turlar/' + p.id + '/'));
+    expect(api.listProducts({ type: 'otel' }).some(p => !p.sehir), 'İzmir dışından otel').toBe(true);
+    expect(new Set(api.listProducts({ type: 'tur' }).map(p => p.kalkis)).size, 'birden çok kalkış şehri').toBeGreaterThan(2);
+    /* uygulamadaki bağlar kalıcı adrese gider */
+    expect(api.productUrl('/', 'Kum Beach Club')).toBe('/izmir/mekanlar/kum-beach-club/');
+    expect(api.productUrl('/', 'Kapadokya Turu')).toBe('/turlar/kapadokya-turu/');
+    /* Keşfet koleksiyonları: sekmenin özellik ve kalkış sayfaları ("tümü" sayfası değil) */
+    api.TYPES.forEach(([t]) => {
+      const l = api.listCollections(t);
+      expect(l.length, t).toBeGreaterThan(0);
+      l.forEach(pg => { expect(pg.q.tur, pg.path).toBe(t); expect(['oz', 'kalkis'], pg.path).toContain(pg.kind); });
+    });
+    /* liste adresi bir sayfaya denk gelirse başlık ve asıl adres o sayfanın */
+    expect(api.findCityPage({ tur: 'mekan', oz: 'kahvalti', sehir: 'izmir' }).path).toBe('izmir/mekanlar/kahvalti/');
+    expect(api.findCityPage({ tur: 'otel', oz: 'kultur' })).toBe(null);
+    /* yurt dışı bir yer olarak aranabiliyor: bütün yurt dışı turları */
+    expect(api.listProducts({ yer: 'yurt-disi' }).map(p => p.id).sort())
+      .toEqual(api.listProducts({ type: 'tur' }).filter(p => p.abroad).map(p => p.id).sort());
+  });
+
+  it('liste ve şehir sayfaları arama motoruna hazır: başlık, açıklama, önizleme, yapısal veri, sayfa yolu, SSS', async () => {
+    const seo = await import('../scripts/seo.mjs'), api = await import('../v2/js/api.js'), S = seo.SITE;
     const coz = t => t.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const meta = (html, k) => { const m = new RegExp('<meta (?:name|property)="' + k + '" content="([^"]*)">').exec(html); return m && coz(m[1]); };
-    const basliklar = new Set(), aciklamalar = new Set(), girisler = new Set(), sayfalar = await kategoriSayfalari();
-    for (const { slug, html } of sayfalar) {
-      const c = api.TYPES.flatMap(([t]) => api.listCollections(t)).find(x => x.slug === slug), url = SITE + slug + '/';
+    const sayfa = Object.fromEntries((await seo.seoSayfalari()).map(x => [x.yol, x.html])), aciklamalar = new Set();
+    for (const pg of api.listPages()) {
+      const html = sayfa[pg.path], url = S + pg.path, yol = pg.path;
       const baslik = coz(/<title>([^<]*)<\/title>/.exec(html)[1]), desc = meta(html, 'description');
-      /* başlık önce kategorinin adı; açıklama 160 harfi aşmıyor; ikisi de sayfaya özgü */
-      expect(baslik, slug).toBe(api.collectionTitle(c));
-      expect(baslik.startsWith(c.name + ' — '), slug).toBe(true);
-      expect(desc.length, slug).toBeLessThanOrEqual(160);
-      expect(desc.startsWith(c.name), slug).toBe(true);
-      basliklar.add(baslik); aciklamalar.add(desc);
-      expect(html.match(/<h1[ >]/g), slug + ': tek ana başlık').toHaveLength(1);
-      /* paylaşım önizlemesi asıl adresle aynı */
-      expect(html, slug).toContain('<link rel="canonical" href="' + url + '">');
-      expect(meta(html, 'og:url'), slug).toBe(url);
-      expect(meta(html, 'og:title'), slug).toBe(baslik.replace(/ \| mola360$/, ''));
-      expect(meta(html, 'og:description'), slug).toBe(desc);
-      expect(meta(html, 'og:locale'), slug).toBe('tr_TR');
-      /* yapısal veri: geçerli JSON; liste kartlarla, SSS görünen sorularla aynı */
+      expect(baslik, yol).toBe(api.pageTitle(pg));
+      expect(baslik.startsWith(pg.name), yol).toBe(true);
+      expect(desc.length, yol).toBeLessThanOrEqual(160);
+      aciklamalar.add(desc);
+      expect(html.match(/<h1[ >]/g), yol + ': tek ana başlık').toHaveLength(1);
+      expect(html, yol).toContain('>' + coz(pg.name).replace(/'/g, '&#39;') + '</h1>');
+      expect(html, yol).toContain('<link rel="canonical" href="' + url + '">');
+      expect(meta(html, 'og:url'), yol).toBe(url);
+      expect(meta(html, 'og:title'), yol).toBe(baslik.replace(/ \| mola360$/, ''));
+      expect(meta(html, 'og:description'), yol).toBe(desc);
+      expect(meta(html, 'og:locale'), yol).toBe('tr_TR');
+      /* üst kısım: kapak, sayfa yolu, başlık, giriş; kategori satırı yok */
+      expect(html, yol).toContain('<header class="pg-top slim cover" style="--g:');
+      expect(html, yol).toMatch(/<nav class="bc" aria-label="Sayfa yolu"><ol><li><a href="(\.\.\/)+">Keşfet<\/a><\/li>/);
+      expect(html, yol).toContain('<p id="lsSub">' + pg.intro.replace(/'/g, '&#39;').replace(/&(?!#39;)/g, '&amp;') + '</p>');
+      expect(html, yol).not.toContain('id="cats"');
+      /* yapısal veri: geçerli JSON; sayfa yolu görünenle, SSS görünen sorularla aynı */
       const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1]);
       const g = Object.fromEntries(ld['@graph'].map(x => [x['@type'], x]));
-      expect(Object.keys(g), slug).toEqual(['CollectionPage', 'BreadcrumbList', 'ItemList', 'FAQPage']);
-      expect(g.CollectionPage.url, slug).toBe(url);
-      const kartlar = [...html.matchAll(/<a class="lk" href="\.\.\/urun\/\?id=([^"]+)"/g)].map(m => m[1]);
-      expect(g.ItemList.itemListElement.map(x => x.url), slug).toEqual(kartlar.map(id => SITE + 'urun/?id=' + id));
-      expect(g.ItemList.numberOfItems, slug).toBe(kartlar.length);
-      expect(g.BreadcrumbList.itemListElement.map(x => x.name), slug).toEqual(['Keşfet', api.TYPES.find(t => t[0] === c.q.tur)[2], c.name]);
+      expect(Object.keys(g), yol).toEqual(['CollectionPage', 'BreadcrumbList', 'ItemList', 'FAQPage']);
+      expect(g.CollectionPage.url, yol).toBe(url);
+      const yolAd = [...html.matchAll(/<nav class="bc"[^>]*><ol>(.*?)<\/ol><\/nav>/g)][0][1].match(/>([^<>]+)<\/a>/g).map(x => coz(x.slice(1, -4)));
+      expect(g.BreadcrumbList.itemListElement.map(x => x.name), yol).toEqual([...yolAd, pg.name]);
       const sorular = [...html.matchAll(/<summary><h3>([^<]+)<\/h3>/g)].map(m => coz(m[1]));
-      const yanitlar = [...html.matchAll(/<\/summary><p>([^<]+)<\/p>/g)].map(m => coz(m[1]));
-      expect(g.FAQPage.mainEntity.map(x => x.name), slug).toEqual(sorular);
-      expect(g.FAQPage.mainEntity.map(x => x.acceptedAnswer.text), slug).toEqual(yanitlar);
-      expect(sorular.length, slug).toBeGreaterThanOrEqual(3);
-      /* görünen sayfa yolu ve kategoriyi anlatan bölümler (liste.js süzgeçte gizler) */
-      /* üst kısım her kategoride aynı: kapak, sayfa yolu, başlık, kategorinin kendi giriş metni; kategori satırı yok */
-      expect(html, slug).toContain('<header class="pg-top slim cover" style="--g:');
-      expect(html, slug).toContain('<nav class="bc" aria-label="Sayfa yolu"><ol><li><a href="../">Keşfet</a></li>');
-      expect(c.intro.length, slug + ': giriş metni').toBeGreaterThan(40);
-      expect(html, slug).toContain('<p id="lsSub">' + c.intro.replace(/'/g, '&#39;').replace(/&(?!#39;)/g, '&amp;') + '</p>');
-      expect(html, slug).not.toContain('id="cats"');
-      girisler.add(c.intro);
-      expect(html, slug).toContain('<body data-q="' + Object.entries(c.q).map(([k, v]) => k + '=' + v).join('&amp;') + '" data-kat="' + slug + '">');
-      expect(html.match(/<section class="box kat-seo"[^>]* data-kat>/g).length, slug).toBeGreaterThanOrEqual(2);
-      /* ilgili kategoriler var olan sayfalara gider */
-      [...html.matchAll(/<li><a href="\.\.\/([a-z0-9-]+)\/">/g)].forEach(m => expect(existsSync(join(V2, m[1], 'index.html')), slug + ' → ' + m[1]).toBe(true));
+      const yanitlar = [...html.matchAll(/<\/summary><p>(.*?)<\/p>/g)].map(m => coz(m[1].replace(/<[^>]+>/g, '')));
+      expect(g.FAQPage.mainEntity.map(x => x.name), yol).toEqual(sorular);
+      expect(g.FAQPage.mainEntity.map(x => x.acceptedAnswer.text), yol).toEqual(yanitlar);
+      expect(sorular.length, yol).toBeGreaterThanOrEqual(3);
+      /* bağlar var olan sayfalara gider */
+      [...html.matchAll(/href="((?:\.\.\/)+[^"?#]*)"/g)].forEach(m => {
+        const hedef = new URL(m[1], 'https://x/v2/' + pg.path).pathname.replace(/^\/v2\//, '');
+        expect(existsSync(join(V2, hedef, hedef.endsWith('.css') || hedef.endsWith('.js') || hedef.endsWith('.webp') ? '' : 'index.html')), yol + ' → ' + hedef).toBe(true);
+      });
+      if (pg.kind === 'sehir') {
+        /* şehir sayfası: türlerin rayları, kiminle, semtler, tanıtım */
+        expect(html, yol).toContain('<script type="module" src="../js/sehir.js"></script>');
+        expect(g.ItemList.itemListElement.map(x => x.url), yol).toEqual(expect.arrayContaining([S + 'izmir/mekanlar/', S + 'turlar/izmir-cikisli/']));
+        continue;
+      }
+      /* liste: kartlar önerilen sırayla, yapısal verideki listeyle aynı */
+      const kartlar = [...html.matchAll(/<a class="lk" href="([^"]+)"/g)].map(m => new URL(m[1], url).href);
+      expect(kartlar, yol).toEqual(pg.ids.map(i => S + api.getProduct(i).path));
+      expect(g.ItemList.itemListElement.map(x => x.url), yol).toEqual(kartlar);
+      expect(html, yol).toContain('<body data-q="' + Object.entries(pg.q).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&amp;') + '" data-kat="' + pg.path + '">');
+      expect(html.match(/<section class="box kat-seo"[^>]* data-kat>/g).length, yol).toBeGreaterThanOrEqual(2);
     }
-    expect(basliklar.size, 'her sayfanın başlığı kendine').toBe(sayfalar.length);
-    expect(aciklamalar.size, 'her sayfanın açıklaması kendine').toBe(sayfalar.length);
-    expect(girisler.size, 'her sayfanın giriş metni kendine').toBe(sayfalar.length);
+    expect(aciklamalar.size, 'her sayfanın açıklaması kendine').toBe(api.listPages().length);
   });
 
-  it('kategori sayfaları tarihten bağımsız: sabit HTML ertesi gün eskimez', async () => {
-    /* tarih bugüne göre hesaplanır (etkinlik günü); sayfaya yazılsaydı her gün değişirdi */
+  it('deneyim sayfaları: başlık, açıklama, yapısal veri, sayfa yolu ve içerik HTML\'de', async () => {
+    const seo = await import('../scripts/seo.mjs'), api = await import('../v2/js/api.js'), S = seo.SITE;
+    const sayfa = Object.fromEntries((await seo.seoSayfalari()).map(x => [x.yol, x.html]));
+    const TIP = { otel: ['Hotel'], tur: ['TouristTrip'], etkinlik: ['Product'], aktivite: ['Product'], mekan: ['Restaurant', 'BarOrPub', 'DaySpa', 'CafeOrCoffeeShop', 'LocalBusiness'] };
+    const urunler = api.listProducts().filter(p => p.path);
+    expect(urunler.length, 'her deneyimin kalıcı sayfası var').toBe(api.listProducts().length);
+    for (const p of urunler) {
+      const html = sayfa[p.path], url = S + p.path, t = api.typeKey(p.type);
+      expect(html, p.path).toContain('<title>' + p.title.replace(/&/g, '&amp;') + ' ');
+      expect(/<title>([^<]*)<\/title>/.exec(html)[1].replace(/&amp;/g, '&'), p.path).toBe(api.productTitle(p));
+      expect(/<meta name="description" content="([^"]*)">/.exec(html)[1].replace(/&#39;/g, "'").replace(/&amp;/g, '&').length, p.path).toBeLessThanOrEqual(160);
+      expect(html, p.path).toContain('<link rel="canonical" href="' + url + '">');
+      expect(html, p.path).toContain('<body class="no-nav" data-id="' + p.id + '">');
+      expect(html.match(/<h1[ >]/g), p.path).toHaveLength(1);
+      const g = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])['@graph'];
+      expect(TIP[t], p.path).toContain(g[0]['@type']);
+      expect(g[0].name, p.path).toBe(p.title);
+      /* örnek veride puan yapısal veriye girmez (gerçek değerlendirme değil) */
+      expect(g[0].aggregateRating, p.path).toBeUndefined();
+      expect(g[1]['@type'], p.path).toBe('BreadcrumbList');
+      expect(g[1].itemListElement.at(-1).name, p.path).toBe(p.title);
+      if (t === 'otel' || t === 'tur') expect(g[0].offers || g[0].priceRange, p.path).toBeTruthy();
+      /* bulunduğu sayfalar var olan sayfalara gider */
+      [...html.matchAll(/<li><a href="((?:\.\.\/)+[^"]+)">/g)].forEach(m => {
+        const hedef = new URL(m[1], 'https://x/v2/' + p.path).pathname.replace(/^\/v2\//, '');
+        expect(existsSync(join(V2, hedef, 'index.html')), p.path + ' → ' + hedef).toBe(true);
+      });
+    }
+  });
+
+  it('SEO sayfaları tarihten bağımsız: sabit HTML ertesi gün eskimez', async () => {
+    /* tarih bugüne göre hesaplanır (etkinlik günü, otelde giriş); sayfaya yazılsaydı her gün değişirdi */
     const AY = /\b\d{1,2} (Oca|Şub|Mar|Nis|May|Haz|Tem|Ağu|Eyl|Eki|Kas|Ara)\b/;
-    const once = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
-    once.forEach(({ slug, html }) => expect(html.match(AY), slug + ': sayfada gün').toBeNull());
+    const once = await (await import('../scripts/seo.mjs')).seoSayfalari();
+    once.forEach(({ yol, html }) => expect(html.match(AY), yol + ': sayfada gün').toBeNull());
     /* saat 45 gün ileri: üretilen sayfalar aynı */
     vi.useFakeTimers({ toFake: ['Date'] });
     try {
       vi.setSystemTime(new Date(Date.now() + 45 * 864e5));
       vi.resetModules();
-      const sonra = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
-      expect(sonra.map(x => x.slug)).toEqual(once.map(x => x.slug));
-      sonra.forEach(({ slug, html }, i) => expect(html === once[i].html, slug + ': tarih değişince sayfa değişti').toBe(true));
+      const sonra = await (await import('../scripts/seo.mjs')).seoSayfalari();
+      expect(sonra.map(x => x.yol)).toEqual(once.map(x => x.yol));
+      sonra.forEach(({ yol, html }, i) => expect(html === once[i].html, yol + ': tarih değişince sayfa değişti').toBe(true));
     } finally {
       vi.useRealTimers();
       vi.resetModules();
     }
-  });
-
-  it('arama kartının koleksiyonları: her sekmede gerçek, kategori ve süzgeç ayrı (kural 3)', async () => {
-    const api = await import('../v2/js/api.js');
-    api.TYPES.forEach(([t]) => {
-      const l = api.listCollections(t);
-      expect(l.length, t).toBeGreaterThan(0);
-      l.forEach(c => {
-        /* adresin kategorisi sekmenin kendisi; süzgeç yalnızca yer ya da tema, gerçekten var */
-        const { tur, ...f } = c.q;
-        expect(tur, c.name).toBe(t);
-        expect(Object.keys(f), c.name).toHaveLength(1);
-        expect(f.yer ? api.getDestination(f.yer) : api.getTheme(f.tema), c.name).toBeTruthy();
-        /* sayı, liste sayfasının göstereceğiyle aynı; görseli var */
-        expect(c.count, c.name).toBe(api.listProducts({ type: t, ...f }).length);
-        expect(c.count, c.name).toBeGreaterThan(0);
-        expect(c.bg, c.name).toBeTruthy();
-      });
-    });
-    /* liste sayfası kartın adını başlık yapar */
-    expect(api.findCollection('tur', { yer: 'karadeniz' })).toMatchObject({ name: 'Karadeniz turları', slug: 'karadeniz-turlari' });
-    expect(api.findCollection('otel', { tema: 'kultur' })).toBe(null);
-    /* yurt dışı bir yer olarak aranabiliyor: bütün yurt dışı turları */
-    expect(api.listProducts({ yer: 'yurt-disi' }).map(p => p.id).sort())
-      .toEqual(api.listProducts({ type: 'tur' }).filter(p => p.abroad).map(p => p.id).sort());
   });
 
   it('ürün sayfasında her deneyimin içeriği var, iptal günü tarihe göre', async () => {

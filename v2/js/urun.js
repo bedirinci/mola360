@@ -1,6 +1,10 @@
-/* Ürün (deneyim) sayfası: tek şablon, ürün adresteki ?id= ile seçilir */
+/* Ürün (deneyim) sayfası: tek şablon. Deneyim kalıcı sayfasında
+   (v2/izmir/mekanlar/kum-beach-club/, scripts/seo.mjs üretir) body data-id'den,
+   uygulamada adresteki ?id= ile seçilir. Kalıcı sayfadaki içerik arama
+   motoru için HTML'de durur; bu modül aynı içeriği tam haliyle yeniden çizer,
+   sayfa yolunu korur. ?id= adresinde asıl adres kalıcı sayfadır. */
 import { renderShell, backLabel } from './shell.js';
-import { getProduct, listProducts, listPosts, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming, stayRange, longDate, addDays, parseDay } from './api.js';
+import { getProduct, getCity, listProducts, listPosts, recommended, turUrl, urunUrl, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming, stayRange, longDate, addDays, parseDay } from './api.js';
 import { dateGrid, openDates } from './tarihler.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
@@ -11,7 +15,10 @@ import { TRUST } from './data.js';
 import { IC, I, TRI } from './icons.js';
 import { ROOT } from './root.js';
 
-const id=new URLSearchParams(location.search).get('id');
+const SABIT=document.body.dataset.id||'';
+const id=new URLSearchParams(location.search).get('id')||SABIT;
+/* kalıcı sayfadaki sayfa yolu (Keşfet › İzmir › Mekânlar): yeniden çizimde başlığın üstünde kalır */
+const BC=(document.querySelector('#urun .bc')||{}).outerHTML||'';
 const p=getProduct(id);
 
 if(p)render(p);
@@ -23,7 +30,10 @@ else{
 }
 
 function render(p){
-document.title='mola360 — '+p.title;
+if(!SABIT){document.title='mola360 — '+p.title;
+  /* uygulama adresi (urun/?id=) arama motoruna kalıcı sayfayı gösterir */
+  if(p.path){const cn=document.createElement('link');cn.rel='canonical';cn.href=urunUrl(ROOT,p);document.head.appendChild(cn)}}
+if(typeKey(p.type)==='etkinlik')eventLd(p);
 markViewed(p.id);
 
 const tick=(b,t)=>'<li>'+IC.check+'<div><b>'+b+'</b>'+(t?' <span>'+t+'</span>':'')+'</div></li>';
@@ -62,7 +72,9 @@ function stay(){if(!H)return;const o=document.getElementById('uOut'),n=document.
 const kidRule=H?(H.extra?'0–'+H.free+' yaş çocuklar ücretsiz; '+(H.free+1)+'–12 yaş için ek yatak gecelik '+tl(H.extra)+'.':'12 yaşa kadar çocuklar ücretsiz.')+' 2 yaş altına bebek yatağı ücretsiz.':'';
 const petRule=H?(H.evcil?'Küçük ırk evcil hayvan kabul edilir; ücret alınmaz.':'Evcil hayvan kabul edilmez.'):'';
 const posts=listPosts({productId:p.id});
-const similar=listProducts({type:typeKey(p.type)}).filter(x=>x.id!==p.id).slice(0,6);
+/* benzerler: aynı şehirde aynı türden; ortak özelliği (kahvaltı, butik …) çok olan önce */
+const ortak=x=>x.oz.filter(o=>p.oz.includes(o)).length;
+const similar=recommended(listProducts({type:typeKey(p.type),sehir:p.sehir})).filter(x=>x.id!==p.id).sort((a,b)=>ortak(b)-ortak(a)).slice(0,6);
 const chips=[p.info,p.tr&&TRI[p.tr][0],p.visa,...p.facts].filter(Boolean);
 const deposit=p.type==='Tur'?Math.round(lvPrice(p.title,p.price)*.2):0;
 
@@ -103,7 +115,7 @@ document.getElementById('urun').innerHTML=
  +'<div class="ug"><div class="ug-tr" id="ugTr">'+Array.from({length:N*3},(_,k)=>{const i=k%N,real=k>=N&&k<2*N;
    return '<div class="ug-f" style="background:'+frame(i)+'"'+(real?' role="img" aria-label="'+esc(p.title)+' görsel '+(i+1)+'"':' aria-hidden="true"')+'></div>'}).join('')+'</div>'
  +'<div class="ug-dots" aria-hidden="true">'+Array.from({length:N},(_,i)=>'<i'+(i?'':' class="on"')+'></i>').join('')+'</div></div>'
- +'<section class="u-hd" id="genel"><div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+lvb(p.title,'in')+'</div>'
+ +'<section class="u-hd" id="genel">'+BC+'<div class="u-type"><span class="type">'+p.type+'</span>'+(p.stars?'<span class="stars">'+p.stars+'</span>':'')+lvb(p.title,'in')+'</div>'
  +'<h1>'+p.title+'</h1><div class="meta">'+I.pin+'<span>'+p.place+'</span></div>'
  +'<div class="u-proof">'+(p.count?'<button type="button" class="u-sc" data-go="yorumlar">'+sc(p.score)+'<span>'+p.count.toLocaleString('tr-TR')+' değerlendirme</span></button>':'<span class="score new"><b>Yeni</b></span><span class="u-nr">Henüz değerlendirme yok</span>')
  +(posts.length?'<i class="u-sep" aria-hidden="true"></i><button type="button" class="u-ppl" data-go="paylasimlar"><span class="stk">'+ppl+'</span>'+posts.length+' paylaşım</button>':'')+'</div></section>'
@@ -174,7 +186,7 @@ document.getElementById('urun').innerHTML=
  /* sıkça sorulan sorular: türe ve ürünün kurallarına göre (açılır kapanır) */
  +'<section class="box" id="sss"><h2>Sıkça sorulan sorular</h2><div class="u-faq">'+faq().map(([q,a])=>'<details><summary>'+q+I.chev+'</summary><p>'+a+'</p></details>').join('')+'</div></section>'
 
- +(similar.length?'<section class="u-sec"><div class="hd"><h2>Benzer deneyimler</h2><a href="'+ROOT+'liste/?tur='+typeKey(p.type)+'" class="all">Tümü →</a></div></section><div class="rail" id="uSim">'+similar.map(x=>productCard(x)).join('')+'</div>':'');
+ +(similar.length?'<section class="u-sec"><div class="hd"><h2>Benzer deneyimler</h2><a href="'+turUrl(ROOT,p)+'" class="all">Tümü →</a></div></section><div class="rail" id="uSim">'+similar.map(x=>productCard(x)).join('')+'</div>':'');
 
 
 const cta=document.getElementById('ctaBar');
@@ -264,4 +276,19 @@ document.querySelectorAll('.rail').forEach(el=>{makeScroll(el)});
 /* adresteki bölüm (kartlardaki "N paylaşım" → #paylasimlar) sayfa çizildikten sonra açılır */
 const at=location.hash.length>1&&document.getElementById(location.hash.slice(1));
 if(at)goTo(at.id,false);
+}
+
+/* Etkinliğin yapısal verisi (schema.org Event): tarih bugünden hesaplandığı
+   için sabit HTML'de değil, burada; her yaklaşan tarih için bir Event */
+function eventLd(p){
+  const p2=n=>String(n).padStart(2,'0'),saat=(p.time||'').match(/^\d\d:\d\d$/),[yer,ilce]=p.place.split(' · ')[0].split(', ');
+  const url=urunUrl(ROOT,p),about=productDetails(p).about;
+  const ev=upcoming(p.dates).map(d=>{const g=parseDay(d[1]);const gun=g.getFullYear()+'-'+p2(g.getMonth()+1)+'-'+p2(g.getDate());
+    return {'@type':'Event',name:p.title,startDate:saat?gun+'T'+saat[0]+':00+03:00':gun,eventStatus:'https://schema.org/EventScheduled',
+      eventAttendanceMode:'https://schema.org/OfflineEventAttendanceMode',...(about?{description:about}:{}),
+      location:{'@type':'Place',name:yer,address:{'@type':'PostalAddress',addressLocality:ilce||yer,addressRegion:(getCity(p.sehir)||{}).ad||'',addressCountry:'TR'}},
+      offers:{'@type':'Offer',price:p.price,priceCurrency:'TRY',availability:'https://schema.org/InStock',url}}});
+  if(!ev.length)return;
+  const s=document.createElement('script');s.type='application/ld+json';s.id='ldEtkinlik';
+  s.textContent=JSON.stringify({'@context':'https://schema.org','@graph':ev});document.head.appendChild(s);
 }

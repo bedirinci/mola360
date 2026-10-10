@@ -5,7 +5,7 @@ import { tl, ttl, makeSheet, esc } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
-import { listPosts, deletePost, getPost, ME } from './api.js';
+import { listPosts, deletePost, getPost, getProduct, urunUrl, ME } from './api.js';
 
 /* Görsel ağırlıklı kart: görsel kartın tamamı, yazı görselin üstünde.
    Kartta yalnızca karar için gereken: tür, ad, yer · süre, puan, fiyat.
@@ -18,7 +18,7 @@ const unitOf=u=>u==='kişi başı'?'kişi başı':u;
 export const km=d=>(d<1?'1':d<100?String(Math.round(d)):(Math.round(d/10)*10).toLocaleString('tr-TR'))+' km';
 /* Bağlan döngüsü: deneyimi yaşayanların paylaşımları kartın üstünde;
    dokununca ürün sayfasındaki paylaşımlara gider */
-const pp=(id,l)=>l&&l.length?'<a class="vk-pp" href="'+ROOT+'urun/?id='+id+'#paylasimlar" aria-label="Bu deneyimin '+l.length+' paylaşımı"><span class="avs">'
+const pp=(id,l)=>l&&l.length?'<a class="vk-pp" href="'+urunUrl(ROOT,getProduct(id)||{id})+'#paylasimlar" aria-label="Bu deneyimin '+l.length+' paylaşımı"><span class="avs">'
   +l.slice(0,3).map(p=>ava(p.user,'xs')).join('')+'</span>'+l.length+' paylaşım</a>':'';
 export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
@@ -50,7 +50,7 @@ export { ava };
    tamamı ürün sayfasına gider */
 export function plink(p){
   if(!p)return '';
-  return '<a class="plink" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+  return '<a class="plink" href="'+urunUrl(ROOT,p)+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
    +'<small><em>'+p.type+'</em> · '+placeOf({a:p.place})+'</small><b>'+p.title+'</b>'
    +'<span class="pm">'+(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+'</span>':'<span class="st new">Yeni</span>')
    +'<strong>'+tl(p.price)+'</strong><span class="u">'+p.unit+'</span></span></span>'
@@ -64,7 +64,7 @@ const WENT='<span class="went"><img src="'+ROOT+'logo-koyu.webp" alt="Mola360" w
    Fiyat ürün sayfasında. */
 function plinkOver(p){
   if(!p)return '';
-  return '<a class="plo" href="'+ROOT+'urun/?id='+p.id+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
+  return '<a class="plo" href="'+urunUrl(ROOT,p)+'"><span class="pt" style="background:'+p.bg+'"></span><span class="x">'
    +'<b>'+p.title+'</b><small>'+(p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+' <i>('+p.count+')</i></span>':'<span class="st new">Yeni</span>')
    +'<span class="w">'+p.type+' · '+placeOf({a:p.place})+'</span></small></span>'
    +'<span class="go-p" aria-hidden="true">'+IC.right+'</span></a>';

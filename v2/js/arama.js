@@ -10,11 +10,12 @@ import { listDestinations, getDestination, suggest, listProducts, listSearches, 
 import { ROOT } from './root.js';
 
 /* sekmeye göre alan adları */
-const TABS={tur:['NEREYE','Şehir, bölge veya tur adı','NE ZAMAN','KİŞİ','Molamı bul','Nereye gidiyorsun?'],
- otel:['NEREYE','Şehir, bölge veya otel adı','GİRİŞ','ODA · KİŞİ','Otel bul','Nerede kalacaksın?'],
- etkinlik:['ŞEHİR','Tüm şehirler','NE ZAMAN','BİLET','Etkinlik bul','Hangi şehirde?'],
- aktivite:['NEREYE','Şehir veya aktivite','NE ZAMAN','KİŞİ','Aktivite bul','Nerede yapmak istersin?'],
- mekan:['NEREYE','Şehir veya mekân adı','NE ZAMAN','KİŞİ','Mekân bul','Nerede?']};
+/* Mola360 İzmir'de açık (Bedir 2026-10-07): yer alanı İzmir'in semtleri; turda gidilecek yer */
+const TABS={tur:['NEREYE','Gidilecek yer ya da tur adı','NE ZAMAN','KİŞİ','Molamı bul','Nereye gidiyorsun?'],
+ otel:['NEREDE','Semt ya da otel adı','GİRİŞ','ODA · KİŞİ','Otel bul','Nerede kalacaksın?'],
+ etkinlik:['NEREDE','Tüm İzmir','NE ZAMAN','BİLET','Etkinlik bul','İzmir\'in neresinde?'],
+ aktivite:['NEREDE','Semt ya da aktivite','NE ZAMAN','KİŞİ','Aktivite bul','Nerede yapmak istersin?'],
+ mekan:['NEREDE','Semt ya da mekân adı','NE ZAMAN','KİŞİ','Mekân bul','Nerede?']};
 /* kişi sayacı: [anahtar, ad, açıklama, en az, en çok] */
 const WHO={tur:[['y','Yetişkin','18 yaş ve üstü',1,9],['c','Çocuk','2 – 17 yaş',0,6]],
  otel:[['o','Oda','Odada en çok 2 yetişkin',1,3],['y','Yetişkin','18 yaş ve üstü',1,6],['c','Çocuk','2 – 17 yaş',0,4]],

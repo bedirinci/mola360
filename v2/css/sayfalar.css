@@ -39,9 +39,15 @@ body{min-height:100vh;min-height:100dvh}
 .stack+.kat-seo{margin-top:24px}
 .box.kat-seo p a{color:var(--ink);font-weight:var(--fw-semi);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .kat-seo .u-faq summary h3{font:inherit}
-.kat-il{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.kat-il a{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:var(--r-pill);background:var(--soft);box-shadow:inset 0 0 0 1px var(--line);font-size:var(--fs-md);font-weight:var(--fw-semi);color:var(--ink)}
-@media (hover:hover){.kat-il a:hover{box-shadow:inset 0 0 0 1px var(--mute)}}
+/* Şehir sayfası (v2/izmir/): tür çipleri, türlere göre raylar ve özellik çipleri, kiminle, semtler */
+.sh-tur{padding:14px 16px 0}
+.sh-tur .kat-il{margin-top:0}
+.sh-sec .rail{padding-top:12px}
+.sh-oz{padding:2px 16px 0}
+.sh-sec>.kat-il{margin-top:12px}
+/* Deneyim sayfası: kalıcı sayfadaki sayfa yolu açık zeminde; bulunduğu sayfalar */
+.u-hd .bc ol{color:var(--mute);margin:0 0 8px}
+.u-ilgili{margin-top:24px}
 
 /* Ürün */
 .ug{position:relative;margin-top:12px}

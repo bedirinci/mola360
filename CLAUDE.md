@@ -35,8 +35,9 @@ Amaç: bir istek bekletmeden, eksiksiz ve doğru teslim edilir.
     - `--ad once`: önce/sonra karşılaştırması için dosya adı öneki.
     - `--js-yok`: JavaScript kapalı.
     - `--kaydir <seçici>`: görüntüden önce o öğeye kaydırır.
-  - `npm run kategoriler`: veri ya da Liste şablonu değişince kategori
-    sayfalarını ve site haritasını yeniden üretir.
+  - `npm run seo`: veri, `v2/js/sehirler.js` ya da Liste/Ürün şablonu
+    değişince SEO sayfalarını, Keşfet bağlarını ve site haritasını yeniden
+    üretir. SEO kuralları `docs/seo.md`.
 - **Nerede ne var (v2):**
   - **Tasarım tokenları:** `v2/css/tokens.css`. Yazı boyutu, kalınlık,
     satır yüksekliği, harf aralığı ve köşe burada; başka yerde ham değer
@@ -49,13 +50,14 @@ Amaç: bir istek bekletmeden, eksiksiz ve doğru teslim edilir.
   - **Veri:**
     - `v2/js/data.js`: ÖRNEK veri;
     - `v2/js/api.js`: tek veri katmanı;
-    - `v2/js/icerik.js`: ürün sayfası içeriği.
+    - `v2/js/icerik.js`: ürün sayfası içeriği;
+    - `v2/js/sehirler.js`: şehirler ve SEO sayfa tanımları.
   - **Sayfa modülleri:** `v2/js/<sayfa>.js`. Ortak modüller: `shell.js`,
     `cards.js`, `ui.js`, `icons.js`.
   - **Üretilen dosyalar (elle değiştirilmez):**
-    - `v2/<kategori>/index.html`;
+    - `v2/izmir/…`, `v2/oteller/…`, `v2/turlar/…` (`npm run seo`);
     - `v2/sitemap.xml`;
-    - `v2/index.html` içindeki kategori bloğu.
+    - `v2/index.html` içindeki kategori ve şehir blokları.
   - **Testler:**
     - `tests/v2.test.js`: statik kurallar;
     - `tests/v2-tarayici.test.js`: Chromium;

@@ -3,8 +3,9 @@
    backend geldiğinde yalnızca bu dosyanın içi değişecek. Alan adları
    backend'deki `content` tablosuna yakın: id (slug), type, title, place,
    price, unit, score, count. */
-import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, THEMES, DESTS, GEO, IMG, POP, KOLEKSIYON, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
+import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, OZ, THEMES, DESTS, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM, KALKIS, OTEL, SEANS } from './icerik.js';
+import { SEHIRLER, SAYFA, GENEL, TUR_YOL, OZ_AD, ESIK } from './sehirler.js';
 import { ROOT } from './root.js';
 
 /* Keşif filtreleri: süre, kiminle ve ne zaman (kategori değil); ne zaman
@@ -58,7 +59,7 @@ EV.forEach(e=>{const id=slug(e[3]),[time,place]=e[4].split(' · ');if(!all.has(i
 HT.forEach(h=>{const id=slug(h[1]),p=all.get(id);const o={id,type:'Otel',title:h[1],place:h[2],price:h[6]*2,unit:'2 gece toplam',score:h[3],count:h[4],bg:G[h[7]],facts:['2 – 4 Eki · 2 gece',h[5]],dates:[],stars:h[0],b:'hs',sample:true};all.set(id,p?{...o,...p,stars:h[0]}:o)});
 VN.forEach(v=>{const id=slug(v.t),p=all.get(id);const o={id,type:'Mekân',title:v.t,place:v.a,price:v.opts[0][1],unit:v.u||(v.slots?'kişi başı':'seans'),slots:v.slots,score:v.s,count:v.c,bg:G[v.g],facts:v.opts.map(o=>o[0]),dates:[],b:'saat',sample:true};all.set(id,{...o,...(p||{}),opts:v.opts,mode:v.mode})});
 
-all.forEach(p=>{p.with=(KIMLE[p.title]||'').split(' ').filter(Boolean)});
+all.forEach(p=>{p.with=(KIMLE[p.title]||'').split(' ').filter(Boolean);p.oz=(OZ[p.title]||'').split(' ').filter(Boolean)});
 
 /* Fotoğraf: bg tek bir CSS arka planı. Fotoğraf varsa geçişin üstünde
    durur; kartlar, raylar ve ürün sayfası ayrıca bir şey yapmadan gösterir */
@@ -68,15 +69,25 @@ all.forEach(p=>{p.bg=photo(IMG[p.title],p.bg)});
 /* Yer: ürünün adı ya da bulunduğu yer (kalkış şehri sayılmaz) bir yerin
    eş adlarından birini içeriyorsa ürün o yerdedir */
 const where=p=>p.place.split(' · ').filter(x=>!x.includes('çıkışlı')).join(' ');
-const dests=DESTS.map(([id,name,sub,al])=>{const keys=[name,...al].map(norm);
-  return {id,name,sub,keys:[...keys,norm(sub)],ids:[...all.values()].filter(p=>{const h=' '+norm(p.title+' '+where(p));return keys.some(k=>h.includes(' '+k))}).map(p=>p.id)}});
+const dests=DESTS.map(([id,name,sub,al,il])=>{const keys=[name,...al].map(norm);
+  return {id,name,sub,il:il||'',keys:[...keys,norm(sub)],ids:[...all.values()].filter(p=>{const h=' '+norm(p.title+' '+where(p));return keys.some(k=>h.includes(' '+k))}).map(p=>p.id)}});
 all.forEach(p=>{p.dest=dests.filter(d=>d.ids.includes(p.id)).map(d=>d.id)});
+/* Şehir: deneyimin bulunduğu açık şehir; kalkis: turun kalkış şehri
+   ("İzmir çıkışlı" → izmir). Kalıcı adres (scripts/seo.mjs üretir): otel ve
+   tur bütün şehirlerden, kendi ağacında (oteller/<otel>/, turlar/<tur>/);
+   mekân, etkinlik ve aktivite şehrin altında (izmir/mekanlar/kum-beach-club/) */
+const kalkisi=p=>{const k=p.place.split(' · ').find(x=>/ çıkışlı$/.test(x));return k?norm(k.replace(/ çıkışlı$/,'')).replace(/ /g,'-'):''};
+all.forEach(p=>{const t=typeKey(p.type),c=SEHIRLER.find(c=>c.aktif&&p.dest.includes(c.id));p.sehir=c?c.id:'';p.kalkis=kalkisi(p);
+  p.path=t==='otel'||t==='tur'?TUR_YOL[t]+'/'+p.id+'/':c?c.id+'/'+TUR_YOL[t]+'/'+p.id+'/':''});
 export const getDestination=id=>dests.find(d=>d.id===id)||null;
 /* Yerler, istenen türde kaç deneyim olduğuyla; deneyimi olmayan yer gösterilmez */
 export const listDestinations=({type}={})=>dests.map(d=>({id:d.id,name:d.name,sub:d.sub,keys:d.keys,
   count:d.ids.filter(i=>!type||typeKey(all.get(i).type)===type).length})).filter(d=>d.count);
 
-export const productUrl=(root,t)=>root+'urun/?id='+slug(t);
+export const urunUrl=(root,p)=>root+(p.path||'urun/?id='+p.id);
+/* deneyimin türünün şehir sayfası (izmir/mekanlar/); şehri yoksa Liste */
+export const turUrl=(root,p)=>{const t=typeKey(p.type);return root+(t==='tur'?'turlar/':t==='otel'&&!p.sehir?'oteller/':p.sehir?p.sehir+'/'+TUR_YOL[t]+'/':'liste/?tur='+t)};
+export const productUrl=(root,t)=>{const p=all.get(slug(t));return p?urunUrl(root,p):root+'urun/?id='+slug(t)};
 export const getProduct=id=>all.get(id)||null;
 export const findByTitle=t=>all.get(slug(t))||null;
 /* Tema: tür karışık koleksiyon; tema sayfasında kapak ve iki cümlelik giriş */
@@ -90,7 +101,7 @@ export const getTheme=id=>themes.find(t=>t.id===id)||null;
    ("deniz" → Ölüdeniz, "ist" → Turistik değil İstanbul). */
 const hay=new Map();
 const haystack=p=>{if(!hay.has(p.id))hay.set(p.id,' '+norm([p.title,where(p),p.type,TYPES.find(t=>t[1]===p.type)[2],
-  ...p.dest.map(i=>getDestination(i)).flatMap(d=>[d.name,d.sub]),...themes.filter(t=>t.ids.includes(p.id)).map(t=>t.name)].join(' ')));return hay.get(p.id)};
+  ...p.dest.map(i=>getDestination(i)).flatMap(d=>[d.name,d.sub]),...themes.filter(t=>t.ids.includes(p.id)).map(t=>t.name),...p.oz.map(o=>OZ_AD[o]||'')].join(' ')));return hay.get(p.id)};
 const hit=(h,q)=>norm(q).split(' ').filter(Boolean).every(w=>h.includes(w.length<4?' '+w:w));
 
 /* Ne zaman: arama pencereleri bugünden hesaplanır. [adres anahtarı, ad, alt
@@ -115,9 +126,10 @@ export function firstDateIn(p,tarih){const w=win(tarih);const d=w&&upcoming(p.da
 
 /* Liste: kategori (type), keşif filtreleri (süre, kiminle, ne zaman), yer,
    arama ve tema ayrı parametreler: kategori ≠ filtre */
-export function listProducts({type,sure,kimle,tema,yer,ara,tarih}={}){
+export function listProducts({type,sure,kimle,tema,yer,ara,tarih,sehir,oz,kalkis}={}){
   const th=tema&&getTheme(tema);
   return [...all.values()].filter(p=>(!type||typeKey(p.type)===type)&&(!sure||p.b===sure)&&(!kimle||p.with.includes(kimle))&&(!th||th.ids.includes(p.id))
+    &&(!sehir||p.sehir===sehir)&&(!oz||p.oz.includes(oz))&&(!kalkis||p.kalkis===kalkis)
     &&(!yer||p.dest.includes(yer))&&(!ara||hit(haystack(p),ara))&&(!tarih||availableIn(p,tarih)));
 }
 
@@ -129,18 +141,43 @@ export function listPopular(type){
     .filter(x=>listProducts({type,yer:x.yer,ara:x.ara}).length);
 }
 
-/* Koleksiyonlar (Keşfet'te arama kartının ikinci sayfası): seçili kategoride
-   yer ya da temaya göre; sayı gerçek, deneyimi olmayan çıkmaz. Görsel temanın
-   kapağı, yoksa koleksiyondaki ilk deneyimin görseli. q: liste süzgeci
-   (kategori ve süzgeç ayrı); slug: kendi sayfasının adresi (v2/karadeniz-turlari/,
-   scripts/kategoriler.mjs üretir) */
-export const listCollections=type=>(KOLEKSIYON[type]||[]).map(([name,f,intro])=>{const l=listProducts({type,...f}),th=f.tema&&getTheme(f.tema);
-  return {name,slug:slug(name),q:{tur:type,...f},count:l.length,bg:th?th.bg:l.length?l[0].bg:'',intro:intro||(th?th.intro:'')}}).filter(c=>c.count);
-/* Liste adresi bir koleksiyona denk geliyorsa o koleksiyon (başlık kartla aynı: "Karadeniz turları") */
-export const findCollection=(type,{yer='',tema=''}={})=>listCollections(type).find(c=>(c.q.yer||'')===yer&&(c.q.tema||'')===tema)||null;
-/* Kategori sayfasının başlığı: önce kategori, sonra sayfada ne bulunacağı (arama motorları için) */
+/* Önerilen sıralama: puanı ve yorumu çok olan önce; puanı olmayan ("Yeni")
+   ortalarda. Şehir sayfalarında ve kategori listesinde aynı sıra */
+const rank=p=>(p.count?p.score:8.8)*Math.log10((p.count||0)+10);
+export const recommended=l=>[...l].sort((a,b)=>rank(b)-rank(a));
+
+/* Şehirler ve SEO sayfaları (sehirler.js, docs/seo.md): genel sayfalar
+   (bütün oteller ve turlar) ve açık şehirlerin sayfaları. Sayfa ancak en az
+   ESIK deneyimle ve deneyimleri öteki bir sayfayla birebir aynı değilse
+   yayımlanır. path: v2/ altındaki adresi (izmir/mekanlar/kahvalti/);
+   sehir: şehir sayfasıysa şehri, genel sayfada boş;
+   kind: sehir | tur | oz | kalkis | niyet | bolge */
+export const listCities=()=>SEHIRLER.filter(c=>c.aktif);
+export const getCity=id=>SEHIRLER.find(c=>c.id===id&&c.aktif)||null;
+const qList=(sehir,q)=>({type:q.tur,oz:q.oz,kimle:q.kimle,yer:q.yer,kalkis:q.kalkis,sehir});
+let pages=null;
+export function listPages(){
+  if(pages)return pages;const seen=new Set();
+  const tanim=[...GENEL.map(x=>['',x]),...listCities().flatMap(c=>(SAYFA[c.id]||[]).map(x=>[c.id,x]))];
+  return pages=tanim.map(([sehir,[yol,name,q,intro,soru]])=>{const l=recommended(listProducts(qList(sehir||undefined,q)));
+    return {path:(sehir?sehir+'/':'')+(yol?yol+'/':''),yol,sehir,name,q:sehir?{...q,sehir}:{...q},intro,soru:soru||'',ids:l.map(p=>p.id),count:l.length,bg:l.length?l[0].bg:'',
+      kind:!yol?'sehir':q.oz?'oz':q.kalkis?'kalkis':q.tur?'tur':q.kimle?'niyet':'bolge'}})
+    .filter(pg=>{if(pg.kind==='sehir')return true;if(pg.count<ESIK)return false;const k=[...pg.ids].sort().join();if(seen.has(k))return false;seen.add(k);return true});
+}
+export const listCityPages=sehir=>listPages().filter(pg=>pg.sehir===sehir);
+const sameQ=(a,b)=>['tur','oz','kimle','yer','sehir','kalkis'].every(k=>(a[k]||'')===(b[k]||''));
+/* Liste adresi bir SEO sayfasına denk geliyorsa o sayfa (başlık ve asıl adres onun) */
+export const findCityPage=q=>listPages().find(pg=>pg.kind!=='sehir'&&sameQ(pg.q,q))||null;
+/* Keşfet'te arama kartının ardından seçili sekmenin sayfaları (özellik ve kalkış; "tümü" sayfası değil) */
+export const listCollections=type=>listPages().filter(pg=>pg.q.tur===type&&(pg.kind==='oz'||pg.kind==='kalkis'));
+
+/* Arama motoru başlıkları: önce sayfanın adı, sonra sayfada ne bulunacağı;
+   60 harfi aşarsa yalnızca ad ve marka */
 const KAT_EK={tur:'fiyatlar ve tarihler',otel:'fiyatlar ve oda seçenekleri',etkinlik:'bilet fiyatları ve tarihler',aktivite:'fiyatlar ve seanslar',mekan:'fiyatlar ve rezervasyon'};
-export const collectionTitle=c=>c.name+' — '+(KAT_EK[c.q.tur]||'fiyatlar')+' | mola360';
+const kisa=(ad,ek)=>{const t=ad+' — '+ek+' | mola360';return t.length<=60?t:ad+' | mola360'};
+export const pageTitle=pg=>kisa(pg.name,pg.kind==='sehir'?'etkinlik, mekân ve otel':pg.q.tur?KAT_EK[pg.q.tur]:'fikirler ve fiyatlar');
+export const productTitle=p=>{const t=typeKey(p.type),yer=p.place.split(' · ')[0];
+  return kisa(p.title,t==='tur'?p.place.split(' · ').filter(x=>x!==yer||!/çıkışlı/.test(x)).join(', ').replace(/^.*?(\S+ çıkışlı)$/,'$1')+(p.info?', '+p.info.toLocaleLowerCase('tr'):''):t==='etkinlik'?yer+', bilet':yer)};
 
 /* Arama önerileri: önce adı yazılanla başlayan yerler ve deneyimler */
 export function suggest(text,{type}={}){
@@ -278,7 +315,7 @@ export const listUserPosts=kul=>posts.filter(p=>p.user.kul===kul);
    edilen kişilerinkiler. Her karenin altında bağlı olduğu deneyim. */
 const kisiHikaye=HIKAYE.map(h=>({id:'h-'+h.u,kind:'kisi',user:{...USERS[h.u],onay:ONAY.has(h.u)},when:h.ne,place:h.yer,verified:!!h.gitti,
   frames:h.kare.map(([g,text])=>({bg:G[g],text,product:findByTitle(h.urun)}))}));
-const DEAL=['Kapadokya Turu','Göreme Mağara Otel','Sealight Resort'];
+const DEAL=['Kapadokya Turu','Alaçatı Taş Otel','Ilıca Aile Resort'];
 export function listStories(){
   const ev=listEvents().slice(0,3).map(e=>({bg:e.bg,over:e.dw+' '+e.dn+' '+e.month+' · '+e.time,title:e.title,sub:e.place.split(' · ')[0],product:e}));
   const hs=DEAL.map(findByTitle).filter(Boolean).map(p=>({bg:p.bg,over:'Bu hafta sonu',title:p.title,sub:p.facts[0]||p.place,product:p,deal:true}));
