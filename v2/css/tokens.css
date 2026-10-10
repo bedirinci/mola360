@@ -21,6 +21,7 @@
   --fs-input:16px; /* giriş alanı: 16'nın altında iOS sayfayı yakınlaştırır */
   --fs-tab:14px;    /* liste sayfasındaki tür sekmeleri (Bedir: 13'ün 1px üstü) */
   --fs-mp-down:1px; /* Molapuan kartının bütün yazıları ölçeğin 1px altında (Bedir) */
+  --fs-fld:14px;   /* Keşfet arama kartındaki değerler (Nereye, Ne zaman, Kişi): gövdenin 1px altı (Bedir) */
   /* bölüm başlıkları ekranla küçülür ki dar telefonda da tek satıra sığsın */
   --fs-h2:clamp(15px,4.6vw,18px);  /* bölüm başlığı (en çok --fs-xl) */
   --fs-h3:clamp(14px,4.1vw,16px);  /* bölüm içi başlık (en çok --fs-lg) */
