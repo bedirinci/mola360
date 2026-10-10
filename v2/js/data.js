@@ -47,24 +47,26 @@ bergama:'linear-gradient(160deg,#EDE3CF,#B49A6A 50%,#6A6E8A)'};
 /* Puanlar örnek katalogdaki 5'lik ortalamaların 10'luğa çevrilmiş hali; kalkış ve etkinlik tarihleri örnek.
    Tarihler 1 Ekim 2026 haftası için yazıldı; api.js onları haftanın aynı günlerinde bugüne taşır.
    Yorum sayısı olmayan üründe puan gösterilmiyor, "Yeni" yazıyor.
-   Mola360 önce İzmir'de açılır (Bedir 2026-10-07): otel, etkinlik, mekân ve
-   aktivitelerin hepsi İzmir'de; turlar İzmir çıkışlı. */
+   Mola360 önce İzmir'de açılır (Bedir 2026-10-07/08): mekân, etkinlik ve
+   aktiviteler İzmir'de; oteller ve turlar bütün şehirlerden. */
 export const ITEMS=[
  {k:'Tur',b:'gun',t:'Efes ve Şirince Turu',a:'İzmir çıkışlı · rehberli',info:'Günübirlik',p:1290,old:1690,s:9.6,c:1200,g:'efes',dates:[['Per','1 Eki'],['Cmt','3 Eki'],['Paz','4 Eki']],more:'+12'},
  {k:'Tur',b:'gun',t:'Pamukkale ve Hierapolis',a:'İzmir çıkışlı · 12 saat',info:'Günübirlik',p:1890,g:'pamukkale',dates:[['Cmt','3 Eki'],['Çar','7 Eki'],['Cmt','10 Eki']],more:'+14'},
  {k:'Tur',b:'gun',t:'Bergama ve Asklepion Turu',a:'İzmir çıkışlı · rehberli',info:'Günübirlik',tr:'otobus',p:1390,s:9.4,c:286,g:'bergama',dates:[['Paz','4 Eki'],['Çar','7 Eki'],['Paz','11 Eki']],more:'+10'},
+ {k:'Tur',b:'gun',t:'Sapanca ve Maşukiye Turu',a:'İstanbul çıkışlı · 07:30',info:'Günübirlik',tr:'otobus',p:780,s:9.2,c:75,g:'sapanca',dates:[['Cmt','3 Eki'],['Cmt','10 Eki'],['Cmt','17 Eki']],more:'+9'},
  {k:'Tur',b:'saat',t:'İzmir Şehir Turu: Kemeraltı ve Kadifekale',a:'Konak, İzmir · rehberli',info:'Yarım gün',p:690,s:9.2,c:198,g:'kemeralti',dates:[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki']],more:'+12'},
  {k:'Tur',b:'hs',t:'Ege Adaları Balayı Kaçamağı',a:'Sakız Adası · İzmir çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:7450,s:9.8,c:288,g:'ege',dates:[['Cum','2 Eki'],['Cum','9 Eki'],['Cum','16 Eki']],more:'+4'},
- {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · İzmir çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3'},
- {k:'Tur',b:'uzun',t:'Kapadokya Turu',a:'Göreme · İzmir çıkışlı',info:'3 gece 4 gün',tr:'ucak',p:8990,old:10900,s:9.4,c:974,g:'kapadokya',dates:[['Pzt','5 Eki'],['Cum','9 Eki'],['Pzt','12 Eki']],more:'+8'},
- {k:'Tur',b:'uzun',t:'Karadeniz Yaylaları Turu',a:'Ayder, Rize · İzmir çıkışlı',info:'4 gece 5 gün',tr:'ucak',p:12500,g:'karadeniz',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+6'},
- {k:'Tur',b:'uzun',t:'Turistik Doğu Ekspresi',a:'Kars · İzmir çıkışlı',info:'5 gece 6 gün',tr:'tren',p:9750,s:9.2,c:450,g:'dogu',dates:[['Sal','20 Eki'],['Sal','3 Kas'],['Sal','17 Kas']],more:'+5'},
- {k:'Tur',b:'uzun',t:'Erciyes Kayak Haftası',a:'Kayseri · İzmir çıkışlı',info:'4 gece 5 gün',tr:'ucak',p:6400,s:9.2,c:140,g:'erciyes',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+2'},
- {k:'Tur',b:'uzun',t:'Balkanlar: Saraybosna ve Mostar',a:'Bosna-Hersek · İzmir çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Vizesiz',abroad:1,p:18900,g:'balkan',dates:[['Pzt','12 Eki'],['Pzt','26 Eki'],['Pzt','9 Kas']],more:'+2'},
- {k:'Tur',b:'uzun',t:'Dubai Turu',a:'Birleşik Arap Emirlikleri · İzmir çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'E-vize',visaReq:1,abroad:1,p:32900,g:'dubai',dates:[['Per','15 Eki'],['Per','29 Eki'],['Per','12 Kas']],more:'+6'},
- {k:'Tur',b:'uzun',t:'İtalya: Roma, Floransa ve Venedik',a:'İtalya · İzmir çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:39900,g:'italya',dates:[['Cmt','17 Eki'],['Cmt','31 Eki'],['Cmt','14 Kas']],more:'+4'},
- {k:'Tur',b:'uzun',t:'İspanya: Barselona ve Madrid',a:'İspanya · İzmir çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:41500,g:'ispanya',dates:[['Paz','18 Eki'],['Paz','1 Kas'],['Paz','15 Kas']],more:'+3'},
- {k:'Tur',b:'uzun',t:'Fransa: Paris ve Loire Şatoları',a:'Fransa · İzmir çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:36750,g:'fransa',dates:[['Cum','23 Eki'],['Cum','6 Kas'],['Cum','20 Kas']],more:'+4'},
+ {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · Ayvalık çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3'},
+ {k:'Tur',b:'uzun',t:'Batum ve Acara Turu',a:'Batum, Gürcistan · Trabzon çıkışlı',info:'3 gece 4 gün',tr:'otobus',visa:'Kimlikle geçiş',abroad:1,p:6900,g:'batum',dates:[['Per','8 Eki'],['Per','15 Eki'],['Per','22 Eki']],more:'+5'},
+ {k:'Tur',b:'uzun',t:'Kapadokya Turu',a:'Göreme · İstanbul çıkışlı',info:'3 gece 4 gün',tr:'ucak',p:8990,old:10900,s:9.4,c:974,g:'kapadokya',dates:[['Pzt','5 Eki'],['Cum','9 Eki'],['Pzt','12 Eki']],more:'+8'},
+ {k:'Tur',b:'uzun',t:'Karadeniz Yaylaları Turu',a:'Ayder, Rize · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',p:12500,g:'karadeniz',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+6'},
+ {k:'Tur',b:'uzun',t:'Turistik Doğu Ekspresi',a:'Kars · Ankara çıkışlı',info:'5 gece 6 gün',tr:'tren',p:9750,s:9.2,c:450,g:'dogu',dates:[['Sal','20 Eki'],['Sal','3 Kas'],['Sal','17 Kas']],more:'+5'},
+ {k:'Tur',b:'uzun',t:'Erciyes Kayak Haftası',a:'Kayseri · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',p:6400,s:9.2,c:140,g:'erciyes',dates:[['Paz','11 Eki'],['Paz','18 Eki'],['Paz','25 Eki']],more:'+2'},
+ {k:'Tur',b:'uzun',t:'Balkanlar: Saraybosna ve Mostar',a:'Bosna-Hersek · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Vizesiz',abroad:1,p:18900,g:'balkan',dates:[['Pzt','12 Eki'],['Pzt','26 Eki'],['Pzt','9 Kas']],more:'+2'},
+ {k:'Tur',b:'uzun',t:'Dubai Turu',a:'Birleşik Arap Emirlikleri · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'E-vize',visaReq:1,abroad:1,p:32900,g:'dubai',dates:[['Per','15 Eki'],['Per','29 Eki'],['Per','12 Kas']],more:'+6'},
+ {k:'Tur',b:'uzun',t:'İtalya: Roma, Floransa ve Venedik',a:'İtalya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:39900,g:'italya',dates:[['Cmt','17 Eki'],['Cmt','31 Eki'],['Cmt','14 Kas']],more:'+4'},
+ {k:'Tur',b:'uzun',t:'İspanya: Barselona ve Madrid',a:'İspanya · İstanbul çıkışlı',info:'5 gece 6 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:41500,g:'ispanya',dates:[['Paz','18 Eki'],['Paz','1 Kas'],['Paz','15 Kas']],more:'+3'},
+ {k:'Tur',b:'uzun',t:'Fransa: Paris ve Loire Şatoları',a:'Fransa · İstanbul çıkışlı',info:'4 gece 5 gün',tr:'ucak',visa:'Schengen vizesi',visaReq:1,abroad:1,p:36750,g:'fransa',dates:[['Cum','23 Eki'],['Cum','6 Kas'],['Cum','20 Kas']],more:'+4'},
 
  {k:'Etkinlik',b:'saat',t:'Kordon Caz Akşamları',cat:'Caz',a:'Kordon Açıkhava, Alsancak',facts:['Cmt 3 Eki · 20:00','Genel giriş'],p:480,s:9.4,c:120,g:'caz',u:'bilet'},
  {k:'Etkinlik',b:'saat',t:'Kültürpark Açıkhava Konserleri',cat:'Konser',a:'Kültürpark Açıkhava, Konak',facts:['Cum 2 Eki · 21:00','Tribün'],p:850,s:9.3,c:410,g:'harbiye',u:'bilet'},
@@ -104,7 +106,11 @@ export const HT=[['★★★★','Kordon Butik Otel','Alsancak, Konak · Denize 
  ['★★★','Şirince Köy Evi','Şirince, Selçuk · Taş köy evi',9.2,154,'Kahvaltı dahil',1900,'sirince'],
  ['★★★★','Balçova Termal Otel','Balçova · Termal havuz',8.7,312,'Yarım pansiyon',2100,'termal'],
  ['★★★★','Bostanlı Körfez Otel','Bostanlı, Karşıyaka · Körfez manzaralı',8.8,198,'Kahvaltı dahil',2350,'korfez'],
- ['★★★','Sığacık Kale Evi','Sığacık, Seferihisar · Kale içinde',9.1,141,'Kahvaltı dahil',1850,'liman']];
+ ['★★★','Sığacık Kale Evi','Sığacık, Seferihisar · Kale içinde',9.1,141,'Kahvaltı dahil',1850,'liman'],
+ ['★★★★★','Göreme Mağara Otel','Göreme, Nevşehir · Tarihi doku',9.4,96,'Kahvaltı dahil',2450,'goreme'],
+ ['★★★★★','Sealight Resort','Kemer, Antalya · Denize sıfır',9.2,340,'Her şey dahil',2100,'sealight'],
+ ['★★★★','Termal Vadi Resort','Termal, Yalova · Termal havuz',0,0,'Kahvaltı dahil',1590,'termal'],
+ ['★★★','Ayder Yayla Evi','Ayder, Rize · Yayla manzarası',9.3,182,'Kahvaltı dahil',1450,'ayder']];
 export const VN=[{t:'Kordon Spa & Masaj',a:'Alsancak, Konak · Masaj salonu',s:9.5,c:346,g:'termal',mode:'Randevulu',opts:[['Klasik masaj · 60 dk',1200],['Sıcak taş · 75 dk',1650]]},
  {t:'Kum Beach Club',a:'Alaçatı, Çeşme · Plaj kulübü',s:9.3,c:824,g:'bodrum',mode:'Masa ve şezlong',opts:[['Şezlong · 2 kişi',1500],['Sedir · 4 kişi',3000],['Loca · 8 kişi',9000]]},
  {t:'Kemeraltı Han Kahvesi',a:'Kemeraltı, Konak · Tarihi han avlusu',s:9.3,c:612,g:'kahve',mode:'Masa rezervasyonu',slots:['09:00','11:00','14:00','17:00'],opts:[['Türk kahvesi ve lokum',140],['Han kahvaltısı',420]]},
@@ -193,7 +199,8 @@ export const KIMLE={'Efes ve Şirince Turu':'yalniz sevgili arkadas aile',
  'Şirince Köy Evi':'sevgili aile',
  'Balçova Termal Otel':'sevgili aile cocuk is',
  'Bostanlı Körfez Otel':'yalniz aile is',
- 'Sığacık Kale Evi':'sevgili arkadas'};
+ 'Sığacık Kale Evi':'sevgili arkadas',
+ 'Sapanca ve Maşukiye Turu':'sevgili aile cocuk is','Batum ve Acara Turu':'yalniz arkadas','Göreme Mağara Otel':'sevgili','Sealight Resort':'sevgili aile cocuk is','Termal Vadi Resort':'sevgili aile cocuk is','Ayder Yayla Evi':'yalniz sevgili arkadas aile'};
 
 /* Özellik: ürünün arama niyetine dönük nitelikleri (kahvaltı, balık, butik,
    havuzlu, tekne turu …). Kategori değil, süzgeç (kural 3); şehir sayfaları
@@ -256,22 +263,23 @@ export const OZ={'Efes ve Şirince Turu':'gunubirlik kultur',
  'Şirince Köy Evi':'butik',
  'Balçova Termal Otel':'havuzlu',
  'Bostanlı Körfez Otel':'deniz-manzarali',
- 'Sığacık Kale Evi':'butik'};
+ 'Sığacık Kale Evi':'butik',
+ 'Sapanca ve Maşukiye Turu':'gunubirlik doga','Batum ve Acara Turu':'yurt-disi','Göreme Mağara Otel':'butik','Sealight Resort':'havuzlu deniz-manzarali','Termal Vadi Resort':'havuzlu','Ayder Yayla Evi':'butik'};
 
 /* Temalar: tür karışık koleksiyonlar (kategori de filtre de değil). Hangi
    ürünün hangi temada olduğu ÖRNEK. [adres anahtarı, ad, renk geçişi,
    ürünler, tema sayfasının iki cümlelik girişi] */
 export const THEMES=[
- ['doga','Doğa ve yayla','linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)',['Şirince Köy Evi','Urla Bağ Evi Otel','Foça Tekne Turu','Sığacık SUP Turu','Pamukkale ve Hierapolis','Karadeniz Yaylaları Turu','Kapadokya Turu','Urla Bağ Turu ve Şarap Tadımı','Turistik Doğu Ekspresi'],'Bağ yolları, zeytinlikler, sakin koylar ve yaylalar. Şehirden bir günlüğüne kaçmaktan birkaç günlük doğa turuna kadar, yeşilin içinde geçen molalar.'],
- ['deniz','Deniz ve tekne','linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)',['Foça Tekne Turu','Çeşme Koylar Tekne Turu','Körfez Gün Batımı Tekne Turu','Kum Beach Club','Ilıca Aile Resort','Eski Foça Pansiyon','Alaçatı Rüzgar Sörfü Dersi','Sığacık Liman Balıkçısı','Bostanlı Körfez Otel'],'Foça\'nın koyları, Çeşme\'de tekne turları ve körfezde gün batımı. Güne denizde başlayıp akşamı sahilde bitirenler için.'],
+ ['doga','Doğa ve yayla','linear-gradient(160deg,#9CC38A,#3E7A55 55%,#27465E)',['Sapanca ve Maşukiye Turu','Ayder Yayla Evi','Göreme Mağara Otel','Şirince Köy Evi','Urla Bağ Evi Otel','Foça Tekne Turu','Sığacık SUP Turu','Pamukkale ve Hierapolis','Karadeniz Yaylaları Turu','Kapadokya Turu','Urla Bağ Turu ve Şarap Tadımı','Turistik Doğu Ekspresi'],'Bağ yolları, zeytinlikler, sakin koylar ve yaylalar. Şehirden bir günlüğüne kaçmaktan birkaç günlük doğa turuna kadar, yeşilin içinde geçen molalar.'],
+ ['deniz','Deniz ve tekne','linear-gradient(160deg,#8FD0E6,#2E86B0 55%,#1C3F70)',['Sealight Resort','Midilli Adası Kaçamağı','Foça Tekne Turu','Çeşme Koylar Tekne Turu','Körfez Gün Batımı Tekne Turu','Kum Beach Club','Ilıca Aile Resort','Eski Foça Pansiyon','Alaçatı Rüzgar Sörfü Dersi','Sığacık Liman Balıkçısı','Bostanlı Körfez Otel'],'Foça\'nın koyları, Çeşme\'de tekne turları ve körfezde gün batımı. Güne denizde başlayıp akşamı sahilde bitirenler için.'],
  ['kultur','Kültür ve tarih','linear-gradient(160deg,#E6C99A,#B0764A 55%,#5A4A6E)',['Efes ve Şirince Turu','Bergama ve Asklepion Turu','İzmir Şehir Turu: Kemeraltı ve Kadifekale','Kemeraltı Lezzet Yürüyüşü','Pamukkale ve Hierapolis','Kapadokya Turu','Kemeraltı Han Kahvesi','Şirince Köy Evi','Balkanlar: Saraybosna ve Mostar','İtalya: Roma, Floransa ve Venedik','Fransa: Paris ve Loire Şatoları','İspanya: Barselona ve Madrid'],'Efes\'ten Bergama\'ya antik kentler, Kemeraltı\'nın hanları ve rehberli turlar. Gezdiğin yerin hikâyesini dinleyerek yaşamak isteyenler için.'],
- ['kis','Kış ve kayak','linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)',['Erciyes Kayak Haftası','Turistik Doğu Ekspresi','Balçova Termal Otel','Balçova Termal Hamam'],'Erciyes\'te kayak, Doğu Ekspresi\'yle karlı yollar ve Balçova\'da sıcak termal sular. Kışı soğuktan kaçarak değil, tadını çıkararak geçirmek için.'],
- ['termal','Termal ve spa','linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',['Balçova Termal Otel','Balçova Termal Hamam','Kordon Spa & Masaj','Pamukkale ve Hierapolis','Ilıca Aile Resort'],'Balçova\'nın termal suları, Alsancak\'ta masaj ve hamam. Yorgunluğu atmak için yavaş geçen bir gün ya da birkaç gecelik dinlenme.'],
+ ['kis','Kış ve kayak','linear-gradient(160deg,#E9EEF5,#9DB2CC 50%,#3F5478)',['Ayder Yayla Evi','Termal Vadi Resort','Erciyes Kayak Haftası','Turistik Doğu Ekspresi','Balçova Termal Otel','Balçova Termal Hamam'],'Erciyes\'te kayak, Doğu Ekspresi\'yle karlı yollar ve Balçova\'da sıcak termal sular. Kışı soğuktan kaçarak değil, tadını çıkararak geçirmek için.'],
+ ['termal','Termal ve spa','linear-gradient(160deg,#DCEBEF,#7FB3BF 50%,#4E6E86)',['Termal Vadi Resort','Sealight Resort','Balçova Termal Otel','Balçova Termal Hamam','Kordon Spa & Masaj','Pamukkale ve Hierapolis','Ilıca Aile Resort'],'Balçova\'nın termal suları, Alsancak\'ta masaj ve hamam. Yorgunluğu atmak için yavaş geçen bir gün ya da birkaç gecelik dinlenme.'],
  ['macera','Macera ve spor','linear-gradient(160deg,#BFE6F2,#43A7CF 50%,#2E7D5B)',['Alaçatı Kitesurf Dersi','Alaçatı Rüzgar Sörfü Dersi','Sığacık SUP Turu','Foça Tekne Turu','Karadeniz Yaylaları Turu','Erciyes Kayak Haftası'],'Alaçatı\'nın rüzgârında sörf ve kitesurf, Sığacık\'ta kürek. Hafta sonunu hareket ederek geçirmek isteyenler için.'],
  ['festival','Konser ve festival','linear-gradient(160deg,#2B2140,#6E4A7E 55%,#D8A66A)',['Kordon Caz Akşamları','Kültürpark Açıkhava Konserleri','Çeşme Yaz Festivali','Urla Bağbozumu Şenliği','İzmir Kahve Festivali','İzmir Senfoni Gecesi','Kum Beach Club'],'Kordon\'da caz, Kültürpark\'ta açıkhava konserleri, Urla\'da bağbozumu. Müziği canlı dinlemek, kalabalığın enerjisine karışmak isteyenler için.'],
  ['sahne','Sahne ve gösteri','linear-gradient(160deg,#3A2F66,#8A4F7A 55%,#E0A060)',['Konak Sahnesi Tiyatro Akşamı','Bornova Stand Up Gecesi','İzmir Senfoni Gecesi','Alsancak Akustik Sahne','Karşıyaka Çocuk Tiyatrosu','Kültürpark Açıkhava Konserleri'],'Tiyatro, stand up, senfoni ve akustik geceler. Bir akşamı sahnenin önünde geçirmek isteyenler için.'],
  ['lezzet','Yeme içme','linear-gradient(160deg,#E8D3B5,#8A5A3A 55%,#3E2A22)',['Kemeraltı Lezzet Yürüyüşü','Urla Bağ Turu ve Şarap Tadımı','Urla Bağ Yolu Sofrası','Alaçatı Taş Avlu Kahvaltı','Sığacık Liman Balıkçısı','Çeşme Liman Meyhanesi','Bornova Ege Mutfağı Atölyesi','İzmir Kahve Festivali','Kemeraltı Han Kahvesi'],'Kemeraltı\'nda boyoz ve kumru, Urla\'da bağ sofrası, limanda balık. Gittiği yeri tadıyla hatırlayanlar için.'],
- ['balayi','Balayı','linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)',['Ege Adaları Balayı Kaçamağı','Urla Bağ Evi Otel','Alaçatı Taş Otel','Asansör Teras Restoran','Kordon Spa & Masaj','Urla Bağ Yolu Sofrası','Körfez Gün Batımı Tekne Turu','Kapadokya Turu','İtalya: Roma, Floransa ve Venedik'],'Bağ evinde sakin geceler, körfezde gün batımı ve ada kaçamakları. İkiniz için sakin ve özenli molalar.'],
+ ['balayi','Balayı','linear-gradient(160deg,#F3C9C0,#C0707A 55%,#5A3F6E)',['Göreme Mağara Otel','Sealight Resort','Ege Adaları Balayı Kaçamağı','Urla Bağ Evi Otel','Alaçatı Taş Otel','Asansör Teras Restoran','Kordon Spa & Masaj','Urla Bağ Yolu Sofrası','Körfez Gün Batımı Tekne Turu','Kapadokya Turu','İtalya: Roma, Floransa ve Venedik'],'Bağ evinde sakin geceler, körfezde gün batımı ve ada kaçamakları. İkiniz için sakin ve özenli molalar.'],
  ['gece','Gece hayatı','linear-gradient(160deg,#1C2640,#3A3F8A 55%,#C06AA0)',['Alsancak Akustik Sahne','Kıbrıs Şehitleri Caz Bar','Kordon Meyhanesi','Kordon Caz Akşamları','Bornova Stand Up Gecesi','Kum Beach Club','Çeşme Liman Meyhanesi'],'Alsancak\'ta canlı müzik ve caz, Kordon\'da fasıl, Çeşme\'de liman akşamları. Gün bittiğinde başlayan planlar için.']];
 
 /* Bağlan: ÖRNEK paylaşımlar. Kullanıcılar ve metinler uydurma; her paylaşım
@@ -378,12 +386,16 @@ export const DESTS=[
  ['balcova','Balçova','İzmir · termal',['Balçova'],'izmir'],
  ['bergama','Bergama','İzmir · antik kent',['Bergama','Asklepion'],'izmir'],
  ['kapadokya','Kapadokya','Nevşehir · Göreme',['Kapadokya','Göreme','Nevşehir'],''],
+ ['antalya','Antalya','Akdeniz · Kemer',['Antalya','Kemer'],''],
+ ['sapanca','Sapanca','Sapanca Gölü · Maşukiye',['Sapanca','Maşukiye'],''],
+ ['yalova','Yalova','Marmara · termal',['Yalova'],''],
  ['pamukkale','Pamukkale','Denizli',['Pamukkale','Hierapolis','Denizli'],''],
  ['karadeniz','Karadeniz','Rize · Ayder',['Karadeniz','Rize','Ayder'],''],
  ['kars','Kars','Doğu Anadolu',['Kars','Doğu Ekspresi'],''],
  ['kayseri','Kayseri','İç Anadolu · Erciyes',['Kayseri','Erciyes'],''],
- ['yurt-disi','Yurt dışı','Adalar, Balkanlar, Avrupa, Dubai',['Sakız','Midilli','Balkanlar','Bosna','Saraybosna','Dubai','İtalya','İspanya','Fransa'],''],
+ ['yurt-disi','Yurt dışı','Adalar, Kafkasya, Balkanlar, Avrupa, Dubai',['Sakız','Midilli','Gürcistan','Batum','Balkanlar','Bosna','Saraybosna','Dubai','İtalya','İspanya','Fransa'],''],
  ['yunan-adalari','Yunan adaları','Yurt dışı · Sakız, Midilli',['Sakız','Midilli'],''],
+ ['gurcistan','Gürcistan','Yurt dışı · Batum',['Gürcistan','Batum'],''],
  ['balkanlar','Balkanlar','Yurt dışı · Saraybosna, Mostar',['Balkanlar','Bosna','Saraybosna'],''],
  ['dubai','Dubai','Yurt dışı · Birleşik Arap Emirlikleri',['Dubai'],''],
  ['italya','İtalya','Yurt dışı · Roma, Floransa, Venedik',['İtalya'],''],
@@ -393,7 +405,7 @@ export const DESTS=[
 /* Popüler aramalar: sekmeye göre. ÖRNEK; gerçekte arama verisinden gelecek.
    Yer adıysa yer seçilir, değilse metinle aranır; sonucu olmayan gösterilmez. */
 export const POP={tur:['Efes','Kapadokya','Pamukkale','Yunan adaları','Karadeniz','İtalya'],
- otel:['Alaçatı','Çeşme','Urla','Alsancak','Termal','Butik'],
+ otel:['Alaçatı','Çeşme','Urla','Kapadokya','Antalya','Butik'],
  etkinlik:['Alsancak','Konser','Festival','Tiyatro','Stand up'],
  aktivite:['Tekne','Sörf','Şarap','Atölye','Alaçatı'],
  mekan:['Kahvaltı','Balık','Alsancak','Urla','Canlı müzik']};
@@ -407,7 +419,7 @@ export const GEO={'Pasaport':[38.428,27.137],'Kıbrıs Şehitleri':[38.437,27.14
  'Pırlanta':[38.246,26.372],'Alaçatı':[38.270,26.374],'Ilıca':[38.307,26.373],'Çeşme':[38.323,26.303],'Urla':[38.323,26.765],
  'Sığacık':[38.198,26.787],'Seferihisar':[38.197,26.836],'Foça':[38.670,26.757],'Şirince':[37.944,27.433],'Efes':[37.941,27.341],'Selçuk':[37.951,27.368],
  'Bergama':[39.121,27.180],'İzmir':[38.420,27.140],
- 'Göreme':[38.643,34.829],'Kapadokya':[38.643,34.829],'Pamukkale':[37.920,29.120],'Erciyes':[38.530,35.450],'Kayseri':[38.720,35.480],
+ 'Göreme':[38.643,34.829],'Kemer':[36.598,30.560],'Yalova':[40.655,29.270],'Maşukiye':[40.700,30.150],'Sapanca':[40.690,30.268],'Batum':[41.643,41.637],'Kapadokya':[38.643,34.829],'Pamukkale':[37.920,29.120],'Erciyes':[38.530,35.450],'Kayseri':[38.720,35.480],
  'Ayder':[40.953,41.100],'Rize':[41.025,40.517],'Kars':[40.601,43.097],
  'Sakız':[38.368,26.136],'Midilli':[39.110,26.555],'Saraybosna':[43.856,18.413],'Dubai':[25.205,55.271],'İtalya':[41.903,12.496],'İspanya':[41.390,2.170],'Fransa':[48.857,2.352]};
 
