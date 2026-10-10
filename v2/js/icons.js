@@ -47,4 +47,5 @@ export const IC={
  send:s('<path d="M21.5 2.5 10.5 13.5"/><path d="M21.5 2.5 14.5 21.5l-4-8-8-4z"/>'),
  edit:s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
  archive:s('<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>'),
- mute:s('<path d="M6 16v-5a6 6 0 0 1 9.4-4.9M18 11v5l2 2H8M10 20a2 2 0 0 0 4 0M3 3l18 18"/>')};
+ /* sessize al: zil ile aynı çizim, çaprazı boşlukla kesilir */
+ mute:s('<mask id="icMu"><rect width="24" height="24" fill="#fff"/><path d="M3 3l18 18" stroke="#000" stroke-width="5"/></mask><path mask="url(#icMu)" d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/><path d="M4 4l16 16"/>')};
