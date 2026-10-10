@@ -48,4 +48,5 @@ export const IC={
  edit:s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
  archive:s('<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>'),
  /* sessize al: zil ile aynı çizim, çaprazı boşlukla kesilir */
+ download:s('<path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19.5h14"/>'),
  mute:s('<mask id="icMu"><rect width="24" height="24" fill="#fff"/><path d="M3 3l18 18" stroke="#000" stroke-width="5"/></mask><path mask="url(#icMu)" d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/><path d="M4 4l16 16"/>')};

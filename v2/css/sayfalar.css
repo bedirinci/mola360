@@ -831,6 +831,66 @@ body.ch-pg{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100
 .u-amen{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:12px}
 .u-amen li{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-sm);line-height:var(--lh-snug)}
 .u-amen svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--navy)}
+/* V1'den taşınan ürün ayrıntıları: öne çıkanlar, takvim, konaklama, ekstralar, yakındaki yerler, saatler */
+.box .u-h3{font-size:var(--fs-h3);font-weight:var(--fw-bold);line-height:var(--lh-snug);margin-top:16px}
+.u-one{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:0}
+.u-one li{display:flex;gap:10px;align-items:flex-start;font-size:var(--fs-md);line-height:var(--lh-body)}
+.u-one svg{width:18px;height:18px;flex:none;margin-top:1px;color:var(--green-ink);stroke-width:2.2}
+.u-open{margin-top:6px}
+.u-open b{font-weight:var(--fw-semi);color:var(--green-ink)}
+.u-open b.off{color:var(--mute)}
+.u-cal{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.u-cal li{display:flex;gap:12px;align-items:center;padding:10px 0}
+.u-cal li+li{border-top:1px solid var(--line)}
+.u-cal .d{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:48px;border-radius:var(--r-sm);background:var(--soft);line-height:var(--lh-snug)}
+.u-cal .d small{font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--mute)}
+.u-cal .d b{font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy);white-space:nowrap}
+.u-cal div b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold);line-height:var(--lh-snug)}
+.u-cal div span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:1px}
+.u-dur{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:3px;font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--mute);line-height:var(--lh-ui)}
+.u-dur svg{width:14px;height:14px;margin-right:4px;vertical-align:-2px;display:inline}
+.u-dur em{font-style:normal;font-size:var(--fs-xs);font-weight:var(--fw-semi);padding:2px 8px;border-radius:var(--r-pill);background:var(--green-soft);color:var(--green-ink)}
+.u-dur em.pay{background:var(--soft);color:var(--mute)}
+.u-pdf{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:8px;border-radius:var(--r-md);border:1px solid var(--line);font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy)}
+.u-pdf svg{width:18px;height:18px}
+.u-hotels{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.u-hotels li{display:flex;gap:12px;align-items:flex-start;padding:10px 0}
+.u-hotels li+li{border-top:1px solid var(--line)}
+.u-hotels svg{width:22px;height:22px;flex:none;color:var(--navy);margin-top:1px}
+.u-hotels b{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold);line-height:var(--lh-snug)}
+.u-hotels b .stars{display:inline;margin-left:4px;font-size:var(--fs-xs);color:var(--gold);letter-spacing:var(--ls-caps);white-space:nowrap}
+.u-hotels span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:1px}
+.box .u-hotels p{margin-top:4px;font-size:var(--fs-md)}
+.u-board,.u-ret{margin-top:10px;padding:10px 12px;border-radius:var(--r-md);background:var(--soft);font-size:var(--fs-md);line-height:var(--lh-body)}
+.u-board b,.u-ret b{display:block;font-weight:var(--fw-bold)}
+.u-ek{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.u-ek li{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 0}
+.u-ek li+li{border-top:1px solid var(--line)}
+.u-ek b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);line-height:var(--lh-snug)}
+.u-ek div span{display:block;font-size:var(--fs-sm);color:var(--mute);margin-top:2px;line-height:var(--lh-ui)}
+.u-ek .pr{flex:none;text-align:right}
+.u-ek .pr strong{display:block;font-size:var(--fs-base);font-weight:var(--fw-bold);white-space:nowrap}
+.u-ek .pr small{font-size:var(--fs-xs);color:var(--mute)}
+.u-near{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column}
+.u-near li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0}
+.u-near li+li{border-top:1px solid var(--line)}
+.u-near b{display:block;font-size:var(--fs-md);font-weight:var(--fw-semi)}
+.u-near span{display:block;font-size:var(--fs-sm);color:var(--mute)}
+.u-near em{flex:none;font-style:normal;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy);white-space:nowrap}
+.u-hours div{padding:8px 0}
+.u-hours dt,.u-hours dd{font-size:var(--fs-md);font-weight:var(--fw-medium)}
+.u-hours dt small{display:inline;margin-left:6px;font-size:var(--fs-xs);font-weight:var(--fw-semi);color:var(--green-ink)}
+.u-hours .on dt,.u-hours .on dd{font-weight:var(--fw-bold)}
+.bk-ek{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bk-ek button{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line);line-height:var(--lh-snug)}
+.bk-ek i{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:var(--r-xs);border:1.5px solid var(--line)}
+.bk-ek i svg{width:14px;height:14px;color:#fff;stroke-width:3;opacity:0}
+.bk-ek span{flex:1;min-width:0;font-size:var(--fs-md);font-weight:var(--fw-semi)}
+.bk-ek span small,.bk-ek em small{display:block;font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--mute);margin-top:2px}
+.bk-ek em{flex:none;font-style:normal;text-align:right;font-size:var(--fs-md);font-weight:var(--fw-bold);white-space:nowrap}
+.bk-ek button[aria-checked="true"]{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);background:var(--soft)}
+.bk-ek button[aria-checked="true"] i{border-color:var(--navy);background:var(--navy)}
+.bk-ek button[aria-checked="true"] i svg{opacity:1}
 #bk .bk-dg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 #bk .bk-dg button{min-width:0;padding:8px 4px}
 .bk-kids{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}

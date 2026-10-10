@@ -5,6 +5,7 @@
    price, unit, score, count. */
 import { ITEMS, EV, HT, VN, G, POSTS, USERS, BUCKETS, WITH, KIMLE, OZ, THEMES, DESTS, GEO, IMG, POP, PUAN, SEVIYE, HIKAYE, ONERI, YORUMLAR, YANITLAR, HAFTA, PROFIL, SOHBET, BILDIRIM } from './data.js';
 import { DETAY, BASLIK, YORUM, KALKIS, OTEL, SEANS } from './icerik.js';
+import { ONE, YANINA, EK as EKSTRA, KONAK, DURAK, DONUS, ONEMLI, SART, HAVA, KURAL, ULASIM, YAGMUR, TAKVIM, KONUM, PANSIYON, ODADA, SAAT } from './ayrinti.js';
 import { SEHIRLER, SAYFA, GENEL, TUR_YOL, OZ_AD, ESIK } from './sehirler.js';
 import { ROOT } from './root.js';
 
@@ -440,6 +441,8 @@ export function bookingSpec(p){
     /* katılımcı kimliği: yurt dışında herkes için pasaport, yurt içinde yetişkinlerde T.C. kimlik */
     idDoc:t==='tur'?(p.abroad?'pasaport':'tc'):'',
     deposit:t==='tur'?.2:0,
+    /* ek hizmetler [ad, fiyat, birim (kisi | rez | gece), not]; fiyata isteğe bağlı eklenir */
+    ek:(EKSTRA[p.title]||[]).map(([ad,fiyat,birim,not])=>({ad,fiyat,birim,not})),
     cancel:CANCEL[t]||'24 saat öncesine kadar ücretsiz iptal'
   };
 }
@@ -450,7 +453,10 @@ export function bookingSpec(p){
 const rolling=n=>Array.from({length:n},(_,i)=>dayLbl(addDays(today(),i+1)));
 function hotel(p){
   const o=OTEL[p.title]||{giris:'14:00',cikis:'12:00',odalar:[['Standart oda','Çift kişilik',2,Math.round(p.price/2),[]]],olanak:[],cocuk:[6,0],evcil:false};
-  return {giris:o.giris,cikis:o.cikis,olanak:o.olanak,evcil:o.evcil,free:o.cocuk[0],extra:o.cocuk[1],maxNights:14,
+  /* pansiyon: ilki fiyata dahil; diğerleri kişi başı gecelik fark (çocuk yarı fiyat) */
+  const pans=(PANSIYON[p.title]||[[p.facts[1]||'Oda + kahvaltı',0,'']]).map(([ad,fark,not])=>({ad,fark,not}));
+  const odada=ODADA[p.title]||[];
+  return {giris:o.giris,cikis:o.cikis,olanak:o.olanak.filter(x=>!odada.includes(x)),odada,pans,evcil:o.evcil,free:o.cocuk[0],extra:o.cocuk[1],maxNights:14,
     rooms:o.odalar.map(([ad,alt,kap,fiyat,oz])=>({ad,alt,kap,fiyat,oz})),
     dates:rolling(60),
     stay:defaultStay()}
@@ -515,11 +521,22 @@ export function productDetails(p){
   const t=typeKey(p.type),d=DETAY[p.title]||{},[progTitle,placeTitle]=BASLIK[t];
   /* otelde program yerine odalar bölümü (bookingSpec().hotel) */
   return {about:d.about||'',progTitle,program:t==='otel'?[]:d.program||[],placeTitle,place:d.yer||[p.place,''],
-    dahil:d.dahil||[],haric:d.haric||[],bilgi:d.bilgi||[],
+    dahil:d.dahil||[],haric:d.haric||[],bilgi:tekrarsiz(d.bilgi||[],[...(SART[p.title]||[]),...(KURAL[p.title]||[])].map(x=>x.join(' ')).concat(HAVA[p.title]||[],YAGMUR[p.title]||[],YANINA[p.title]||[])),
+    /* ayrıntılar (ayrinti.js): yazılmamış alan boş gelir, sayfada görünmez */
+    one:ONE[p.title]||[],yanina:YANINA[p.title]||(t==='tur'?(p.abroad?['Pasaport','Rahat ayakkabı','Mevsime uygun bir üstlük']:['Rahat ayakkabı','Şapka ve su','Kimlik']):[]),
+    onemli:[...(ONEMLI[p.title]||[]),...(t==='tur'?['Tur en az 6 kişiyle yapılır. Katılım yetmezse en geç 48 saat önce haber verilir; ödemenin tamamı iade edilir ya da başka bir tarihe aktarılır.']:[])],
+    sart:SART[p.title]||[],kural:KURAL[p.title]||[],ulasim:ULASIM[p.title]||[],yagmur:YAGMUR[p.title]||'',hava:HAVA[p.title]||'',
+    konak:KONAK[p.title]||null,durak:DURAK[p.title]||[],donus:DONUS[p.title]||donus(t,d.program),konum:KONUM[p.title]||null,
+    takvim:TAKVIM[p.title]||[],saat:SAAT[p.title]||null,
     reviews:p.count?(YORUM[t]||[]).map(([u,score,text])=>({user:USERS[u],score,text})):[],
     /* türe göre ayrıntılı puanlar (değerlendirme formundakiyle aynı başlıklar), ÖRNEK: genel puandan türetilir */
     aspects:p.count?(ALT[t]||ALT.mekan).map((k,i)=>[k,Math.min(10,Math.max(1,p.score+[.2,-.1,-.3,0][i]))]):[]};
 }
+/* genel bilgilerden, ayrıntı bölümlerinde zaten yazan maddeler çıkar: iki uzun kelimesi (5+ harf) ortak olan madde tekrar sayılır */
+const kelime=t=>new Set(norm(t).split(' ').filter(w=>w.length>=5));
+const tekrarsiz=(bilgi,diger)=>{const ds=diger.map(kelime);return bilgi.filter(b=>{const k=kelime(b);return !ds.some(d=>[...k].filter(w=>d.has(w)).length>=2)})};
+/* günübirlik turda dönüş: programın son adımının saatinden */
+const donus=(t,pr)=>{const l=t==='tur'&&pr&&pr[pr.length-1];return l&&/^\d\d:\d\d$/.test(l[0])?l[0]+' civarı kalkış noktalarına bırakılırsın.':''};
 const ALT={tur:['Rehber','Program','Ulaşım','Fiyat/performans'],otel:['Temizlik','Konum','Personel','Fiyat/performans'],
   etkinlik:['Organizasyon','Ses ve sahne','Giriş','Fiyat/performans'],aktivite:['Ekip','Güvenlik','Organizasyon','Fiyat/performans'],
   mekan:['Hizmet','Ortam','Temizlik','Fiyat/performans']};
