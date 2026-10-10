@@ -2214,3 +2214,21 @@ güncellenecek yaşayan proje dokümanıdır.
   yalnızca `index` sayfaları içerir; `YAYIN` kapalıyken boş. Bugün
   sayfaların robots etiketi değişmedi (hepsi `noindex, nofollow`).
 - **UX sonucu:** Görünür değişiklik yok.
+
+### 2026-10-10 — Keşfet açılırken kaymaz
+
+- **Karar:** JavaScript'in sonradan doldurduğu Keşfet bölümlerine HTML
+  boyanırken yer ayrılır.
+- **Neden:** Yavaş bağlantıda popüler aramalar, süre kutuları, Kiminle,
+  raylar ve Molapuan kartı sonradan gelip sayfayı aşağı itiyordu
+  (yerel ölçümde CLS 0,45; Google'ın iyi eşiği 0,1). Okurken kayan sayfa
+  yanlış dokunmaya yol açar ve Core Web Vitals'ı bozar.
+- **Etkilediği alanlar:** `v2/css/kesfet.css`, `tests/v2-tarayici.test.js`,
+  `docs/seo.md` §7.
+- **Teknik sonuç:** `@media (scripting:enabled)` içinde `:empty`
+  bölümlere en küçük yükseklik; dolunca kural düşer. JavaScript kapalıyken
+  boş yer kalmaz. Ölçüm sonrası CLS 0,002. Test JavaScript'i geciktirip
+  390 ve 320 px'te CLS < 0,1 olduğunu denetler.
+- **UX sonucu:** Yüklenmiş sayfa aynı; açılırken içerik yerinden
+  oynamaz.
+
