@@ -47,23 +47,23 @@ body{min-height:100vh;min-height:100dvh}
 .filters[hidden]{display:none}
 .ls-count{padding:12px 16px 0;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
 .ls-count+.sr+.stack,.ls-count+.sr+.ls-grid{padding-top:10px}
-/* Büyük kart görünümü: tek sütun; geniş görsel üstte, bilgiler altta. Beyaz zemin, ince kenar */
-.ls-grid{display:flex;flex-direction:column;gap:14px;padding:10px 16px 0}
-.ls-grid .vk{width:auto;aspect-ratio:auto;justify-content:flex-start;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line);border-radius:var(--r-lg)}
-.ls-grid .vk::before{content:"";display:block;flex:none;aspect-ratio:16/9;margin:8px 8px 0;border-radius:var(--r-md);background:var(--g)}
-.ls-grid .vk-tg{left:18px;top:18px}
-.ls-grid .vk-off{left:18px;top:48px}
-.ls-grid .vk .heart{right:18px;top:18px}
-.ls-grid .vk-b{display:flex;flex-direction:column;min-width:0;padding:10px 14px 14px}
-.ls-grid .vk h3{font-size:var(--fs-base);line-height:var(--lh-snug)}
-.ls-grid .vk-s{opacity:1;color:var(--mute);margin-top:3px}
-.ls-grid .vk-pp{order:1;margin:8px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
-.ls-grid .vk-r{order:2;align-items:flex-end;flex-wrap:wrap;row-gap:4px;margin-top:10px}
-.ls-grid .vk-st{color:var(--ink)}
-.ls-grid .vk-st i{opacity:1;color:var(--mute)}
+/* Büyük kart görünümü: tek sütun, çerçevesiz. Geniş görsel; altında ad ve
+   puan, yer, fiyat. Kartlar arasında nefes payı */
+.ls-grid{display:flex;flex-direction:column;gap:24px;padding:12px 16px 0}
+.ls-grid .vk{width:auto;aspect-ratio:auto;justify-content:flex-start;background:none;color:var(--ink);border-radius:0;overflow:visible}
+.ls-grid .vk::before{content:"";display:block;flex:none;aspect-ratio:3/2;border-radius:var(--r-lg);background:var(--g)}
+.ls-grid .vk-tg{left:12px;top:12px}
+.ls-grid .vk-off{left:12px;top:42px}
+.ls-grid .vk .heart{right:12px;top:12px}
+.ls-grid .vk-b{display:flex;flex-direction:column;min-width:0;padding:12px 2px 0}
+.ls-grid .vk h3{font-size:var(--fs-lg);line-height:var(--lh-snug)}
+.ls-grid .vk-s{opacity:1;color:var(--mute);font-size:var(--fs-md);margin-top:3px}
+.ls-grid .vk-pp{order:1;align-self:flex-start;margin:8px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.ls-grid .vk-r{order:2;align-items:center;flex-wrap:wrap;row-gap:4px;margin-top:10px}
 .ls-grid .vk-st.new{background:var(--soft)}
-.ls-grid .vk-p{margin-left:auto;background:none;padding:0;border-radius:0}
-.ls-grid .vk-p b{font-size:var(--fs-lg)}
+.ls-grid .vk-p{margin-left:auto;flex-direction:row;align-items:baseline;gap:4px;background:none;padding:0;border-radius:0}
+.ls-grid .vk-p b{font-size:var(--fs-xl)}
+.ls-grid .vk-p s{margin-right:2px}
 .ls-grid+.kat-seo{margin-top:24px}
 /* Filtreler çekmecesi */
 .lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:60vh;overflow-y:auto}

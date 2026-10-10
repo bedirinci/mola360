@@ -1,7 +1,7 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
-import { tl, ttl, makeSheet, esc } from './ui.js';
+import { tl, ttl, makeSheet, esc, word } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
@@ -24,7 +24,7 @@ export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
   return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><div class="vk-tg"><span class="type">'+x.k+'</span>'+(lv?'<span class="vk-off">%10 indirim</span>':'')+'</div>'+heartBtn(x.t)
   +'<div class="vk-b">'+pp(x.id,x.pp)+'<h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
-  +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
+  +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+'<b>'+x.s.toFixed(1).replace('.',',')+'</b><em>'+word(x.s)+'</em> <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
   +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
 }
 

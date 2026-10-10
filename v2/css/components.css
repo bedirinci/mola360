@@ -371,6 +371,8 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .vk-st{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:var(--fw-bold);font-variant-numeric:tabular-nums;white-space:nowrap}
 .vk-st svg{width:13px;height:13px;fill:var(--gold);stroke:none}
 .vk-st i{font-style:normal;font-weight:var(--fw-medium);opacity:.8;font-size:var(--fs-sm)}
+/* puanın sözcüğü (Harika) yalnızca liste ve büyük kartta */
+.vk-st em{display:none}
 .vk-st.new{background:var(--card);color:var(--ink);font-size:var(--fs-xs);padding:3px 8px;border-radius:var(--r-xs)}
 .vk-p{display:flex;flex-direction:column;align-items:flex-end;background:#fff;color:var(--ink);border-radius:var(--r-sm);padding:4px 9px 5px;white-space:nowrap;min-width:0;line-height:var(--lh-tight)}
 .vk-p b{font-size:var(--fs-base);font-weight:var(--fw-black);letter-spacing:var(--ls-snug);font-variant-numeric:tabular-nums}
@@ -382,30 +384,36 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .vk-pp .avs{display:flex}
 .vk-pp .ava{width:20px;height:20px;font-size:var(--fs-xs);letter-spacing:var(--ls-initials);box-shadow:0 0 0 1.5px #fff}
 .vk-pp .ava+.ava{margin-left:-6px}
-/* Liste ve favoriler: karşılaştırmak için yatay, sık kart (görsel solda) */
+/* Liste ve favoriler: karşılaştırmak için yatay, sık kart. Görsel solda;
+   sağda tür, ad, yer; altta lacivert puan kutusu ve fiyat */
 .stack{gap:var(--s-3)}
-.stack .vk{width:auto;aspect-ratio:auto;min-height:124px;flex-direction:row;justify-content:flex-start;padding:10px 12px 10px 124px;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line);border-radius:var(--r-md)}
-.stack .vk::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:104px;border-radius:var(--r-sm);background:var(--g)}
-.stack .vk-b{display:flex;flex-direction:column;flex:1;min-width:0;padding:18px 0 0}
+.stack .vk{width:auto;aspect-ratio:auto;min-height:128px;flex-direction:row;justify-content:flex-start;padding:12px 14px 12px 128px;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(12,18,40,.04);border-radius:var(--r-lg)}
+.stack .vk::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:108px;border-radius:var(--r-md);background:var(--g)}
+.stack .vk-b{display:flex;flex-direction:column;flex:1;min-width:0;padding:17px 0 0}
 .stack .vk h3{font-size:var(--fs-base)}
 .stack .vk-s{opacity:1;color:var(--mute);margin-top:2px}
 /* puan ve fiyat sığmazsa fiyat alt satıra, sağa iner; üst üste binmez */
-.stack .vk-r{margin-top:auto;padding-top:var(--s-2);align-items:flex-end;flex-wrap:wrap;row-gap:4px}
+.stack .vk-r{margin-top:auto;padding-top:var(--s-2);align-items:center;flex-wrap:wrap;row-gap:4px}
 .stack .vk-p{margin-left:auto}
-.stack .vk-st{color:var(--ink)}
-.stack .vk-st i{opacity:1;color:var(--mute)}
+.stack .vk-st,.ls-grid .vk-st{gap:5px;color:var(--ink)}
+.stack .vk-st svg,.ls-grid .vk-st svg{display:none}
+.stack .vk-st b,.ls-grid .vk-st b{min-width:30px;padding:3px 6px;border-radius:var(--r-xs);background:var(--navy);color:#fff;text-align:center;line-height:var(--lh-ui)}
+.stack .vk-st em,.ls-grid .vk-st em{display:inline;font-style:normal;font-weight:var(--fw-bold)}
+.stack .vk-st i,.ls-grid .vk-st i{opacity:1;color:var(--mute);font-weight:var(--fw-medium)}
 .stack .vk-st.new{background:var(--soft);color:var(--ink)}
 .stack .vk-p{background:none;padding:0;border-radius:0}
 .stack .vk-p b{font-size:var(--fs-lg)}
-.stack .vk .type{left:124px;top:12px;padding:0;background:none;color:var(--mute)}
+.stack .vk .type{left:128px;top:13px;padding:0;background:none;color:var(--mute)}
 .stack .vk-tg{display:contents}
 .stack .vk-tg>.type{position:absolute}
 .vk-tg>.vk-off{position:static}
 .stack .vk-tg>.vk-off{position:absolute;left:14px;top:auto;bottom:14px}
-.stack .vk .heart{left:76px;right:auto;top:14px;width:30px;height:30px}
+.stack .vk .heart{left:84px;right:auto;top:14px;width:30px;height:30px}
 .stack .vk .heart svg{width:15px;height:15px}
 .stack .vk-pp{order:1;margin:7px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
 .stack .vk-r{order:2}
+/* dar ekranda puanın sözcüğü kalkar, puan ve sayı kalır */
+@media (max-width:359px){.stack .vk-st em{display:none}}
 @media (hover:hover){.stack .vk:hover{box-shadow:0 0 0 1px var(--line),var(--shadow)}}
 html.kb .vk:has(.lk:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
 /* Yakınımda: kartta uzaklık */
