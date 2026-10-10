@@ -2302,3 +2302,37 @@ güncellenecek yaşayan proje dokümanıdır.
   ::before'da sağ boşluğu yok sayıyordu).
 - **UX sonucu:** Kullanıcı seçmeden önce kaç sonuç kalacağını görür,
   sıfır sonuçlu seçim yapamaz.
+
+### 2026-10-10 — İlk sürümün ürün içeriği ürün sayfasına taşındı
+
+- **Karar:** İlk sürümde olup v2'de eksik kalan 18 ürün içeriği alanı
+  eklendi (Bedir seçti; inceleme `docs/v1-urun-icerigi.md`, proje
+  dosyalarında). Bütün türler: Öne çıkanlar (Hakkında içinde), güven
+  rozetleri (Anında onay, tura göre %20 kapora / Mobil bilet / Otelde
+  ödeme yok / Masan ayrılır, 3 taksit, Molapuan; dokununca açıklama),
+  Ekstralar (ücretli ek hizmetler). Tur: Konaklama kutusu (otel, yıldız,
+  gece, pansiyon), program duraklarında süre ve rozet (Ücretli, Yemek
+  dahil…), kalkış günleri ("Pazartesi ve Cuma kalkışlı"), dönüş satırı,
+  önemli koşullar (minimum katılım dahil), Yanına al, Programı indir
+  (PDF). Otel: açık adres ve yakındaki yerler, pansiyon seçimi, olanaklar
+  "Odada / Tesiste". Etkinlik: kurallar, nasıl gidilir, yağmur yağarsa,
+  öğrenci bileti, festival ve konser serisi için program takvimi.
+  Aktivite: katılım şartları, hava koşulu iadesi. Mekân: bugün açık mı,
+  çalışma saatleri, fiyat seviyesi (₺₺₺), menü, minimum harcamanın
+  harcamadan düşmesi.
+- **Neden:** Bedir ilk sürümün ürün içeriğini inceletti ve listedeki
+  maddeleri seçti. Künye kartını genişletme maddesini seçmedi.
+- **Etkilediği alanlar:** ürün sayfası, rezervasyon (Ekstralar,
+  Pansiyon, fiyat dökümü), örnek veri.
+- **Teknik sonuç:** içerik `v2/js/ayrinti.js` (ÖRNEK, anahtar ürün adı);
+  `api.js` `productDetails()` yeni alanları, `bookingSpec()` `ek` ve
+  otelde `pans`, `odada` verir. Genel bilgilerden ayrıntı bölümlerinde
+  zaten yazan maddeler çıkar (`tekrarsiz`). Ekstralar seviye indirimine
+  girmez; kişi başı olanlar kişi sayısıyla çarpılır. Pansiyon farkı kişi
+  başı gecelik, ücretli yaştaki çocuk yarı fiyat; ürün sayfasındaki fiyat
+  2 yetişkinle hesaplanır, seçim rezervasyona `&pans=` ile geçer. Hizmet
+  bedeli zaten 0 TL yazıyor. PDF, yazdırılabilir sade bir sayfa açıp
+  tarayıcının "PDF olarak kaydet"ini kullanır.
+- **UX sonucu:** Kullanıcı karar vermek için gereken her şeyi (ne dahil,
+  ne ekstra, ne getirmeli, hangi şartla katılır, hava bozarsa ne olur)
+  ürün sayfasında görür; Bilmen gerekenler alt başlıklarla gruplanır.
