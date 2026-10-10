@@ -85,6 +85,9 @@ Hepsi JavaScript olmadan HTML'dedir; testler denetler.
 - **Açıklama:** en çok 160 harf; ad, sığdığı kadar deneyim, başlangıç
   fiyatı.
 - **Tek `h1`:** sayfanın adı.
+- **Keşfet** (`v2/index.html`): asıl adres, Open Graph ve sitenin
+  yapısal verisi (`WebSite`, `Organization`) `<!-- bas -->` bloğunda;
+  `npm run seo` üretir.
 - **Asıl adres (canonical)** ve aynı adresle Open Graph (`og:title`,
   `og:description`, `og:url`, `og:locale` tr_TR) ile `twitter:card`.
 - **Görünen sayfa yolu** başlığın üstünde (Keşfet › İzmir › Mekânlar).
@@ -123,14 +126,26 @@ Hepsi JavaScript olmadan HTML'dedir; testler denetler.
   `false`; bütün sayfalar `noindex, nofollow` olur (Bedir: şimdilik
   kalsın).
 - **`true` olunca** (`npm run seo` ile her sayfa güncellenir):
-  - Keşfet, şehir, otel, tur ve deneyim sayfaları: `index, follow`;
+  - Keşfet: `index, follow`;
+  - şehir, otel, tur ve deneyim sayfaları yalnızca **gerçek veriyle**
+    `index, follow` (aşağıda "Örnek veri dizine girmez"); örnek veriyle
+    `noindex, follow`;
   - Liste, Ürün (`?id=`) ve Bağlan: `noindex, follow`;
   - kişisel sayfalar (profil, mesajlar, rezervasyon …):
     `noindex, nofollow`.
 - **Süzgeçli adres:** süzgeçli adres (`/turlar/kultur/?sure=uzun`) asıl
   adres olarak yalın sayfayı gösterir.
-- **Site haritası:** `v2/sitemap.xml`, yayımlanan bütün sayfaları içerir.
-  Search Console'a gönderilir.
+- **Örnek veri dizine girmez (2026-10-10):** uydurma işletme, fiyat,
+  puan ya da müsaitlik arama sonucuna çıkmaz. `api.js`'te `sample:true`
+  olan deneyimin sayfası dizine girmez; liste sayfası en az `ESIK` gerçek
+  deneyimle, şehir sayfası şehrin sayfalarında en az `ESIK` gerçek
+  deneyimle dizine girer (`scripts/seo.mjs` `acikYollar`). Bugün bütün
+  deneyimler örnek olduğu için `YAYIN = true` olsa da yalnızca Keşfet
+  dizine girer. Gerçek iş ortağı verisi geldikçe sayfalar kendiliğinden
+  açılır.
+- **Site haritası:** `v2/sitemap.xml` yalnızca dizine eklenebilir
+  (`index`) sayfaları içerir; `YAYIN` kapalıyken boştur. `lastmod` yazılmaz
+  (gerçek değişiklik tarihi yok). Search Console'a gönderilir.
 - **`robots.txt`:** site alanın kökünde olmadığı için
   (`bedirinci.github.io/mola360/`) yazılamıyor; alan adı gelince eklenir.
 
@@ -165,4 +180,9 @@ Google'ın iyi deneyim eşikleri: LCP < 2,5 sn, INP < 200 ms, CLS < 0,1.
 - **Gerçek değerlendirmeler** gelince `aggregateRating` ve yorum
   parçacıkları.
 - **Alan adı ve yayın:** alan adı, `robots.txt`, Search Console ve
-  `YAYIN = true`.
+  `YAYIN = true`. Denetim raporu ve yol haritası (2026-10-10):
+  proje klasöründe `docs/seo/denetim-2026-10-10.md`.
+- **Keşfet'te yerleşim kayması:** yavaş bağlantıda JavaScript'le çizilen
+  bölümler (süre rayı, Kiminle, Yakınımda) ilk boyamadan sonra gelip
+  içeriği kaydırıyor (yerel laboratuvar ölçümünde CLS 0,45; eşik 0,1).
+  Bölümlere yer ayrılmalı.

@@ -2196,3 +2196,21 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Seçili filtreler çubuğun altında × ile kaldırılabilen
   lacivert çiplerdir. Izgara iki sütunlu görsel kartlar, liste
   karşılaştırmalı yatay kartlardır. 320 px'te üç parça tek satıra sığar.
+
+### 2026-10-10 — Örnek veri arama motoruna girmez; Keşfet'in asıl adresi
+
+- **Karar:** Örnek (`sample`) veriyle dolu sayfa, `YAYIN` açılsa da dizine
+  girmez ve site haritasına yazılmaz. Keşfet asıl adres, Open Graph ve
+  sitenin yapısal verisini (`WebSite`, `Organization`) taşır.
+- **Neden:** Bütün deneyimler bugün örnek veri. Uydurma işletmelerin
+  fiyatı ve müsaitliği arama sonucuna çıkarsa kullanıcıyı yanıltır ve
+  Google'ın yapısal veri kurallarına aykırıdır. Site haritasında
+  `noindex` sayfa olmamalı.
+- **Etkilediği alanlar:** `scripts/seo.mjs` (`acikYollar`, `robotsOf`,
+  `siteHaritasi`, `kesfetBas`), `v2/index.html` `<head>`,
+  `v2/sitemap.xml`, `tests/v2.test.js`, `docs/seo.md` §5–§6.
+- **Teknik sonuç:** Deneyim sayfası yalnızca gerçek veriyle; liste ve
+  şehir sayfası en az `ESIK` gerçek deneyimle `index`. Site haritası
+  yalnızca `index` sayfaları içerir; `YAYIN` kapalıyken boş. Bugün
+  sayfaların robots etiketi değişmedi (hepsi `noindex, nofollow`).
+- **UX sonucu:** Görünür değişiklik yok.
