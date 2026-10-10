@@ -75,7 +75,8 @@ wEl.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t){curK
 /* Yakınımda ne var? Konum yalnızca kullanıcı dokununca istenir. Seçim bu
    cihazda hatırlanır ("gps" ya da "yer:izmir"); konumun kendisi saklanmaz.
    İzin daha önce verildiyse sonraki açılışta yeniden sormadan kullanılır. */
-const NK='m360-yakin',CITIES=['istanbul','izmir','ankara','antalya'];
+/* konum izni yoksa seçilecek yerler: Mola360 İzmir'de açık, İzmir'in semtleri */
+const NK='m360-yakin',CITIES=['alsancak','karsiyaka','bornova','urla','cesme'];
 const nGo=$('nearGo'),nCard=$('nearCard'),nOn=$('nearOn'),nAlt=$('nearAlt');
 const nGet=()=>{try{return localStorage.getItem(NK)||''}catch(e){return ''}};
 const nSet=v=>{try{v?localStorage.setItem(NK,v):localStorage.removeItem(NK)}catch(e){}};
@@ -90,19 +91,19 @@ $('nearOff').addEventListener('click',()=>{nearOff();nGo.focus()});
 function nearCity(id){const d=getDestination(id),pos=placePos(id);if(!d||!pos)return nearOff();nSet('yer:'+id);nearShow(pos,d.name+' çevresi',id)}
 function nearFail(msg){nGo.disabled=false;nGo.querySelector('span').textContent='Tekrar dene';nAlt.hidden=false;$('nearMsg').textContent=msg}
 function nearGps(){
-  if(!navigator.geolocation)return nearFail('Tarayıcın konum paylaşmıyor. Bir şehir seç:');
+  if(!navigator.geolocation)return nearFail('Tarayıcın konum paylaşmıyor. Bir semt seç:');
   nGo.disabled=true;nGo.querySelector('span').textContent='Konum alınıyor…';
   /* izin sorusu cevapsız kalırsa düğme kilitli kalmasın */
-  const late=setTimeout(()=>nearFail('Konumun alınamadı. İstersen bir şehir seç:'),15000);
+  const late=setTimeout(()=>nearFail('Konumun alınamadı. İstersen bir semt seç:'),15000);
   navigator.geolocation.getCurrentPosition(p=>{clearTimeout(late);
     const pos=[p.coords.latitude,p.coords.longitude],n=nearestPlace(pos);
     const ok=n&&n.km<=60;nSet('gps');nGo.disabled=false;nearShow(pos,ok?n.name+' çevresi':'Konumuna göre',ok?n.id:null);
-  },e=>{clearTimeout(late);nearFail(e.code===1?'Konum izni verilmedi. İstersen bir şehir seç:':'Konumun alınamadı. İstersen bir şehir seç:')},{timeout:10000,maximumAge:600000});
+  },e=>{clearTimeout(late);nearFail(e.code===1?'Konum izni verilmedi. İstersen bir semt seç:':'Konumun alınamadı. İstersen bir semt seç:')},{timeout:10000,maximumAge:600000});
 }
 $('nearCities').innerHTML=CITIES.map(id=>'<button type="button" data-city="'+id+'">'+getDestination(id).name+'</button>').join('');
 nGo.addEventListener('click',nearGps);
 $('nearCities').addEventListener('click',e=>{const b=e.target.closest('[data-city]');if(b)nearCity(b.dataset.city)});
-/* açılışta: şehir seçildiyse hemen, konum izni verildiyse yeniden sormadan */
+/* açılışta: semt seçildiyse hemen, konum izni verildiyse yeniden sormadan */
 function nearStart(){
   const v=nGet();
   if(v.startsWith('yer:')){nearCity(v.slice(4));return true}

@@ -420,8 +420,10 @@ v2/
 ├── index.html            Keşfet
 ├── baglan/ urun/ liste/ rezervasyon/ planlarim/ profil/
 ├── gonderi/ kisi/ mesajlar/ sohbet/ bildirimler/
-├── karadeniz-turlari/ …   kategori sayfaları (43; scripts/kategoriler.mjs üretir)
-├── sitemap.xml           site haritası: Keşfet ve kategori sayfaları (aynı betik üretir)
+├── izmir/ …              şehir, tür, özellik, niyet, semt ve deneyim sayfaları
+├── oteller/ turlar/ …    bütün şehirlerin otel ve tur sayfaları
+│                         (hepsini scripts/seo.mjs üretir; kurallar docs/seo.md)
+├── sitemap.xml           site haritası (aynı betik üretir)
 ├── css/
 │   ├── tokens.css        tasarım tokenları (tek ölçek)
 │   ├── base.css
@@ -432,6 +434,7 @@ v2/
 └── js/
     ├── api.js            tek veri katmanı (backend gelince içi değişir)
     ├── data.js icerik.js ÖRNEK veri
+    ├── sehirler.js       şehirler ve SEO sayfa tanımları
     ├── shell.js ui.js cards.js …   ortak parçalar
     └── kesfet.js baglan.js urun.js …   sayfa modülleri
 ```
@@ -2070,3 +2073,91 @@ güncellenecek yaşayan proje dokümanıdır.
   - Yalnızca o kategorinin deneyimleri arasında süzer; sekmeler ve
     ilgisiz süzgeçler onu başka listeye götürmez.
   - Boş sonuç veren süre seçeneği yoktur.
+
+### 2026-10-08 — Mola360 İzmir'de açılıyor; SEO mimarisi: şehir ağacı, otel ve tur ağaçları, deneyim sayfaları (Bedir)
+
+- **Karar (Bedir):**
+  - "Mola360'ı ilk olarak İzmir şehrinde başlatmak istiyorum. Daha sonra
+    duruma göre başka şehirlerde sırasıyla başlatacağım."
+  - "Mekanlar, etkinlikler ve aktiviteler İzmir'den olacak. Oteller ve
+    turlar tüm şehirlerle."
+  - SEO, Bedir'in SEO çalışmasındaki modele göre kurulur: keşif motoru
+    (Tripadvisor, GetYourGuide, Yelp, Etstur'un şehir sayfaları); şehir,
+    şehir + tür, şehir + özellik, şehir + niyet, şehir + bölge ve gerçek
+    deneyim sayfaları; yapısal veri; kapı sayfası (doorway) ve seri üretim
+    içerik yok.
+  - Sayfalar yayına kadar `noindex, nofollow` kalır ("Şimdilik kalsın").
+- **Neden:**
+  - Yerel bir keşif ürünü bir şehirde yoğun olunca işe yarar; yirmi şehre
+    ince dağılmış veri hem kullanıcıya hem arama motoruna boş görünür.
+  - Otel ve tur insanların başka şehre gitmek için aradığı şeydir; bunlar
+    şehirle sınırlanmaz.
+  - Önceki 43 kategori sayfası düz adresliydi (`karadeniz-turlari/`) ve
+    şehirle tür, tema ile tür karışıktı. Arama motoru sitenin yapısını
+    adreslerden anlar; şehir → tür → özellik → deneyim ağacı bunu verir.
+  - Deneyimin kendi adresi yoktu (`urun/?id=`); arama motoru sorgulu
+    adresi asıl sayfa saymaz.
+- **Etkilediği alanlar:**
+  - `v2/js/data.js` (İzmir verisi, `OZ` özellikler, `DESTS` şehir alanı;
+    `KOLEKSIYON` kaldırıldı), `v2/js/icerik.js`;
+  - yeni `v2/js/sehirler.js` (şehirler ve sayfa tanımları), yeni
+    `v2/js/sehir.js` (şehir sayfası);
+  - `v2/js/api.js` (`p.path`, `p.sehir`, `p.oz`, `p.kalkis`, `urunUrl`,
+    `turUrl`, `recommended`, `listPages`, `findCityPage`, `pageTitle`,
+    `productTitle`), `liste.js`, `urun.js`, `kesfet.js`, `arama.js`,
+    `cards.js` ve kart bağı kuran sayfalar;
+  - `scripts/kategoriler.mjs` yerine `scripts/seo.mjs` (`npm run seo`);
+    43 eski kategori sayfası silindi, 105 sayfa üretildi;
+  - `v2/index.html` (başlık, açıklama, "İzmir'de ne yapılır?" bölümü),
+    `v2/sitemap.xml`;
+  - CSS (`components.css`, `sayfalar.css`, `kesfet.css`);
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`;
+  - yeni `docs/seo.md` (SEO kural kitabı).
+- **Teknik sonuç:**
+  - **Veri:** 65 deneyim. İzmir'de 15 mekân, 9 etkinlik, 11 aktivite ve
+    9 otel; İzmir dışından 4 otel; 17 tur (İzmir, İstanbul, Ankara,
+    Trabzon, Ayvalık çıkışlı). İzmir'in 13 semti `DESTS`'te şehir
+    alanıyla.
+  - **Adresler** (`docs/seo.md` §3):
+    - `izmir/`, `izmir/<tür>/`, `izmir/<tür>/<özellik>/`,
+      `izmir/<niyet>/`, `izmir/<semt>/`;
+    - `oteller/`, `turlar/`, `turlar/<özellik>/`,
+      `turlar/<şehir>-cikisli/`;
+    - deneyim: `izmir/<tür>/<deneyim>/`, `oteller/<otel>/`,
+      `turlar/<tur>/`.
+  - **Sayfa sayısı:** 40 liste ve şehir sayfası (8 genel otel ve tur
+    sayfası, İzmir şehir sayfası, 4 tür, 14 özellik, 4 niyet, 9 semt) ve
+    65 deneyim sayfası.
+  - **Kapı sayfası yok:**
+    - sayfa en az 3 deneyimle yayımlanır (`ESIK`);
+    - deneyim kümesi başka bir sayfayla aynıysa yayımlanmaz;
+    - her sayfanın adı ve giriş metni kendine özgü (test denetler).
+  - **Her sayfada** JavaScript'siz HTML'de:
+    - `title` (≤ 60), açıklama (≤ 160), tek `h1`;
+    - canonical, Open Graph, `twitter:card`;
+    - görünen sayfa yolu ve aynısıyla `BreadcrumbList`;
+    - liste sayfasında `CollectionPage`, `ItemList`, `FAQPage`;
+    - deneyim sayfasında türüne göre `Hotel`, `TouristTrip`, `Restaurant`
+      gibi işletme türü ya da `Product`; etkinliğin tarihleri tarayıcıda
+      `Event` olarak eklenir.
+  - **Puan:** örnek puan yapısal veriye girmez.
+  - **Tarih yok:** sabit HTML'de gün yazılmaz; test saati 45 gün ileri
+    alıp sayfaların aynı kaldığını denetler.
+  - **Deneyim sayfası:** `urun.js` sabit sayfada (`body data-id`) aynı
+    şablonu çizer, sayfa yolunu korur. `urun/?id=` adresi asıl adres
+    olarak deneyimin sabit sayfasını gösterir. Bütün kartlar sabit adrese
+    gider.
+  - **Sıralama:** "Önerilen" sırası puan ve değerlendirme sayısından
+    (`api.recommended`); üretici ve Liste aynı sırayı kullanır.
+  - **Dizine ekleme:** `scripts/seo.mjs` `YAYIN` anahtarı. `false` iken
+    her sayfa `noindex, nofollow`; `true` olunca sayfa türüne göre
+    (`docs/seo.md` §6). Site haritası yayımlanan bütün sayfaları içerir.
+- **UX sonucu:**
+  - Keşfet İzmir'i anlatır: "İzmir'de ne yapılır?" bölümü türleri,
+    özellikleri, kiminle ve semtleri bağlar; oteller ve turlar ayrı
+    bölümde.
+  - Şehir sayfasında her tür kendi rayında, altında özellik çipleri,
+    kiminle ve semtler.
+  - Deneyim sayfasında üstte sayfa yolu (Keşfet › İzmir › Mekânlar), altta
+    benzer deneyimler ve deneyimin bulunduğu sayfalar.
+  - Yeni şehir aynı yapıyla eklenir (`docs/seo.md` §8).

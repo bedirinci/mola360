@@ -166,3 +166,5 @@
 .who-r small{display:block;font-size:var(--fs-sm);color:var(--mute)}
 .who-ok{width:100%;justify-content:center;margin-top:12px;padding:14px;font-size:var(--fs-base)}
 @media (max-width:374px){.hello{font-size:clamp(20px,6.1vw,24px)}}
+/* "İzmir'de ne yapılır?": şehrin tür, kiminle ve semt sayfalarına bağlar (scripts/seo.mjs) */
+.sh-kesfet .kat-il+.kat-il{margin-top:8px}

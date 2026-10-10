@@ -14,7 +14,7 @@ import { existsSync } from 'node:fs';
 import { chromium } from 'playwright';
 import sunucu from '../scripts/sunucu.js';
 import { USERS } from '../v2/js/data.js';
-import { listProducts, listPosts, listCollections, TYPES } from '../v2/js/api.js';
+import { listProducts, listPosts, listCollections, listPages } from '../v2/js/api.js';
 
 const VAR = existsSync(chromium.executablePath());
 const SAYFALAR = ['', 'baglan/', 'liste/', 'liste/?tur=otel', 'liste/?tarih=bu-hs', 'liste/?tema=doga', 'liste/?yer=kapadokya&tur=tur', 'liste/?ara=deniz',
@@ -23,7 +23,8 @@ const SAYFALAR = ['', 'baglan/', 'liste/', 'liste/?tur=otel', 'liste/?tarih=bu-h
   ...listProducts().flatMap(p => ['urun/?id=' + p.id, 'rezervasyon/?id=' + p.id]),
   ...Object.values(USERS).map(u => 'kisi/?u=' + u.kul), ...Object.keys(USERS).map(k => 'sohbet/?k=' + k),
   ...listPosts().map(p => 'gonderi/?id=' + p.id), 'gonderi/?id=a1', 'gonderi/?id=a4',
-  ...TYPES.flatMap(([t]) => listCollections(t).map(c => c.slug + '/'))];
+  /* SEO sayfaları (scripts/seo.mjs): şehir, otel ve tur sayfaları, her deneyimin kalıcı sayfası */
+  ...listPages().map(pg => pg.path), ...listProducts().map(p => p.path)];
 
 describe.skipIf(!VAR)('v2 tarayıcıda', () => {
   let server, base, browser;
@@ -122,7 +123,7 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     /* açılış: ipucu oynar; kartlar seçili sekmenin (Turlar) kategorileri */
     await page.goto(base, { waitUntil: 'networkidle' });
     expect(await ipucu()).toBe(true);
-    const adres = t => listCollections(t).map(c => c.slug + '/');
+    const adres = t => listCollections(t).map(pg => pg.path);
     expect(await kartlar()).toEqual(adres('tur'));
     expect(await page.textContent('.koll-g:not([hidden]) h2')).toBe('Tur çeşitleri');
     await bitti();
@@ -160,46 +161,72 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     await sakin.close();
   }, 40000);
 
-  it('kategori sayfası: kendi adresinde açılır; yalnızca kategorinin deneyimleri ve süzgeçleri', async () => {
+  it('SEO sayfası: kendi adresinde açılır; yalnızca sayfanın deneyimleri ve süzgeçleri', async () => {
     const api = await import('../v2/js/api.js');
+    const pg = api.listPages().find(x => x.path === 'turlar/kultur/');
     const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
-    await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
+    await page.goto(base + pg.path, { waitUntil: 'networkidle' });
     /* üst kısım HTML'deki gibi kalır: kapak, sayfa yolu, başlık, giriş */
     expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
     expect(await page.textContent('.bc')).toBe('KeşfetTurlar');
-    const K = api.listCollections('tur').find(c => c.slug === 'kultur-turlari');
-    expect(await page.textContent('#lsSub')).toBe(K.intro);
+    expect(await page.textContent('#lsSub')).toBe(pg.intro);
     expect(await page.$eval('header.pg-top', h => h.classList.contains('cover'))).toBe(true);
-    expect(await page.title()).toBe('Kültür turları — fiyatlar ve tarihler | mola360');
-    expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe(base + 'kultur-turlari/');
-    /* kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca kategoride olan süreler */
+    expect(await page.title()).toBe(api.pageTitle(pg));
+    expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe('https://bedirinci.github.io/mola360/v2/turlar/kultur/');
+    /* kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca sayfada olan süreler; sıra önerilen */
     expect(await page.$('#cats')).toBeNull();
     expect(await page.$$('[data-kimle]')).toHaveLength(0);
-    const l = api.listProducts({ type: 'tur', tema: 'kultur' });
+    const l = pg.ids.map(api.getProduct);
     expect(await page.$$eval('[data-sure]', a => a.map(b => b.dataset.sure))).toEqual(api.BUCKETS.map(b => b[0]).filter(b => l.some(p => p.b === b)));
-    expect(await page.$$eval('#list .vk', a => a.length)).toBe(l.length);
-    /* açıklama, SSS ve ilgili kategoriler açık; SSS açılır kapanır */
+    expect(await page.$$eval('#list .vk h3', a => a.map(x => x.textContent))).toEqual(l.map(p => p.title));
+    /* açıklama, SSS ve ilgili sayfalar açık; SSS açılır kapanır */
     const kat = () => page.$$eval('body [data-kat]', a => a.map(e => e.hidden));
     expect(await kat()).toEqual([false, false, false]);
     await page.click('.kat-seo details summary');
     expect(await page.$eval('.kat-seo details', d => d.open)).toBe(true);
     /* Keşfet'teki kart bu sayfaya gider */
     await page.goto(base, { waitUntil: 'networkidle' });
-    expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="kultur-turlari/"]', 'href')).toBe('kultur-turlari/');
-    await page.goto(base + 'kultur-turlari/', { waitUntil: 'networkidle' });
-    /* süre seçilince adres kategori sayfasında kalır; liste kategorinin tamamı olmadığı için alttaki bölümler gizlenir */
+    expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="turlar/kultur/"]', 'href')).toBe('turlar/kultur/');
+    await page.goto(base + pg.path, { waitUntil: 'networkidle' });
+    /* süre seçilince adres sayfada kalır; liste sayfanın tamamı olmadığı için alttaki bölümler gizlenir */
     const sure = await page.getAttribute('[data-sure]', 'data-sure');
     await page.click('[data-sure="' + sure + '"]');
-    expect(page.url()).toBe(base + 'kultur-turlari/?sure=' + sure);
+    expect(page.url()).toBe(base + pg.path + '?sure=' + sure);
     expect(await page.$$eval('#list .vk', a => a.length)).toBe(l.filter(p => p.b === sure).length);
     expect(await kat()).toEqual([true, true, true]);
     expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
     /* adresle açılınca da süre seçili gelir; süre kalkınca adres yalın */
-    await page.goto(base + 'kultur-turlari/?sure=' + sure, { waitUntil: 'networkidle' });
+    await page.goto(base + pg.path + '?sure=' + sure, { waitUntil: 'networkidle' });
     expect(await page.getAttribute('[data-sure="' + sure + '"]', 'aria-pressed')).toBe('true');
     await page.click('[data-sure="' + sure + '"]');
-    expect(page.url()).toBe(base + 'kultur-turlari/');
+    expect(page.url()).toBe(base + pg.path);
     expect(await kat()).toEqual([false, false, false]);
+    expect(sorun).toEqual([]);
+    await ctx.close();
+  }, 30000);
+
+  it('deneyim sayfası: kalıcı adreste tam sayfa çizilir, sayfa yolu kalır; etkinliğin tarihli yapısal verisi', async () => {
+    const api = await import('../v2/js/api.js');
+    const ctx = await baglam(), page = await ctx.newPage(), sorun = izle(page);
+    const p = api.getProduct('kordon-caz-aksamlari');
+    await page.goto(base + p.path, { waitUntil: 'networkidle' });
+    /* urun.js aynı deneyimi tam haliyle çizer; başlık ve asıl adres kalıcı sayfanın */
+    expect(await page.textContent('.u-hd h1')).toBe(p.title);
+    expect(await page.textContent('.u-hd .bc')).toBe('KeşfetİzmirEtkinlikler');
+    expect(await page.title()).toBe(api.productTitle(p));
+    expect(await page.$$eval('link[rel=canonical]', a => a.map(x => x.getAttribute('href')))).toEqual(['https://bedirinci.github.io/mola360/v2/' + p.path]);
+    /* bulunduğu sayfalar ürün sayfasının dışında, yeniden çizimde kalır */
+    expect(await page.$$eval('.u-ilgili a', a => a.length)).toBeGreaterThan(0);
+    /* etkinlik: yaklaşan her tarih için schema.org Event, saatiyle */
+    const ev = JSON.parse(await page.textContent('#ldEtkinlik'))['@graph'];
+    expect(ev.length).toBeGreaterThan(0);
+    ev.forEach(e => { expect(e['@type']).toBe('Event'); expect(e.startDate).toMatch(/^\d{4}-\d{2}-\d{2}T20:00:00\+03:00$/); expect(e.offers.url).toBe(base + p.path); });
+    /* uygulama adresi (urun/?id=) asıl adres olarak kalıcı sayfayı gösterir */
+    await page.goto(base + 'urun/?id=kum-beach-club', { waitUntil: 'networkidle' });
+    expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe(base + 'izmir/mekanlar/kum-beach-club/');
+    /* kartlar kalıcı adrese gider */
+    await page.goto(base + 'izmir/', { waitUntil: 'networkidle' });
+    expect(await page.$$eval('.rail .vk .lk', a => a.every(x => !x.getAttribute('href').includes('urun/?id=')))).toBe(true);
     expect(sorun).toEqual([]);
     await ctx.close();
   }, 30000);

@@ -4,7 +4,7 @@
    motoru için HTML'de durur; bu modül aynı içeriği tam haliyle yeniden çizer,
    sayfa yolunu korur. ?id= adresinde asıl adres kalıcı sayfadır. */
 import { renderShell, backLabel } from './shell.js';
-import { getProduct, listProducts, listPosts, recommended, turUrl, urunUrl, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming, stayRange, longDate, addDays, parseDay } from './api.js';
+import { getProduct, getCity, listProducts, listPosts, recommended, turUrl, urunUrl, typeKey, markViewed, productDetails, bookingSpec, cancelBy, firstDateIn, getSearch, upcoming, stayRange, longDate, addDays, parseDay } from './api.js';
 import { dateGrid, openDates } from './tarihler.js';
 import { productCard, postMini, initPostActions } from './cards.js';
 import { tl, sc, word, toast, makeScroll, esc } from './ui.js';
@@ -286,7 +286,7 @@ function eventLd(p){
   const ev=upcoming(p.dates).map(d=>{const g=parseDay(d[1]);const gun=g.getFullYear()+'-'+p2(g.getMonth()+1)+'-'+p2(g.getDate());
     return {'@type':'Event',name:p.title,startDate:saat?gun+'T'+saat[0]+':00+03:00':gun,eventStatus:'https://schema.org/EventScheduled',
       eventAttendanceMode:'https://schema.org/OfflineEventAttendanceMode',...(about?{description:about}:{}),
-      location:{'@type':'Place',name:yer,address:{'@type':'PostalAddress',addressLocality:ilce||yer,addressRegion:'İzmir',addressCountry:'TR'}},
+      location:{'@type':'Place',name:yer,address:{'@type':'PostalAddress',addressLocality:ilce||yer,addressRegion:(getCity(p.sehir)||{}).ad||'',addressCountry:'TR'}},
       offers:{'@type':'Offer',price:p.price,priceCurrency:'TRY',availability:'https://schema.org/InStock',url}}});
   if(!ev.length)return;
   const s=document.createElement('script');s.type='application/ld+json';s.id='ldEtkinlik';

@@ -1,14 +1,18 @@
 /* Şehirler ve şehir sayfaları (SEO mimarisi, docs/seo.md).
 
-   Mola360 önce İzmir'de açılır; öteki şehirler sırası gelince aynı yapıyla
-   eklenir (Bedir 2026-10-07). Bir şehir aktif olunca scripts/seo.mjs onun
-   sayfa ağacını üretir:
+   Mekân, etkinlik ve aktivite şehre bağlıdır ve önce İzmir'de açılır;
+   öteki şehirler sırası gelince aynı yapıyla eklenir. Oteller ve turlar
+   bütün şehirlerdendir (Bedir 2026-10-07/08). scripts/seo.mjs üretir:
      /izmir/                         şehir: "İzmir'de yapılacaklar"
      /izmir/mekanlar/                şehir + tür
      /izmir/mekanlar/kahvalti/       şehir + tür + özellik
      /izmir/sevgiliyle-yapilacaklar/ şehir + niyet (kiminle)
      /izmir/alsancak/                şehir + bölge
-     /izmir/mekanlar/<deneyim>/      deneyimin kendi sayfası
+     /izmir/mekanlar/<deneyim>/      şehirdeki deneyimin kendi sayfası
+     /oteller/, /turlar/             bütün oteller ve turlar
+     /turlar/yurt-disi/              tür + özellik
+     /turlar/izmir-cikisli/          kalkış şehrine göre turlar
+     /oteller/<otel>/, /turlar/<tur>/ otelin ve turun kendi sayfası
    Kural: sayfa en az ESIK deneyimle yayımlanır; deneyimleri öteki bir
    sayfayla birebir aynı olan sayfa yayımlanmaz (kapı sayfası olmaz). Her
    sayfanın adı ve giriş metni kendine özgüdür (test denetler). */
@@ -30,10 +34,32 @@ export const SEHIRLER=[
  {id:'izmir',ad:'İzmir',de:'İzmir\'de',den:'İzmir\'den',aktif:true,bg:'linear-gradient(160deg,#BFDDEB,#4C8DB5 50%,#E9C79A)',
   hakkinda:'İzmir\'de günler denizin etrafında döner. Merkezde Kordon boyunca yürüyüş, Kemeraltı\'nın hanları ve Alsancak\'ın sokakları; yarımadada Urla\'nın bağları, Alaçatı\'nın rüzgârı ve Çeşme\'nin koyları; kuzeyde Foça, güneyde Sığacık ve Şirince. Mola360\'ta bu deneyimleri tarihleri, fiyatları ve yaşayanların paylaşımlarıyla bir arada bulur, doğrudan rezervasyon yaparsın.'}];
 
+/* Genel sayfalar: bütün şehirlerin otelleri ve turları (şehre bağlı değil).
+   [adres, sayfa adı, süzgeç, giriş, soru]; kalkis: turun kalkış şehri */
+export const GENEL=[
+ ['oteller','Oteller',{tur:'otel'},
+  'İzmir\'de Alsancak\'tan Alaçatı\'ya butik oteller, Kapadokya\'da mağara odaları, Kemer\'de denize sıfır bir resort ve Ayder\'de yayla evi. Kalacak yeri fiyatı, odaları ve yaşayanların paylaşımlarıyla seç.'],
+ ['turlar','Turlar',{tur:'tur'},
+  'Efes ve Pamukkale\'ye günübirlik turlardan Kapadokya, Karadeniz ve Doğu Ekspresi\'ne; Sakız\'dan İtalya\'ya yurt dışı turlarına. İzmir, İstanbul ve öteki şehirlerden kalkan turlar tarihleri ve programlarıyla.'],
+ ['turlar/izmir-cikisli','İzmir çıkışlı turlar',{tur:'tur',kalkis:'izmir'},
+  'Efes ve Şirince, Bergama, Pamukkale ve Kemeraltı\'yla Kadifekale\'ye rehberli turlar; Çeşme\'den feribotla Sakız Adası. Sabah İzmir\'den çıkılan turlar.',
+  'İzmir çıkışlı hangi turlar var?'],
+ ['turlar/istanbul-cikisli','İstanbul çıkışlı turlar',{tur:'tur',kalkis:'istanbul'},
+  'Sapanca\'ya günübirlik; uçakla Kapadokya, Karadeniz yaylaları ve Erciyes\'e; Balkanlar, İtalya, İspanya, Fransa ve Dubai\'ye yurt dışı turları. İstanbul\'dan kalkan turlar programlarıyla.'],
+ ['turlar/yurt-disi','Yurt dışı turları',{tur:'tur',oz:'yurt-disi'},
+  'Feribotla Sakız ve Midilli, kimlikle Batum; uçakla Balkanlar, İtalya, İspanya, Fransa ve Dubai. Vizesi, kalkış şehri ve programı belli yurt dışı turları.'],
+ ['turlar/kultur','Kültür turları',{tur:'tur',oz:'kultur'},
+  'Efes, Bergama ve Hierapolis\'in antik kentleri, Kapadokya\'nın vadileri ve Avrupa\'nın tarihi şehirleri. Gezdiğin yerin hikâyesini rehberden dinlemek isteyenler için.'],
+ ['turlar/doga','Doğa turları',{tur:'tur',oz:'doga'},
+  'Sapanca ve Maşukiye, Pamukkale travertenleri, Karadeniz yaylaları ve Doğu Ekspresi\'nin karlı manzarası. Şehirden çıkıp doğada mola vermek isteyenler için.'],
+ ['turlar/gunubirlik','Günübirlik turlar',{tur:'tur',oz:'gunubirlik'},
+  'İzmir\'den Efes, Bergama ve Pamukkale\'ye, İstanbul\'dan Sapanca ve Maşukiye\'ye. Sabah çıkıp akşam dönülen rehberli turlar.',
+  'Günübirlik nereye gidilir?']];
+
 /* Şehir sayfaları: [adres (şehrin altında), sayfa adı, süzgeç, giriş, şehir sayfasındaki soru].
    Süzgeç anahtarları liste ile aynı: tur, oz, kimle, yer. Şehir her sayfada
-   kendiliğinden eklenir; "yer:'izmir'" yalnızca şehrin içindekiler demek
-   (İzmir çıkışlı turlar hariç). */
+   kendiliğinden eklenir (şehirde bulunan deneyimler); "yer:'izmir'" İzmir
+   ilinin içi. */
 export const SAYFA={izmir:[
  ['','İzmir\'de yapılacaklar',{},
   'Kordon\'da gün batımından Urla\'nın bağlarına, Kemeraltı\'nın hanlarından Alaçatı\'nın rüzgârına. İzmir\'de bugün, bu hafta sonu ya da tatilde ne yapacağını burada bul.'],
@@ -48,8 +74,6 @@ export const SAYFA={izmir:[
   'İzmir\'de nerede kalınır?'],
  ['aktiviteler','İzmir aktiviteleri',{tur:'aktivite'},
   'Alaçatı\'da sörf dersi, Foça\'da tekne turu, Urla\'da şarap tadımı ve Kemeraltı\'nda lezzet yürüyüşü. İzmir\'de bir günü ya da birkaç saati dolu geçirmek isteyenler için.'],
- ['turlar','İzmir çıkışlı turlar',{tur:'tur'},
-  'Efes, Bergama ve Pamukkale\'ye günübirlik; Kapadokya, Karadeniz ve Doğu Ekspresi\'ne yurt içi; Sakız\'dan İtalya\'ya yurt dışı turları. Hepsi İzmir\'den kalkıyor.'],
 
  ['mekanlar/kahvalti','İzmir kahvaltı mekânları',{tur:'mekan',oz:'kahvalti'},
   'Kemeraltı\'nda han avlusunda, Alaçatı\'da taş avluda, Bostanlı\'da deniz kenarında ve Bornova\'da köşk bahçesinde kahvaltı. Hafta sonu sabahını uzun bir sofrada geçirmek isteyenler için.',
@@ -83,15 +107,6 @@ export const SAYFA={izmir:[
   'Urla\'nın bağlarında şarap tadımı, Kemeraltı\'nda boyozdan kumruya lezzet yürüyüşü ve Bornova\'da Ege mutfağı atölyesi. İzmir\'i tadıyla tanımak isteyenler için.'],
  ['aktiviteler/atolye','İzmir atölyeleri',{tur:'aktivite',oz:'atolye'},
   'Urla\'da seramik, Kemeraltı\'nda ebru ve Bornova\'da Ege mutfağı atölyesi. Birkaç saatte elinle bir şey yapıp evine götürmek isteyenler için.'],
- ['turlar/gunubirlik','İzmir çıkışlı günübirlik turlar',{tur:'tur',oz:'gunubirlik'},
-  'Efes ve Şirince, Bergama ve Asklepion, Pamukkale ve Kemeraltı\'yla Kadifekale. Sabah İzmir\'den çıkıp akşam dönülen rehberli turlar.',
-  'İzmir\'den günübirlik nereye gidilir?'],
- ['turlar/yurt-disi','İzmir çıkışlı yurt dışı turları',{tur:'tur',oz:'yurt-disi'},
-  'Çeşme\'den Sakız\'a, Dikili\'den Midilli\'ye feribotla; İzmir\'den uçakla Balkanlar\'a, İtalya, İspanya, Fransa ve Dubai\'ye. Vizesi, kalkışı ve programı belli turlar.'],
- ['turlar/kultur','İzmir çıkışlı kültür turları',{tur:'tur',oz:'kultur'},
-  'Efes, Bergama ve Hierapolis\'in antik kentleri, Kapadokya\'nın vadileri ve Avrupa\'nın tarihi şehirleri. Gezdiğin yerin hikâyesini rehberden dinlemek isteyenler için.'],
- ['turlar/doga','İzmir çıkışlı doğa turları',{tur:'tur',oz:'doga'},
-  'Pamukkale travertenleri, Kapadokya\'nın vadileri, Karadeniz yaylaları ve Doğu Ekspresi\'nin karlı manzarası. Şehirden çıkıp doğada mola vermek isteyenler için.'],
 
  ['sevgiliyle-yapilacaklar','İzmir\'de sevgiliyle yapılacaklar',{kimle:'sevgili',yer:'izmir'},
   'Körfezde gün batımı tekne turu, Urla\'da bağ sofrası, Kordon\'da caz ve baş başa bir masaj. İzmir\'de ikiniz için sakin ve özenli planlar.',

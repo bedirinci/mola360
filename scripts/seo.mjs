@@ -6,7 +6,11 @@
    - açık her şehrin sayfa ağacı: v2/izmir/ (şehir), tür (v2/izmir/mekanlar/),
      tür + özellik (v2/izmir/mekanlar/kahvalti/), niyet
      (v2/izmir/sevgiliyle-yapilacaklar/) ve bölge (v2/izmir/alsancak/)
-   - şehirdeki her deneyimin kalıcı sayfası (v2/izmir/mekanlar/kum-beach-club/)
+   - bütün şehirlerin otel ve tur sayfaları: v2/oteller/, v2/turlar/,
+     v2/turlar/yurt-disi/, v2/turlar/izmir-cikisli/
+   - her deneyimin kalıcı sayfası: şehirdekiler şehrin altında
+     (v2/izmir/mekanlar/kum-beach-club/), oteller ve turlar kendi ağacında
+     (v2/oteller/goreme-magara-otel/, v2/turlar/kapadokya-turu/)
    - Keşfet'teki bağlar (v2/index.html): arama kartının ardındaki
      koleksiyonlar ve "İzmir'de ne yapılır?" bölümü
    - site haritası (v2/sitemap.xml) ve bütün sayfaların robots etiketi (YAYIN)
@@ -35,7 +39,6 @@ export const SITE = 'https://bedirinci.github.io/mola360/v2/';
 export const YAYIN = false;
 /* üretilen sayfanın ikinci satırı; eskiyen sayfalar bundan tanınıp silinir */
 export const IZ = '<!-- seo sayfası: npm run seo üretir, elle değiştirme -->';
-const ESKI_IZ = '<!-- kategori sayfası: npm run kategoriler üretir, elle değiştirme -->';
 export const BAS = '<!-- kategoriler: npm run seo üretir, elle değiştirme -->';
 export const SON = '<!-- /kategoriler -->';
 export const SBAS = '<!-- sehir: npm run seo üretir, elle değiştirme -->';
@@ -77,11 +80,14 @@ async function veri() {
   const { productCard } = await import('../v2/js/cards.js');
   const { ROOT } = await import('../v2/js/root.js');
   const S = await import('../v2/js/sehirler.js');
-  const sehirler = api.listCities().map(c => ({ ...c, sayfalar: api.listCityPages(c.id) }));
-  /* adresler benzersiz; deneyim adresi şehir sayfasıyla çakışmaz */
-  const yollar = [...sehirler.flatMap(c => c.sayfalar.map(p => p.path)), ...sehirler.flatMap(c => api.listProducts({ sehir: c.id }).map(p => p.path))];
+  /* kapsam: sayfaların ait olduğu ağaç ve sayfa yolunun başı. Genel: oteller ve turlar; şehir: İzmir */
+  const tum = api.listPages(), genel = { id: '', ad: '', sayfalar: tum.filter(pg => !pg.sehir), adim: [['Keşfet', '']] };
+  const sehirler = api.listCities().map(c => ({ ...c, sayfalar: api.listCityPages(c.id), adim: [['Keşfet', ''], [c.ad, c.id + '/']] }));
+  const urunler = api.listProducts().filter(p => p.path);
+  /* adresler benzersiz; deneyim adresi sayfa adresiyle çakışmaz */
+  const yollar = [...tum.map(pg => pg.path), ...urunler.map(p => p.path)];
   if (new Set(yollar).size !== yollar.length) throw new Error('aynı adreste iki sayfa: ' + yollar.filter((y, i) => yollar.indexOf(y) !== i));
-  return { api, productCard, ROOT, S, sehirler };
+  return { api, productCard, ROOT, S, tum, genel, sehirler, urunler };
 }
 
 /* şablonu sayfanın derinliğine göre oku: "../" bağları önek olur */
@@ -155,8 +161,8 @@ const ICERIK = {
   mekan: 'seçenekler, fiyatlar ve yaşayanların paylaşımları'
 };
 
-/* Keşfet kartındaki kısa ad: şehir adı düşer ("İzmir kahvaltı mekânları" → "Kahvaltı mekânları") */
-const kisaAd = (pg, c) => buyuk(pg.name.replace(new RegExp('^' + c.ad + '(\'(de|da|te|ta)|( çıkışlı))? '), ''));
+/* Keşfet kartındaki kısa ad: şehir adı düşer ("İzmir kahvaltı mekânları" → "Kahvaltı mekânları"); genel sayfada ad olduğu gibi */
+const kisaAd = (pg, c) => c && c.ad ? buyuk(pg.name.replace(new RegExp('^' + c.ad + '(\'(de|da|te|ta)|( çıkışlı))? '), '')) : pg.name;
 /* sayfanın ilgili sayfaları: aynı türün öteki sayfaları önce, sonra deneyimleri en çok örtüşenler */
 function ilgili(pg, sayfalar) {
   const ort = x => x.ids.filter(i => pg.ids.includes(i)).length;
@@ -165,18 +171,18 @@ function ilgili(pg, sayfalar) {
     .sort((a, b) => b[1] - a[1]).slice(0, 12).map(([x]) => x);
 }
 
-/* tür, tür + özellik, niyet ve bölge sayfası (Liste şablonu) */
-function listeSayfasi(ctx, c, pg) {
+/* tür, tür + özellik, kalkış, niyet ve bölge sayfası (Liste şablonu); k: kapsam (genel ya da şehir) */
+function listeSayfasi(ctx, k, pg) {
   const { api, productCard, ROOT } = ctx, onek = '../'.repeat(derinlik(pg.path)), yerel = t => t.split(ROOT).join(onek);
   const l = pg.ids.map(api.getProduct), url = SITE + pg.path, baslik = api.pageTitle(pg);
-  const turSayfa = pg.kind === 'oz' ? c.sayfalar.find(x => x.kind === 'tur' && x.q.tur === pg.q.tur) : null;
-  const adimlar = [['Keşfet', ''], [c.ad, c.id + '/'], ...(turSayfa ? [[api.TYPES.find(t => t[0] === pg.q.tur)[2], turSayfa.path]] : [])];
+  const turSayfa = pg.kind === 'oz' || pg.kind === 'kalkis' ? k.sayfalar.find(x => x.kind === 'tur' && x.q.tur === pg.q.tur) : null;
+  const adimlar = [...k.adim, ...(turSayfa ? [[api.TYPES.find(t => t[0] === pg.q.tur)[2], turSayfa.path]] : [])];
   /* açıklama en çok 160 harf: ad, sığdığı kadar deneyim, başlangıç fiyatı */
   const son = ' Fiyatlar ' + tl(Math.min(...l.map(p => p.price))) + '\'den başlıyor; ayrıntılar ve yaşayanların paylaşımları mola360\'ta.';
   const ozet = k => pg.name + (k ? ': ' + l.slice(0, k).map(p => p.title).join(', ') + (k < l.length ? ' ve diğerleri' : '') : '') + '.' + son;
   let n = l.length;
   while (n && ozet(n).length > 160) n--;
-  const desc = ozet(n), soru = sorular(api, pg, l), il = ilgili(pg, c.sayfalar);
+  const desc = ozet(n), soru = sorular(api, pg, l), il = ilgili(pg, ctx.tum);
   const kart = p => productCard(saat(p) ? { ...p, facts: [saat(p), ...p.facts.slice(1)] } : p);
   const ld = { '@context': 'https://schema.org', '@graph': [
     { '@type': 'CollectionPage', '@id': url, url, name: baslik, description: desc, inLanguage: 'tr-TR',
@@ -206,18 +212,20 @@ function listeSayfasi(ctx, c, pg) {
 /* şehir sayfası: türlere göre öne çıkanlar, kiminle, semtler, tanıtım ve SSS */
 function sehirSayfasi(ctx, c) {
   const { api, productCard, ROOT } = ctx, pg = c.sayfalar.find(x => x.kind === 'sehir'), onek = '../', yerel = t => t.split(ROOT).join(onek);
-  const url = SITE + pg.path, baslik = api.pageTitle(pg), tur = c.sayfalar.filter(x => x.kind === 'tur');
+  /* türlere göre bölümler: şehrin tür sayfaları ve şehirden kalkan turlar (genel ağaçta) */
+  const kalkis = ctx.genel.sayfalar.filter(x => x.kind === 'kalkis' && x.q.kalkis === c.id);
+  const url = SITE + pg.path, baslik = api.pageTitle(pg), tur = [...c.sayfalar.filter(x => x.kind === 'tur'), ...kalkis];
   const desc = kes(pg.intro + ' Etkinlik, mekân, otel, aktivite ve tur; tarihleri ve fiyatlarıyla.', 160);
   const kart = p => productCard(saat(p) ? { ...p, facts: [saat(p), ...p.facts.slice(1)] } : p);
   /* sorusu olan sayfalar: soru, öne çıkan üç deneyim ve sayfanın kendisi */
-  const soru = c.sayfalar.filter(x => x.soru).map(x => [x.soru, 'Öne çıkanlar: ' + ve(x.ids.slice(0, 3).map(i => api.getProduct(i).title)) + '. Tamamı için: ' + x.name + '.', x]);
+  const soru = [...c.sayfalar, ...kalkis].filter(x => x.soru).map(x => [x.soru, 'Öne çıkanlar: ' + ve(x.ids.slice(0, 3).map(i => api.getProduct(i).title)) + '. Tamamı için: ' + x.name + '.', x]);
   const ld = { '@context': 'https://schema.org', '@graph': [
     { '@type': 'CollectionPage', '@id': url, url, name: baslik, description: desc, inLanguage: 'tr-TR',
       isPartOf: { '@type': 'WebSite', name: 'mola360', url: SITE }, breadcrumb: { '@id': url + '#sayfa-yolu' },
       about: { '@type': 'City', name: c.ad, address: { '@type': 'PostalAddress', addressLocality: c.ad, addressCountry: 'TR' } } },
     yolLd(url, [['Keşfet', '']], pg.name),
-    { '@type': 'ItemList', '@id': url + '#sayfalar', name: pg.name, numberOfItems: c.sayfalar.length - 1,
-      itemListElement: c.sayfalar.filter(x => x !== pg).map((x, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + x.path, name: x.name })) },
+    { '@type': 'ItemList', '@id': url + '#sayfalar', name: pg.name, numberOfItems: c.sayfalar.length - 1 + kalkis.length,
+      itemListElement: [...c.sayfalar.filter(x => x !== pg), ...kalkis].map((x, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + x.path, name: x.name })) },
     sssLd(url, soru)] };
   let s = bas(sablon('liste', onek), { baslik, desc, url, ld });
   s = tek(s, '<body>', '<body data-sehir="' + c.id + '">');
@@ -227,10 +235,10 @@ function sehirSayfasi(ctx, c) {
   s = tek(s, '<nav class="cats" aria-label="Kategori" id="cats"></nav>\n', '');
   const bolum = (id, baslik, ic) => '<section class="sec sh-sec" aria-labelledby="sh-' + id + '"><div class="hd"><h2 id="sh-' + id + '">' + baslik + '</h2></div>' + ic + '</section>\n';
   const main = '<main class="sh">\n<nav class="sh-tur" aria-label="Türler">' + cipler(tur, onek) + '</nav>\n'
-    + tur.map(x => { const oz = c.sayfalar.filter(y => y.kind === 'oz' && y.q.tur === x.q.tur).map(y => ({ ...y, kisa: kisaAd(y, c) }));
-      return '<section class="sh-sec" aria-labelledby="sh-' + x.yol + '"><div class="sec"><div class="hd"><h2 id="sh-' + x.yol + '">' + h(x.name) + '</h2><div class="more-l"><a class="all" href="' + onek + x.path + '">Tümü →</a>'
-        + '<div class="arrows" data-for="r-' + x.yol + '"></div></div></div></div>'
-        + '<div class="rail" id="r-' + x.yol + '">' + yerel(x.ids.slice(0, 8).map(i => kart(api.getProduct(i))).join('')) + '</div>'
+    + tur.map(x => { const oz = (x.sehir ? c.sayfalar : ctx.genel.sayfalar).filter(y => y.kind === 'oz' && y.q.tur === x.q.tur).map(y => ({ ...y, kisa: kisaAd(y, x.sehir ? c : null) }));
+      return '<section class="sh-sec" aria-labelledby="sh-' + x.yol.replace(/\//g, '-') + '"><div class="sec"><div class="hd"><h2 id="sh-' + x.yol.replace(/\//g, '-') + '">' + h(x.name) + '</h2><div class="more-l"><a class="all" href="' + onek + x.path + '">Tümü →</a>'
+        + '<div class="arrows" data-for="r-' + x.yol.replace(/\//g, '-') + '"></div></div></div></div>'
+        + '<div class="rail" id="r-' + x.yol.replace(/\//g, '-') + '">' + yerel(x.ids.slice(0, 8).map(i => kart(api.getProduct(i))).join('')) + '</div>'
         + (oz.length ? '<div class="sh-oz">' + cipler(oz, onek) + '</div>' : '') + '</section>\n'; }).join('')
     + bolum('kim', 'Kiminle?', cipler(c.sayfalar.filter(x => x.kind === 'niyet'), onek))
     + bolum('bolge', 'Semt ve ilçeler', cipler(c.sayfalar.filter(x => x.kind === 'bolge'), onek))
@@ -245,7 +253,7 @@ function sehirSayfasi(ctx, c) {
 /* deneyimin yapısal verisi: türüne göre schema.org tipi; puan yalnızca gerçek veride (örnek veride yok) */
 function deneyimLd(api, p, url, info) {
   const t = api.typeKey(p.type), S = api.bookingSpec(p), [yer, il] = konum(p), geo = p.geo;
-  const adres = { '@type': 'PostalAddress', addressLocality: yer, addressRegion: il || 'İzmir', addressCountry: 'TR' };
+  const adres = { '@type': 'PostalAddress', addressLocality: yer, addressRegion: il || (api.getCity(p.sehir) || {}).ad || '', addressCountry: 'TR' };
   const teklif = { '@type': 'Offer', price: p.price, priceCurrency: 'TRY', availability: 'https://schema.org/InStock', url };
   const ortak = { '@id': url + '#deneyim', name: p.title, description: info.about || p.place, url,
     ...(!p.sample && p.count ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.score, bestRating: 10, ratingCount: p.count } } : {}) };
@@ -263,15 +271,18 @@ function deneyimLd(api, p, url, info) {
   return { '@type': 'Product', ...ortak, category: 'Aktivite', offers: teklif };
 }
 
-/* deneyimin kalıcı sayfası (Ürün şablonu): içerik HTML'de, urun.js aynı içeriği çizer */
-function deneyimSayfasi(ctx, c, p) {
+/* deneyimin kalıcı sayfası (Ürün şablonu): içerik HTML'de, urun.js aynı içeriği çizer.
+   Sayfa yolu: şehirdeki deneyim ve otel Keşfet › İzmir › Mekânlar; öteki oteller Keşfet › Oteller;
+   turlar Keşfet › Turlar › (kalkış şehrinin turları) */
+function deneyimSayfasi(ctx, p) {
   const { api } = ctx, onek = '../'.repeat(derinlik(p.path)), url = SITE + p.path, t = api.typeKey(p.type);
-  const info = api.productDetails(p), S = api.bookingSpec(p), turSayfa = c.sayfalar.find(x => x.kind === 'tur' && x.q.tur === t);
-  const adimlar = [['Keşfet', ''], [c.ad, c.id + '/'], ...(turSayfa ? [[api.TYPES.find(x => x[0] === t)[2], turSayfa.path]] : [])];
+  const info = api.productDetails(p), S = api.bookingSpec(p), c = t !== 'tur' && ctx.sehirler.find(x => x.id === p.sehir), k = c || ctx.genel;
+  const turSayfa = k.sayfalar.find(x => x.kind === 'tur' && x.q.tur === t), kalkis = t === 'tur' && ctx.genel.sayfalar.find(x => x.kind === 'kalkis' && x.q.kalkis === p.kalkis);
+  const adimlar = [...k.adim, ...(turSayfa ? [[api.TYPES.find(x => x[0] === t)[2], turSayfa.path]] : []), ...(kalkis ? [[kalkis.name, kalkis.path]] : [])];
   const fiyat = (p.unit === 'kişi başı' ? 'Kişi başı ' : buyuk(BIRIM[p.unit] || p.unit) + ' ') + tl(p.price) + (S.opts.length > 1 || (S.hotel && S.hotel.rooms.length > 1) ? '\'den başlayan fiyatlarla.' : '.');
   const desc = kes((info.about || p.place) + ' ' + fiyat, 160);
   const ld = { '@context': 'https://schema.org', '@graph': [deneyimLd(api, p, url, info), yolLd(url, adimlar, p.title)] };
-  const sayfalar = c.sayfalar.filter(x => x.kind !== 'sehir' && x.ids.includes(p.id));
+  const sayfalar = ctx.tum.filter(x => x.kind !== 'sehir' && x.ids.includes(p.id));
   const sure = t === 'tur' ? p.info : t === 'etkinlik' ? saat(p) : t === 'otel' ? p.facts[1] : p.facts[0];
   const liste = a => '<ul>' + a.map(x => '<li>' + h(x) + '</li>').join('') + '</ul>';
   let s = bas(sablon('urun', onek), { baslik: api.productTitle(p), desc, url, ld });
@@ -290,35 +301,38 @@ function deneyimSayfasi(ctx, c, p) {
 
 /* Keşfet: arama kartının ardındaki koleksiyonlar (sekmenin tür + özellik sayfaları); ilki (Turlar) açık */
 export async function kategoriHtml() {
-  const { api, ROOT, sehirler } = await veri(), yerel = t => t.split(ROOT).join('');
+  const { api, ROOT } = await veri(), yerel = t => t.split(ROOT).join('');
   return api.TYPES.map(([t, ad], i) => '<section class="koll-g" data-tur="' + t + '" aria-labelledby="kh-' + t + '"' + (i ? ' hidden' : '') + '>'
     + '<h2 class="sr" id="kh-' + t + '">' + ad + ' çeşitleri</h2>'
-    + sehirler.flatMap(c => c.sayfalar.filter(pg => pg.kind === 'oz' && pg.q.tur === t).map(pg => '<a class="kl" href="' + pg.path + '" style="background:' + yerel(pg.bg) + '"><b>' + h(kisaAd(pg, c)) + '</b></a>')).join('')
+    + api.listCollections(t).map(pg => '<a class="kl" href="' + pg.path + '" style="background:' + yerel(pg.bg) + '"><b>' + h(kisaAd(pg, api.getCity(pg.sehir))) + '</b></a>').join('')
     + '</section>').join('\n');
 }
 
-/* Keşfet: şehrin bütün sayfalarına bağlar ("İzmir'de ne yapılır?") */
+/* Keşfet: şehrin bütün sayfalarına ("İzmir'de ne yapılır?") ve otel ile tur sayfalarına bağlar */
 export async function sehirHtml() {
-  const { sehirler } = await veri();
+  const { sehirler, genel } = await veri();
   return sehirler.map(c => '<section class="sh-kesfet" aria-labelledby="h-' + c.id + '"><div class="sec"><div class="hd"><h2 id="h-' + c.id + '">' + h(c.de) + ' ne yapılır?</h2><a href="' + c.id + '/" class="all">Tümü →</a></div>'
-    + ['tur', 'niyet', 'bolge'].map(k => cipler(c.sayfalar.filter(pg => pg.kind === k), '')).join('') + '</div></section>').join('\n');
+    + ['tur', 'niyet', 'bolge'].map(k => cipler(c.sayfalar.filter(pg => pg.kind === k), '')).join('') + '</div></section>').join('\n')
+    + '\n<section class="sh-kesfet" aria-labelledby="h-genel"><div class="sec"><div class="hd"><h2 id="h-genel">Oteller ve turlar</h2></div>'
+    + cipler(genel.sayfalar, '') + '</div></section>';
 }
 
 /* bütün üretilen sayfalar: [{ yol (v2/ altında), html }] */
 export async function seoSayfalari() {
   const ctx = await veri(), out = [];
+  ctx.genel.sayfalar.forEach(pg => out.push({ yol: pg.path, html: listeSayfasi(ctx, ctx.genel, pg) }));
   for (const c of ctx.sehirler) {
     out.push({ yol: c.id + '/', html: sehirSayfasi(ctx, c) });
     c.sayfalar.filter(pg => pg.kind !== 'sehir').forEach(pg => out.push({ yol: pg.path, html: listeSayfasi(ctx, c, pg) }));
-    ctx.api.listProducts({ sehir: c.id }).forEach(p => out.push({ yol: p.path, html: deneyimSayfasi(ctx, c, p) }));
   }
+  ctx.urunler.forEach(p => out.push({ yol: p.path, html: deneyimSayfasi(ctx, p) }));
   return out;
 }
 
-/* site haritası: Keşfet, şehir sayfaları ve deneyim sayfaları (tarih yok) */
+/* site haritası: Keşfet, şehir, otel ve tur sayfaları ve deneyim sayfaları (tarih yok) */
 export async function siteHaritasi() {
-  const { api, sehirler } = await veri();
-  const yollar = ['', ...sehirler.flatMap(c => [...c.sayfalar.map(pg => pg.path), ...api.listProducts({ sehir: c.id }).map(p => p.path)])];
+  const { tum, urunler } = await veri();
+  const yollar = ['', ...tum.map(pg => pg.path), ...urunler.map(p => p.path)];
   return '<?xml version="1.0" encoding="UTF-8"?>\n<!-- npm run seo üretir, elle değiştirme -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + yollar.map(u => '  <url><loc>' + SITE + u + '</loc></url>\n').join('') + '</urlset>\n';
 }
@@ -333,7 +347,7 @@ export const sayfaDosyalari = () => {
   return out.sort();
 };
 /* diskte üretilmiş sayfalar (eski kategori sayfaları dahil) */
-export const uretilmis = () => sayfaDosyalari().filter(f => { const s = readFileSync(join(V2, f), 'utf8'); return s.includes(IZ) || s.includes(ESKI_IZ); })
+export const uretilmis = () => sayfaDosyalari().filter(f => { const s = readFileSync(join(V2, f), 'utf8'); return s.includes(IZ); })
   .map(f => f.replace(/index\.html$/, ''));
 
 const blokYaz = (s, a, b, ic, ad) => { const i = s.indexOf(a), j = s.indexOf(b); if (i < 0 || j < i) throw new Error('v2/index.html içinde ' + ad + ' işaretleri yok'); return s.slice(0, i + a.length) + '\n' + ic + '\n' + s.slice(j); };

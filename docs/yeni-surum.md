@@ -60,13 +60,14 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar, popüler aramalar; ne zaman; kaç kişi). Arama kartı yana kayar: formun ardından seçili sekmenin bütün koleksiyonları gelir (ör. Yurt dışı, Kültür, Karadeniz turları; yer ya da temayla, boş olan gösterilmez), temalar gibi yana kayan kartlar: üç sıra, yalnızca adı; sekme değişince kartlar da değişir. Kayabildiği her açılışta ve sekme her değiştiğinde kartın iki kez kısa kıpırdamasıyla gösterilir (hareketi azalt açıksa gösterilmez). "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Molapuan kartı, Bağlan önizlemesi, "Yakınımda ne var?" (konum ya da şehir), "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar. Kiminle aramaya binmez, yalnızca rayların içindeki sırayı belirler; konum yalnızca "Yakınımda" rayını doldurur, yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit |
+| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar, popüler aramalar; ne zaman; kaç kişi). Arama kartı yana kayar: formun ardından seçili sekmenin bütün koleksiyonları gelir (SEO sayfaları: ör. Kahvaltı, Balık, Butik; turlarda Yurt dışı, İzmir çıkışlı), temalar gibi yana kayan kartlar: üç sıra, yalnızca adı; sekme değişince kartlar da değişir. Kayabildiği her açılışta ve sekme her değiştiğinde kartın iki kez kısa kıpırdamasıyla gösterilir (hareketi azalt açıksa gösterilmez). "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Molapuan kartı, Bağlan önizlemesi, "Yakınımda ne var?" (konum ya da şehir), "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar. Kiminle aramaya binmez, yalnızca rayların içindeki sırayı belirler; konum yalnızca "Yakınımda" rayını doldurur, yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit |
 | Bağlan | `v2/baglan/` | Hikayeler (Mola360'ın ve takip edilenlerin; tam ekran oluşturucu), Haftanın gezgini, paylaşım akışı (her paylaşım bağlı olduğu ürünle; beğen, yorum, Gönder, kaydet, ⋯ menüsü), "Ben de gitmek istiyorum", "Birlikte gidelim", "Yeni insanlar keşfet" |
 | Gönderi | `v2/gonderi/?id=` | Paylaşım ve yorumları; yanıt, kendi gönderini düzenle ya da sil |
 | Kişi | `v2/kisi/?u=` | Başkasının profili: paylaşımları, Mola360 ile yaşadığı deneyimler, takip, mesaj |
 | Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, bölüm sekmeleri, tarih seçimi (ilk üç tarih ve "Tüm tarihler" çekmecesi), otelde gece ve odalar, seçenek/bilet/paket, hakkında, program, dahil/hariç, kişi başı fiyat, kalkış noktaları ya da konum, bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirmeler, SSS, "Bu deneyimi yaşayanlar" (`#paylasimlar`), benzer deneyimler |
 | Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet ya da yaşa göre kişi, kalkış noktası, oda düzeni, kapora) → iletişim ve katılımcı bilgileri → özet, iptal ve ödeme → onay. Ödeme alınmaz, kart bilgisi istenmez |
-| Kategori sayfası | `v2/karadeniz-turlari/` … | Her kategorinin kendi adresli sayfası. Üst kısım her kategoride aynı: kapak, sayfa yolu (Keşfet › Turlar), başlık ve kategorinin kendi giriş metni (`KOLEKSIYON` üçüncü öğe). Kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca kategoride olan süreler, seçilince adres sayfada kalır (`?sure=uzun`). HTML'de: türüne göre başlık, fiyatlı açıklama, asıl adres, Open Graph, yapısal veri (JSON-LD: koleksiyon, ürün listesi, sayfa yolu, SSS), sayfa yolu (Keşfet › Turlar), ana başlık, ürün kartları, listenin altında "… hakkında", sık sorulan sorular ve ilgili kategoriler. Tarih yazılmaz (etkinlik kartında yalnızca saat). Süre seçilince liste kategorinin tamamı olmadığı için alttaki bölümler gizlenir |
+| SEO sayfaları | `v2/izmir/`, `v2/izmir/mekanlar/kahvalti/`, `v2/turlar/yurt-disi/` … | Şehir (`izmir/`: türlerin rayları, özellik çipleri, kiminle, semtler), şehir + tür, şehir + tür + özellik, şehir + niyet (`izmir/sevgiliyle-yapilacaklar/`), şehir + semt (`izmir/alsancak/`); bütün şehirlerin otelleri ve turları (`oteller/`, `turlar/`, `turlar/<özellik>/`, `turlar/<şehir>-cikisli/`). Liste sayfasının şablonuyla: kapak, sayfa yolu (Keşfet › İzmir › Mekânlar), başlık ve sayfanın kendi giriş metni; kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca sayfada olan süreler, seçilince adres sayfada kalır (`?sure=uzun`) ve alttaki bölümler gizlenir. HTML'de: başlık, fiyatlı açıklama, asıl adres, Open Graph, JSON-LD (koleksiyon, ürün listesi, sayfa yolu, SSS), ürün kartları, "… hakkında", sık sorulan sorular, ilgili sayfalar. Tarih yazılmaz. Kurallar `docs/seo.md` |
+| Deneyim sayfası | `v2/izmir/mekanlar/<slug>/`, `v2/oteller/<slug>/`, `v2/turlar/<slug>/` | Ürün sayfasının sabit adresi: HTML'de başlık, açıklama, sayfa yolu, türüne göre JSON-LD (otel, tur, işletme, ürün), deneyimin bulunduğu sayfalar; `urun.js` aynı şablonu çizer. `urun/?id=` asıl adres olarak bu sayfayı gösterir |
 | Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar. `tema` seçiliyse sayfa temanın vitrini: kapak, iki cümlelik giriş, yalnızca temada olan kategoriler, temanın sırasıyla deneyimler ve araya "Bu temada paylaşılanlar" |
 | Planlarım | `v2/planlarim/` | Yaklaşan (bilet ve karekod, buluşma noktası, kalan ödeme, iptal), Geçmiş (paylaş, değerlendir; tarihi geçen rezervasyon buraya geçer), Favoriler. Eski `favoriler/` ve `rezervasyonlar/` adresleri buraya yönlenir |
 | Profil | `v2/profil/` | Kimlik, sayılar (takipçi ve takip çekmecesi), Molapuan, paylaşımlar, Mola360 ile yaşanan deneyimler, kaydedilenler, hesap ve ayarlar |
@@ -94,13 +95,16 @@ Kod düzeni:
 - `js/koleksiyon.js`: Keşfet'te yana kayan arama kartında formun ardından
   gelen kategoriler ve kayabildiğini gösteren ipucu. Modül yalnızca seçili
   sekmenin bölümünü gösterir.
-- Kategori sayfaları (`v2/karadeniz-turlari/` gibi, 43 sayfa) ve Keşfet'teki
-  bütün sekmelerin kategori bağlantıları arama motorları için HTML'de durur.
-  `scripts/kategoriler.mjs` (`npm run kategoriler`) veriden (`KOLEKSIYON`,
-  `api.listCollections`) ve Liste sayfası şablonundan üretir; site haritasını
-  (`v2/sitemap.xml`) da aynı betik yazar. Veri ya da `v2/liste/index.html`
-  değişince yeniden çalıştırılır; test eşitliği (saat ileri alınsa da)
-  denetler.
+- SEO sayfaları (şehir, liste ve deneyim sayfaları; bugün 105) ve
+  Keşfet'teki koleksiyon ve "İzmir'de ne yapılır?" bağlantıları arama
+  motorları için HTML'de durur. Sayfa tanımları `js/sehirler.js`'te;
+  `scripts/seo.mjs` (`npm run seo`) veriden (`api.listPages`), Liste ve
+  Ürün şablonlarından üretir; site haritasını (`v2/sitemap.xml`) ve bütün
+  sayfaların robots etiketini de aynı betik yazar. Veri, şablon ya da
+  `sehirler.js` değişince yeniden çalıştırılır; test eşitliği (saat ileri
+  alınsa da) denetler. Kurallar `docs/seo.md`.
+- `js/sehir.js`: şehir sayfasının (`izmir/`) modülü: başlık, favoriler ve
+  rayların kaydırması; içerik HTML'de.
 - `js/molapuan.js`: Molapuan kartı (ince yatay kart; puan, seviye rozeti, sıradaki hedef, açılıp kapanan seviye yolu). Keşfet'te arama kartının altında, Profil'de üstte. Veri `api.getPoints(level)`.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay; deneyimin paylaşımı varsa "N paylaşım", ürün sayfasındaki paylaşımlara gider), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
 - `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,

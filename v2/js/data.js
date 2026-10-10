@@ -54,7 +54,7 @@ export const ITEMS=[
  {k:'Tur',b:'gun',t:'Pamukkale ve Hierapolis',a:'İzmir çıkışlı · 12 saat',info:'Günübirlik',p:1890,g:'pamukkale',dates:[['Cmt','3 Eki'],['Çar','7 Eki'],['Cmt','10 Eki']],more:'+14'},
  {k:'Tur',b:'gun',t:'Bergama ve Asklepion Turu',a:'İzmir çıkışlı · rehberli',info:'Günübirlik',tr:'otobus',p:1390,s:9.4,c:286,g:'bergama',dates:[['Paz','4 Eki'],['Çar','7 Eki'],['Paz','11 Eki']],more:'+10'},
  {k:'Tur',b:'gun',t:'Sapanca ve Maşukiye Turu',a:'İstanbul çıkışlı · 07:30',info:'Günübirlik',tr:'otobus',p:780,s:9.2,c:75,g:'sapanca',dates:[['Cmt','3 Eki'],['Cmt','10 Eki'],['Cmt','17 Eki']],more:'+9'},
- {k:'Tur',b:'saat',t:'İzmir Şehir Turu: Kemeraltı ve Kadifekale',a:'Konak, İzmir · rehberli',info:'Yarım gün',p:690,s:9.2,c:198,g:'kemeralti',dates:[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki']],more:'+12'},
+ {k:'Tur',b:'saat',t:'İzmir Şehir Turu: Kemeraltı ve Kadifekale',a:'Konak · İzmir çıkışlı',info:'Yarım gün',p:690,s:9.2,c:198,g:'kemeralti',dates:[['Cmt','3 Eki'],['Paz','4 Eki'],['Cmt','10 Eki']],more:'+12'},
  {k:'Tur',b:'hs',t:'Ege Adaları Balayı Kaçamağı',a:'Sakız Adası · İzmir çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:7450,s:9.8,c:288,g:'ege',dates:[['Cum','2 Eki'],['Cum','9 Eki'],['Cum','16 Eki']],more:'+4'},
  {k:'Tur',b:'hs',t:'Midilli Adası Kaçamağı',a:'Midilli · Ayvalık çıkışlı',info:'2 gece 3 gün',tr:'feribot',visa:'Kapıda vize',abroad:1,p:8450,g:'midilli',dates:[['Cum','9 Eki'],['Cum','16 Eki'],['Cum','23 Eki']],more:'+3'},
  {k:'Tur',b:'uzun',t:'Batum ve Acara Turu',a:'Batum, Gürcistan · Trabzon çıkışlı',info:'3 gece 4 gün',tr:'otobus',visa:'Kimlikle geçiş',abroad:1,p:6900,g:'batum',dates:[['Per','8 Eki'],['Per','15 Eki'],['Per','22 Eki']],more:'+5'},

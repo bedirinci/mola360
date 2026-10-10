@@ -4,7 +4,7 @@
    (docs/yeni-surum.md kural 3). Tema seçiliyse sayfa temanın vitrini olur:
    kapak, iki cümlelik giriş, temadaki kategoriler ve paylaşımlar. */
 import { renderShell } from './shell.js';
-import { listProducts, listPosts, getTheme, getDestination, getSearch, findCollection, collectionTitle, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
+import { listProducts, listPosts, getTheme, getDestination, getSearch, findCityPage, pageTitle, recommended, typeKey, TYPES, BUCKETS, WITH, WHEN } from './api.js';
 import { ROOT } from './root.js';
 import { productCard, postMini } from './cards.js';
 import { toast, esc } from './ui.js';
@@ -13,11 +13,12 @@ import { initFavorites, favSync } from './favorites.js';
 renderShell('kesfet');
 initFavorites();
 
-/* Kategori sayfası (v2/karadeniz-turlari/ gibi, scripts/kategoriler.mjs üretir):
-   seçim sayfanın kendisinde (body data-q). Üst kısım (kapak, sayfa yolu,
-   başlık, giriş) HTML'de sabit; kategori satırı ve kiminle süzgeci yok.
-   Adreste yalnızca süre durur (karadeniz-turlari/?sure=uzun) */
-const PG=document.body.dataset.q!=null,KAT=document.body.dataset.kat||'';
+/* Şehir sayfası (v2/izmir/mekanlar/kahvalti/ gibi, scripts/seo.mjs üretir):
+   seçim sayfanın kendisinde (body data-q: şehir, tür, özellik, kiminle, yer).
+   Üst kısım (kapak, sayfa yolu, başlık, giriş) HTML'de sabit; kategori
+   satırı ve kiminle süzgeci yok. Adreste yalnızca süre durur
+   (izmir/turlar/?sure=uzun); sıra üreticiyle aynı (önerilen) */
+const PG=document.body.dataset.q!=null;
 const q=new URLSearchParams(PG?document.body.dataset.q:location.search);
 if(PG){const x=new URLSearchParams(location.search).get('sure');if(x)q.set('sure',x)}
 let tur=TYPES.some(t=>t[0]===q.get('tur'))?q.get('tur'):'';
@@ -27,8 +28,9 @@ let yer=getDestination(q.get('yer'))?q.get('yer'):'';
 let ara=(q.get('ara')||'').trim().slice(0,60);
 let tarih=WHEN.some(w=>w[0]===q.get('tarih'))?q.get('tarih'):'';
 const th=getTheme(q.get('tema'));
-/* kategori sayfasında süre süzgeci yalnızca kategoride olan süreler; tek süre varsa hiç yok */
-const SURE=(()=>{if(!PG)return BUCKETS;const l=listProducts({type:tur,tema:th&&th.id,yer}),b=BUCKETS.filter(x=>l.some(p=>p.b===x[0]));return b.length>1?b:[]})();
+const sehir=q.get('sehir')||'',oz=q.get('oz')||'',kalkis=q.get('kalkis')||'';
+/* şehir sayfasında süre süzgeci yalnızca sayfada olan süreler; tek süre varsa hiç yok */
+const SURE=(()=>{if(!PG)return BUCKETS;const l=listProducts({type:tur,tema:th&&th.id,yer,kimle,sehir,oz,kalkis}),b=BUCKETS.filter(x=>l.some(p=>p.b===x[0]));return b.length>1?b:[]})();
 if(!SURE.some(b=>b[0]===sure))sure='';
 const KIMLE=PG?[]:WITH;
 /* Keşfet'teki aramada seçilen kişi sayısı (yalnızca bu sekmede) */
@@ -64,8 +66,8 @@ function draw(){
   const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
   const lead=D?D.name:ara?'“'+ara+'”':'';
-  /* Keşfet'teki kategori kartından gelindiyse başlık kartın adı (Karadeniz turları) */
-  const K=tur&&!ara?findCollection(tur,{yer,tema:th?th.id:''}):null;
+  /* seçim bir şehir sayfasına denk geliyorsa başlık ve asıl adres o sayfanın */
+  const K=!PG&&!ara&&!th?findCityPage({tur,yer,kimle,oz,sehir,kalkis}):null;
   const title=K?K.name:th?th.name:lead||(T?T[2]:B?B[2]:W?W[1]:'Tüm deneyimler');
   /* temada seçimler filtre satırında görünür; alt satır temanın girişi */
   const rest=th?th.intro:[lead&&th&&th.name,(lead||th)&&!K&&T&&T[2],(lead||th||T)&&B&&B[2],(lead||th||T||B)&&W&&W[1],WH&&WH[1]+' ('+WH[2]+')',(lead||WH)&&s.tur===tur&&s.who].filter(Boolean).join(' · ');
@@ -78,10 +80,11 @@ function draw(){
   }
   document.querySelectorAll('[data-sure]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sure===sure));
   document.querySelectorAll('[data-kimle]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kimle===kimle));
-  const f={sure,kimle,tema:th&&th.id,yer,ara,tarih};
-  const list=listProducts({type:tur,...f});
-  /* tema vitrini temanın kendi sırasıyla */
+  const f={sure,kimle,tema:th&&th.id,yer,ara,tarih,sehir,oz,kalkis};
+  let list=listProducts({type:tur,...f});
+  /* tema vitrini temanın kendi sırasıyla; şehir sayfası önerilen sırayla (üreticiyle aynı) */
   if(th)list.sort((a,b)=>th.ids.indexOf(a.id)-th.ids.indexOf(b.id));
+  if(PG)list=recommended(list);
   document.getElementById('lsCount').innerHTML=list.length+' deneyim';
   const el=document.getElementById('list');
   /* boşsa: aynı arama başka kategoride sonuç veriyorsa oraya yönlendir */
@@ -94,13 +97,12 @@ function draw(){
     :'<div class="empty"><b>Bu seçimde deneyim yok</b><p>'+(other?'Aynı seçimle başka kategorilerde '+other+' deneyim var.':'Filtreleri kaldırmayı ya da başka bir kategoriye bakmayı dene.')+'</p>'
      +(other&&!PG?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="'+(PG?location.pathname:'?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&'))+'">Filtreleri kaldır</a>')+'</div>';
   favSync();
-  /* kategoriye denk gelen sayfa: başlıkta önce kategori, asıl adres kategori sayfası (arama motorları için) */
-  document.title=K?collectionTitle(K):'mola360 — '+title;
-  /* kategori sayfasının kendi bölümleri (sayfa yolu, açıklama, SSS): liste kategorinin tamamı değilse (başka seçim, süzgeç) gizlenir */
-  const tam=!!K&&K.slug===KAT&&!sure&&!kimle&&!tarih;
-  document.querySelectorAll('body [data-kat]').forEach(e=>{e.hidden=!tam});
+  /* şehir sayfasının listenin altındaki bölümleri (hakkında, SSS, ilgili): süre seçilince liste sayfanın tamamı olmadığı için gizlenir */
+  if(PG){document.querySelectorAll('body [data-kat]').forEach(e=>{e.hidden=!!(sure||tarih)});return}
+  /* şehir sayfasına denk gelen seçim: başlıkta önce sayfanın adı, asıl adres şehir sayfası (arama motorları için) */
+  document.title=K?pageTitle(K):'mola360 — '+title;
   let cn=document.querySelector('link[rel=canonical]');
-  if(K){if(!cn){cn=document.createElement('link');cn.rel='canonical';document.head.appendChild(cn)}cn.href=ROOT+K.slug+'/'}else if(cn)cn.remove();
+  if(K){if(!cn){cn=document.createElement('link');cn.rel='canonical';document.head.appendChild(cn)}cn.href=ROOT+K.path}else if(cn)cn.remove();
 }
 document.getElementById('filters').addEventListener('click',e=>{
   const o=e.target.closest('[data-off]');
