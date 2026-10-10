@@ -184,7 +184,7 @@ document.getElementById('lsOpts').addEventListener('click',e=>{const b=e.target.
   navigator.geolocation.getCurrentPosition(p=>{pos=[p.coords.latitude,p.coords.longitude];sira='yakin';sSh.close();draw()},
     er=>{sSh.close();toast(er.code===1?'Konum izni verilmedi.':'Konumun alınamadı.','Tamam',()=>{},3000)},{timeout:10000,maximumAge:600000})});
 
-/* Görünüm: ızgara (iki sütun, görsel ağırlıklı) ya da liste (yatay, karşılaştırmalı) */
+/* Görünüm: büyük kart (tek sütun, geniş görsel) ya da liste (yatay, karşılaştırmalı) */
 let gor='liste';try{if(localStorage.getItem('m360-liste-gorunum')==='izgara')gor='izgara'}catch{}
 function view(){const l=document.getElementById('list');l.classList.toggle('stack',gor==='liste');l.classList.toggle('ls-grid',gor==='izgara');
   document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===gor))}

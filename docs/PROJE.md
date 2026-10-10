@@ -2232,18 +2232,22 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Yüklenmiş sayfa aynı; açılırken içerik yerinden
   oynamaz.
 
-### 2026-10-10 — Şehir sayfası bağ çipleri tek satır; ızgara kartı sade
+### 2026-10-10 — Şehir sayfası bağ çipleri tek satır; büyük kart ve liste kartı
 
 - **Karar:** Şehir sayfasındaki tür bağları ve rayların altındaki özellik
   bağları tek satırlık, yalnızca yatay kayan ince çip şerididir. Liste
-  ızgarasındaki kart beyaz zeminli, ince kenarlıdır: görsel üstte,
-  ad, yer, puan ve fiyat altta.
-- **Neden:** Bedir çip bulutlarını çok yer kaplıyor, ızgaradaki
-  görsel üstü yazılı kartları kötü buldu.
+  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var: beyaz
+  zemin, ince kenar, geniş (16:9) görsel üstte; ad, yer, puan ve fiyat
+  altta. Liste kartında puan ile fiyat sığmazsa fiyat alt satıra iner.
+- **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
+  ve görsel üstü yazılı kartları kötü buldu; liste kartlarının da daha
+  iyi olmasını istedi (320 px'te puan ile "2 gece toplam" üst üste
+  biniyordu).
 - **Etkilediği alanlar:** `v2/izmir/` şehir sayfası, bütün liste
-  sayfalarının ızgara görünümü. Bağlar HTML'de aynen kalır (SEO).
-- **Teknik sonuç:** Yalnızca `sayfalar.css`; `.sh-tur` / `.sh-oz`
-  çipleri `overflow-x:auto` + `overflow-y:hidden`. 360 px altında
-  ızgara kart başlığı 13 px.
-- **UX sonucu:** Bağlar bir satır yükseklik kaplar; ızgara kartları
-  karşılaştırması kolay, hafif kartlardır.
+  sayfaları, Planlarım > Favoriler (aynı liste kartı). Bağlar HTML'de
+  aynen kalır (SEO).
+- **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
+  `.ls-grid` tek sütun), `components.css` (`.stack .vk-r` sarar);
+  görünüm düğmesinin ikonu büyük kart.
+- **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
+  çıkarır, liste karşılaştırmayı kolaylaştırır.
