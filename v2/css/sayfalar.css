@@ -49,13 +49,27 @@ body{min-height:100vh;min-height:100dvh}
 .ls-count+.sr+.stack,.ls-count+.sr+.ls-grid{padding-top:10px}
 /* Izgara: iki sütun, görsel ağırlıklı kart; paylaşım rayı ve boş durum tam satır */
 .ls-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;padding:10px 16px 0}
-/* kart içeriği kadar uzar (overflow:hidden en-boy oranında taşırırdı); yazı tür etiketinin altında başlar */
-.ls-grid .vk{width:auto;aspect-ratio:auto;min-height:226px;padding-top:48px}
-.ls-grid .vk-b{padding:10px}
-.ls-grid .vk-r{flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px}
-.ls-grid .vk-p{align-items:flex-start}
+/* ızgara kartı: beyaz zemin, ince kenar; görsel üstte, bilgiler altta */
+.ls-grid .vk{width:auto;aspect-ratio:auto;justify-content:flex-start;background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line);border-radius:var(--r-md)}
+.ls-grid .vk::before{content:"";display:block;flex:none;aspect-ratio:4/3;margin:6px 6px 0;border-radius:var(--r-sm);background:var(--g)}
+.ls-grid .vk-tg{left:12px;top:12px}
+.ls-grid .vk .type{padding:3px 6px}
+.ls-grid .vk-off{left:12px;top:40px}
+.ls-grid .vk .heart{right:12px;top:12px;width:30px;height:30px}
+.ls-grid .vk .heart svg{width:15px;height:15px}
+.ls-grid .vk-b{display:flex;flex-direction:column;flex:1;min-width:0;padding:8px 10px 10px}
+.ls-grid .vk h3{font-size:var(--fs-base);line-height:var(--lh-snug)}
+.ls-grid .vk-s{opacity:1;color:var(--mute);font-size:var(--fs-sm);margin-top:2px}
+.ls-grid .vk-pp{order:1;margin:6px 0 0;background:var(--soft);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.ls-grid .vk-r{order:2;flex-direction:column;align-items:flex-start;gap:2px;margin-top:auto;padding-top:8px}
+.ls-grid .vk-st{color:var(--ink);font-size:var(--fs-sm)}
+.ls-grid .vk-st i{opacity:1;color:var(--mute)}
+.ls-grid .vk-st.new{background:var(--soft)}
+.ls-grid .vk-p{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:0 4px;background:none;padding:0;border-radius:0}
+.ls-grid .vk-p b{font-size:var(--fs-base)}
 .ls-grid>.ls-posts,.ls-grid>.empty{grid-column:1/-1}
 .ls-grid+.kat-seo{margin-top:24px}
+@media (max-width:359px){.ls-grid .vk h3{font-size:var(--fs-md)}}
 /* Filtreler çekmecesi */
 .lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:60vh;overflow-y:auto}
 .lf-g{border:0;margin:0;padding:0;min-width:0}
@@ -78,10 +92,15 @@ body{min-height:100vh;min-height:100dvh}
 .box.kat-seo p a{color:var(--ink);font-weight:var(--fw-semi);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .kat-seo .u-faq summary h3{font:inherit}
 /* Şehir sayfası (v2/izmir/): tür çipleri, türlere göre raylar ve özellik çipleri, kiminle, semtler */
-.sh-tur{padding:14px 16px 0}
+.sh-tur{padding:14px 0 0}
 .sh-tur .kat-il{margin-top:0}
 .sh-sec .rail{padding-top:12px}
-.sh-oz{padding:2px 16px 0}
+.sh-oz{padding:2px 0 0}
+/* tür ve özellik bağları tek satır: yalnızca sağa-sola kayar, sade ince çipler */
+.sh-tur .kat-il,.sh-oz .kat-il{flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 16px}
+.sh-tur .kat-il::-webkit-scrollbar,.sh-oz .kat-il::-webkit-scrollbar{display:none}
+.sh-tur .kat-il li,.sh-oz .kat-il li{flex:none}
+.sh-tur .kat-il a,.sh-oz .kat-il a{min-height:32px;padding:0 12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:var(--fs-sm);white-space:nowrap}
 .sh-sec>.kat-il{margin-top:12px}
 /* Deneyim sayfası: kalıcı sayfadaki sayfa yolu açık zeminde; bulunduğu sayfalar */
 .u-hd .bc ol{color:var(--mute);margin:0 0 8px}

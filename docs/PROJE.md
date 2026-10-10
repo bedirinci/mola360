@@ -2214,3 +2214,19 @@ güncellenecek yaşayan proje dokümanıdır.
   yalnızca `index` sayfaları içerir; `YAYIN` kapalıyken boş. Bugün
   sayfaların robots etiketi değişmedi (hepsi `noindex, nofollow`).
 - **UX sonucu:** Görünür değişiklik yok.
+
+### 2026-10-10 — Şehir sayfası bağ çipleri tek satır; ızgara kartı sade
+
+- **Karar:** Şehir sayfasındaki tür bağları ve rayların altındaki özellik
+  bağları tek satırlık, yalnızca yatay kayan ince çip şerididir. Liste
+  ızgarasındaki kart beyaz zeminli, ince kenarlıdır: görsel üstte,
+  ad, yer, puan ve fiyat altta.
+- **Neden:** Bedir çip bulutlarını çok yer kaplıyor, ızgaradaki
+  görsel üstü yazılı kartları kötü buldu.
+- **Etkilediği alanlar:** `v2/izmir/` şehir sayfası, bütün liste
+  sayfalarının ızgara görünümü. Bağlar HTML'de aynen kalır (SEO).
+- **Teknik sonuç:** Yalnızca `sayfalar.css`; `.sh-tur` / `.sh-oz`
+  çipleri `overflow-x:auto` + `overflow-y:hidden`. 360 px altında
+  ızgara kart başlığı 13 px.
+- **UX sonucu:** Bağlar bir satır yükseklik kaplar; ızgara kartları
+  karşılaştırması kolay, hafif kartlardır.
