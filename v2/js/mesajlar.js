@@ -26,8 +26,9 @@ const act=(a,ic,t,cls)=>'<button type="button" class="sw-b'+(cls?' '+cls:'')+'" 
 const row=c=>(c.request?'<li>':'<li class="ms-sw" data-k="'+c.id+'"><div class="sw-a" aria-hidden="true">'+act('more',IC.more,'Daha fazla')
   +act('mute',c.muted?IC.bell:IC.mute,c.muted?'Sesi aç':'Sessize al')+act('arch',IC.archive,c.archived?'Çıkar':'Arşivle','arch')+'</div>')
   +'<a class="ms-r'+(c.unread?' new':'')+'" href="'+chatUrl(c.id)+'">'+ava(c.user,'m')
-  +'<span class="x"><b>'+c.user.ad+(c.user.onay?VERIFIED:'')+(c.muted?'<i class="ms-mu" role="img" aria-label="Sessize alındı">'+IC.mute+'</i>':'')+'</b><span class="pv">'+esc(preview(c))+'</span></span>'
-  +'<span class="ms-t"><small>'+c.when+'</small>'+(c.unread?'<i aria-label="'+c.unread+' yeni mesaj">'+c.unread+'</i>':status(c))+'</span></a></li>';
+  /* iki satır: ad + saat, son mesaj + yeni sayısı ya da durum; ikisi de kendi satırında hizalı */
+  +'<span class="x"><span class="l1"><b>'+c.user.ad+(c.user.onay?VERIFIED:'')+(c.muted?'<i class="ms-mu" role="img" aria-label="Sessize alındı">'+IC.mute+'</i>':'')+'</b><small>'+c.when+'</small></span>'
+  +'<span class="l2"><span class="pv">'+esc(preview(c))+'</span>'+(c.unread?'<i aria-label="'+c.unread+' yeni mesaj">'+c.unread+'</i>':status(c))+'</span></span></a></li>';
 
 let tab='sohbet',q='';
 function show(){
