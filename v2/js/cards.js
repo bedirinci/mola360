@@ -1,7 +1,7 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
-import { tl, ttl, makeSheet, esc } from './ui.js';
+import { tl, ttl, makeSheet, esc, word } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
@@ -20,12 +20,18 @@ export const km=d=>(d<1?'1':d<100?String(Math.round(d)):(Math.round(d/10)*10).to
    dokununca ürün sayfasındaki paylaşımlara gider */
 const pp=(id,l)=>l&&l.length?'<a class="vk-pp" href="'+urunUrl(ROOT,getProduct(id)||{id})+'#paylasimlar" aria-label="Bu deneyimin '+l.length+' paylaşımı"><span class="avs">'
   +l.slice(0,3).map(p=>ava(p.user,'xs')).join('')+'</span>'+l.length+' paylaşım</a>':'';
+/* Liste ve büyük kartta güven satırı: her türde belirli bir tarihe kadar ücretsiz iptal
+   (son gün ürün sayfasında ve ödemede, api.js bookingSpec) */
+/* Büyük kartta özellik çipleri: süre ya da saat, pansiyon, yerin ikinci parçası (Denize 120 m); en çok üç.
+   Otelde giriş tarihleri yok (bugüne göre değişir, ürün sayfasında) */
+const chips=x=>{const l=[...new Set([...(x.facts||[]).slice(x.k==='Otel'?1:0),x.info,...x.a.split(' · ').slice(1)].filter(Boolean).map(c=>c[0].toLocaleUpperCase('tr')+c.slice(1)))].slice(0,3);
+  return l.length?'<p class="vk-ch">'+l.map(c=>'<span>'+c+'</span>').join('')+'</p>':''};
 export function card(x){
   const unit=x.u||'kişi başı',lv=lvOn(x.t);
   return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><div class="vk-tg"><span class="type">'+x.k+'</span>'+(lv?'<span class="vk-off">%10 indirim</span>':'')+'</div>'+heartBtn(x.t)
-  +'<div class="vk-b">'+pp(x.id,x.pp)+'<h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'
-  +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+x.s.toFixed(1).replace('.',',')+' <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
-  +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
+  +'<div class="vk-b">'+pp(x.id,x.pp)+'<p class="vk-pl">'+PIN+(x.km!=null?'<b>'+km(x.km)+'</b> · ':'')+placeOf(x)+'</p><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'+chips(x)+'<p class="vk-fc">'+IC.check+'Ücretsiz iptal</p>'
+  +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+'<b>'+x.s.toFixed(1).replace('.',',')+'</b><em>'+word(x.s)+'</em> <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
+  +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s><em>Kâşif fiyatı</em>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span><span class="vk-go" aria-hidden="true">'+IC.right+'</span></div></div></article>';
 }
 
 /* Veri katmanındaki ürünü (api.js) kart biçimine çevirip çizer */

@@ -2246,3 +2246,35 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Teknik sonuç:** Sayılar paylaşımın `likes` ve `comments` alanından,
   Bağlan akışıyla aynı ikonlar.
 - **UX sonucu:** Kartın altında beyaz kalp ve yorum ikonu yanında sayılar.
+
+### 2026-10-10 — Şehir sayfası bağ çipleri tek satır; büyük kart ve liste kartı
+
+- **Karar:** Şehir sayfasındaki tür bağları ve rayların altındaki özellik
+  bağları tek satırlık, yalnızca yatay kayan ince çip şerididir. Liste
+  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var (Bedir
+  dört örnekten B'yi seçti): beyaz kart, geniş görsel (tür, indirim,
+  favori üstünde); altında yer, ad, özellik çipleri, paylaşım; ayraçtan
+  sonra yıldızlı puan ("★ 9,3 Harika (410)", lacivert kutu yok), fiyat ve yeşil ok.
+  Liste kartı yatay "Kompakt premium" (Bedir on örnekten 9'u seçti,
+  görseli genişletti): solda 132 px görsel (favori, indirim üstünde);
+  sağda tür, ad, yer, yeşil tikli "Ücretsiz iptal", paylaşım; altta yıldız
+  ve puan ile fiyat. İki kartta da puan kutusuz; önünde altın
+  yıldız, indirimli fiyatın üstünde yeşil "Kâşif fiyatı" ve "Ücretsiz
+  iptal" satırı var. Keşfet raylarındaki kartlar değişmedi.
+- **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
+  ve görsel üstü yazılı kartları kötü buldu; liste kartlarının da daha
+  iyi olmasını istedi (320 px'te puan ile "2 gece toplam" üst üste
+  biniyordu).
+- **Etkilediği alanlar:** `v2/izmir/` şehir sayfası, bütün liste
+  sayfaları, Planlarım > Favoriler (aynı liste kartı). Bağlar HTML'de
+  aynen kalır (SEO).
+- **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
+  `.ls-grid` tek sütun), `components.css` (liste kartı, puan kutusu),
+  `cards.js` (puan `<b>`, sözcüğü `<em>`; yer satırı `.vk-pl`, çipler
+  `.vk-ch`, ok `.vk-go` yalnızca büyük kartta; `.vk-fc` ücretsiz iptal
+  ve `.vk-p em` Kâşif fiyatı liste ve büyük kartta; Yakınımda sıralamasında
+  uzaklık yer satırında; otelde tarih çipi yok, SEO
+  sayfası tarihsiz kalır);
+  görünüm düğmesinin ikonu büyük kart.
+- **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
+  çıkarır, liste karşılaştırmayı kolaylaştırır.
