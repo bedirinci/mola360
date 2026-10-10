@@ -2254,11 +2254,11 @@ güncellenecek yaşayan proje dokümanıdır.
   sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var (Bedir
   dört örnekten B'yi seçti): beyaz kart, geniş görsel (tür, indirim,
   favori üstünde); altında yer, ad, özellik çipleri, paylaşım; ayraçtan
-  sonra lacivert puan kutusu ("9,3 Harika (410)"), fiyat ve yeşil ok.
+  sonra yıldızlı puan ("★ 9,3 Harika (410)", lacivert kutu yok), fiyat ve yeşil ok.
   Liste kartı yatay "Kompakt premium" (Bedir on örnekten 9'u seçti,
   görseli genişletti): solda 132 px görsel (favori, indirim üstünde);
   sağda tür, ad, yer, yeşil tikli "Ücretsiz iptal", paylaşım; altta yıldız
-  ve lacivert puan kutusu ile fiyat. İki kartta da puanın önünde altın
+  ve puan ile fiyat. İki kartta da puan kutusuz; önünde altın
   yıldız, indirimli fiyatın üstünde yeşil "Kâşif fiyatı" ve "Ücretsiz
   iptal" satırı var. Keşfet raylarındaki kartlar değişmedi.
 - **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
