@@ -33,7 +33,7 @@
 .fld{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-md);text-align:left;width:100%}
 .fld svg{width:21px;height:21px;color:var(--navy)}
 .fld small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:var(--ls-caps);color:var(--mute)}
-.fld span{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);margin-top:1px}
+.fld span{display:block;font-size:var(--fs-fld);font-weight:var(--fw-semi);margin-top:1px}
 .fld span.hint{color:var(--mute);font-weight:var(--fw-medium)}
 /* Nereye doluyken sağda × (seçimi kaldırır); yazı altına girmesin diye sağ boşluk */
 #f1.has-x{padding-right:52px}
