@@ -155,6 +155,13 @@ Google'ın iyi deneyim eşikleri: LCP < 2,5 sn, INP < 200 ms, CLS < 0,1.
 
 - Web fontu yüklenmez.
 - Görseller 200 KB altıdır (fotoğraf kuralı, `docs/yeni-surum.md`).
+- **Yerleşim kayması yok (2026-10-10):** Keşfet'te JavaScript'in
+  dolduracağı bölümlere (popüler aramalar, süre kutuları, Kiminle, raylar,
+  Molapuan) dolu yükseklikleri kadar yer ayrılır (`kesfet.css`,
+  `@media (scripting:enabled)` ve `:empty`). Önce CLS 0,45, sonra 0,002
+  (yavaş ağ, yerel ölçüm). Tarayıcı testi JavaScript'i geciktirip CLS'nin
+  0,1 altında kaldığını 390 ve 320 px'te denetler; bölüm yüksekliği
+  değişirse ayrılan yer de güncellenir.
 - Sayfa içeriği HTML'de durur; JavaScript yalnızca etkileşim ekler.
 
 ## 8. Yeni şehir ya da sayfa eklemek
@@ -182,7 +189,5 @@ Google'ın iyi deneyim eşikleri: LCP < 2,5 sn, INP < 200 ms, CLS < 0,1.
 - **Alan adı ve yayın:** alan adı, `robots.txt`, Search Console ve
   `YAYIN = true`. Denetim raporu ve yol haritası (2026-10-10):
   proje klasöründe `docs/seo/denetim-2026-10-10.md`.
-- **Keşfet'te yerleşim kayması:** yavaş bağlantıda JavaScript'le çizilen
-  bölümler (süre rayı, Kiminle, Yakınımda) ilk boyamadan sonra gelip
-  içeriği kaydırıyor (yerel laboratuvar ölçümünde CLS 0,45; eşik 0,1).
-  Bölümlere yer ayrılmalı.
+- **"Kaldığın yerden" rayı:** daha önce deneyim gören kullanıcıda
+  JavaScript'le açılıp altını kaydırır; yüksekliği önceden bilinemiyor.

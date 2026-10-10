@@ -168,3 +168,16 @@
 @media (max-width:374px){.hello{font-size:clamp(20px,6.1vw,24px)}}
 /* "İzmir'de ne yapılır?": şehrin tür, kiminle ve semt sayfalarına bağlar (scripts/seo.mjs) */
 .sh-kesfet .kat-il+.kat-il{margin-top:8px}
+/* Açılışta yerleşim kayması olmasın (CLS): JavaScript'in dolduracağı bölümlere
+   dolu hallerinin yüksekliği kadar yer ayrılır; dolunca kural düşer (:empty).
+   Yalnızca JavaScript açıkken: kapalıyken boş yer kalmaz */
+@media (scripting:enabled){
+  .search:not(:has(.popular))::after{content:"";display:block;height:83px}
+  #time:empty{min-height:103px}
+  #withChips:empty{min-height:54px}
+  #timeRail:empty,#wkRail:empty{min-height:299px}
+  #mpBox:empty{min-height:159px}
+  #postRail:empty{min-height:251px}
+  #wkChips:empty{min-height:52px}
+}
+@media (scripting:enabled) and (min-width:375px){#time:empty{min-height:108px}}

@@ -161,6 +161,22 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     await sakin.close();
   }, 40000);
 
+  it('Keşfet açılırken kaymıyor: JavaScript geç gelse de yerleşim kayması (CLS) 0,1 altında', async () => {
+    for (const width of [390, 320]) {
+      const ctx = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' });
+      const page = await ctx.newPage();
+      /* yavaş bağlantı: sayfa önce JavaScript'siz boyanır, modüller sonra gelir */
+      await page.route(/\/js\/[a-z0-9-]+\.js/, async r => { await new Promise(t => setTimeout(t, 300)); await r.continue(); });
+      await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver(l => l.getEntries().forEach(e => { if (!e.hadRecentInput) window.__cls += e.value; }))
+        .observe({ type: 'layout-shift', buffered: true }); });
+      await page.goto(base, { waitUntil: 'networkidle' });
+      await page.waitForSelector('#timeRail > *');
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => window.__cls), width + 'px').toBeLessThan(0.1);
+      await ctx.close();
+    }
+  }, 30000);
+
   it('SEO sayfası: kendi adresinde açılır; yalnızca sayfanın deneyimleri ve süzgeçleri', async () => {
     const api = await import('../v2/js/api.js');
     const pg = api.listPages().find(x => x.path === 'turlar/kultur/');
