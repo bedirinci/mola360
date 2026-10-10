@@ -138,11 +138,25 @@ describe('v2', () => {
     const sayfa = await seo.seoSayfalari();
     expect(seo.uretilmis().sort(), 'npm run seo').toEqual(sayfa.map(x => x.yol).sort());
     sayfa.forEach(({ yol, html }) => expect(oku(join(V2, yol, 'index.html')) === html, yol + ': npm run seo').toBe(true));
-    /* site haritası: Keşfet, bütün sayfalar ve deneyimler */
+    /* site haritası: yalnızca dizine eklenebilir sayfalar; YAYIN kapalıyken boş */
+    const acik = await seo.acikYollar();
     expect(oku(join(V2, 'sitemap.xml')), 'npm run seo').toBe(await seo.siteHaritasi());
-    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1])).toEqual([seo.SITE, ...sayfa.map(x => seo.SITE + x.yol)]);
+    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]))
+      .toEqual(seo.YAYIN ? [seo.SITE, ...sayfa.filter(x => acik.has(x.yol)).map(x => seo.SITE + x.yol)] : []);
     /* robots: her sayfa tek politikaya uyar (YAYIN kapalıyken hepsi kapalı) */
-    seo.sayfaDosyalari().forEach(f => { const h = oku(join(V2, f)); expect(h, f).toContain('<meta name="robots" content="' + seo.robotsOf(f, h.includes(seo.IZ)) + '">'); });
+    seo.sayfaDosyalari().forEach(f => { const h = oku(join(V2, f)); expect(h, f).toContain('<meta name="robots" content="' + seo.robotsOf(f, h.includes(seo.IZ), acik) + '">'); });
+    /* örnek veri dizine girmez: örnek deneyimin sayfası ve yalnızca örnek deneyimli liste "index" olamaz */
+    const api0 = await import('../v2/js/api.js');
+    api0.listProducts().filter(p => p.path && p.sample).forEach(p => expect(acik.has(p.path), p.path).toBe(false));
+    expect(seo.robotsOf('izmir/mekanlar/index.html', true, new Set())).not.toMatch(/^index/);
+    expect(seo.robotsOf('izmir/mekanlar/index.html', true, new Set(['izmir/mekanlar/']))).toBe(seo.YAYIN ? 'index, follow' : 'noindex, nofollow');
+    /* Keşfet: asıl adres, Open Graph ve sitenin yapısal verisi (WebSite, Organization) */
+    const hi = s.indexOf(seo.HBAS), hj = s.indexOf(seo.HSON);
+    expect(hi > 0 && hj > hi && hj < s.indexOf('</head>'), 'v2/index.html baş işaretleri').toBe(true);
+    expect(s.slice(hi + seo.HBAS.length, hj).trim(), 'baş: npm run seo').toBe(seo.kesfetBas(s).trim());
+    expect(s).toContain('<link rel="canonical" href="' + seo.SITE + '">');
+    const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(s.slice(hi, hj))[1]);
+    expect(ld['@graph'].map(x => x['@type'])).toEqual(['WebSite', 'Organization']);
     /* her sekmenin koleksiyon bölümü var; yalnızca ilki (Turlar) açık */
     const api = await import('../v2/js/api.js');
     expect([...s.matchAll(/class="koll-g" data-tur="([a-z]+)"[^>]*?( hidden)?>/g)].map(m => m[1] + (m[2] ? '-' : '+')))

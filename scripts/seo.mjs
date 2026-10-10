@@ -43,6 +43,8 @@ export const BAS = '<!-- kategoriler: npm run seo üretir, elle değiştirme -->
 export const SON = '<!-- /kategoriler -->';
 export const SBAS = '<!-- sehir: npm run seo üretir, elle değiştirme -->';
 export const SSON = '<!-- /sehir -->';
+export const HBAS = '<!-- bas: npm run seo üretir, elle değiştirme -->';
+export const HSON = '<!-- /bas -->';
 
 const h = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tek = (s, a, b) => { if (s.split(a).length !== 2) throw new Error('şablonda bir kez yok: ' + a); return s.replace(a, () => b); };
@@ -70,10 +72,13 @@ const CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="
 const LD = o => '<script type="application/ld+json">' + JSON.stringify(o).replace(/</g, '\\u003c') + '</script>';
 const derinlik = yol => yol.split('/').filter(Boolean).length;
 
-/* robots etiketi: rel v2/ altındaki dosya yolu (izmir/index.html), uretilen SEO sayfası mı */
-export const robotsOf = (rel, uretilen) => !YAYIN ? 'noindex, nofollow'
-  : uretilen || rel === 'index.html' ? 'index, follow'
-    : /^(liste|urun|baglan)\//.test(rel) ? 'noindex, follow' : 'noindex, nofollow';
+/* robots etiketi: rel v2/ altındaki dosya yolu (izmir/index.html), uretilen SEO sayfası mı,
+   acik dizine eklenebilir sayfaların adresleri (acikYollar). Üretilen sayfa gerçek veriyle
+   dolmadıkça (örnek veri) dizine girmez ama bağları izlenir. */
+export const robotsOf = (rel, uretilen, acik = new Set()) => !YAYIN ? 'noindex, nofollow'
+  : rel === 'index.html' ? 'index, follow'
+    : uretilen ? (acik.has(rel.replace(/index\.html$/, '')) ? 'index, follow' : 'noindex, follow')
+      : /^(liste|urun|baglan)\//.test(rel) ? 'noindex, follow' : 'noindex, nofollow';
 
 async function veri() {
   const api = await import('../v2/js/api.js');
@@ -87,16 +92,25 @@ async function veri() {
   /* adresler benzersiz; deneyim adresi sayfa adresiyle çakışmaz */
   const yollar = [...tum.map(pg => pg.path), ...urunler.map(p => p.path)];
   if (new Set(yollar).size !== yollar.length) throw new Error('aynı adreste iki sayfa: ' + yollar.filter((y, i) => yollar.indexOf(y) !== i));
-  return { api, productCard, ROOT, S, tum, genel, sehirler, urunler };
+  /* dizine eklenebilir sayfalar: yalnızca gerçek (örnek olmayan, sample:false) veriyle. Uydurma işletme,
+     fiyat ya da müsaitlik arama sonucuna çıkmaz. Deneyim gerçekse; liste en az ESIK gerçek deneyimle;
+     şehir sayfası şehrin sayfalarında en az ESIK gerçek deneyimle */
+  const gercek = id => !api.getProduct(id).sample, yeter = ids => tekil(ids).filter(gercek).length >= S.ESIK;
+  const acik = new Set([...urunler.filter(p => !p.sample).map(p => p.path),
+    ...tum.filter(pg => pg.kind !== 'sehir' && yeter(pg.ids)).map(pg => pg.path),
+    ...sehirler.filter(c => yeter(c.sayfalar.flatMap(pg => pg.ids))).map(c => c.id + '/')]);
+  return { api, productCard, ROOT, S, tum, genel, sehirler, urunler, acik };
 }
+/* dizine eklenebilir üretilen sayfaların adresleri (v2/ altında; Keşfet hariç) */
+export const acikYollar = async () => (await veri()).acik;
 
 /* şablonu sayfanın derinliğine göre oku: "../" bağları önek olur */
 const sablon = (ad, onek) => readFileSync(join(V2, ad, 'index.html'), 'utf8').replace(/(href|src)="\.\.\//g, '$1="' + onek);
 
 /* <head>: başlık, açıklama, asıl adres, robots, Open Graph, yapısal veri */
-function bas(s, { baslik, desc, url, ld }) {
+function bas(s, { baslik, desc, url, ld, robots }) {
   s = s.replace('<!DOCTYPE html>', '<!DOCTYPE html>\n' + IZ);
-  s = tek(s, /<meta name="robots" content="[^"]*">/.exec(s)[0], '<meta name="robots" content="' + robotsOf('', true) + '">');
+  s = tek(s, /<meta name="robots" content="[^"]*">/.exec(s)[0], '<meta name="robots" content="' + robots + '">');
   s = tek(s, /<title>[^<]*<\/title>/.exec(s)[0], '<title>' + h(baslik) + '</title>');
   return tek(s, /<meta name="description" content="[^"]*">/.exec(s)[0], '<meta name="description" content="' + h(desc) + '">\n<link rel="canonical" href="' + url + '">'
     + '\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="mola360">\n<meta property="og:locale" content="tr_TR">'
@@ -191,7 +205,7 @@ function listeSayfasi(ctx, k, pg) {
     { '@type': 'ItemList', '@id': url + '#liste', name: pg.name, numberOfItems: l.length,
       itemListElement: l.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + p.path, name: p.title })) },
     sssLd(url, soru)] };
-  let s = bas(sablon('liste', onek), { baslik, desc, url, ld });
+  let s = bas(sablon('liste', onek), { baslik, desc, url, ld, robots: robotsOf(pg.path, true, ctx.acik) });
   s = tek(s, '<body>', '<body data-q="' + h(Object.entries(pg.q).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&')) + '" data-kat="' + pg.path + '">');
   s = tek(s, '<header class="pg-top slim">', '<header class="pg-top slim cover" style="--g:' + yerel(pg.bg) + '">');
   s = tek(s, '<h1 id="lsTitle">Keşfet</h1>', yolHtml(adimlar, onek) + '\n  <h1 id="lsTitle">' + h(pg.name) + '</h1>');
@@ -227,7 +241,7 @@ function sehirSayfasi(ctx, c) {
     { '@type': 'ItemList', '@id': url + '#sayfalar', name: pg.name, numberOfItems: c.sayfalar.length - 1 + kalkis.length,
       itemListElement: [...c.sayfalar.filter(x => x !== pg), ...kalkis].map((x, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + x.path, name: x.name })) },
     sssLd(url, soru)] };
-  let s = bas(sablon('liste', onek), { baslik, desc, url, ld });
+  let s = bas(sablon('liste', onek), { baslik, desc, url, ld, robots: robotsOf(pg.path, true, ctx.acik) });
   s = tek(s, '<body>', '<body data-sehir="' + c.id + '">');
   s = tek(s, '<header class="pg-top slim">', '<header class="pg-top slim cover" style="--g:' + c.bg + '">');
   s = tek(s, '<h1 id="lsTitle">Keşfet</h1>', yolHtml([['Keşfet', '']], onek) + '\n  <h1 id="lsTitle">' + h(pg.name) + '</h1>');
@@ -285,7 +299,7 @@ function deneyimSayfasi(ctx, p) {
   const sayfalar = ctx.tum.filter(x => x.kind !== 'sehir' && x.ids.includes(p.id));
   const sure = t === 'tur' ? p.info : t === 'etkinlik' ? saat(p) : t === 'otel' ? p.facts[1] : p.facts[0];
   const liste = a => '<ul>' + a.map(x => '<li>' + h(x) + '</li>').join('') + '</ul>';
-  let s = bas(sablon('urun', onek), { baslik: api.productTitle(p), desc, url, ld });
+  let s = bas(sablon('urun', onek), { baslik: api.productTitle(p), desc, url, ld, robots: robotsOf(p.path, true, ctx.acik) });
   s = tek(s, '<body class="no-nav">', '<body class="no-nav" data-id="' + p.id + '">');
   s = tek(s, '<main id="urun"></main>', '<main id="urun">\n<header class="pg-top slim cover u-st" style="--g:' + p.bg.split(ctx.ROOT).join(onek) + '">'
     + yolHtml(adimlar, onek) + '<h1>' + h(p.title) + '</h1><p>' + h(p.type + ' · ' + p.place + (sure ? ' · ' + sure : '')) + '</p></header>\n'
@@ -297,6 +311,18 @@ function deneyimSayfasi(ctx, p) {
     /* ilgili sayfalar ürün sayfasının dışında: urun.js içeriği yeniden çizince de kalır */
     + (sayfalar.length ? '<nav class="box kat-seo u-ilgili" aria-labelledby="u-il"><h2 id="u-il">Bu deneyimin bulunduğu sayfalar</h2>' + cipler(sayfalar, onek) + '</nav>' : ''));
   return s;
+}
+
+/* Keşfet'in <head> bağları: asıl adres, Open Graph ve sitenin yapısal verisi (WebSite, Organization).
+   Başlık ve açıklama sayfanın kendi etiketlerinden okunur */
+export function kesfetBas(s) {
+  const baslik = /<title>([^<]*)<\/title>/.exec(s)[1], desc = /<meta name="description" content="([^"]*)">/.exec(s)[1];
+  return '<link rel="canonical" href="' + SITE + '">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="mola360">'
+    + '\n<meta property="og:locale" content="tr_TR">\n<meta property="og:title" content="' + baslik.replace(/^mola360 — /, '') + '">'
+    + '\n<meta property="og:description" content="' + desc + '">\n<meta property="og:url" content="' + SITE + '">\n<meta name="twitter:card" content="summary">\n'
+    + LD({ '@context': 'https://schema.org', '@graph': [
+      { '@type': 'WebSite', '@id': SITE + '#site', name: 'mola360', url: SITE, inLanguage: 'tr-TR', publisher: { '@id': SITE + '#kurum' } },
+      { '@type': 'Organization', '@id': SITE + '#kurum', name: 'mola360', url: SITE }] });
 }
 
 /* Keşfet: arama kartının ardındaki koleksiyonlar (sekmenin tür + özellik sayfaları); ilki (Turlar) açık */
@@ -329,11 +355,12 @@ export async function seoSayfalari() {
   return out;
 }
 
-/* site haritası: Keşfet, şehir, otel ve tur sayfaları ve deneyim sayfaları (tarih yok) */
+/* site haritası: yalnızca dizine eklenebilir sayfalar (robots "index"): Keşfet, şehir, otel ve tur
+   sayfaları ve deneyim sayfaları. YAYIN kapalıyken boş. lastmod yok: gerçek değişiklik tarihi yok */
 export async function siteHaritasi() {
-  const { tum, urunler } = await veri();
-  const yollar = ['', ...tum.map(pg => pg.path), ...urunler.map(p => p.path)];
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<!-- npm run seo üretir, elle değiştirme -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+  const { tum, urunler, acik } = await veri();
+  const yollar = !YAYIN ? [] : ['', ...[...tum.map(pg => pg.path), ...urunler.map(p => p.path)].filter(y => acik.has(y))];
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<!-- npm run seo üretir, elle değiştirme' + (YAYIN ? '' : '; YAYIN kapalı: dizine eklenecek sayfa yok') + ' -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + yollar.map(u => '  <url><loc>' + SITE + u + '</loc></url>\n').join('') + '</urlset>\n';
 }
 
@@ -356,6 +383,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   let k = readFileSync(join(V2, 'index.html'), 'utf8');
   k = blokYaz(k, BAS, SON, await kategoriHtml(), 'kategori');
   k = blokYaz(k, SBAS, SSON, await sehirHtml(), 'şehir');
+  k = blokYaz(k, HBAS, HSON, kesfetBas(k), 'baş');
   writeFileSync(join(V2, 'index.html'), k);
   const sayfalar = await seoSayfalari(), yeni = new Set(sayfalar.map(x => x.yol)), eski = uretilmis();
   const elle = new Set(sayfaDosyalari().map(f => f.replace(/index\.html$/, '')).filter(y => !eski.includes(y)));
@@ -371,8 +399,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     while (d.startsWith(V2) && d !== V2 && existsSync(d) && !readdirSync(d).length) { rmSync(d, { recursive: true }); d = dirname(d); }
   }
   /* robots: elle yazılan sayfalar da politikaya uyar (YAYIN) */
+  const acik = await acikYollar();
   for (const f of sayfaDosyalari()) {
-    const yol = join(V2, f), s = readFileSync(yol, 'utf8'), r = '<meta name="robots" content="' + robotsOf(f, s.includes(IZ)) + '">';
+    const yol = join(V2, f), s = readFileSync(yol, 'utf8'), r = '<meta name="robots" content="' + robotsOf(f, s.includes(IZ), acik) + '">';
     const t = s.replace(/<meta name="robots" content="[^"]*">/, r);
     if (t !== s) writeFileSync(yol, t);
   }
