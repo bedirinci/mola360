@@ -376,6 +376,8 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .vk-st i{font-style:normal;font-weight:var(--fw-medium);opacity:.8;font-size:var(--fs-sm)}
 /* puanın sözcüğü (Harika) yalnızca liste ve büyük kartta */
 .vk-st em{display:none}
+/* yer satırı, özellik çipleri ve ok yalnızca büyük kartta */
+.vk-pl,.vk-ch,.vk-go{display:none}
 .vk-st.new{background:var(--card);color:var(--ink);font-size:var(--fs-xs);padding:3px 8px;border-radius:var(--r-xs)}
 .vk-p{display:flex;flex-direction:column;align-items:flex-end;background:#fff;color:var(--ink);border-radius:var(--r-sm);padding:4px 9px 5px;white-space:nowrap;min-width:0;line-height:var(--lh-tight)}
 .vk-p b{font-size:var(--fs-base);font-weight:var(--fw-black);letter-spacing:var(--ls-snug);font-variant-numeric:tabular-nums}

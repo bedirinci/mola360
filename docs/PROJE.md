@@ -2251,9 +2251,10 @@ güncellenecek yaşayan proje dokümanıdır.
 
 - **Karar:** Şehir sayfasındaki tür bağları ve rayların altındaki özellik
   bağları tek satırlık, yalnızca yatay kayan ince çip şerididir. Liste
-  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var:
-  çerçevesiz, geniş (3:2) görsel; altında ad, yer, sonra lacivert puan
-  kutusu ("9,3 Harika (410)") solda, fiyat sağda. Liste kartı da aynı
+  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var (Bedir
+  dört örnekten B'yi seçti): beyaz kart, geniş görsel (tür, indirim,
+  favori üstünde); altında yer, ad, özellik çipleri, paylaşım; ayraçtan
+  sonra lacivert puan kutusu ("9,3 Harika (410)"), fiyat ve yeşil ok. Liste kartı da aynı
   puan kutusunu kullanır; puan ile fiyat sığmazsa fiyat alt satıra iner.
   Keşfet raylarındaki kartlar değişmedi.
 - **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
@@ -2265,7 +2266,9 @@ güncellenecek yaşayan proje dokümanıdır.
   aynen kalır (SEO).
 - **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
   `.ls-grid` tek sütun), `components.css` (liste kartı, puan kutusu),
-  `cards.js` (puan `<b>`, sözcüğü `<em>`; raylarda gizli);
+  `cards.js` (puan `<b>`, sözcüğü `<em>`; yer satırı `.vk-pl`, çipler
+  `.vk-ch`, ok `.vk-go` yalnızca büyük kartta; otelde tarih çipi yok, SEO
+  sayfası tarihsiz kalır);
   görünüm düğmesinin ikonu büyük kart.
 - **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
   çıkarır, liste karşılaştırmayı kolaylaştırır.
