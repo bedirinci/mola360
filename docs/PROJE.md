@@ -2232,3 +2232,17 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Yüklenmiş sayfa aynı; açılırken içerik yerinden
   oynamaz.
 
+
+### 2026-10-10 · Paylaşım kartlarında beğeni ve yorum sayısı
+
+- **Karar:** Keşfet "İnsanlar bu hafta ne yaptı?", ürün sayfası "Bu
+  deneyimi yaşayanlar" ve Liste raylarındaki küçük paylaşım kartlarının
+  altındaki deneyim kartı kaldırıldı; yerine ikonlu beğeni ve yorum
+  sayısı geldi.
+- **Neden:** Bedir'in isteği. Kart zaten bir deneyimin içinde ya da
+  yanında duruyor; sayılar paylaşımın ilgisini gösteriyor.
+- **Etkilediği alanlar:** `postMini` (js/cards.js), `.pmini .pm-n`
+  (components.css). Profil ızgarasındaki kendi paylaşımların değişmedi.
+- **Teknik sonuç:** Sayılar paylaşımın `likes` ve `comments` alanından,
+  Bağlan akışıyla aynı ikonlar.
+- **UX sonucu:** Kartın altında beyaz kalp ve yorum ikonu yanında sayılar.
