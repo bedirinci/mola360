@@ -24,7 +24,7 @@ html.kb .m-bar :focus-visible{outline-color:#fff}
 .heart::after{content:"";position:absolute;inset:-6px;border-radius:50%}
 .heart.pop svg{animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
-.toast{z-index:62!important;position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:calc(100% - 32px);max-width:408px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 30px rgba(21,32,72,.16);border-radius:var(--r-md);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:var(--fs-md);font-weight:var(--fw-semi);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;z-index:20}
+.toast{z-index:62!important;position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:calc(100% - 32px);max-width:408px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 30px rgba(21,32,72,.16);border-radius:var(--r-md);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:var(--fs-md);font-weight:var(--fw-semi);opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;z-index:20}
 .toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
 /* açık bilgi kutusu (Bedir): beyaz zemin, lacivert eylem yazısı */
 .toast button{color:var(--navy);font-weight:var(--fw-bold);min-height:36px;padding:0 4px}
