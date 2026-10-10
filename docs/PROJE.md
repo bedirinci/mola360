@@ -2161,3 +2161,17 @@ güncellenecek yaşayan proje dokümanıdır.
   - Deneyim sayfasında üstte sayfa yolu (Keşfet › İzmir › Mekânlar), altta
     benzer deneyimler ve deneyimin bulunduğu sayfalar.
   - Yeni şehir aynı yapıyla eklenir (`docs/seo.md` §8).
+
+### 2026-10-10 — Başlıklarda dengeli satır kırma yok
+
+- **Karar:** Başlıklar (`h1`–`h4`) `text-wrap:balance` kullanmaz; yazı
+  sığıyorsa tek satırda kalır.
+- **Neden:** iPhone Safari, ürün sayfasındaki "Buluşma noktası", "Bilmen
+  gerekenler", "İptal ve ödeme" gibi tek satıra sığan kutu başlıklarını
+  ikiye bölüyordu. Kural #123'te kaldırılmış, #166'da `base.css`'e geri
+  gelmişti.
+- **Etkilediği alanlar:** Bütün sayfalardaki başlıklar.
+- **Teknik sonuç:** `v2/css/base.css`'ten kural çıktı; `tests/v2.test.js`
+  v2'nin CSS ve JS dosyalarında `text-wrap:balance` olursa düşer.
+  Paragraflardaki `text-wrap:pretty` kalıyor.
+- **UX sonucu:** Sığan başlık tek satır; sığmayan başlık doğal kırılır.
