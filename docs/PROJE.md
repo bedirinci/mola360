@@ -2232,13 +2232,30 @@ güncellenecek yaşayan proje dokümanıdır.
 - **UX sonucu:** Yüklenmiş sayfa aynı; açılırken içerik yerinden
   oynamaz.
 
+
+### 2026-10-10 · Paylaşım kartlarında beğeni ve yorum sayısı
+
+- **Karar:** Keşfet "İnsanlar bu hafta ne yaptı?", ürün sayfası "Bu
+  deneyimi yaşayanlar" ve Liste raylarındaki küçük paylaşım kartlarının
+  altındaki deneyim kartı kaldırıldı; yerine ikonlu beğeni ve yorum
+  sayısı geldi.
+- **Neden:** Bedir'in isteği. Kart zaten bir deneyimin içinde ya da
+  yanında duruyor; sayılar paylaşımın ilgisini gösteriyor.
+- **Etkilediği alanlar:** `postMini` (js/cards.js), `.pmini .pm-n`
+  (components.css). Profil ızgarasındaki kendi paylaşımların değişmedi.
+- **Teknik sonuç:** Sayılar paylaşımın `likes` ve `comments` alanından,
+  Bağlan akışıyla aynı ikonlar.
+- **UX sonucu:** Kartın altında beyaz kalp ve yorum ikonu yanında sayılar.
+
 ### 2026-10-10 — Şehir sayfası bağ çipleri tek satır; büyük kart ve liste kartı
 
 - **Karar:** Şehir sayfasındaki tür bağları ve rayların altındaki özellik
   bağları tek satırlık, yalnızca yatay kayan ince çip şerididir. Liste
-  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var: beyaz
-  zemin, ince kenar, geniş (16:9) görsel üstte; ad, yer, puan ve fiyat
-  altta. Liste kartında puan ile fiyat sığmazsa fiyat alt satıra iner.
+  sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var:
+  çerçevesiz, geniş (3:2) görsel; altında ad, yer, sonra lacivert puan
+  kutusu ("9,3 Harika (410)") solda, fiyat sağda. Liste kartı da aynı
+  puan kutusunu kullanır; puan ile fiyat sığmazsa fiyat alt satıra iner.
+  Keşfet raylarındaki kartlar değişmedi.
 - **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
   ve görsel üstü yazılı kartları kötü buldu; liste kartlarının da daha
   iyi olmasını istedi (320 px'te puan ile "2 gece toplam" üst üste
@@ -2247,7 +2264,8 @@ güncellenecek yaşayan proje dokümanıdır.
   sayfaları, Planlarım > Favoriler (aynı liste kartı). Bağlar HTML'de
   aynen kalır (SEO).
 - **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
-  `.ls-grid` tek sütun), `components.css` (`.stack .vk-r` sarar);
+  `.ls-grid` tek sütun), `components.css` (liste kartı, puan kutusu),
+  `cards.js` (puan `<b>`, sözcüğü `<em>`; raylarda gizli);
   görünüm düğmesinin ikonu büyük kart.
 - **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
   çıkarır, liste karşılaştırmayı kolaylaştırır.

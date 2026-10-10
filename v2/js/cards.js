@@ -101,7 +101,10 @@ export function postCard(x){
 export function postMini(x,{own=false}={}){
   const u=x.user,p=x.product;
   return '<article class="pmini'+(own?' own':'')+'" style="background:'+x.bg+'">'+(own?(x.verified?WENT:''):'<div class="who">'+ava(u,'s')+'<span>@'+u.kul+'</span></div>')
-   +'<div class="pm-b"><p>'+x.text+'</p>'+(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')+'</div>'
+   +'<div class="pm-b"><p>'+x.text+'</p>'
+     /* deneyim kartı yerine beğeni ve yorum sayısı (Bedir); profil ızgarası eski hâliyle */
+     +(own?(p?'<div class="tagp"><span class="sw" style="background:'+p.bg+'"></span><span>'+p.title+'</span></div>':'')
+       :'<div class="pm-n"><span aria-label="'+x.likes+' beğeni">'+IC.heart+x.likes+'</span><span aria-label="'+x.comments+' yorum">'+IC.comment+x.comments+'</span></div>')+'</div>'
    +'<a class="lk2" href="'+postUrl(x.id)+'" aria-label="'+u.kul+' paylaşımını aç"></a></article>';
 }
 

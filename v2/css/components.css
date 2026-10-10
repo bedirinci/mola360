@@ -323,6 +323,9 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .pmini .tagp span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pmini .tagp .sw{width:16px;height:16px;border-radius:var(--r-xs);flex:none}
 .pmini>a.lk2{position:absolute;inset:0;z-index:1}
+.pmini .pm-n{display:flex;align-items:center;gap:14px;margin-top:8px;font-size:var(--fs-sm);font-weight:var(--fw-semi);font-variant-numeric:tabular-nums}
+.pmini .pm-n span{display:inline-flex;align-items:center;gap:5px}
+.pmini .pm-n svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:2}
 
 /* yüzen düğme (paylaş) */
 
