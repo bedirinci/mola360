@@ -175,9 +175,12 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     expect(await page.getAttribute('link[rel=canonical]', 'href')).toBe('https://bedirinci.github.io/mola360/v2/turlar/kultur/');
     /* kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca sayfada olan süreler; sıra önerilen */
     expect(await page.$('#cats')).toBeNull();
-    expect(await page.$$('[data-kimle]')).toHaveLength(0);
     const l = pg.ids.map(api.getProduct);
-    expect(await page.$$eval('[data-sure]', a => a.map(b => b.dataset.sure))).toEqual(api.BUCKETS.map(b => b[0]).filter(b => l.some(p => p.b === b)));
+    /* süzgeçler Filtreler çekmecesinde */
+    await page.click('#ltFilter');
+    expect(await page.$$('#lfBody [data-k="kimle"]')).toHaveLength(0);
+    expect(await page.$$eval('#lfBody [data-k="sure"]', a => a.map(b => b.dataset.v))).toEqual(api.BUCKETS.map(b => b[0]).filter(b => l.some(p => p.b === b)));
+    await page.click('#lfSheet [data-x]');
     expect(await page.$$eval('#list .vk h3', a => a.map(x => x.textContent))).toEqual(l.map(p => p.title));
     /* açıklama, SSS ve ilgili sayfalar açık; SSS açılır kapanır */
     const kat = () => page.$$eval('body [data-kat]', a => a.map(e => e.hidden));
@@ -189,16 +192,18 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     expect(await page.getAttribute('.koll-g:not([hidden]) .kl[href="turlar/kultur/"]', 'href')).toBe('turlar/kultur/');
     await page.goto(base + pg.path, { waitUntil: 'networkidle' });
     /* süre seçilince adres sayfada kalır; liste sayfanın tamamı olmadığı için alttaki bölümler gizlenir */
-    const sure = await page.getAttribute('[data-sure]', 'data-sure');
-    await page.click('[data-sure="' + sure + '"]');
+    await page.click('#ltFilter');
+    const sure = await page.getAttribute('#lfBody [data-k="sure"]', 'data-v');
+    await page.click('#lfBody [data-k="sure"][data-v="' + sure + '"]');
+    await page.click('#lfOk');
     expect(page.url()).toBe(base + pg.path + '?sure=' + sure);
     expect(await page.$$eval('#list .vk', a => a.length)).toBe(l.filter(p => p.b === sure).length);
     expect(await kat()).toEqual([true, true, true]);
     expect(await page.textContent('#lsTitle')).toBe('Kültür turları');
     /* adresle açılınca da süre seçili gelir; süre kalkınca adres yalın */
     await page.goto(base + pg.path + '?sure=' + sure, { waitUntil: 'networkidle' });
-    expect(await page.getAttribute('[data-sure="' + sure + '"]', 'aria-pressed')).toBe('true');
-    await page.click('[data-sure="' + sure + '"]');
+    expect(await page.textContent('#ltN')).toBe('1');
+    await page.click('#filters [data-off="sure"]');
     expect(page.url()).toBe(base + pg.path);
     expect(await kat()).toEqual([false, false, false]);
     expect(sorun).toEqual([]);

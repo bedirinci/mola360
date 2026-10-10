@@ -25,9 +25,47 @@ body{min-height:100vh;min-height:100dvh}
 .ls-posts{margin:6px -16px 4px}
 .ls-posts .hd{padding:0 16px}
 .ls-posts .rail{padding-top:10px}
-.ls-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 0;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
-.sort{display:inline-flex;align-items:center;gap:4px;min-height:36px;font-size:var(--fs-sm);font-weight:var(--fw-bold);color:var(--navy)}
-.sort svg{width:16px;height:16px}
+/* Liste araç çubuğu: solda Filtreler, sağda sıralama ve ızgara/liste geçişi */
+.ls-tools{display:flex;align-items:center;gap:8px;padding:14px 16px 0}
+.lt-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 13px 0 11px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:var(--fs-md);font-weight:var(--fw-semi);white-space:nowrap}
+.lt-btn svg{width:18px;height:18px;flex:none;color:var(--navy);stroke-width:2}
+.lt-btn.on{border-color:var(--navy)}
+.lt-sort{margin-left:auto;min-width:0}
+.lt-sort span{overflow:hidden;text-overflow:ellipsis}
+.lt-n{min-width:20px;height:20px;padding:0 6px;border-radius:var(--r-pill);display:grid;place-items:center;background:var(--navy);color:#fff;font-size:var(--fs-xs);font-weight:var(--fw-bold);line-height:var(--lh-none)}
+.lt-view{display:flex;flex:none;padding:3px;gap:2px;border-radius:var(--r-md);background:var(--soft)}
+.lt-view button{width:36px;height:34px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--mute)}
+.lt-view button svg{width:18px;height:18px;stroke-width:2}
+.lt-view button[aria-pressed="true"]{background:var(--card);color:var(--navy);box-shadow:0 1px 3px rgba(12,18,40,.12)}
+/* dar ekranda üç parça tek satıra sığsın: daha sık boşluk, küçük ikon */
+@media (max-width:359px){
+  .ls-tools{gap:6px}
+  .lt-btn{gap:5px;padding:0 10px 0 9px}
+  .lt-btn svg{width:16px;height:16px}
+  .lt-view button{width:32px}
+}
+.filters[hidden]{display:none}
+.ls-count{padding:12px 16px 0;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute)}
+.ls-count+.sr+.stack,.ls-count+.sr+.ls-grid{padding-top:10px}
+/* Izgara: iki sütun, görsel ağırlıklı kart; paylaşım rayı ve boş durum tam satır */
+.ls-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;padding:10px 16px 0}
+/* kart içeriği kadar uzar (overflow:hidden en-boy oranında taşırırdı); yazı tür etiketinin altında başlar */
+.ls-grid .vk{width:auto;aspect-ratio:auto;min-height:226px;padding-top:48px}
+.ls-grid .vk-b{padding:10px}
+.ls-grid .vk-r{flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px}
+.ls-grid .vk-p{align-items:flex-start}
+.ls-grid>.ls-posts,.ls-grid>.empty{grid-column:1/-1}
+.ls-grid+.kat-seo{margin-top:24px}
+/* Filtreler çekmecesi */
+.lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:60vh;overflow-y:auto}
+.lf-g{border:0;margin:0;padding:0;min-width:0}
+.lf-g legend{padding:0;margin-bottom:10px;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+.lf-c{display:flex;flex-wrap:wrap;gap:8px}
+.lf-f{display:flex;gap:10px;padding-top:16px;margin-top:8px;border-top:1px solid var(--line)}
+.lf-f .btn{justify-content:center;padding:14px;font-size:var(--fs-base)}
+.lf-f .ghost{flex:none;padding:14px 18px}
+.lf-f .green{flex:1}
+.lf-f .btn:disabled{opacity:.45}
 /* Kategori sayfası (v2/karadeniz-turlari/, scripts/kategoriler.mjs): başlığın
    üstünde sayfa yolu; listenin altında açıklama, sık sorulan sorular ve ilgili kategoriler */
 .bc ol{list-style:none;display:flex;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:var(--fs-sm);font-weight:var(--fw-medium);color:var(--navy-ink)}
