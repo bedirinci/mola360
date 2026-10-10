@@ -74,10 +74,17 @@ body{min-height:100vh;min-height:100dvh}
 .lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:68vh;overflow-y:auto;overscroll-behavior:contain}
 .lf-g{border:0;margin:0;padding:0;min-width:0}
 /* başlık yüzer: fieldset'in özel legend yerleşimi kalkar, ayraç çizgisi başlığın üstünde kalır */
-.lf-g legend{float:left;width:100%;padding:0;margin-bottom:10px;font-size:var(--fs-base);font-weight:var(--fw-bold)}
-.lf-c{clear:both;display:flex;flex-wrap:wrap;gap:8px}
-.lf-c .fc i{margin-left:6px;font-style:normal;font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums}
-.lf-c .fc[aria-pressed="true"] i{color:inherit;opacity:.75}
+.lf-g legend{float:left;width:100%;padding:0;margin-bottom:4px;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+/* işaretlemeli satır: solda kutu, ad, sağda kaç deneyim */
+.lf-c{clear:both;display:flex;flex-direction:column}
+.lf-o{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:4px 0;text-align:left;font-size:var(--fs-base);color:var(--ink)}
+.lf-cb{display:grid;place-items:center;flex:none;width:22px;height:22px;border:1.5px solid #C9CEDA;border-radius:var(--r-xs);background:var(--card);color:transparent}
+.lf-cb svg{width:15px;height:15px;stroke-width:3}
+.lf-o[aria-checked="true"] .lf-cb{background:var(--navy);border-color:var(--navy);color:#fff}
+.lf-o[aria-checked="true"] .lf-l{font-weight:var(--fw-semi)}
+.lf-l{flex:1;min-width:0}
+.lf-o i{font-style:normal;font-size:var(--fs-md);color:var(--mute);font-variant-numeric:tabular-nums}
+.lf-more{align-self:flex-start;margin-top:4px;padding:6px 0;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy);text-decoration:underline;text-underline-offset:3px}
 .lf-g+.lf-g{padding-top:18px;border-top:1px solid var(--line)}
 .lf-f{display:flex;gap:10px;padding-top:16px;margin-top:8px;border-top:1px solid var(--line)}
 .lf-f .btn{justify-content:center;padding:14px;font-size:var(--fs-base)}

@@ -2282,21 +2282,22 @@ güncellenecek yaşayan proje dokümanıdır.
 ### 2026-10-10 — Ayrıntılı Filtreler çekmecesi; büyük kartta yeşil ok yok
 
 - **Karar:** Liste ve şehir sayfalarındaki Filtreler çekmecesi ilk
-  sürümün süzgeçlerini örnek alır: Fiyat aralığı, Süre, Kiminle, Puan
-  (9, 8,5, 8 ve üzeri), Özellikler (kültür, doğa, deniz manzaralı…),
-  Ulaşım, Kalkış şehri (turlar), Fırsatlar (indirimli). Her seçeneğin
-  yanında seçilirse kaç deneyim kalacağı yazar; boş kalan ya da hiçbir
-  şeyi daraltmayan seçenek, seçeneği kalmayan grup gösterilmez; gruplar
-  ince çizgiyle ayrılır. Büyük kartta fiyatın yanındaki yeşil ok kalktı.
+  sürümün süzgeçlerini örnek alır: Fiyat aralığı, Süre, Kiminle,
+  Özellikler (kültür, doğa, deniz manzaralı…), Ulaşım, Kalkış şehri
+  (turlar), Fırsatlar (indirimli). Seçenekler işaretlemeli satırdır (solda
+  kutu, sağda kaç deneyim): grupta birden çok seçenek "ya da", gruplar
+  arası "ve". Boş kalan ya da hiçbir şeyi daraltmayan seçenek, seçeneği
+  kalmayan grup gösterilmez; altıdan uzun grupta ilk beşi ve "Tümünü
+  gör". Gruplar ince çizgiyle ayrılır. Puan filtresi yok (Bedir). Büyük kartta fiyatın yanındaki yeşil ok kalktı.
   Büyük kartın görseli iki yandan eşit boşluklu.
 - **Neden:** Bedir filtreleri daha ayrıntılı ve kaliteli istedi, ilk
   sürümü örnek gösterdi; yeşil oku istemedi; iPhone'da büyük kartın
   görseli kartın sağ kenarına dayanıyordu.
 - **Etkilediği alanlar:** bütün liste sayfaları ve şehir sayfaları.
-- **Teknik sonuç:** `liste.js` `EX` (ek filtre tanımları: seçenekler
-  listeden, yüklem), taslak sonucu `fin()`; ek filtreler adreste yok (fiyat
-  gibi yalnızca bu açılışta), seçili olanlar listenin üstünde × çipi ve
-  Filtreler sayısında. Kalkış adı ürünün yer satırından. `sayfalar.css`
+- **Teknik sonuç:** `liste.js` `G` (grup tanımları: seçenekler listeden,
+  yüklem), seçimler `sel` (grup başına dizi), `apply()`; süre ve kiminle
+  tek seçimse adreste (`?sure=`), diğerleri yalnızca bu açılışta. Seçili
+  her seçenek listenin üstünde × çipi; Filtreler düğmesinde toplam sayı. Kalkış adı ürünün yer satırından. `sayfalar.css`
   `.ls-grid .vk::before` genişliği açık yazılı (Safari en-boy oranlı
   ::before'da sağ boşluğu yok sayıyordu).
 - **UX sonucu:** Kullanıcı seçmeden önce kaç sonuç kalacağını görür,

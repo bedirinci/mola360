@@ -11,6 +11,7 @@ import { productCard, postMini } from './cards.js';
 import { toast, esc, tl, makeSheet } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { initFavorites, favSync } from './favorites.js';
+import { IC } from './icons.js';
 
 renderShell('kesfet');
 initFavorites();
@@ -47,9 +48,9 @@ const themePosts=()=>th?listPosts().filter(x=>x.product&&th.ids.includes(x.produ
 
 /* Araç çubuğu: Filtreler (çekmece: fiyat aralığı, süre, kiminle ve ek filtreler), sıralama
    (çekmece: önerilen, yakınımda, fiyat, puan) ve ızgara/liste görünümü.
-   Süre ve kiminle adreste; fiyat, sıra ve konum yalnızca bu açılışta.
-   Görünüm tarayıcıda hatırlanır. Süre adları tek yerden (BUCKETS, Keşfet ile aynı) */
-let fiyat='',sira='',pos=null;
+   Süre ve kiminle tek seçimse adreste; diğer filtreler, sıra ve konum yalnızca
+   bu açılışta. Görünüm tarayıcıda hatırlanır. Süre adları tek yerden (BUCKETS, Keşfet ile aynı) */
+let sira='',pos=null;
 const SIRA=[['','Önerilen'],['yakin','Yakınımda','Sana en yakın olanlar önce'],['ucuz','En düşük fiyat'],['puan','En yüksek puan']];
 const fp=p=>lvPrice(p.title,p.price);
 /* Fiyat aralıkları listenin kendi fiyatlarından: üçte birlik dilimler, yuvarlak sınırlar; boş dilim yok */
@@ -61,21 +62,31 @@ function bands(l){
     :[['d',tl(c[0])+' altı',p=>p<c[0]],['y',tl(c[0])+' ve üstü',p=>p>=c[0]]];
   return b.filter(x=>v.some(x[2]));
 }
-/* Ek filtreler (ilk sürümün süzgeçlerinden: puan, özellik, ulaşım, kalkış,
-   fırsat): yalnızca bu açılışta, adreste yok. Seçenekler listenin kendisinden;
-   hiçbir şeyi daraltmayan ya da boş kalan seçenek gösterilmez */
+/* Filtre grupları, ilk sürümdeki gibi işaretlemeli: grupta birden çok seçenek
+   "ya da", gruplar arasında "ve". Seçenekler listenin kendisinden; boş kalan,
+   ek gruplarda hiçbir şeyi daraltmayan seçenek gösterilmez */
 const TR_AD={otobus:'Otobüs',ucak:'Uçak',feribot:'Feribot',tren:'Tren'};
 const uniq=a=>[...new Set(a.filter(Boolean))];
-const EX=[
-  {k:'puan',t:'Puan',vals:()=>[['9','9 ve üzeri · Harika'],['8.5','8,5 ve üzeri · Çok iyi'],['8','8 ve üzeri']],pred:v=>p=>p.count>0&&p.score>=+v},
-  {k:'ozl',t:'Özellikler',vals:l=>uniq(l.flatMap(p=>p.oz||[])).filter(v=>OZ_AD[v]&&v!==oz).map(v=>[v,OZ_AD[v]]),pred:v=>p=>(p.oz||[]).includes(v)},
-  {k:'ulasim',t:'Ulaşım',vals:l=>uniq(l.map(p=>p.tr)).map(v=>[v,TR_AD[v]||v]),pred:v=>p=>p.tr===v},
+let FB=[],LST=[];
+const G=[
+  {k:'fiyat',t:'Fiyat aralığı',vals:()=>FB.map(b=>[b[0],b[1]]),pred:v=>{const b=FB.find(x=>x[0]===v);return p=>!b||b[2](fp(p))}},
+  {k:'sure',t:'Süre',vals:()=>SURE.map(b=>[b[0],b[1]]),pred:v=>p=>p.b===v},
+  {k:'kimle',t:'Kiminle',vals:()=>KIMLE.map(w=>[w[0],w[1]]),pred:v=>p=>p.with.includes(v)},
+  {k:'ozl',t:'Özellikler',ek:1,vals:l=>uniq(l.flatMap(p=>p.oz||[])).filter(v=>OZ_AD[v]&&v!==oz).map(v=>[v,OZ_AD[v]]),pred:v=>p=>(p.oz||[]).includes(v)},
+  {k:'ulasim',t:'Ulaşım',ek:1,vals:l=>uniq(l.map(p=>p.tr)).map(v=>[v,TR_AD[v]||v]),pred:v=>p=>p.tr===v},
   /* kalkış şehrinin adı ürünün yer satırından ("Ayvalık çıkışlı") */
-  {k:'kalk',t:'Kalkış şehri',vals:l=>{const t=l.filter(p=>typeKey(p.type)==='tur'&&p.kalkis);return kalkis?[]:uniq(t.map(p=>p.kalkis))
+  {k:'kalk',t:'Kalkış şehri',ek:1,vals:l=>{const t=l.filter(p=>typeKey(p.type)==='tur'&&p.kalkis);return kalkis?[]:uniq(t.map(p=>p.kalkis))
     .map(v=>[v,t.find(p=>p.kalkis===v).place.split(' · ').find(x=>/ çıkışlı$/.test(x)).replace(/ çıkışlı$/,'')])},pred:v=>p=>typeKey(p.type)==='tur'&&p.kalkis===v},
-  {k:'firsat',t:'Fırsatlar',vals:()=>[['indirim','İndirimli']],pred:()=>p=>lvOn(p.title)}];
-let ex={};
-const exF=(l,d,skip)=>EX.reduce((a,g)=>g.k!==skip&&d[g.k]?a.filter(g.pred(d[g.k])):a,l);
+  {k:'firsat',t:'Fırsatlar',ek:1,vals:()=>[['indirim','İndirimli']],pred:()=>p=>lvOn(p.title)}];
+const sel=Object.fromEntries(G.map(g=>[g.k,[]]));
+if(sure)sel.sure=[sure];if(kimle)sel.kimle=[kimle];
+const apply=(l,d,skip)=>G.reduce((a,g)=>g.k!==skip&&d[g.k].length?a.filter(p=>d[g.k].some(v=>g.pred(v)(p))):a,l);
+/* adreste süre ve kiminle yalnızca tek seçimse durur */
+const one=a=>a.length===1?a[0]:'';
+const single=()=>{sure=one(sel.sure);kimle=one(sel.kimle)};
+const all=()=>listProducts({type:tur,tema:th&&th.id,yer,ara,tarih,sehir,oz,kalkis});
+/* listede karşılığı kalmayan seçim düşer (sekme değişince); fiyat dilimleri diğer seçimlerden sonraki listeden */
+const prune=(l,d)=>{FB=bands(apply(l,d,'fiyat'));G.forEach(g=>{const v=g.vals(l).map(x=>x[0]);d[g.k]=d[g.k].filter(x=>v.includes(x))})};
 const X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
 const href=(t,s,k=kimle)=>{if(PG)return s?'?sure='+s:location.pathname;const x=[th&&'tema='+th.id,t&&'tur='+t,yer&&'yer='+yer,ara&&'ara='+encodeURIComponent(ara),tarih&&'tarih='+tarih,s&&'sure='+s,k&&'kimle='+k].filter(Boolean).join('&');
@@ -88,15 +99,12 @@ function filters(){
   const D=PG?null:getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   const off=(k,label)=>'<button type="button" class="fc off" aria-pressed="true" data-off="'+k+'" aria-label="'+esc(label)+' seçimini kaldır">'+esc(label)+X+'</button>';
   document.getElementById('filters').innerHTML=(D?off('yer',D.name):'')+(ara?off('ara','“'+ara+'”'):'')+(WH?off('tarih',WH[2]):'')
-    +(sure?off('sure',SURE.find(b=>b[0]===sure)[1]):'')+(kimle?off('kimle',WITH.find(w=>w[0]===kimle)[1]):'')
-    +(fiyat&&FB.some(b=>b[0]===fiyat)?off('fiyat',FB.find(b=>b[0]===fiyat)[1]):'')
-    +EX.map(g=>ex[g.k]?off('ex:'+g.k,g.vals(EXL).find(v=>v[0]===ex[g.k])[1]):'').join('');
+    +G.flatMap(g=>sel[g.k].map(v=>off(g.k+':'+v,(g.vals(LST).find(x=>x[0]===v)||[v,v])[1]))).join('');
   const el=document.getElementById('filters');el.hidden=!el.firstChild;
   /* Filtreler düğmesinde seçili filtre sayısı */
-  const n=[sure,kimle,fiyat,...EX.map(g=>ex[g.k])].filter(Boolean).length,N=document.getElementById('ltN');
+  const n=G.reduce((a,g)=>a+sel[g.k].length,0),N=document.getElementById('ltN');
   N.textContent=n;N.hidden=!n;document.getElementById('ltFilter').classList.toggle('on',!!n);
 }
-let FB=[],EXL=[];
 function draw(){
   const T=TYPES.find(t=>t[0]===tur),B=BUCKETS.find(b=>b[0]===sure),W=WITH.find(w=>w[0]===kimle),D=getDestination(yer),WH=WHEN.find(w=>w[0]===tarih);
   /* başlık en belirleyici seçim; geri kalanlar alt satırda */
@@ -114,12 +122,8 @@ function draw(){
       +CATS.map(t=>'<a href="'+href(t[0],sure)+'"'+(t[0]===tur?' aria-current="true"':'')+'>'+t[2]+'</a>').join('');
   }
   const f={sure,kimle,tema:th&&th.id,yer,ara,tarih,sehir,oz,kalkis};
-  let list=listProducts({type:tur,...f});
-  FB=bands(list);if(!FB.some(b=>b[0]===fiyat))fiyat='';
-  const B2=FB.find(b=>b[0]===fiyat);if(B2)list=list.filter(p=>B2[2](fp(p)));
-  /* sekme ya da süre değişince listede karşılığı kalmayan ek filtre düşer */
-  EXL=list;EX.forEach(g=>{if(ex[g.k]&&!g.vals(list).some(v=>v[0]===ex[g.k]))delete ex[g.k]});
-  list=exF(list,ex);
+  let list=all();LST=list;prune(list,sel);single();
+  list=apply(list,sel);
   filters();
   /* tema vitrini temanın kendi sırasıyla; şehir sayfası önerilen sırayla (üreticiyle aynı) */
   if(th)list.sort((a,b)=>th.ids.indexOf(a.id)-th.ids.indexOf(b.id));
@@ -133,7 +137,7 @@ function draw(){
   document.getElementById('lsCount').innerHTML=list.length+' deneyim';
   const el=document.getElementById('list');
   /* boşsa: aynı arama başka kategoride sonuç veriyorsa oraya yönlendir */
-  const other=!list.length&&tur?listProducts(f).length:0;
+  const other=!list.length&&tur?apply(listProducts({...f,sure:'',kimle:''}),sel).length:0;
   const ps=list.length?themePosts():[];
   const cards=list.map(x=>productCard(x));
   if(ps.length)cards.splice(Math.min(4,cards.length),0,'<section class="ls-posts" aria-labelledby="h-tp"><div class="hd"><h2 id="h-tp">Bu temada paylaşılanlar</h2><a class="all" href="../baglan/">Bağlan →</a></div>'
@@ -143,7 +147,7 @@ function draw(){
      +(other&&!PG?'<a class="btn" href="'+href('',sure)+'">Tüm kategorilerde gör</a>':'<a class="btn" href="'+(PG?location.pathname:'?'+[th&&'tema='+th.id,tur&&'tur='+tur].filter(Boolean).join('&'))+'">Filtreleri kaldır</a>')+'</div>';
   favSync();
   /* şehir sayfasının listenin altındaki bölümleri (hakkında, SSS, ilgili): süre seçilince liste sayfanın tamamı olmadığı için gizlenir */
-  if(PG){document.querySelectorAll('body [data-kat]').forEach(e=>{e.hidden=!!(sure||tarih||fiyat||EX.some(g=>ex[g.k]))});return}
+  if(PG){document.querySelectorAll('body [data-kat]').forEach(e=>{e.hidden=!!(tarih||G.some(g=>sel[g.k].length))});return}
   /* şehir sayfasına denk gelen seçim: başlıkta önce sayfanın adı, asıl adres şehir sayfası (arama motorları için) */
   document.title=K?pageTitle(K):'mola360 — '+title;
   let cn=document.querySelector('link[rel=canonical]');
@@ -151,10 +155,9 @@ function draw(){
 }
 document.getElementById('filters').addEventListener('click',e=>{
   const o=e.target.closest('[data-off]');
-  if(o&&o.dataset.off.startsWith('ex:')){delete ex[o.dataset.off.slice(3)];go();
-    (document.querySelector('#filters .fc')||document.getElementById('ltFilter')).focus({preventScroll:true});return}
-  if(o){({yer:()=>yer='',ara:()=>ara='',tarih:()=>tarih='',sure:()=>sure='',kimle:()=>kimle='',fiyat:()=>fiyat=''})[o.dataset.off]();go();
-    (document.querySelector('#filters .fc')||document.getElementById('ltFilter')).focus({preventScroll:true})}
+  if(!o)return;const [k,v]=o.dataset.off.split(/:(.*)/);
+  if(v!=null){sel[k]=sel[k].filter(x=>x!==v);single()}else({yer:()=>yer='',ara:()=>ara='',tarih:()=>tarih=''})[k]();
+  go();(document.querySelector('#filters .fc')||document.getElementById('ltFilter')).focus({preventScroll:true});
 });
 /* kategori sekmesi sayfayı yeniden açmaz, adresi değiştirir: sekmeler
    arasında gezmek geçmişe yeni sayfa eklemez, geri Liste'den önceki sayfaya döner */
@@ -176,33 +179,29 @@ document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="lfBg" aria-
   +'<div class="sh-list" role="radiogroup" aria-labelledby="lsTtl" id="lsOpts"></div></div>');
 const fSh=makeSheet(document.getElementById('lfSheet'),document.getElementById('lfBg'));
 const sSh=makeSheet(document.getElementById('lsSheet'),document.getElementById('lsBg'));
-let dr={};
-const base=d=>listProducts({type:tur,sure:d.sure,kimle:d.kimle,tema:th&&th.id,yer,ara,tarih,sehir,oz,kalkis});
-/* taslağın sonucu: süre ve kiminle listede, fiyat dilimi ve ek filtreler üstüne */
-const fin=(d,fb)=>{let l=base(d);const B=fb.find(b=>b[0]===d.fiyat);if(B)l=l.filter(p=>B[2](fp(p)));return exF(l,d)};
+let dr={};const more=new Set();
+/* her seçeneğin yanında, diğer seçimlerle birlikte kaç deneyim olduğu; uzun grupta ilk beşi ve "Tümünü gör" */
 function fDraw(){
-  const l=base(dr),fb=bands(l);if(!fb.some(b=>b[0]===dr.fiyat))dr.fiyat='';
-  EX.forEach(g=>{if(dr[g.k]&&!g.vals(l).some(v=>v[0]===dr[g.k]))dr[g.k]=''});
-  /* her seçeneğin yanında seçilirse kaç deneyim kalacağı; boş seçenek yok.
-     Ek filtrelerde hiçbir şeyi daraltmayan seçenek de yok */
-  const grp=(k,t,o,ek)=>{const tot=fin({...dr,[k]:''},fb).length;
-    o=o.map(x=>[x[0],x[1],fin({...dr,[k]:x[0]},fb).length]).filter(x=>dr[k]===x[0]||x[2]&&(!ek||x[2]<tot));
-    return o.length?'<fieldset class="lf-g"><legend>'+t+'</legend><div class="lf-c">'
-    +o.map(x=>'<button type="button" class="fc" data-k="'+k+'" data-v="'+x[0]+'" aria-pressed="'+(dr[k]===x[0])+'">'+x[1]+'<i>'+x[2]+'</i></button>').join('')+'</div></fieldset>':''};
-  const n=fin(dr,fb).length;
-  document.getElementById('lfBody').innerHTML=grp('fiyat','Fiyat aralığı',fb.map(b=>[b[0],b[1]]))+grp('sure','Süre',SURE)+grp('kimle','Kiminle',KIMLE)
-    +EX.map(g=>grp(g.k,g.t,g.vals(l),1)).join('');
+  const l=all();prune(l,dr);const n=apply(l,dr).length;
+  document.getElementById('lfBody').innerHTML=G.map(g=>{const r=apply(l,dr,g.k);
+    const o=g.vals(l).map(x=>[x[0],x[1],r.filter(g.pred(x[0])).length,dr[g.k].includes(x[0])]).filter(x=>x[3]||x[2]&&(!g.ek||x[2]<r.length));
+    if(!o.length)return '';const kis=o.length>6&&!more.has(g.k);
+    return '<fieldset class="lf-g"><legend>'+g.t+'</legend><div class="lf-c">'
+      +(kis?o.filter((x,i)=>i<5||x[3]):o).map(x=>'<button type="button" class="lf-o" role="checkbox" aria-checked="'+x[3]+'" data-k="'+g.k+'" data-v="'+x[0]+'"><span class="lf-cb" aria-hidden="true">'+IC.check+'</span><span class="lf-l">'+x[1]+'</span><i>'+x[2]+'</i></button>').join('')
+      +(kis?'<button type="button" class="lf-more" data-more="'+g.k+'">Tümünü gör ('+o.length+')</button>':'')+'</div></fieldset>'}).join('');
   const ok=document.getElementById('lfOk');ok.textContent=n?n+' deneyimi gör':'Bu seçimde deneyim yok';ok.disabled=!n;
-  document.getElementById('lfClear').disabled=!['sure','kimle','fiyat',...EX.map(g=>g.k)].some(k=>dr[k]);
+  document.getElementById('lfClear').disabled=!G.some(g=>dr[g.k].length);
 }
-document.getElementById('ltFilter').addEventListener('click',e=>{dr={sure,kimle,fiyat,...ex};fDraw();fSh.open(e.currentTarget)});
-document.getElementById('lfBody').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;
-  const k=b.dataset.k;dr[k]=dr[k]===b.dataset.v?'':b.dataset.v;fDraw();
-  document.querySelector('#lfBody [data-k="'+k+'"][data-v="'+b.dataset.v+'"]')?.focus({preventScroll:true})});
-document.getElementById('lfClear').addEventListener('click',()=>{dr={};fDraw();document.getElementById('lfOk').focus({preventScroll:true})});
+const empty=()=>Object.fromEntries(G.map(g=>[g.k,[]]));
+document.getElementById('ltFilter').addEventListener('click',e=>{dr=Object.fromEntries(G.map(g=>[g.k,[...sel[g.k]]]));more.clear();fDraw();fSh.open(e.currentTarget)});
+document.getElementById('lfBody').addEventListener('click',e=>{const m=e.target.closest('[data-more]');
+  if(m){more.add(m.dataset.more);fDraw();document.querySelector('#lfBody [data-k="'+m.dataset.more+'"]:nth-of-type(6)')?.focus({preventScroll:true});return}
+  const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k,v=b.dataset.v;
+  dr[k]=dr[k].includes(v)?dr[k].filter(x=>x!==v):[...dr[k],v];fDraw();
+  document.querySelector('#lfBody [data-k="'+k+'"][data-v="'+v+'"]')?.focus({preventScroll:true})});
+document.getElementById('lfClear').addEventListener('click',()=>{dr=empty();fDraw();document.getElementById('lfOk').focus({preventScroll:true})});
 /* adres, çekmecenin geçmiş adımı geri alındıktan sonra yazılır (yoksa geri adımı süreyi silerdi) */
-document.getElementById('lfOk').addEventListener('click',()=>{sure=dr.sure||'';kimle=dr.kimle||'';fiyat=dr.fiyat||'';
-  ex={};EX.forEach(g=>{if(dr[g.k])ex[g.k]=dr[g.k]});
+document.getElementById('lfOk').addEventListener('click',()=>{G.forEach(g=>sel[g.k]=dr[g.k]);single();
   const ov=!!(history.state&&history.state.m360ov);if(ov)addEventListener('popstate',go,{once:true});fSh.close();if(!ov)go()});
 
 /* Sıralama: seçince uygulanır. Yakınımda konumu yalnızca seçilince ister, saklamaz */
