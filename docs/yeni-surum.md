@@ -42,7 +42,11 @@ alanlar, teknik ve UX sonucuyla PROJE.md'nin **Karar kaydı**na yazılır.
    (fiyat, kontenjan, iptal: `arsiv/klasik/docs/veri-sozlesmesi.md`)
    okunup v2'nin kendi kuralı olarak yeniden yazılabilir.
 
-Otomatik kontroller `tests/v2.test.js`'te.
+Otomatik kontroller `tests/` altında: `v2.test.js` (kurallar, veri
+katmanı, kaçış), `v2-takvim.test.js` (takvim; saat sabitlenerek farklı
+günlerde) ve `v2-tarayici.test.js` (bütün sayfalar gerçek Chromium'da
+hatasız açılır; kullanıcının yazdığı metin hiçbir ekranda HTML olarak
+çalışmaz; tarayıcı yoksa atlanır, CI kurar).
 - Yeni sitede henüz yapılmamış sayfalara giden bağlar `#yakinda`;
   dokununca "Çok yakında." bildirimi çıkar.
   Sayfa yapıldıkça bağ gerçek adrese döner.
@@ -56,28 +60,47 @@ yok; GitHub Pages'te olduğu gibi çalışır (yerelde `npm run dev`).
 
 | Sayfa | Adres | Ne var |
 |---|---|---|
-| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar; ne zaman; kaç kişi), "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", "Yakınımda ne var?" (konum ya da şehir), Bağlan önizlemesi, "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar; kiminle aramaya biner (formda kaldırılabilir çip, kişi sayısının başlangıcı, listede `kimle`), yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit; içlerindeki deneyimler kiminle seçimine ve yakınlığa göre sıralanır |
-| Bağlan | `v2/baglan/` | Paylaşım akışı; her paylaşım bağlı olduğu ürünle |
-| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, tarih seçimi, hakkında, program, dahil/hariç, buluşma noktası ve bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirme, "Bu deneyimi yaşayanlar" (`#paylasimlar`) |
-| Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet, kapora) → iletişim bilgileri → özet, iptal ve ödeme → onay. Taslakta ödeme alınmaz, kart bilgisi istenmez |
+| Keşfet | `v2/` | Arama (nereye: yazdıkça yer ve deneyim önerisi, son aramalar, popüler aramalar; ne zaman; kaç kişi). Arama kartı yana kayar: formun ardından seçili sekmenin bütün koleksiyonları gelir (ör. Yurt dışı, Kültür, Karadeniz turları; yer ya da temayla, boş olan gösterilmez), temalar gibi yana kayan kartlar: üç sıra, yalnızca adı; sekme değişince kartlar da değişir. Kayabildiği her açılışta ve sekme her değiştiğinde kartın iki kez kısa kıpırdamasıyla gösterilir (hareketi azalt açıksa gösterilmez). "Kaldığın yerden" (yalnızca daha önce ürüne bakıldıysa), "Ne kadar molan var?" + "Kiminle?", Molapuan kartı, Bağlan önizlemesi, "Yakınımda ne var?" (konum ya da şehir), "Bu hafta sonu için" (bütün kategoriler), "Bu hafta sahnede" (7 günün etkinlikleri), temalar. Süre ve kiminle seçimini hatırlar. Kiminle aramaya binmez, yalnızca rayların içindeki sırayı belirler; konum yalnızca "Yakınımda" rayını doldurur, yakındaki yer "Nereye?"nin başında önerilir. Bölümlerin sırası sabit |
+| Bağlan | `v2/baglan/` | Hikayeler (Mola360'ın ve takip edilenlerin; tam ekran oluşturucu), Haftanın gezgini, paylaşım akışı (her paylaşım bağlı olduğu ürünle; beğen, yorum, Gönder, kaydet, ⋯ menüsü), "Ben de gitmek istiyorum", "Birlikte gidelim", "Yeni insanlar keşfet" |
+| Gönderi | `v2/gonderi/?id=` | Paylaşım ve yorumları; yanıt, kendi gönderini düzenle ya da sil |
+| Kişi | `v2/kisi/?u=` | Başkasının profili: paylaşımları, Mola360 ile yaşadığı deneyimler, takip, mesaj |
+| Ürün | `v2/urun/?id=<slug>` | Tek şablon: görsel, bölüm sekmeleri, tarih seçimi (ilk üç tarih ve "Tüm tarihler" çekmecesi), otelde gece ve odalar, seçenek/bilet/paket, hakkında, program, dahil/hariç, kişi başı fiyat, kalkış noktaları ya da konum, bilmen gerekenler, iptal (seçilen tarihe göre son ücretsiz iptal günü) ve ödeme, değerlendirmeler, SSS, "Bu deneyimi yaşayanlar" (`#paylasimlar`), benzer deneyimler |
+| Rezervasyon | `v2/rezervasyon/?id=<slug>&tarih=` | Seçim (tarih, saat, seçenek, adet ya da yaşa göre kişi, kalkış noktası, oda düzeni, kapora) → iletişim ve katılımcı bilgileri → özet, iptal ve ödeme → onay. Ödeme alınmaz, kart bilgisi istenmez |
+| Kategori sayfası | `v2/karadeniz-turlari/` … | Her kategorinin kendi adresli sayfası. Üst kısım her kategoride aynı: kapak, sayfa yolu (Keşfet › Turlar), başlık ve kategorinin kendi giriş metni (`KOLEKSIYON` üçüncü öğe). Kategori satırı ve kiminle süzgeci yok; süre süzgeci yalnızca kategoride olan süreler, seçilince adres sayfada kalır (`?sure=uzun`). HTML'de: türüne göre başlık, fiyatlı açıklama, asıl adres, Open Graph, yapısal veri (JSON-LD: koleksiyon, ürün listesi, sayfa yolu, SSS), sayfa yolu (Keşfet › Turlar), ana başlık, ürün kartları, listenin altında "… hakkında", sık sorulan sorular ve ilgili kategoriler. Tarih yazılmaz (etkinlik kartında yalnızca saat). Süre seçilince liste kategorinin tamamı olmadığı için alttaki bölümler gizlenir |
 | Liste | `v2/liste/?tur=otel&yer=kapadokya&tarih=bu-hs&sure=hs&kimle=sevgili&tema=doga` | Kategori satırı (`tur`), arama (`yer` ya da `ara`), filtre satırı (`tarih`, `sure`, `kimle`) ve tema (`tema`) ayrı parametreler; aramadan gelen seçimler filtre satırının başında, dokununca kalkar. `tema` seçiliyse sayfa temanın vitrini: kapak, iki cümlelik giriş, yalnızca temada olan kategoriler, temanın sırasıyla deneyimler ve araya "Bu temada paylaşılanlar" |
-| Favoriler | `v2/favoriler/` | Kalple saklananlar, boş durum |
-| Rezervasyonlar | `v2/rezervasyonlar/` | Yaklaşan (akıştan yapılan taslak rezervasyonlar en üstte) ve geçmiş; geçmişte "Deneyimini paylaş" |
-| Profil | `v2/profil/` | Kimlik, sayılar, Molapuan, paylaşımlar ve deneyimler |
+| Planlarım | `v2/planlarim/` | Yaklaşan (bilet ve karekod, buluşma noktası, kalan ödeme, iptal), Geçmiş (paylaş, değerlendir; tarihi geçen rezervasyon buraya geçer), Favoriler. Eski `favoriler/` ve `rezervasyonlar/` adresleri buraya yönlenir |
+| Profil | `v2/profil/` | Kimlik, sayılar (takipçi ve takip çekmecesi), Molapuan, paylaşımlar, Mola360 ile yaşanan deneyimler, kaydedilenler, hesap ve ayarlar |
+| Mesajlar | `v2/mesajlar/`, `v2/sohbet/?k=` | Sohbetler, istekler ve arşiv (sola kaydırınca: daha fazla, sessize al, arşivle); sohbette deneyim ve paylaşım kartı, "Birlikte gidelim" daveti |
+| Bildirimler | `v2/bildirimler/` | Bağlan ve Planlarım bildirimleri (yaklaşan mola, kalan ödeme, değerlendirme dahil), bildirim ayarları |
 
 Kod düzeni:
 
-- `css/tokens.css` (tasarım tokenları: renk, 8 adımlı yazı ölçeği
+- `css/tokens.css` (tasarım tokenları: renk, yazı tipi `--font` (cihazın
+  kendi fontu, web fontu yok), 8 adımlı yazı ölçeği
   `--fs-*` ve ekranla küçülen bölüm başlıkları `--fs-h2`, `--fs-h3`, köşe `--r-*`, boşluk `--s-*`, gölge, hareket). Yazı boyutu ve
   köşe için ham px yalnızca burada; test başka yerde yakalar.
 - `base.css`, `components.css`
   (ortak bileşenler), `kesfet.css` (anasayfa), `sayfalar.css` (alt sayfalar).
-- `js/shell.js`: her sayfada aynı olan alt menü, tam ekran menü, bildirim.
+- `js/shell.js`: her sayfada aynı olan alt menü ve Paylaş düğmesi,
+  başlıktaki zil ve mesaj sayısı, bildirim (toast), geri oku.
+- `js/ui.js`: ortak yardımcılar. `esc` kullanıcının yazdığı metni HTML'e
+  kaçışlar; innerHTML'e giren her kullanıcı metni ondan geçer (sayfalar
+  kendi kopyasını tutmaz, test denetler).
 - `js/api.js`: bütün sayfaların okuduğu tek veri katmanı (ürünler,
-  etkinlikler, temalar, yerler, arama önerileri, tarih penceresi,
-  paylaşımlar, son bakılanlar, ürün içeriği). Bugün `js/data.js`
-  içindeki ÖRNEK veriyi tek ürün şekline çeviriyor; ürün kimliği addan
-  türeyen `slug`. Backend gelince yalnızca içi değişecek.
+  etkinlikler, temalar, yerler, arama önerileri, takvim, rezervasyonlar,
+  paylaşımlar, mesajlar, bildirimler, son bakılanlar, ürün içeriği).
+  Bugün `js/data.js` içindeki ÖRNEK veriyi tek ürün şekline çeviriyor;
+  ürün kimliği addan türeyen `slug`. Backend gelince yalnızca içi değişecek.
+- `js/koleksiyon.js`: Keşfet'te yana kayan arama kartında formun ardından
+  gelen kategoriler ve kayabildiğini gösteren ipucu. Modül yalnızca seçili
+  sekmenin bölümünü gösterir.
+- Kategori sayfaları (`v2/karadeniz-turlari/` gibi, 43 sayfa) ve Keşfet'teki
+  bütün sekmelerin kategori bağlantıları arama motorları için HTML'de durur.
+  `scripts/kategoriler.mjs` (`npm run kategoriler`) veriden (`KOLEKSIYON`,
+  `api.listCollections`) ve Liste sayfası şablonundan üretir; site haritasını
+  (`v2/sitemap.xml`) da aynı betik yazar. Veri ya da `v2/liste/index.html`
+  değişince yeniden çalıştırılır; test eşitliği (saat ileri alınsa da)
+  denetler.
 - `js/molapuan.js`: Molapuan kartı (ince yatay kart; puan, seviye rozeti, sıradaki hedef, açılıp kapanan seviye yolu). Keşfet'te arama kartının altında, Profil'de üstte. Veri `api.getPoints(level)`.
 - `js/cards.js`: görsel ağırlıklı ürün kartı (görsel, tür, ad, yer · süre, puan, fiyat; tarih, vize, ulaşım ürün sayfasında; listede yatay; deneyimin paylaşımı varsa "N paylaşım", ürün sayfasındaki paylaşımlara gider), "Kaldığın yerden" kartı, bilet, paylaşım kartı, paylaşımdaki deneyim.
 - `js/icerik.js`: ürün sayfasının ÖRNEK içeriği (açıklama, program,
@@ -93,23 +116,38 @@ Notlar:
 - Veriler ÖRNEK; bu yalnızca kodda işaretli, sayfalarda etiket yok. Ürün adları ve fiyatlar örnek
   katalogdan; kalkış tarihleri, etkinlik saatleri, yurt dışı turları,
   paylaşımlar, kullanıcılar ve rezervasyonlar uydurma.
-- Favoriler, son bakılanlar, son aramalar, "Yakınımda" seçimi, Keşfet'teki
-  süre ve kiminle seçimi ve taslak rezervasyonlar yalnızca tarayıcıda
-  (`localStorage`, `m360-fav`, `m360-son`, `m360-aramalar`, `m360-yakin`,
-  `m360-kesfet`, `m360-rez`). Konumun kendisi ve konumdan çıkan yer
-  saklanmaz. Aramadaki tarih ve kişi sayısı sekme
+- Kullanıcının yaptığı her şey yalnızca bu tarayıcıda (`localStorage`):
+  favoriler (`m360-fav`), son bakılanlar (`m360-son`), son aramalar
+  (`m360-aramalar`), "Yakınımda" seçimi (`m360-yakin`), Keşfet'teki süre ve
+  kiminle (`m360-kesfet`), rezervasyonlar ve durumları (`m360-rez`,
+  `m360-rez-durum`), değerlendirmeler (`m360-degerlendir`), paylaşımlar,
+  düzenlemeler ve silinenler (`m360-paylas`, `m360-duzen`, `m360-silinen`),
+  hikayen (`m360-hikayem`, görülenler `m360-hikaye`), yorumlar
+  (`m360-yorum`), mesajlar (`m360-mesaj`), takip ettiklerin (`m360-takip`),
+  bildirimler ve ayarları (`m360-bildirim`, `m360-bildirim-ayar`), kapatılan
+  Haftanın gezgini (`m360-hafta`), Molapuan kartının açık kalması
+  (`m360-mp`). Konumun kendisi ve konumdan çıkan yer saklanmaz. Aramadaki tarih ve kişi sayısı sekme
   açık kaldıkça (`sessionStorage`, `m360-arama`) liste, ürün ve
-  rezervasyon sayfalarına taşınır. İletişim bilgileri
-  saklanmaz. "Kaldığın yerden" bölümündeki "Temizle" son
-  bakılanları siler.
-- Örnek takvim 1 Ekim 2026'da yaşıyor: "Bu hafta sonu" 2 – 4 Ekim, son
-  ücretsiz iptal günü bu tarihe göre hesaplanıyor. Yerler (`DESTS`) ve
-  ürün içeriği ÖRNEK.
+  rezervasyon sayfalarına taşınır; başlıktaki geri okunun yolu da öyle
+  (`m360-yol`, `m360-yolh`). Yarım kalan rezervasyon (seçimler ve form,
+  iletişim bilgileri dahil) yalnızca sekme açıkken tutulur
+  (`sessionStorage`, `m360bk:<ürün>`) ve rezervasyon bitince ya da "Çık"la
+  silinir; iletişim bilgileri kalıcı saklanmaz. "Kaldığın yerden"
+  bölümündeki "Temizle" son bakılanları siler.
+- Takvim bugünden hesaplanır (`api.js`): aramadaki "Bu hafta sonu",
+  "Gelecek hafta sonu", bu ayın kalanı ve gelecek ay; etkinliklerin ve otel
+  konaklamasının tarihleri; hesaptaki örnek rezervasyon. Tur kalkışları
+  1 Ekim 2026 haftası için yazıldı (ÖRNEK), haftanın aynı günlerinde
+  bugünün haftasına taşınır; geçmişteki kalkış gösterilmez. Etikette yıl
+  yok ("Cum 9 Eki"); bugüne en yakın yıl seçilir, rezervasyon ayrıca
+  yılıyla saklanır. Son ücretsiz iptal günü seçilen tarihe göre. Yerler
+  (`DESTS`) ve ürün içeriği ÖRNEK.
 - Hangi ürünün kime uygun olduğu (tek başıma, sevgilimle, arkadaşlarla,
   ailemle, çocuklarla, iş arkadaşlarımla), hangi temada olduğu ve
   yaklaşık konumu (`GEO`) ÖRNEK; gerçekte işletme bilgisinden ve
   değerlendirmelerden gelecek.
-- Beğen, takip et, kaydet yalnızca ekranda değişir; kaydedilmez.
+- Akıştaki beğen, kaydet ve "Takip et" yalnızca ekranda değişir;
+  takipçi ve takip çekmecesindeki seçim bu cihazda (`m360-takip`).
 - Oturumdaki kullanıcı Ayşe (Kâşif). Misafir ve Gezgin görünümü adresle
   denenir: `?gorunum=misafir|gezgin|kasif` (sekme açık kaldıkça hatırlanır,
   `sessionStorage` `m360-gorunum`). Keşfet'in altındaki görünüm düğmeleri
@@ -147,7 +185,9 @@ geçiş görünür. Fotoğraf eklemek için dosya `v2/img/` altına konur ve
    da ücretsiz lisanslı stok) kararı bekleniyor.
 2. Tasarım sistemi: bileşenleri tek bir vitrin sayfasında toplamak; koyu
    tema.
-3. Gerçek ödeme (3D Secure) ve takvim; giriş ve kayıt; paylaşım oluşturma.
+3. Gerçek ödeme (3D Secure) ve müsaitlik takvimi; gerçek giriş ve kayıt
+   (bugün arayüzü var: Google, Apple, telefon çekmecesi); paylaşımın ve
+   mesajın sunucuya gitmesi (bugün yalnızca bu cihazda).
 4. Kalan filtreler: listede "Yakınımda" ve fiyat aralığı; sıralama;
    aramada gerçek takvim (gün seçimi).
 5. v2'nin kurallarını yazmak (ürün, fiyat, puan, seviye, iptal).

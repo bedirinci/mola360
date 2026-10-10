@@ -4,7 +4,7 @@
    verisini, motorlarını ve sayfalarını kullanmıyor, ona bağ vermiyor.
    v2 birden çok sayfadan oluşuyor (v2/index.html, v2/baglan/, v2/urun/ …);
    ortak stil v2/css/, betikler v2/js/ altında. Kurallar her dosya için. */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -61,7 +61,15 @@ describe('v2', () => {
 
   it('dış bağlar yalnızca izinli adreslere', () => {
     sayfalar.forEach(f => new Set(bagları(f).filter(b => /^https?:/.test(b)).map(b => new URL(b).host))
-      .forEach(h => expect(['fonts.googleapis.com', 'wa.me']).toContain(h)));
+      /* sitenin kendi yayın adresi yalnızca kategori sayfalarının asıl adresinde (canonical) */
+      .forEach(h => expect(['wa.me', 'bedirinci.github.io']).toContain(h)));
+  });
+
+  it('yazı tipi cihazın kendi fontu; web fontu yüklenmiyor', () => {
+    /* Bedir 2026-10-07: Plus Jakarta Sans kalktı (PROJE.md karar kaydı) */
+    expect(oku(join(V2, 'css', 'tokens.css'))).toMatch(/--font:system-ui,/);
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f)).forEach(f =>
+      expect(oku(f), relative(V2, f)).not.toMatch(/@font-face|@import|fonts\.googleapis|fonts\.gstatic|Jakarta/));
   });
 
   it('her sayfa ortak tokenları ve kendi modülünü yüklüyor', () => {
@@ -87,6 +95,19 @@ describe('v2', () => {
     });
   });
 
+  it('satır yüksekliği ve harf aralığı tasarım tokenlarından geliyor', () => {
+    /* ham değer yalnızca tokens.css'te; başka yerde var(--lh-…) / var(--ls-…), ya da 0 */
+    const izin = { 'line-height': /^(var\(--lh-[a-z]+\)|normal|inherit)$/, 'letter-spacing': /^(var\(--ls-[a-z]+\)|0|normal|inherit)$/ };
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f) && !f.endsWith('tokens.css')).forEach(f => {
+      const ham = [...oku(f).matchAll(/(line-height|letter-spacing):\s*([^;}"']+)/g)].map(m => [m[1], m[2].trim()]).filter(([k, v]) => !izin[k].test(v));
+      expect(ham.map(x => x.join(':')), relative(V2, f)).toEqual([]);
+    });
+    /* kullanılan her token tanımlı */
+    const tok = oku(join(V2, 'css', 'tokens.css'));
+    dosyalar.filter(f => /\.(css|html|js)$/.test(f)).forEach(f => [...oku(f).matchAll(/var\((--(?:lh|ls|sp)-[a-z]+)\)/g)]
+      .forEach(m => expect(tok, relative(V2, f) + ': ' + m[1]).toContain(m[1] + ':')));
+  });
+
   it('arama yer, metin ve tarihle süzüyor; kategori ayrı kalıyor (kural 3)', async () => {
     const api = await import('../v2/js/api.js');
     expect(api.suggest('kapa').dests.map(d => d.id)).toContain('kapadokya');
@@ -94,9 +115,135 @@ describe('v2', () => {
     const kap = api.listProducts({ yer: 'kapadokya' });
     expect(kap.length).toBeGreaterThan(0);
     expect(api.listProducts({ type: 'tur', yer: 'kapadokya' }).every(p => p.type === 'Tur')).toBe(true);
-    /* tarihi olan ürün pencereye düşmeli: Kapadokya Turu bu hafta sonu kalkmıyor (ilk kalkış 5 Ekim) */
-    expect(api.listProducts({ yer: 'kapadokya', type: 'tur', tarih: 'bu-hs' })).toEqual([]);
-    expect(api.firstDateIn(api.getProduct('kapadokya-turu'), 'gelecek-hs')).toBe('Cum 9 Eki');
+    /* tarihi olan ürün pencereye düşmeli (gün gün sınama tests/v2-takvim.test.js'te, saat sabitlenmiş) */
+    const [a, b] = api.WHEN.find(w => w[0] === 'bu-hs').slice(3);
+    api.listProducts({ type: 'tur', tarih: 'bu-hs' }).forEach(p =>
+      expect(p.dates.some(x => { const d = api.parseDay(x[1]); return d >= a && d <= b; }), p.title).toBe(true));
+  });
+
+  it('kategori bağlantıları sayfanın HTML\'inde ve veriyle aynı (arama motorları için)', async () => {
+    const { kategoriHtml, kategoriSayfalari, uretilmis, BAS, SON } = await import('../scripts/kategoriler.mjs');
+    const s = oku(join(V2, 'index.html')), a = s.indexOf(BAS), b = s.indexOf(SON);
+    expect(a > 0 && b > a, 'v2/index.html kategori işaretleri').toBe(true);
+    expect(s.slice(a + BAS.length, b).trim(), 'veri değişti: npm run kategoriler').toBe((await kategoriHtml()).trim());
+    /* her kategorinin kendi sayfası (v2/karadeniz-turlari/): diskteki veriyle aynı, eskiyen yok */
+    const sayfa = await kategoriSayfalari();
+    expect(uretilmis().sort(), 'npm run kategoriler').toEqual(sayfa.map(x => x.slug).sort());
+    sayfa.forEach(({ slug, html }) => expect(oku(join(V2, slug, 'index.html')) === html, slug + ': npm run kategoriler').toBe(true));
+    /* sayfada başlık, açıklama, asıl adres, ana başlık ve ürün bağlantıları HTML'de */
+    const k = oku(join(V2, 'karadeniz-turlari', 'index.html'));
+    expect(k).toContain('<title>Karadeniz turları — fiyatlar ve tarihler | mola360</title>');
+    expect(k).toContain('<link rel="canonical" href="https://bedirinci.github.io/mola360/v2/karadeniz-turlari/">');
+    expect(k).toContain('<h1 id="lsTitle">Karadeniz turları</h1>');
+    expect(k).toContain('href="../urun/?id=karadeniz-yaylalari-turu"');
+    expect(s).toContain('<a class="kl" href="karadeniz-turlari/"');
+    /* site haritasında Keşfet ve bütün kategori sayfaları */
+    const { siteHaritasi, SITE } = await import('../scripts/kategoriler.mjs');
+    expect(oku(join(V2, 'sitemap.xml')), 'npm run kategoriler').toBe(await siteHaritasi());
+    expect([...oku(join(V2, 'sitemap.xml')).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]))
+      .toEqual([SITE, ...sayfa.map(x => SITE + x.slug + '/')]);
+    /* her sekmenin bölümü var; yalnızca ilki (Turlar) açık */
+    const api = await import('../v2/js/api.js');
+    expect([...s.matchAll(/class="koll-g" data-tur="([a-z]+)"[^>]*?( hidden)?>/g)].map(m => m[1] + (m[2] ? '-' : '+')))
+      .toEqual(api.TYPES.map(([t], i) => t + (i ? '-' : '+')));
+  });
+
+  it('kategori sayfaları arama motoruna hazır: başlık, açıklama, önizleme, yapısal veri, sayfa yolu, SSS', async () => {
+    const { kategoriSayfalari, SITE } = await import('../scripts/kategoriler.mjs');
+    const api = await import('../v2/js/api.js');
+    const coz = t => t.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const meta = (html, k) => { const m = new RegExp('<meta (?:name|property)="' + k + '" content="([^"]*)">').exec(html); return m && coz(m[1]); };
+    const basliklar = new Set(), aciklamalar = new Set(), girisler = new Set(), sayfalar = await kategoriSayfalari();
+    for (const { slug, html } of sayfalar) {
+      const c = api.TYPES.flatMap(([t]) => api.listCollections(t)).find(x => x.slug === slug), url = SITE + slug + '/';
+      const baslik = coz(/<title>([^<]*)<\/title>/.exec(html)[1]), desc = meta(html, 'description');
+      /* başlık önce kategorinin adı; açıklama 160 harfi aşmıyor; ikisi de sayfaya özgü */
+      expect(baslik, slug).toBe(api.collectionTitle(c));
+      expect(baslik.startsWith(c.name + ' — '), slug).toBe(true);
+      expect(desc.length, slug).toBeLessThanOrEqual(160);
+      expect(desc.startsWith(c.name), slug).toBe(true);
+      basliklar.add(baslik); aciklamalar.add(desc);
+      expect(html.match(/<h1[ >]/g), slug + ': tek ana başlık').toHaveLength(1);
+      /* paylaşım önizlemesi asıl adresle aynı */
+      expect(html, slug).toContain('<link rel="canonical" href="' + url + '">');
+      expect(meta(html, 'og:url'), slug).toBe(url);
+      expect(meta(html, 'og:title'), slug).toBe(baslik.replace(/ \| mola360$/, ''));
+      expect(meta(html, 'og:description'), slug).toBe(desc);
+      expect(meta(html, 'og:locale'), slug).toBe('tr_TR');
+      /* yapısal veri: geçerli JSON; liste kartlarla, SSS görünen sorularla aynı */
+      const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1]);
+      const g = Object.fromEntries(ld['@graph'].map(x => [x['@type'], x]));
+      expect(Object.keys(g), slug).toEqual(['CollectionPage', 'BreadcrumbList', 'ItemList', 'FAQPage']);
+      expect(g.CollectionPage.url, slug).toBe(url);
+      const kartlar = [...html.matchAll(/<a class="lk" href="\.\.\/urun\/\?id=([^"]+)"/g)].map(m => m[1]);
+      expect(g.ItemList.itemListElement.map(x => x.url), slug).toEqual(kartlar.map(id => SITE + 'urun/?id=' + id));
+      expect(g.ItemList.numberOfItems, slug).toBe(kartlar.length);
+      expect(g.BreadcrumbList.itemListElement.map(x => x.name), slug).toEqual(['Keşfet', api.TYPES.find(t => t[0] === c.q.tur)[2], c.name]);
+      const sorular = [...html.matchAll(/<summary><h3>([^<]+)<\/h3>/g)].map(m => coz(m[1]));
+      const yanitlar = [...html.matchAll(/<\/summary><p>([^<]+)<\/p>/g)].map(m => coz(m[1]));
+      expect(g.FAQPage.mainEntity.map(x => x.name), slug).toEqual(sorular);
+      expect(g.FAQPage.mainEntity.map(x => x.acceptedAnswer.text), slug).toEqual(yanitlar);
+      expect(sorular.length, slug).toBeGreaterThanOrEqual(3);
+      /* görünen sayfa yolu ve kategoriyi anlatan bölümler (liste.js süzgeçte gizler) */
+      /* üst kısım her kategoride aynı: kapak, sayfa yolu, başlık, kategorinin kendi giriş metni; kategori satırı yok */
+      expect(html, slug).toContain('<header class="pg-top slim cover" style="--g:');
+      expect(html, slug).toContain('<nav class="bc" aria-label="Sayfa yolu"><ol><li><a href="../">Keşfet</a></li>');
+      expect(c.intro.length, slug + ': giriş metni').toBeGreaterThan(40);
+      expect(html, slug).toContain('<p id="lsSub">' + c.intro.replace(/'/g, '&#39;').replace(/&(?!#39;)/g, '&amp;') + '</p>');
+      expect(html, slug).not.toContain('id="cats"');
+      girisler.add(c.intro);
+      expect(html, slug).toContain('<body data-q="' + Object.entries(c.q).map(([k, v]) => k + '=' + v).join('&amp;') + '" data-kat="' + slug + '">');
+      expect(html.match(/<section class="box kat-seo"[^>]* data-kat>/g).length, slug).toBeGreaterThanOrEqual(2);
+      /* ilgili kategoriler var olan sayfalara gider */
+      [...html.matchAll(/<li><a href="\.\.\/([a-z0-9-]+)\/">/g)].forEach(m => expect(existsSync(join(V2, m[1], 'index.html')), slug + ' → ' + m[1]).toBe(true));
+    }
+    expect(basliklar.size, 'her sayfanın başlığı kendine').toBe(sayfalar.length);
+    expect(aciklamalar.size, 'her sayfanın açıklaması kendine').toBe(sayfalar.length);
+    expect(girisler.size, 'her sayfanın giriş metni kendine').toBe(sayfalar.length);
+  });
+
+  it('kategori sayfaları tarihten bağımsız: sabit HTML ertesi gün eskimez', async () => {
+    /* tarih bugüne göre hesaplanır (etkinlik günü); sayfaya yazılsaydı her gün değişirdi */
+    const AY = /\b\d{1,2} (Oca|Şub|Mar|Nis|May|Haz|Tem|Ağu|Eyl|Eki|Kas|Ara)\b/;
+    const once = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
+    once.forEach(({ slug, html }) => expect(html.match(AY), slug + ': sayfada gün').toBeNull());
+    /* saat 45 gün ileri: üretilen sayfalar aynı */
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(Date.now() + 45 * 864e5));
+      vi.resetModules();
+      const sonra = await (await import('../scripts/kategoriler.mjs')).kategoriSayfalari();
+      expect(sonra.map(x => x.slug)).toEqual(once.map(x => x.slug));
+      sonra.forEach(({ slug, html }, i) => expect(html === once[i].html, slug + ': tarih değişince sayfa değişti').toBe(true));
+    } finally {
+      vi.useRealTimers();
+      vi.resetModules();
+    }
+  });
+
+  it('arama kartının koleksiyonları: her sekmede gerçek, kategori ve süzgeç ayrı (kural 3)', async () => {
+    const api = await import('../v2/js/api.js');
+    api.TYPES.forEach(([t]) => {
+      const l = api.listCollections(t);
+      expect(l.length, t).toBeGreaterThan(0);
+      l.forEach(c => {
+        /* adresin kategorisi sekmenin kendisi; süzgeç yalnızca yer ya da tema, gerçekten var */
+        const { tur, ...f } = c.q;
+        expect(tur, c.name).toBe(t);
+        expect(Object.keys(f), c.name).toHaveLength(1);
+        expect(f.yer ? api.getDestination(f.yer) : api.getTheme(f.tema), c.name).toBeTruthy();
+        /* sayı, liste sayfasının göstereceğiyle aynı; görseli var */
+        expect(c.count, c.name).toBe(api.listProducts({ type: t, ...f }).length);
+        expect(c.count, c.name).toBeGreaterThan(0);
+        expect(c.bg, c.name).toBeTruthy();
+      });
+    });
+    /* liste sayfası kartın adını başlık yapar */
+    expect(api.findCollection('tur', { yer: 'karadeniz' })).toMatchObject({ name: 'Karadeniz turları', slug: 'karadeniz-turlari' });
+    expect(api.findCollection('otel', { tema: 'kultur' })).toBe(null);
+    /* yurt dışı bir yer olarak aranabiliyor: bütün yurt dışı turları */
+    expect(api.listProducts({ yer: 'yurt-disi' }).map(p => p.id).sort())
+      .toEqual(api.listProducts({ type: 'tur' }).filter(p => p.abroad).map(p => p.id).sort());
   });
 
   it('ürün sayfasında her deneyimin içeriği var, iptal günü tarihe göre', async () => {
@@ -105,9 +252,10 @@ describe('v2', () => {
       const d = api.productDetails(p);
       expect(d.about && (d.program.length || (api.bookingSpec(p).hotel || {rooms: []}).rooms.length) && d.dahil.length && d.place[0], p.title).toBeTruthy();
     });
-    const k = api.getProduct('kapadokya-turu');
-    expect(api.cancelBy(k, 'Pzt 12 Eki')).toEqual({ date: '5 Ekim Pazartesi', past: false });
-    expect(api.cancelBy(k, 'Pzt 5 Eki').past).toBe(true);
+    /* son ücretsiz iptal günü: turda kalkıştan 7 gün önce (bugüne göre; sabit gün sınaması v2-takvim'de) */
+    const k = api.getProduct('kapadokya-turu'), lbl = d => d.getDate() + ' ' + ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][d.getMonth()];
+    expect(api.cancelBy(k, lbl(api.addDays(api.today(), 10))).past).toBe(false);
+    expect(api.cancelBy(k, lbl(api.addDays(api.today(), 3))).past).toBe(true);
   });
 
   it('keşfet: kiminle seçenekleri, tür karışık temalar, sahnede ve yakınımda', async () => {
@@ -159,7 +307,7 @@ describe('v2', () => {
       join(V2, 'index.html'), ...readdirSync(V2, { withFileTypes: true }).filter(d => d.isDirectory() && existsSync(join(V2, d.name, 'index.html'))).map(d => join(V2, d.name, 'index.html'))];
     dosyalar.forEach(f => {
       const t = oku(f);
-      expect(t, f).not.toMatch(/class="ornek"|class="demo"|Önizleme\.|yeni mola360\\'ta hazırlanıyor/);
+      expect(t, f).not.toMatch(/class="ornek"|class="demo"|Önizleme\.|yeni mola360\\'ta hazırlanıyor|\(Taslak:/);
     });
   });
 
@@ -179,6 +327,18 @@ describe('v2', () => {
     expect(past.length).toBeGreaterThan(0);
     past.forEach(b => expect(b.product, b.productId).toBeTruthy());
     expect(api.createPost({ productId: 'yok' })).toBe(null);
+    /* Ayşe'nin önceki paylaşımları dahil: rozet yalnızca geçmiş rezervasyondaki deneyimde */
+    const went = new Set(past.map(b => b.productId));
+    const rozetli = api.listProfilePosts().filter(p => p.verified);
+    expect(rozetli.length).toBeGreaterThan(0);
+    rozetli.forEach(p => expect(went.has(p.product.id), p.id + ' ' + p.product.id).toBe(true));
+  });
+
+  it('kullanıcının yazdığı metin HTML\'e kaçışlanarak basılır; kaçış yardımcısı tek', async () => {
+    const { esc } = await import('../v2/js/ui.js');
+    expect(esc(`<img src=x onerror="a('b')">&`)).toBe('&lt;img src=x onerror=&quot;a(&#39;b&#39;)&quot;&gt;&amp;');
+    /* sayfalar kendi kopyasını tutmaz (eksik kopyalar hataya yol açmıştı); api.js'teki hx ui.js'i içe aktaramadığı için ayrı */
+    readdirSync(join(V2, 'js')).filter(f => f !== 'ui.js').forEach(f => expect(oku(join(V2, 'js', f)), f).not.toMatch(/const (h|esc)=t=>String\(t\)/));
   });
 });
 

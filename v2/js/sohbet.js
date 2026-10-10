@@ -2,10 +2,10 @@
    gidelim daveti dahil) ve Bağlan paylaşımı gönderilebilir. Takip etmediğin
    biri yazdıysa mesaj isteği: kabul edene kadar yanıt kutusu yok. */
 import { renderShell } from './shell.js';
-import { getChat, markRead, acceptChat, deleteChat, sendMessage, listRecent, listProducts, findByTitle, productUrl } from './api.js';
+import { getChat, setMuted, markRead, acceptChat, deleteChat, sendMessage, listRecent, listProducts, findByTitle, productUrl } from './api.js';
 import { ava, postUrl, userUrl } from './cards.js';
 import { favList } from './favorites.js';
-import { makeSheet, toast, tl } from './ui.js';
+import { makeSheet, toast, tl, esc } from './ui.js';
 import { IC, VERIFIED, STAR } from './icons.js';
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
@@ -17,7 +17,6 @@ const main=$('ch'),form=$('chIn'),txt=$('chTxt'),go=$('chGo');
 const k=new URLSearchParams(location.search).get('k');
 let chat=k&&getLevel()!=='guest'?getChat(k):null;
 
-const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const score=p=>p.score&&p.count?'<span class="st">'+STAR+p.score.toFixed(1).replace('.',',')+'</span>':'';
 /* deneyim kartı; davetse üstünde "Birlikte gidelim" */
 const pcard=(p,inv)=>'<a class="ms-pc'+(inv?' inv':'')+'" href="'+productUrl(ROOT,p.title)+'">'
@@ -42,7 +41,7 @@ function render(){
       +'<div class="ms-b">'+body+(last?'<small>'+m.at+'</small>':'')+'</div></li>');
   });
   const lm=[...l].reverse().find(m=>!m.day);
-  if(lm&&lm.who==='b'&&!chat.request)out.push('<li class="ms-seen">'+(lm.sent?'Gönderildi':'Görüldü')+'</li>');
+  if(lm&&lm.who==='b'&&!chat.request)out.push('<li class="ms-seen">'+({gonderildi:'Gönderildi',iletildi:'İletildi',goruldu:'Görüldü'}[chat.status]||'')+'</li>');
   main.innerHTML='<ul class="ms-c-l" id="chL">'+('<li class="ms-start">'+ava(chat.user,'l')+'<b>'+chat.user.ad+(chat.user.onay?VERIFIED:'')+'</b><small>@'+chat.user.kul+'</small><a class="btn ghost" href="'+userUrl(chat.user)+'">Profili gör</a></li>')+out.join('')+'</ul>';
 }
 const toEnd=smooth=>requestAnimationFrame(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:smooth?'smooth':'auto'}));
@@ -56,7 +55,8 @@ if(getLevel()==='guest'){
 }else{
   const u=chat.user;
   document.title='mola360 — '+u.ad;
-  $('chWho').innerHTML='<a href="'+userUrl(u)+'">'+ava(u,'s')+'<span class="x"><b>'+u.ad+(u.onay?VERIFIED:'')+'</b><small>@'+u.kul+'</small></span></a>';
+  /* sayfa başlığı ekran okuyucu için; görünen ad bağın içinde */
+  $('chWho').innerHTML='<h1 class="sr">'+u.ad+' ile sohbet</h1><a href="'+userUrl(u)+'">'+ava(u,'s')+'<span class="x"><b>'+u.ad+(u.onay?VERIFIED:'')+'</b><small>@'+u.kul+'</small></span></a>';
   $('chMore').hidden=false;
   render();
   if(chat.request){
@@ -90,19 +90,19 @@ if(getLevel()==='guest'){
   });
 
   /* ⋯ : profil, sessize al, bildir, sohbeti sil */
-  let osh=null,muted=false;
+  let osh=null,muted=chat.muted;
   $('chMore').addEventListener('click',e=>{
     if(!osh){
       const it=(a,ic,t,cls)=>'<li><button type="button" data-o="'+a+'"'+(cls?' class="'+cls+'"':'')+'>'+ic+'<span>'+t+'</span></button></li>';
       document.body.insertAdjacentHTML('beforeend','<div class="sh-bg" id="opBg"></div><div class="sheet op" id="opSheet" role="dialog" aria-modal="true" aria-labelledby="opTtl">'
         +'<div class="sh-grab"></div><div class="sh-hd"><h3 id="opTtl">'+u.ad+'</h3><button type="button" class="sh-x" data-x aria-label="Kapat">'+IC.close+'</button></div>'
-        +'<ul class="op-l">'+it('profil',IC.users,'Profili gör')+it('sessiz',IC.mute,'Sessize al')+it('bildir',IC.flag,'Bildir')+it('sil',IC.trash,'Sohbeti sil','dng')+'</ul>'
+        +'<ul class="op-l">'+it('profil',IC.users,'Profili gör')+it('sessiz',muted?IC.bell:IC.mute,muted?'Sesi aç':'Sessize al')+it('bildir',IC.flag,'Bildir')+it('sil',IC.trash,'Sohbeti sil','dng')+'</ul>'
         +'<div class="op-c" hidden><p>Sohbet senin için silinsin mi? '+u.ad.split(' ')[0]+' mesajları görmeye devam eder.</p><div class="ms-req-b"><button type="button" class="btn ghost" data-o="vazgec">Vazgeç</button><button type="button" class="btn danger" data-o="evet">Sil</button></div></div></div>');
       osh=makeSheet($('opSheet'),$('opBg'));
       $('opSheet').addEventListener('click',ev=>{const b=ev.target.closest('[data-o]');if(!b)return;const a=b.dataset.o,c=$('opSheet').querySelector('.op-c'),l=$('opSheet').querySelector('.op-l');
         if(a==='profil'){osh.go(userUrl(u));return}
-        if(a==='sessiz'){muted=!muted;b.querySelector('span').textContent=muted?'Sesi aç':'Sessize al';osh.close();toast(muted?'Bu sohbetin bildirimleri kapandı.':'Bildirimler yeniden açık.','Tamam',()=>{},3000);return}
-        if(a==='bildir'){osh.close();toast('Bildirimin alındı, ekibimiz inceleyecek.','Tamam',()=>{},3500);return}
+        if(a==='sessiz'){muted=!muted;setMuted(k,muted);b.querySelector('span').textContent=muted?'Sesi aç':'Sessize al';osh.close();toast(muted?'Bu sohbetin bildirimleri kapandı.':'Bildirimler yeniden açık.','Tamam',()=>{},3000);return}
+        if(a==='bildir'){osh.close();toast('Çok yakında.','Tamam',()=>{},3000);return}
         if(a==='sil'){l.hidden=true;c.hidden=false;return}
         if(a==='vazgec'){l.hidden=false;c.hidden=true;return}
         if(a==='evet'){deleteChat(k);osh.close();toast('Sohbet silindi.','Tamam',()=>{},2500);setTimeout(()=>location.replace(ROOT+'mesajlar/'),600)}});

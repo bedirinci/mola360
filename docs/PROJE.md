@@ -369,6 +369,19 @@ Renk kuralı (2026-10-04): her renge tek görev.
 - Geri kalan her şey (kategori etiketi, rozet, tik, boş durum) beyaz,
   gri ya da koyu yazı.
 
+Yazı tipi (2026-10-07): cihazın kendi fontu. iPhone ve Mac'te San
+Francisco, Android'de Roboto, Windows'ta Segoe UI; web fontu yüklenmez
+(`tokens.css` `--font`). Boyut ve kalınlık yine tokenlardan.
+
+Yazı düzeni (2026-10-07): satır yüksekliği (`--lh-*`), harf aralığı
+(`--ls-*`) ve paragraf boşluğu (`--sp-head`, `--sp-para`) tokenlardan.
+- **Satır yüksekliği:** başlık sıkı (1.2–1.3), arayüz metni 1.4, paragraf
+  1.5, uzun okuma 1.6.
+- **Harf aralığı:** büyük başlık hafif sıkı, gövde 0, küçük yazı hafif
+  açık, büyük harfli etiket açık (.06em).
+- **Satır kırma:** başlıklar dengeli bölünür; paragrafın son satırında tek
+  kelime kalmaz.
+
 Tasarım sisteminde:
 
 - Renk tokenları
@@ -397,32 +410,37 @@ tanımlanacaktır.
 
 ## 15. Teknik Mevcut Durum
 
-Mevcut V2 frontend'i kapsamlı bir HTML prototipi niteliğindedir.
-
-Mevcut V2'de HTML, CSS ve JavaScript aynı dosyada bulunmaktadır.
-
-V2'nin sonraki aşamada modülerleştirilmesi planlanmaktadır.
-
-Hedef ayrım:
+V2 frontend'i çok sayfalı, derlemesiz bir arayüz: HTML, CSS ve JavaScript
+ayrı dosyalarda, her sayfa kendi klasöründe, betikler ES modülü. Aşağıdaki
+hedef ayrım 2026-10-03'te uygulandı (Karar kaydı); `components/` klasörü
+yerine bileşenler `js/cards.js` ve `js/shell.js` içinde fonksiyon.
 
 ```
 v2/
-├── index.html
+├── index.html            Keşfet
+├── baglan/ urun/ liste/ rezervasyon/ planlarim/ profil/
+├── gonderi/ kisi/ mesajlar/ sohbet/ bildirimler/
+├── karadeniz-turlari/ …   kategori sayfaları (43; scripts/kategoriler.mjs üretir)
+├── sitemap.xml           site haritası: Keşfet ve kategori sayfaları (aynı betik üretir)
 ├── css/
-│   ├── tokens.css
+│   ├── tokens.css        tasarım tokenları (tek ölçek)
 │   ├── base.css
-│   ├── components.css
-│   ├── discover.css
-│   └── responsive.css
-├── js/
-│   ├── app.js
-│   ├── api.js
-│   ├── navigation.js
-│   ├── discover.js
-│   ├── favorites.js
-│   └── ...
-└── components/
+│   ├── components.css    ortak bileşenler
+│   ├── kesfet.css
+│   ├── sayfalar.css
+│   └── hikaye.css
+└── js/
+    ├── api.js            tek veri katmanı (backend gelince içi değişir)
+    ├── data.js icerik.js ÖRNEK veri
+    ├── shell.js ui.js cards.js …   ortak parçalar
+    └── kesfet.js baglan.js urun.js …   sayfa modülleri
 ```
+
+Veri bugün yalnızca tarayıcıda (örnek veri ve `localStorage`). `api.js`'in
+fonksiyonları senkron; sunucu gelince asenkron olacakları için çağıran
+sayfalar da `await`'e geçecek: "yalnızca içi değişir" sözü veri biçimi için
+geçerli, çağrı biçimi için değil. Bu geçiş backend'in ilk uç noktalarıyla
+birlikte yapılacak.
 
 Framework değişikliği ayrıca değerlendirilecektir; mevcut prototip
 doğrudan başka bir framework'e taşınmadan önce mimari analizi
@@ -1617,3 +1635,438 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Etkilediği alanlar:** `v2/js/hikaye-olustur.js` (yeni), `v2/js/paylas.js` (hikaye modu kaldırıldı, `mode:'hikaye'` oluşturucuyu açar), `v2/js/api.js` (`createStory` yer ve yazı biçimi saklar), `v2/js/hikaye.js` (yer ve rozet kare başına), `v2/css/components.css` (hikaye öğeleri ve oluşturucu; izleyiciyle ortak kart/yazı stilleri buraya taşındı).
 - **Teknik sonuç:** Önce bir fotoğraf ya da video seçilir. Üstte Yazı (düz ya da beyaz zemin), Deneyim, Konum, Değiştir araçları. Deneyim seçilince konum boşsa deneyimin yeri gelir. Mola360'tan gidilen deneyimde "Mola360 ile gitti" görünür. Kayıt bu cihazda (`m360-hikayem`), 24 saat.
 - **UX sonucu:** Ekranda görülen, Bağlan'daki hikaye izleyicisinin aynısıdır (ortada yazı, altında yer, altta "Deneyimi gör" kartı). Yeşil "Hikayene ekle" ile paylaşılır. Gönderi çekmecesi ("Deneyimini paylaş") değişmedi.
+
+### 2026-10-07 — Kapsamlı inceleme: takvim bugüne bağlandı, kullanıcı metni güvenle basılıyor
+
+- **Karar (Bedir: "Websiteyi tamamen analiz et ve bütün sorunları düzelt"):**
+  - Takvim bugünden hesaplanır. Aramadaki "Bu hafta sonu", "Gelecek hafta
+    sonu", bu ayın kalanı ve gelecek ay; tur kalkışları (1 Ekim 2026 haftası
+    için yazıldı, haftanın aynı günlerinde bugünün haftasına taşınır);
+    hesaptaki örnek rezervasyon. Tarihi geçen rezervasyon Yaklaşan'dan
+    Geçmiş'e geçer.
+  - Kullanıcının yazdığı metin (ad, e-posta, not, mesaj, değerlendirme,
+    yorum) her ekranda düz metin olarak görünür.
+  - Profil: Molapuan kartı oturumdaki görünüme göre; deneyim sayısı ve
+    "Mola360 ile gitti" rozeti geçmiş rezervasyonlardan (kural 4).
+  - Uzman aramasındaki "(Taslak: gerçek talep gönderilmedi.)" notu
+    2026-10-04 kararı gereği kalktı; aranma saatleri İstanbul saatiyle.
+    Mesajlar ve sohbetteki "Bildir" artık "Çok yakında." der: gönderilmeyen
+    bir bildirim için "alındı" denmez (§20).
+  - İçerik çelişkileri giderildi: yamaç paraşütünde 110 kg, stand upta 18
+    yaş, Maşukiye Kocaeli'de, "Gelintülü Şelalesi".
+- **Neden:** İnceleme şunları gösterdi. v2 testi sabit tarih yazdığı için
+  7 Ekim'de kırıldı; "Bu hafta sonu" 2 – 4 Ekim'de kalmıştı ve Keşfet'teki
+  "Bu hafta sonu için"in Etkinlik sekmesi boştu; birkaç güne kadar örnek
+  rezervasyon da geçmişte kalacaktı. Rezervasyon özeti, mesaj listesi ve
+  değerlendirme çekmecesi yazılan metni HTML olarak işliyordu (`<b>` gibi
+  bir işaret içeren not ekranı bozuyor, kod çalıştırabiliyordu). Hikayedeki
+  Paylaş, paylaşım desteği olmayan tarayıcıda kopyalamadan "Bağlantı
+  kopyalandı" diyordu. Profil gezgin görünümünde Kâşif kartı,
+  Planlarım'dan farklı deneyim sayısı ve Mola360'tan gidilmemiş iki
+  paylaşımda rozet gösteriyordu. Backend'de `COOKIE_SECURE=false` yazmak
+  çerezi yine Secure yapıyordu.
+- **Etkilediği alanlar:** `v2/js/api.js` (takvim, `WHEN`, rezervasyonlar,
+  rozet), `v2/js/data.js` (sabit `WHEN` kalktı, içerik), `v2/js/icerik.js`,
+  `v2/js/ui.js` (`esc`), `rezervasyon.js`, `mesajlar.js`, `sohbet.js`,
+  `planlarim.js`, `profil.js`, `cards.js`, `help.js`, `shell.js`
+  (`istHour`), `hikaye.js`, yerel kaçış kopyaları kaldırılan `arama.js`,
+  `liste.js`, `takip.js`, `paylas.js`, `hikaye-olustur.js`;
+  `backend/src/config/index.js`; `tests/`, `backend/tests/config.test.js`,
+  `.github/workflows/ci.yml`, `package.json` (playwright);
+  `docs/yeni-surum.md`, `docs/yonetim-sistemi.md`, bu belgenin §15'i.
+- **Teknik sonuç:**
+  - Etikette yıl yok ("Cum 9 Eki"); bugüne en yakın yıl seçilir, yeni
+    rezervasyon ayrıca yılıyla (`at`) saklanır. Geçmiş, örnek geçmiş
+    rezervasyonlar ile bu cihazda bitenlerin birleşimi; rozet ve
+    değerlendirme hatırlatması ondan okunur.
+  - innerHTML'e giren kullanıcı metni `ui.js`'teki tek `esc`'ten geçer;
+    sayfalardaki eksik kopyalar kaldırıldı. `api.js`'teki `hx` aynı kuralı
+    uygular (ui.js'i içe aktaramaz).
+  - Yarım kalan rezervasyon yenilendiğinde gün ya da saat artık seçilemez
+    durumdaysa seçim adımından devam edilir; seçim eksikken ödemeye
+    geçilmez. T.C. kimlik numarasının tamamı kodda tutulmuyor, yalnızca son
+    dört hane.
+  - Takvim dosyası (.ics): otelde giriş saati, saatsiz etkinlikte tüm gün;
+    virgüllü başlık bozulmuyor.
+  - Hikayede Paylaş bağlantıyı gerçekten kopyalar (gönderi kartındaki
+    gibi). Kullanılmayan kod kalktı: `PL`, `ABO`, `CLOCK`, `IC.sliders`,
+    ürünlerdeki `reg` ve tekrar eden `sample` alanları.
+  - Backend: evet/hayır değişkenleri doğru ayrıştırılır, tanınmayan değer
+    açılışı durdurur; üretimde `COOKIE_SECURE` kapatılamaz.
+  - Testler: `tests/v2-takvim.test.js` saati sabitleyerek farklı günlerde
+    (yıl dönümü dahil) takvimi sınar; `tests/v2-tarayici.test.js` bütün
+    sayfaları (130'dan fazla) gerçek Chromium'da açar ve kullanıcı metninin
+    hiçbir ekranda HTML olarak çalışmadığını sınar. CI Chromium'u kurar.
+- **UX sonucu:** Tarihler hep ileride; "Bu hafta sonu" gerçekten bu hafta
+  sonu. Yaşanan bir rezervasyon Geçmiş'te "Paylaş" ve "Değerlendir" ile
+  çıkar; paylaşınca "Mola360 ile gitti" rozeti alır, yani yaşa → paylaş
+  döngüsü kullanıcının kendi rezervasyonuyla da çalışıyor. Görsel tasarım
+  değişmedi.
+
+### 2026-10-07 — Yazı tipi: cihazın kendi fontu (Bedir)
+
+- **Karar (Bedir):** "Jakarta'yı kaldır, sistemin kendi fontları
+  kullanılsın." Plus Jakarta Sans kalktı. Site cihazın sistem fontuyla
+  yazılır: iPhone ve Mac'te San Francisco, Android'de Roboto, Windows'ta
+  Segoe UI.
+- **Neden:** Sayılar metnin geri kalanından farklı bir yazı tipiyle
+  yazılmış gibi görünüyordu. Fiyat, puan, saat ve tarih gibi 39 yerde
+  rakamlar eşit genişlikte (`tabular-nums`). Plus Jakarta Sans'ta bu
+  ayar açıkken "1" ayaklı, daktilo biçimine geçiyor. Sistem fontu
+  cihazın kendi uygulamalarıyla aynı görünür; yazı tipi indirilmediği
+  için dışarıya istek de gitmez.
+- **Etkilediği alanlar:**
+  - `v2/css/tokens.css` (`--font`);
+  - 12 v2 sayfasının başlığı (Google Fonts bağları kalktı);
+  - `v2/css/components.css` (telefon kutusundaki ayarın açıklaması);
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`;
+  - bu belgenin §14'ü ve `docs/yeni-surum.md`.
+- **Teknik sonuç:**
+  - `--font` şu sırayı izler: `system-ui`, `-apple-system`,
+    `"Segoe UI"`, `Roboto`, `"Helvetica Neue"`, `"Noto Sans"`, `Arial`,
+    `sans-serif`.
+  - Boyut ve kalınlık tokenları (`--fs-*`, `--fw-*`) değişmedi. Sistem
+    fontunda olmayan bir kalınlıkta tarayıcı en yakınını seçer.
+  - Eşit genişlikli rakam ayarı duruyor. Sistem fontunda rakamın
+    biçimini değiştirmiyor, yalnızca hizalıyor.
+  - Telefon kutusunda yazı tipinin bağlama göre harf değiştirmesi kapalı
+    kalıyor. Bazı fontlar "05xx" yer tutucusundaki x'i çarpı işaretine
+    çeviriyor.
+  - Testler:
+    - `tokens.css` `--font`'un `system-ui` ile başladığını denetliyor;
+    - hiçbir dosyada web fontu (`@font-face`, `@import`, Google Fonts)
+      olmamalı;
+    - tarayıcı testi sayfanın dışarıya istek atmadığını denetliyor.
+- **UX sonucu:**
+  - Site telefonun kendi uygulamaları gibi görünür; sayılar metinle aynı
+    yazı tipinde.
+  - Açılışta yazı tipinin sonradan gelip metni kaydırması kalktı.
+  - Boyutlar, kalınlıklar ve renkler aynı. Harf genişlikleri cihaza göre
+    biraz değişir; 136 sayfa 320 – 440 px'te taşmadan açılıyor.
+
+### 2026-10-07 — Keşfet: arama kartı yana kayar, sekmeye göre koleksiyonlar (Bedir)
+
+- **Karar (Bedir):**
+  - Arama kartı yatay kayar. Sola kaydırınca formun ardından seçili
+    sekmenin bütün koleksiyon kartları gelir: Turlar'da yurt dışı, kültür,
+    Karadeniz turları gibi; Oteller'de otel, Etkinlikler'de etkinlik
+    koleksiyonları. Kartlar Keşfet'teki temalar gibi yana kayar; üç sıra,
+    üzerinde yalnızca adı yazar ("8 tur" gibi sayı yok), "Tüm turlar"
+    kartı yok. İçerik sekmeyle eşleşir.
+  - Kartın kaydırılabildiği, sayfa açılınca bir kez, kartın iki kez kısa
+    sağa-sola kıpırdamasıyla gösterilir. Kullanıcı kendisi kaydırınca
+    ipucu bir daha çalışmaz.
+- **Neden:** Kategori sekmesi seçildikten sonra "bu kategoride neler var"
+  sorusunun cevabı arama formunun arkasında kalıyordu. Koleksiyonlar
+  aramadan önce bir göz atma yolu açıyor. Kaydırılabildiği görünmezse
+  bulunmaz; kısa bir ipucu bunu gösterir.
+- **Etkilediği alanlar:**
+  - `v2/index.html` (arama formu ve koleksiyonlar yatay kayan
+    kapsayıcıda) ve `v2/css/kesfet.css`;
+  - `v2/js/koleksiyon.js` (yeni);
+  - `v2/js/arama.js` (`initSearch({onTab})`) ve `v2/js/kesfet.js`;
+  - `v2/js/api.js` (`listCollections`);
+  - `v2/js/data.js` (`KOLEKSIYON`, `yurt-disi` yeri);
+  - testler ve `docs/yeni-surum.md`.
+- **Teknik sonuç:**
+  - **Kaydırma:** tek bir yatay kaydırma var. Form ve kart sütunları
+    kaydırınca yerine oturur (scroll-snap). Kartlar formun yüksekliğinde
+    üç sıradır, sayfa boyu değişmez. Sütun genişliği kaydırıcıdan (`cqw`):
+    iki sütun ve bir sonrakinin kenarı görünür, şeridin sonunda son sütun
+    kenar boşluğuna oturur. İç içe ikinci
+    bir kaydırıcı yok; formdaki popüler arama çipleri kendi içinde kaymaya
+    devam eder.
+  - **Kartlar:** her sekmede o sekmenin bütün koleksiyonları (bugün 7 – 10).
+    Koleksiyon kategoriye yalnızca yer ya da tema ekler, liste
+    adresinde ikisi ayrı parametredir (kural 3). Kartta sayı yazmaz ama
+    deneyimi olmayan koleksiyon gösterilmez (kural 4).
+    Kartın görseli temanın kapağı ya da koleksiyondaki ilk deneyim.
+  - **Yurt dışı:** artık bir yer olarak da aranabiliyor (`yurt-disi`,
+    bütün yurt dışı turları).
+  - **İpucu:**
+    - Oturumun ilk açılışında, sayfa açıldıktan 0,7 sn sonra çalışır;
+      kart görünmüyorsa çalışmaz.
+    - Form ve kartlar birlikte iki kez 40 px sola gidip döner (1,6 sn).
+    - Elle kaydırınca `localStorage` `m360-kaydir` yazılır ve ipucu bir
+      daha çalışmaz; dokunmak oynayanı da durdurur.
+    - Aynı oturumda tekrar etmez (`sessionStorage` `m360-kaydir`).
+    - "Hareketi azalt" açıksa çalışmaz.
+  - **Test:** her sekmenin koleksiyonları gerçek ve kural 3'e uygun.
+    Tarayıcı testi ipucunun oturumda bir kez oynadığını, elle kaydırınca
+    bir daha oynamadığını ve kartların sekmeyle değiştiğini sınar.
+- **UX sonucu:**
+  - Arama kartı ilk bakışta eskisi gibi; kartlar dururken görünmez.
+  - İpucu anında ilk kartların kenarı görünür.
+  - Bir kez kaydırınca iki sütun kart ve sağda bir sonrakinin kenarı
+    görünür; kaydırdıkça bütün koleksiyonlar gelir, sağa kaydırınca forma
+    dönülür. Kartlar ekran okuyucuda
+    "Tur çeşitleri" başlığıyla okunur.
+  - Güneydoğu turu katalogda olmadığı için "Güneydoğu turları" kartı
+    yok; katalogda tur eklenince kart da `KOLEKSIYON`'a bir satırla
+    eklenir.
+
+### 2026-10-07 — Kaydırma ipucu her açılışta ve sekme değişince; şeridin sonunda boşluk (Bedir)
+
+- **Karar (Bedir):** Arama kartındaki kaydırma ipucu siteye her girişte ve
+  bölüm (Turlar, Oteller …) her değiştiğinde çalışır. Kategorilerin sonuna
+  gelindiğinde son kart sağ kenara yapışık durmaz.
+- **Neden:** İpucu oturumda bir kez ve elle kaydırınca hiç gösterilmeyince
+  kategorilerin varlığı sonraki girişlerde ve sekme değişince
+  hatırlatılmıyordu. Son kartın kenara yapışması şeridin bittiğini değil
+  kesildiğini düşündürüyordu.
+- **Etkilediği alanlar:** `v2/js/koleksiyon.js`, `v2/css/kesfet.css`,
+  `tests/v2-tarayici.test.js`, `docs/yeni-surum.md`. Bir önceki kararın
+  (aynı gün, arama kartı yana kayar) ipucu kuralının yerini alır.
+- **Teknik sonuç:**
+  - İpucu sayfa açıldıktan 0,7 sn sonra ve sekme değişince 0,25 sn sonra
+    oynar; oynuyorsa baştan başlar.
+  - Form görünmüyorsa (kartlara geçilmişse ya da kart ekranın dışındaysa)
+    oynamaz; kartlardayken sekme değişince yalnızca kartlar yenilenir.
+  - Dokunmak ya da kaydırmak oynayanı durdurur. "Hareketi azalt" açıksa
+    hiç oynamaz.
+  - `m360-kaydir` anahtarları artık kullanılmıyor.
+  - Şeridin sonundaki boşluk, kartları taşıyan kutunun iç dolgusu oldu
+    (16 px). Önceki sıfır genişlikli son öğe Safari'de büyük olasılıkla
+    kaydırma alanına sayılmıyordu ve son kart kenara yapışıyordu.
+  - Tarayıcı testi şunları sınar:
+    - ipucunun açılışta, sekme değişince ve yeniden açılışta oynadığı;
+    - kartlardayken oynamadığı;
+    - "hareketi azalt" açıkken oynamadığı;
+    - şeridin sonundaki boşluk.
+- **UX sonucu:** Her girişte ve her sekme değişiminde kart kısa bir
+  kıpırdamayla kaydırılabildiğini gösterir. Şeridin sonunda son kart da
+  baştaki gibi 16 px içeride durur.
+
+### 2026-10-07 — Her kategorinin kendi sayfası ve adresi; bağlantılar HTML'de; kartlar daha dar (Bedir)
+
+- **Karar (Bedir):**
+  - "Burası SEO açısından çok önemli." Bağlantılar arama motorlarına
+    uygun üretilir: her kategorinin kendi sayfası ve okunur adresi var
+    (`v2/karadeniz-turlari/`, `v2/kultur-turlari/` …). Keşfet'teki kartlar
+    bu sayfalara gider.
+  - Kartlar yatayda daha dar, üzerindeki yazı daha küçük.
+  - Kaydırma ipucunun kayması biraz azalır.
+  - `noindex, nofollow` şimdilik kalır.
+- **Neden:**
+  - Kartlar JavaScript ile çiziliyordu ve `liste/?tur=tur&yer=karadeniz`
+    gibi sorgulu adreslere gidiyordu. Sorgulu adres kelime taşımıyor;
+    sayfanın başlığı, açıklaması ve içeriği JavaScript'le geliyordu.
+    JavaScript'i geç ya da hiç çalıştırmayan arama motorları (Türkiye'de
+    Yandex de) bunları görmüyordu.
+  - Kartlar yatayda uzun, yazıları büyük duruyordu.
+- **Etkilediği alanlar:**
+  - 43 kategori sayfası (`v2/<kategori>/index.html`, üretilen);
+  - `v2/index.html` (bütün sekmelerin kategori bağlantıları);
+  - `scripts/kategoriler.mjs` (yeni) ve `package.json` (`npm run kategoriler`);
+  - `v2/js/liste.js`, `v2/js/koleksiyon.js`, `v2/css/kesfet.css`;
+  - `v2/js/api.js` (`slug`, `findCollection`);
+  - testler, `docs/yeni-surum.md`, bu belgenin §15'i.
+- **Teknik sonuç:**
+  - **Kategori sayfası:** Liste sayfasının aynısıdır (`v2/liste/index.html`
+    şablon), seçimi `body data-q`'dan okur. Adres kategorinin adından
+    türer (Türkçe harfler sadeleşir). Kendine ait şunlar HTML'dedir:
+    - `<title>` ("Karadeniz turları — mola360", önce kategori);
+    - açıklama (kategori ve ilk deneyimlerin adları);
+    - asıl adres (`canonical`, yayın adresiyle);
+    - `h1`, tema kapağı ve girişi, deneyim sayısı;
+    - ürün kartları ve bağlantıları.
+    JavaScript sayfayı aynı içerikle yeniden çizer. Süre, kiminle ya da
+    başka bir sekme seçilince adres Liste'ye geçer
+    (`liste/?tema=kultur&tur=tur&sure=hs`).
+  - **Sorgulu adres:** bir kategoriye denk gelen Liste adresinde başlık
+    kategorinin adı, asıl adres kategori sayfası.
+  - **Keşfet:** her sekmenin bölümü ve bağlantıları HTML'de; Turlar açık,
+    ötekiler `hidden`, `koleksiyon.js` seçili sekmeninkini gösterir.
+  - **Üretim:** `npm run kategoriler` kategori sayfalarını ve Keşfet'teki
+    bağlantıları veriden üretir, eskiyen sayfayı siler, sitenin kendi
+    sayfasıyla çakışan adı reddeder. Test diskteki sayfaların veriyle aynı
+    olduğunu denetler; veri değişip üretilmezse CI kırılır.
+  - **Kartlar:** sütun ekranın 1/2,5'i (360 px'te 145'ten 127 px'e), yazı
+    15'ten 13 px'e indi.
+  - **İpucu:** form ve kartlar iki kez 30 px sola gidip döner (40 px'ti);
+    ilk kartların kenarı daha az görünür.
+  - **Açık konu:** v2'nin bütün sayfaları `noindex, nofollow` taşıyor (Bedir:
+    şimdilik kalsın; veriler ÖRNEK). Kaldırılmadıkça arama motorları siteyi
+    dizine eklemez. `robots.txt` ve site haritası yok.
+- **UX sonucu:**
+  - Kartlar daha dar ve sakin; üçüncü sütunun yarısı görünür.
+  - Karttan açılan sayfa kartın adıyla başlar, adres çubuğunda okunur bir
+    adres durur.
+  - Sayfanın içeriği JavaScript yüklenmeden de görünür.
+
+### 2026-10-07 — Kategori sayfaları arama motoruna uygun: başlık, yapısal veri, SSS, sayfa yolu; tarihten bağımsız (Bedir)
+
+- **Karar (Bedir):** "Eklediğimiz kategorilerin açılan sayfası SEO'ya
+  uyumlu bir sayfa olmalı."
+- **Neden:**
+  - Sayfada yalnızca ad, kısa açıklama ve kartlar vardı. Arama motoruna
+    sayfanın neyi anlattığını söyleyen metin, yapısal veri ve iç bağlar
+    yoktu. Tek deneyimli kategoride sayfa çok inceydi.
+  - Hata: etkinlik kartındaki gün ("Cum 9 Eki") bugüne göre hesaplanıyor
+    ve sabit HTML'e yazılıyordu. Sayfa ertesi gün eskiyor, diskteki
+    sayfaların veriyle aynı olduğunu denetleyen test de tarih ilerleyince
+    kırılacaktı.
+- **Etkilediği alanlar:**
+  - `scripts/kategoriler.mjs` (sayfa bölümleri, site haritası);
+  - 43 kategori sayfası ve `v2/sitemap.xml` (yeni, üretilen);
+  - `v2/js/api.js` (`collectionTitle`), `v2/js/liste.js`;
+  - `v2/css/sayfalar.css`;
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`.
+- **Teknik sonuç:** Hepsi veriden üretilir, hiçbirinde tarih yoktur.
+  - **Başlık:** önce kategori, sonra türüne göre sayfada bulunan
+    ("Karadeniz turları — fiyatlar ve tarihler | mola360"; otelde oda
+    seçenekleri, etkinlikte bilet fiyatları). `api.collectionTitle` hem
+    üreticide hem Liste'de kullanılır.
+  - **Açıklama:** en çok 160 harf: ad, sığdığı kadar deneyim, başlangıç
+    fiyatı.
+  - **Paylaşım önizlemesi:** Open Graph (`og:title`, `og:description`,
+    `og:url` asıl adresle aynı, `tr_TR`) ve `twitter:card`. Görsel yok:
+    ürünlerin fotoğrafı yok, logo önizleme için çok küçük.
+  - **Yapısal veri (JSON-LD):** koleksiyon sayfası (`CollectionPage`),
+    ürün listesi (`ItemList`, kartlarla aynı sırada ürün adresleri), sayfa
+    yolu (`BreadcrumbList`: Keşfet › Turlar › Karadeniz turları) ve sık
+    sorulan sorular (`FAQPage`, görünen sorularla birebir aynı).
+  - **Görünen sayfa yolu** başlığın üstünde (Keşfet › Turlar).
+  - **Listenin altında üç bölüm:**
+    - "… hakkında": deneyimlerin adları ürün sayfalarına bağlı, her
+      sayfada ne bulunduğu.
+    - "Sık sorulan sorular": fiyat aralığı ve en uygun seçenek; turda
+      kalkış şehirleri, süreler ve vize; otelde konum ve pansiyon;
+      etkinlikte yer ve saat; aktivitede konum ve süre; mekânda konum ve
+      seçenekler; iptal koşulu (`bookingSpec`).
+    - "İlgili kategoriler": aynı yer ya da temanın başka türleri
+      (Karadeniz turları → Karadeniz otelleri), sonra aynı türün
+      kategorileri.
+  - **Liste'de gizleme:** bu bölümler `data-kat` taşır. Süre, kiminle,
+    tarih ya da başka sekme seçilince liste kategorinin tamamı olmaz;
+    `liste.js` bölümleri gizler.
+  - **Etkinlik kartı:** sabit HTML'de yalnızca saat ("20:00"); günü
+    JavaScript çizince gelir.
+  - **Site haritası:** `v2/sitemap.xml` (Keşfet ve 43 kategori sayfası).
+    `robots.txt` yazılamıyor: site alanın kökünde değil
+    (`bedirinci.github.io/mola360/`). Harita Search Console'dan
+    gönderilir.
+  - **Testler:**
+    - her sayfada başlık, açıklama (≤160), tek `h1`, asıl adres ve Open
+      Graph denetlenir;
+    - JSON-LD geçerli; liste kartlarla, SSS görünen sorularla aynı;
+    - ilgili kategoriler var olan sayfalara gider;
+    - sayfada gün yok; saat 45 gün ileri alınınca üretilen sayfalar
+      değişmiyor;
+    - tarayıcıda süzgeç seçilince bölümler gizleniyor.
+  - **Açık konu:** `noindex, nofollow` duruyor (Bedir: şimdilik kalsın).
+    Kaldırılınca bu sayfalar dizine girmeye hazır.
+- **UX sonucu:**
+  - Kullanıcı sayfanın nerede olduğunu (Keşfet › Turlar) görür, tek
+    dokunuşla geri çıkar.
+  - Listeden sonra fiyat aralığını, kalkış şehrini, süreyi ve iptal
+    koşulunu tek tek ürün açmadan okur.
+  - Benzer kategorilere geçer.
+  - Bağlantı paylaşılınca önizlemede kategorinin adı ve açıklaması çıkar.
+
+### 2026-10-07 — Yazı düzeni: satır yüksekliği, harf aralığı ve paragraf boşluğu tek ölçekte; hızlı çalışma düzeni (Bedir)
+
+- **Karar (Bedir):**
+  - "Harf arası boşluk, paragraf boşluğu ve benzeri şeyleri kullanıcı
+    deneyimi açısından daha uygun bir hale getir."
+  - "Bundan sonraki güncellemeler daha hızlı yapılabilmeli; eksiksiz,
+    doğru ve hızlı olmalı."
+- **Neden:**
+  - Harf aralığı 19, satır yüksekliği 18 farklı ham değerle dağınıktı:
+    aynı görevdeki yazılar sayfadan sayfaya farklı aralıkla duruyordu. Bir
+    kısmı px'ti, büyüklükle ölçeklenmiyordu. Aynı seçici için iki ayrı
+    değer yazılmış yerler vardı.
+  - İki satıra inen başlıkta son satırda tek kelime kalıyordu.
+  - Her istekte gönderim yolu soruluyor, görüntü almak için her seferinde
+    ayrı betik yazılıyordu.
+- **Etkilediği alanlar:**
+  - `v2/css/tokens.css`, `base.css`, `components.css`, `sayfalar.css`,
+    `kesfet.css`, `hikaye.css`;
+  - `tests/v2.test.js`;
+  - `scripts/goruntu.mjs` (yeni), `package.json`, `.gitignore`;
+  - `CLAUDE.md`.
+- **Teknik sonuç:**
+  - **Satır yüksekliği** yedi tokenla verilir:
+    - `--lh-none` 1;
+    - `--lh-tight` 1.2;
+    - `--lh-snug` 1.3: iki satıra inebilen başlıklar en az bu;
+    - `--lh-ui` 1.4;
+    - `--lh-body` 1.5;
+    - `--lh-read` 1.6: kutu metni, hakkında, SSS yanıtları;
+    - `--lh-loose` 1.8: alt bilgideki bağlar.
+  - **Harf aralığı** beş tokenla verilir: `--ls-tight` −.015em,
+    `--ls-snug` −.01em, `--ls-open` .01em, `--ls-caps` .06em,
+    `--ls-initials` −.04em. Gövde 0; .005'lik farklar kaldırıldı.
+  - **Değerlerin eşlenmesi:** 58 harf aralığı ve 124 satır yüksekliği
+    değeri en yakın tokena bağlandı. Büyük harfli bütün etiketler
+    (.03–.08em ve px değerleri) .06em'de birleşti.
+  - **Paragraf boşluğu:** kutu başlığından metne `--sp-head` (8 px; önce
+    6), ardışık paragraflar arası `--sp-para` (12 px).
+  - **Satır kırma:** başlıklarda `text-wrap: balance`, paragraflarda
+    `text-wrap: pretty`. Desteklemeyen tarayıcı olduğu gibi gösterir.
+  - **Test:** `line-height` ve `letter-spacing` ham değeri `tokens.css`
+    dışında yazılamaz; kullanılan her `--lh`, `--ls` ve `--sp` tokenı
+    tanımlı olmalı.
+  - **Hızlı çalışma:**
+    - `npm run hizli`: tarayıcısız testler, ~2 sn.
+    - `npm run goruntu`: kendi sunucusunu açar; görüntü alır, konsol
+      hatasını ve yana taşmayı söyler; 8 sayfa ~10 sn.
+    - `CLAUDE.md`'de varsayılan teslim akışı (yeni dal, PR, CI yeşilse
+      birleştir; ayrıca sorulmaz) ve dosya haritası.
+- **UX sonucu:**
+  - Aynı görevdeki yazı her sayfada aynı aralıkla durur.
+  - Okuma metinleri biraz daha ferah; başlıklar dengeli bölünür, son
+    satırda tek kelime kalmaz.
+  - Büyük harfli etiketler tek aralıkta.
+  - İstekler soru beklemeden teslim edilir.
+
+### 2026-10-07 — Kategori sayfasının üst kısmı her kategoride aynı; sayfada yalnızca kategorinin deneyimleri ve süzgeçleri (Bedir)
+
+- **Karar (Bedir):**
+  - "Kategorilerin tümünün üst kısmını bu şekilde yap: sayfa yolu,
+    kategori başlığı ve alt metin." Örnek: Konser ve festival sayfası.
+  - "Turların kategorisini seçtiğimde açılan sayfada Tümü, Turlar,
+    Oteller, Tek başıma, Sevgilimle vs. olmayacak. Sadece seçilen
+    kategorideki ürünler ve filtreler olacak."
+- **Neden:**
+  - Yalnızca tema kategorilerinde kapak ve giriş metni vardı. Yer
+    kategorileri (Karadeniz turları, İstanbul etkinlikleri …) düz lacivert
+    başlıkla, metinsiz açılıyordu.
+  - Tema kategorileri temanın metnini paylaşıyordu: Balayı turları,
+    otelleri ve mekânları aynı metni gösteriyordu.
+  - Sayfada Liste'nin kategori satırı ve kiminle süzgeçleri vardı. Bunlar
+    kullanıcıyı kategoriden çıkarıyordu. Süre süzgeci ise kategoride
+    olmayan süreleri de sunuyordu.
+- **Etkilediği alanlar:**
+  - `v2/js/data.js` (`KOLEKSIYON` üçüncü öğe: giriş metni);
+  - `v2/js/api.js` (`listCollections` → `intro`);
+  - `v2/js/liste.js`;
+  - `scripts/kategoriler.mjs` ve 43 kategori sayfası;
+  - `tests/v2.test.js`, `tests/v2-tarayici.test.js`.
+- **Teknik sonuç:**
+  - **Üst kısım** her kategoride aynı:
+    - kapak: temanın görseli, yoksa ilk deneyimin görseli;
+    - sayfa yolu, `h1`;
+    - giriş metni: kategoriye özgü iki cümle, 43 sayfada 43 ayrı metin
+      (test denetler).
+  - **Sabit HTML:** üst kısım HTML'de sabit; `liste.js` kategori
+    sayfasında başlığa, girişe ve kapağa dokunmaz. Kategori satırı
+    (`#cats`) sayfaya hiç yazılmaz.
+  - **Süzgeçler:**
+    - kiminle süzgeci yok;
+    - süre süzgeci yalnızca kategoride olan süreleri gösterir; tek süre
+      varsa hiç yoktur;
+    - yer kategorinin kendisi olduğu için kaldırılacak seçim çipi
+      olarak çıkmaz;
+    - "Yakınımda" ve "Fiyat aralığı" kalır.
+  - **Süre seçimi:** adres kategori sayfasında kalır
+    (`kultur-turlari/?sure=uzun`); asıl adres (canonical) yalın kategori
+    adresi. Liste kategorinin tamamı olmadığı için listenin altındaki
+    "hakkında", SSS ve ilgili kategoriler gizlenir. Sayfa yolu her zaman
+    görünür.
+- **UX sonucu:**
+  - Kategoriye giren kullanıcı nerede olduğunu (sayfa yolu), ne bulacağını
+    (başlık, giriş) görür.
+  - Yalnızca o kategorinin deneyimleri arasında süzer; sekmeler ve
+    ilgisiz süzgeçler onu başka listeye götürmez.
+  - Boş sonuç veren süre seçeneği yoktur.

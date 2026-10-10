@@ -1,6 +1,6 @@
 /* Profil: sosyal kimlik + deneyim geçmişi + Molapuan (PROJE.md §10) */
 import { renderShell } from './shell.js';
-import { listProfilePosts, findByTitle, ME } from './api.js';
+import { listProfilePosts, listPastBookings, ME } from './api.js';
 import { plink, ava, initPostActions, postUrl } from './cards.js';
 import { toast } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
@@ -12,9 +12,9 @@ import { guestIntro } from './giris.js';
 renderShell('profil');
 initPostActions(toast);
 
-/* ÖRNEK profil (api.js ME) */
+/* ÖRNEK profil (api.js ME). Deneyimler: Mola360'tan yaşanmış olanlar (Planlarım > Geçmiş ile aynı) */
 const mine=listProfilePosts();
-const went=['Kapadokya Turu','Kordon Caz Akşamları','Köprülü Kanyon Rafting'].map(findByTitle);
+const went=listPastBookings().map(b=>b.product);
 
 const PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 1 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>';
 const STAT=(n,t,tab)=>tab?'<button type="button" data-go="'+tab+'"><b>'+n+'</b><span>'+t+'</span></button>':'<div><b>'+n+'</b><span>'+t+'</span></div>';
@@ -59,7 +59,7 @@ const TABS={
   pay:()=>'<div class="pf-sq">'+mine.map(x=>'<a href="'+postUrl(x.id)+'" style="background:'+x.bg+'" aria-label="'+(x.product?x.product.title+' paylaşımını aç':'Paylaşımı aç')+'"></a>').join('')+'</div>',
   den:()=>'<div class="pf-went">'+went.map(plink).join('')+'</div>',
   kay:()=>'<div class="empty"><span class="ei">'+IC.save+'</span><b>Kaydettiğin paylaşımlar</b><p>Bağlan\'da beğendiğin paylaşımları kaydet; ürün favorilerin Planlarım\'da.</p><a class="btn" href="'+ROOT+'planlarim/#favoriler">Favorilere git</a></div>'};
-el.innerHTML=molapuan('kasif')
+el.innerHTML=molapuan(getLevel())
  +'<div class="seg light" role="group" aria-label="Profil" id="pfTabs"><button type="button" aria-pressed="true" data-t="pay">'+IC.grid+'Paylaşımlar</button><button type="button" aria-pressed="false" data-t="den">'+IC.bag+'Deneyimler</button><button type="button" aria-pressed="false" data-t="kay">'+IC.save+'Kaydedilenler</button></div>'
  +'<div id="pfBody"></div>'
  +acc();

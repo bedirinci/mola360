@@ -1,7 +1,7 @@
 /* Kartlar: ürün kartı ve Bağlan bileşenleri (paylaşım, bağlı ürün) */
 import { G } from './data.js';
 import { STAR, IC, PIN, VERIFIED } from './icons.js';
-import { tl, ttl, makeSheet } from './ui.js';
+import { tl, ttl, makeSheet, esc } from './ui.js';
 import { lvOn, lvPrice } from './level.js';
 import { heartBtn, isFav } from './favorites.js';
 import { ROOT } from './root.js';
@@ -92,7 +92,7 @@ export function postCard(x){
    +'<button type="button" class="act save" aria-pressed="false" aria-label="Kaydet">'+IC.save+'</button></div>'
    +(x.text?'<p class="txt"><b>'+u.kul+'</b>'+x.text+'</p>':'')
    /* ilhamdan plana: deneyimi listeye ekle ya da birlikte gitmeyi öner */
-   +(x.product&&!x.mine?'<div class="p-go"><button type="button" class="pg-b want" data-fav="'+x.product.title.replace(/"/g,'&quot;')+'" aria-pressed="'+isFav(x.product.title)+'">'+IC.plus+'<span class="off">Ben de gitmek istiyorum</span>'+IC.check+'<span class="on">Listende</span></button>'
+   +(x.product&&!x.mine?'<div class="p-go"><button type="button" class="pg-b want" data-fav="'+esc(x.product.title)+'" aria-pressed="'+isFav(x.product.title)+'">'+IC.plus+'<span class="off">Ben de gitmek istiyorum</span>'+IC.check+'<span class="on">Listende</span></button>'
      +'<button type="button" class="pg-b" data-birlikte="'+x.product.id+'">'+IC.users+'Birlikte gidelim</button></div>':'')
    +'</article>';
 }

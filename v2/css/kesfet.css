@@ -1,5 +1,5 @@
 /* Keşfet (anasayfa): üst bant, sekmeler, arama, "Ne kadar molan var?", alt bilgi. */
-.hello{white-space:nowrap;margin:12px 0 14px;font-size:var(--fs-2xl);line-height:1.18;font-weight:var(--fw-black);letter-spacing:-.6px}
+.hello{white-space:nowrap;margin:12px 0 14px;font-size:var(--fs-2xl);line-height:var(--lh-tight);font-weight:var(--fw-black);letter-spacing:var(--ls-tight)}
 .hello span{color:var(--green)}
 .tabs{display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .tabs::-webkit-scrollbar{display:none}
@@ -7,10 +7,32 @@
 .tab svg{width:20px;height:20px;stroke-width:1.7;color:#fff}
 .tab[aria-selected="true"] svg{color:var(--navy)}
 .tab[aria-selected="true"]{background:#fff;color:var(--navy);font-weight:var(--fw-bold)}
-.search{margin:-46px 16px 0;background:var(--card);border-radius:var(--r-lg);box-shadow:0 1px 2px rgba(21,32,72,.06),0 6px 16px -6px rgba(21,32,72,.16);padding:6px;position:relative}
+/* Arama kartı yatay kayar (koleksiyon.js): önce form, ardından seçili sekmenin
+   koleksiyonları, temalar gibi yana kayan kartlar (üç sıra). Form ekran eksi 32 px; arada kenar
+   boşluğu kadar boşluk (kartlar dururken görünmez); gölge kesilmesin diye altta boşluk */
+.sx{display:flex;gap:16px;margin:-46px 0 -14px;padding-bottom:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:16px;overscroll-behavior-x:contain;scrollbar-width:none;container-type:inline-size}
+.sx::-webkit-scrollbar{display:none}
+.sx>.search{flex:0 0 calc(100% - 32px);min-width:0;margin-left:16px;scroll-snap-align:start;scroll-snap-stop:always}
+.search{background:var(--card);border-radius:var(--r-lg);box-shadow:0 1px 2px rgba(21,32,72,.06),0 6px 16px -6px rgba(21,32,72,.16);padding:6px;position:relative}
+/* koleksiyonlar formun yüksekliğinde üç sıra, sütunlar yana uzar; iki sütun ve
+   yanında bir sonrakinin yarısı görünür (tema şeridi gibi). Kart yalnızca adı.
+   Her sekmenin kartları HTML'de; yalnızca seçili sekmeninki görünür */
+/* şeridin sonunda son kart da kenar boşluğu kadar içeride durur: boşluk iç dolguda,
+   çünkü Safari kaydırma alanının sonundaki boş öğeyi ve dolguyu saymıyor */
+.koll{flex:none;padding-right:16px}
+.koll-g{height:100%;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));grid-auto-flow:column;grid-auto-columns:120px;grid-auto-columns:calc((100cqw - 42px)/2.5);gap:10px}
+.koll-g[hidden]{display:none}
+.kl{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;min-height:0;padding:10px 12px;border-radius:var(--r-lg);overflow:hidden;color:#fff;background:var(--navy);scroll-snap-align:start}
+.kl::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,14,30,.62),transparent 75%)}
+.kl b{position:relative;min-width:0;font-size:var(--fs-md);font-weight:var(--fw-bold);line-height:var(--lh-snug)}
+@keyframes kollIn{from{opacity:0;transform:translateY(4px)}}
+.koll-g.swap{animation:kollIn var(--t) var(--ease)}
+/* ipucu: form ve kartlar birlikte iki kez kısa sola kıpırdar, ilk kartların kenarı görünür */
+@keyframes sxNudge{0%,50%,100%{transform:none}25%,75%{transform:translateX(-30px)}}
+.sx.nudge>.search,.sx.nudge>.koll{animation:sxNudge 1.6s ease-in-out}
 .fld{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-md);text-align:left;width:100%}
 .fld svg{width:21px;height:21px;color:var(--navy)}
-.fld small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.6px;color:var(--mute)}
+.fld small{display:block;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:var(--ls-caps);color:var(--mute)}
 .fld span{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);margin-top:1px}
 .fld span.hint{color:var(--mute);font-weight:var(--fw-medium)}
 /* Nereye doluyken sağda × (seçimi kaldırır); yazı altına girmesin diye sağ boşluk */
@@ -39,20 +61,20 @@
 .tt .i{width:60px;height:60px;border-radius:50%;background:rgba(40,72,170,.12);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 2px transparent;transition:background-color var(--t) var(--ease),box-shadow var(--t) var(--ease)}
 .tt .i img{width:40px;height:40px;object-fit:contain}
 .tt .x{min-width:0;max-width:100%}
-.tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:-.01em;line-height:1.25;white-space:nowrap}
+.tt b{display:block;font-size:clamp(10px,3.3vw,13px);font-weight:var(--fw-bold);letter-spacing:var(--ls-snug);line-height:var(--lh-snug);white-space:nowrap}
 .tt small{display:block;margin-top:2px;font-size:clamp(10px,3.1vw,11.5px);font-weight:var(--fw-medium);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt[aria-pressed="true"] .i{background:rgba(40,72,170,.2);box-shadow:inset 0 0 0 2px var(--navy)}
 .tt[aria-pressed="true"] b{color:var(--navy)}
 @media (hover:hover){.tt[aria-pressed="false"]:hover .i{background:rgba(40,72,170,.18)}}
-.foot{padding:26px 16px 10px;font-size:var(--fs-sm);color:var(--mute);line-height:1.7}
+.foot{padding:26px 16px 10px;font-size:var(--fs-sm);color:var(--mute);line-height:var(--lh-loose)}
 .foot a{display:inline-block;padding:4px 0;margin:-2px 0;text-decoration:underline;text-underline-offset:2px}
 .tabs{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 .tabs.end{-webkit-mask-image:none;mask-image:none}
-.hello{font-size:var(--fs-2xl);line-height:1.22;letter-spacing:-.015em;word-spacing:.02em}
-.fld small{letter-spacing:.06em}
+.hello{font-size:var(--fs-2xl);line-height:var(--lh-tight);letter-spacing:var(--ls-tight);word-spacing:.02em}
+.fld small{letter-spacing:var(--ls-caps)}
 .fld small{font-size:var(--fs-xs)}
 .fld span{letter-spacing:0}
-.foot{line-height:1.8;word-spacing:.04em}
+.foot{line-height:var(--lh-loose);word-spacing:.04em}
 
 /* Kiminle çipleri (keşif filtresi): sürenin hemen altında, başlıksız */
 .with{padding-top:14px}
@@ -62,7 +84,7 @@
 /* "Ne kadar molan var?" seçiminin sonucu: ana başlığın altında ikincil başlık */
 .sub-sec{padding-top:var(--s-4)}
 .sub-sec .hd h2{font-size:var(--fs-h3)}
-.empty-r{margin:14px 16px 0;padding:16px;border-radius:var(--r-md);background:var(--soft);font-size:var(--fs-md);color:var(--mute);line-height:1.5}
+.empty-r{margin:14px 16px 0;padding:16px;border-radius:var(--r-md);background:var(--soft);font-size:var(--fs-md);color:var(--mute);line-height:var(--lh-body)}
 .empty-r b{display:block;color:var(--ink);font-weight:var(--fw-bold)}
 
 /* Yakınımda ne var? Kullanıcı isterse konum; yoksa şehir seçimi */
@@ -73,9 +95,9 @@
 .near-in::before{content:"";position:absolute;inset:0;background:url(../img/harita-desen.svg) center/cover no-repeat;opacity:.55;-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.6) 45%,#000 75%);mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.6) 45%,#000 75%);pointer-events:none}
 /* yazının başladığı yerden sağa doğru beyazlık: desen yazının arkasında soluklaşır (Bedir) */
 .near-in::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.72) 40%,rgba(255,255,255,0) 78%);pointer-events:none}
-.near-t{position:relative;z-index:1;flex:1;min-width:0;line-height:1.3;padding-right:16px}
-.near-t h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:-.01em;color:var(--ink)}
-.near-t p{margin-top:4px;max-width:none;white-space:nowrap;font-size:var(--fs-md);line-height:1.45;color:var(--mute)}
+.near-t{position:relative;z-index:1;flex:1;min-width:0;line-height:var(--lh-snug);padding-right:16px}
+.near-t h2{font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:var(--ls-snug);color:var(--ink)}
+.near-t p{margin-top:4px;max-width:none;white-space:nowrap;font-size:var(--fs-md);line-height:var(--lh-body);color:var(--mute)}
 .near-go{display:inline-flex;align-items:center;gap:7px;min-height:40px;margin-top:12px;padding:0 16px 0 13px;border-radius:var(--r-pill);background:var(--green);color:var(--navy);font-size:var(--fs-base);font-weight:var(--fw-bold);box-shadow:0 4px 12px rgba(140,198,63,.35);white-space:nowrap}
 .near-go svg{width:16px;height:16px;fill:currentColor;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
 .near-go[disabled]{opacity:.7}
@@ -119,13 +141,13 @@
 .sr-clr svg{width:18px;height:18px}
 .sr-body{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;margin:0 -16px;padding:0 12px calc(24px + env(safe-area-inset-bottom,0px))}
 .sr-hd{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 4px;min-height:28px}
-.sr-hd h4{font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.sr-hd h4{font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--mute)}
 .sr-hd .clr{min-height:32px;font-size:var(--fs-sm)}
 .sr-row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:8px;text-align:left;border-radius:var(--r-md);transition:background-color var(--t) var(--ease)}
 .sr-ic,.sr-th{width:42px;height:42px;border-radius:var(--r-sm);flex:none}
 .sr-ic{background:var(--soft);display:grid;place-items:center;color:var(--navy)}
 .sr-ic svg{width:20px;height:20px}
-.sr-row .x{flex:1;min-width:0;line-height:1.3}
+.sr-row .x{flex:1;min-width:0;line-height:var(--lh-snug)}
 .sr-row b{display:block;font-size:var(--fs-base);font-weight:var(--fw-semi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sr-row mark{background:none;color:var(--navy);font-weight:var(--fw-bold)}
 .sr-row small{display:block;margin-top:1px;font-size:var(--fs-sm);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -135,7 +157,7 @@
 .sr-row.all .sr-ic{background:var(--card)}
 .sr-none{margin:16px 4px 0;padding:16px;border-radius:var(--r-md);background:var(--soft)}
 .sr-none b{font-size:var(--fs-base);font-weight:var(--fw-bold)}
-.sr-none p{margin-top:2px;font-size:var(--fs-md);color:var(--mute);line-height:1.5}
+.sr-none p{margin-top:2px;font-size:var(--fs-md);color:var(--mute);line-height:var(--lh-body)}
 .opt[data-none]>span{color:var(--mute)}
 .who-l{display:flex;flex-direction:column;margin-top:4px}
 .who-r{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;border-bottom:1px solid var(--line)}

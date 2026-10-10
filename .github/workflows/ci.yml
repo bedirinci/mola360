@@ -12,6 +12,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # takilan bir adim isi 6 saat (varsayilan) acik tutmasin
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,11 +27,31 @@ jobs:
       - name: Bagimliliklari yukle
         run: npm ci
 
+      # v2'nin tarayici testleri (tests/v2-tarayici.test.js) butun sayfalari
+      # gercek Chromium'da acar; tarayici yoksa o testler atlanir.
+      # Indirilen tarayici onbellekte; surum package-lock.json'dan.
+      - name: Tarayici onbellegi
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # Kurulum bir kez 10+ dakika takildi. Sistem kutuphaneleri runner'da
+      # (Chrome kurulu) zaten var: apt yalnizca tarayici acilamazsa calisir.
+      # Her deneme 3 dakikada kesilir ve bir kez daha denenir.
+      - name: Tarayiciyi kur
+        timeout-minutes: 10
+        run: |
+          dene() { for i in 1 2; do timeout 180 "$@" && return 0; echo "deneme $i basarisiz: $*"; done; return 1; }
+          dene npx playwright install chromium
+          node -e "require('playwright').chromium.launch().then(b => b.close())" || dene npx playwright install-deps chromium
+
       - name: Testleri calistir
         run: npm test
 
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Backend testleri GERCEK PostgreSQL'e karsi kosuyor: sema guvenceleri
     # (cift satis engeli, durum makinesi, turetilen sutunlar) sahte bir
     # katmanla dogrulanamaz.

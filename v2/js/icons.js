@@ -4,7 +4,6 @@ clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l
 heart:'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
 bed:'<svg viewBox="0 0 24 24"><path d="M3 18V6M3 13h18v5M21 13v-2a3 3 0 0 0-3-3h-8v5"/><circle cx="7" cy="10" r="2"/></svg>',
 chev:'<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>'};
-export const CLOCK='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 export const STAR='<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>';
 /* Onaylı kullanıcı rozeti: daha önce Mola360'tan deneyim satın almış */
 export const VERIFIED='<svg class="vf" viewBox="0 0 24 24" role="img" aria-label="Onaylı"><path d="M21.20 12.00A3.50 3.50 0 0 1 18.51 18.51A3.50 3.50 0 0 1 12.00 21.20A3.50 3.50 0 0 1 5.49 18.51A3.50 3.50 0 0 1 2.80 12.00A3.50 3.50 0 0 1 5.49 5.49A3.50 3.50 0 0 1 12.00 2.80A3.50 3.50 0 0 1 18.51 5.49A3.50 3.50 0 0 1 21.20 12.00Z"/><path class="vf-c" d="m8.2 12.2 2.6 2.6 5-5.2"/></svg>';
@@ -35,7 +34,6 @@ export const IC={
  calendar:s('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
  shield:s('<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>'),
  users:s('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 13.6a6.5 6.5 0 0 1 3.5 6.4"/>'),
- sliders:s('<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'),
  heart:s('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'),
  bag:s('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>'),
  grid:s('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
@@ -48,4 +46,5 @@ export const IC={
  close:s('<path d="M6 6l12 12M18 6 6 18"/>'),
  send:s('<path d="M21.5 2.5 10.5 13.5"/><path d="M21.5 2.5 14.5 21.5l-4-8-8-4z"/>'),
  edit:s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+ archive:s('<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>'),
  mute:s('<path d="M6 16v-5a6 6 0 0 1 9.4-4.9M18 11v5l2 2H8M10 20a2 2 0 0 0 4 0M3 3l18 18"/>')};

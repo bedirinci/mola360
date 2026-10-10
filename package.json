@@ -5,10 +5,14 @@
   "description": "Gezi, etkinlik ve konaklama rezervasyon platformu.",
   "scripts": {
     "dev": "node scripts/sunucu.js",
+    "kategoriler": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/kategoriler.mjs",
+    "goruntu": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/goruntu.mjs",
+    "hizli": "vitest run --exclude tests/v2-tarayici.test.js",
     "test": "vitest run"
   },
   "devDependencies": {
     "jsqr": "^1.4.0",
+    "playwright": "1.56.1",
     "vitest": "^2.1.4"
   }
 }

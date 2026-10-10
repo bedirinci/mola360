@@ -1,5 +1,5 @@
 /* "Planlarken yanındayız": beni ara formu ve saat seçme çekmecesi. Çevrimiçi göstergesi shell.js'te. */
-import { isLive } from './shell.js';
+import { isLive, istHour } from './shell.js';
 import { makeSheet } from './ui.js';
 const HELP=`<section class="help" aria-labelledby="h-help">
   <div class="help-hd"><h2 id="h-help">Planlarken yanındayız</h2><i class="live dark" data-live><em></em><span data-live-t>Çevrimiçi</span></i></div>
@@ -38,8 +38,8 @@ function initHelp(){
 function callSlots(){
   const on=isLive();
   const sel=document.getElementById('cWhen'),prev=sel.value;
-  /* aralıklar tarayıcı saatine göre: henüz başlamamış ilk üç aralık */
-  const SL=[['sabah',9,12],['öğlen',12,17],['akşam',17,22]],bh=new Date().getHours(),p2=n=>String(n).padStart(2,'0')+':00',nx=[];
+  /* aralıklar İstanbul saatine göre (çevrimiçi göstergesiyle aynı): henüz başlamamış ilk üç aralık */
+  const SL=[['sabah',9,12],['öğlen',12,17],['akşam',17,22]],bh=istHour(),p2=n=>String(n).padStart(2,'0')+':00',nx=[];
   for(const d of ['Bu','Yarın'])for(const [n,a,z] of SL)if((d==='Yarın'||a>bh)&&nx.length<3)nx.push(d+' '+n+' ('+p2(a)+' – '+p2(z)+')');
   const opts=(on?['Hemen']:[]).concat(nx);
   const v=opts.includes(prev)?prev:opts[0];sel.value=v;document.getElementById('cWhenTxt').textContent=v;
@@ -63,5 +63,5 @@ tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true'&&
 cf.addEventListener('submit',e=>{e.preventDefault();
   if(!telOk(tel.value)){tel.setAttribute('aria-invalid','true');telErr.hidden=false;tel.focus();return}
   const n=document.getElementById('cName').value.trim(),w=document.getElementById('cWhen').value;
-  cf.hidden=true;cb.setAttribute('aria-expanded','false');ok.hidden=false;ok.textContent=(n?n+', ':'')+'talebin alındı. Uzmanımız '+(w==='Hemen'?'birkaç dakika içinde':w.toLocaleLowerCase('tr').replace(/ \(.*\)/,'')+' '+(w.match(/\((.*)\)/)||['',''])[1]+' arasında')+' seni arayacak. (Taslak: gerçek talep gönderilmedi.)'});
+  cf.hidden=true;cb.setAttribute('aria-expanded','false');ok.hidden=false;ok.textContent=(n?n+', ':'')+'talebin alındı. Uzmanımız '+(w==='Hemen'?'birkaç dakika içinde':w.toLocaleLowerCase('tr').replace(/ \(.*\)/,'')+' '+(w.match(/\((.*)\)/)||['',''])[1]+' arasında')+' seni arayacak.'});
 }

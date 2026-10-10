@@ -4,7 +4,7 @@ import { renderShell } from './shell.js';
 import { findByTitle, listUpcoming, cancelBooking, payRemaining, listPastBookings, rateBooking, parseDay, today, typeKey } from './api.js';
 import { productCard } from './cards.js';
 import { favList, initFavorites, favSync } from './favorites.js';
-import { toast, tl, makeSheet, sc } from './ui.js';
+import { toast, tl, makeSheet, sc, esc } from './ui.js';
 import { IC, I } from './icons.js';
 import { ROOT } from './root.js';
 import { getLevel } from './level.js';
@@ -14,10 +14,12 @@ import { karekodSvg } from './karekod.js';
 renderShell('planlarim');
 initFavorites();
 
-/* Tarih tek biçimde: "10 Ekim Cumartesi · 07:30" */
+/* Tarih tek biçimde: "10 Ekim Cumartesi · 07:30". Rezervasyon bu cihazda
+   tutulduğu için alanlar HTML'e esc ile basılır */
 const longDay=d=>d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'});
-const when=b=>{const d=b.day;if(!d)return [b.date,b.slot].filter(Boolean).join(' · ');
-  return [longDay(d),(b.date.split(' · ')[1]||''),b.slot].filter(Boolean).join(' · ')};
+const when=b=>{const d=b.day;if(!d)return esc([b.date,b.slot].filter(Boolean).join(' · '));
+  return esc([longDay(d),(b.date.split(' · ')[1]||''),b.slot].filter(Boolean).join(' · '))};
+const what=b=>esc([b.opt,b.qty].filter(Boolean).join(' · '));
 /* Kaç gün kaldı */
 const left=d=>{if(!d)return '';const n=Math.round((d-today())/864e5);return n<0?'':n===0?'Bugün':n===1?'Yarın':n+' gün kaldı'};
 const qtyLabel=p=>({otel:'Oda',etkinlik:'Bilet'})[typeKey(p.type)]||'Kişi';
@@ -28,7 +30,7 @@ const head=(p,line,cd)=>'<a class="rz-hd" href="'+ROOT+'urun/?id='+p.id+'"><span
 
 const up=b=>{const p=b.product,rest=due(b);
   return '<article class="rz" data-no="'+b.no+'">'+head(p,when(b),left(b.day))
-  +'<div class="rz-rows"><div><small>'+qtyLabel(p)+'</small><b>'+[b.opt,b.qty].filter(Boolean).join(' · ')+'</b></div>'
+  +'<div class="rz-rows"><div><small>'+qtyLabel(p)+'</small><b>'+what(b)+'</b></div>'
   +'<div><small>Durum</small><b>'+(rest>0?'Kapora ödendi':'Ödendi')+'</b></div><div><small>Toplam</small><b>'+tl(b.total)+'</b></div></div>'
   +(rest>0?'<div class="rz-pay"><div><small>Kalan ödeme</small><b>'+tl(rest)+'</b></div><button type="button" class="btn green" data-pay>Kalanı öde</button></div>':'')
   +'<div class="rz-acts"><button type="button" class="btn ghost" data-bilet>'+IC.ticket+'Biletim</button>'
@@ -74,7 +76,7 @@ function after(fn){let done=false;const go=()=>{if(done)return;done=true;removeE
 const byNo=no=>listUpcoming().find(b=>b.no===no);
 
 function ticket(b,from){const p=b.product;
-  sheet('Biletin','<div class="tk-c"><b>'+p.title+'</b><span>'+when(b)+'</span><span>'+[b.opt,b.qty].filter(Boolean).join(' · ')+'</span>'
+  sheet('Biletin','<div class="tk-c"><b>'+p.title+'</b><span>'+when(b)+'</span><span>'+what(b)+'</span>'
     +karekodSvg(b.no,b.no+' bilet karekodu')+'<strong>'+b.no+'</strong><small>Girişte ya da buluşma noktasında bu kodu okut.</small></div>'
     +'<div class="ex-b"><button type="button" class="btn ghost" data-ics>'+IC.calendar+'Takvime ekle</button></div>',from)}
 
@@ -101,7 +103,7 @@ function rate(id,from){const b=listPastBookings().find(x=>x.productId===id);if(!
     +'<p class="dg-w" aria-live="polite"></p>'
     +'<p class="dg-h">Ayrıntılı puan <small>İsteğe bağlı</small></p><div class="dg-alt">'+names.map((a,k)=>'<div class="dg-r"><label for="dgA'+k+'">'+a+'</label>'
       +'<input type="range" id="dgA'+k+'" min="1" max="10" step="1" value="'+(rv.alt[a]||rv.n||8)+'" data-alt="'+a+'"'+(rv.alt[a]?' data-set':'')+'><output for="dgA'+k+'">'+(rv.alt[a]||'–')+'</output></div>').join('')+'</div>'
-    +'<label class="dg-l" for="rvTxt">Neler hoşuna gitti? <small>İsteğe bağlı</small></label><textarea id="rvTxt" rows="3" maxlength="500" placeholder="Rehber, ulaşım, yemek…">'+(r.metin||'')+'</textarea>'
+    +'<label class="dg-l" for="rvTxt">Neler hoşuna gitti? <small>İsteğe bağlı</small></label><textarea id="rvTxt" rows="3" maxlength="500" placeholder="Rehber, ulaşım, yemek…">'+esc(r.metin||'')+'</textarea>'
     +'<div class="ex-b"><button type="button" class="btn green" data-rvgo>Gönder</button></div>',from);
   paintScore()}
 function paintScore(){document.querySelectorAll('[data-n]').forEach(s=>s.setAttribute('aria-checked',+s.dataset.n===rv.n));
@@ -115,11 +117,13 @@ function askCancel(b,from){
     +'<div class="ex-b"><button type="button" class="btn danger" data-cxgo>İptal et</button><button type="button" class="btn ghost" data-x>Vazgeç</button></div>',from,true)}
 
 /* Takvim dosyası (.ics) */
-function ics(b){const d=b.day;if(!d)return;const [h,mi]=(b.slot||'09:00').split(':').map(Number);
-  const p2=n=>String(n).padStart(2,'0'),st=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(h||9)+p2(mi||0)+'00';
+/* Saat "07:30", "Giriş 14:00" ya da "Tüm gün" olabilir: saat yoksa tüm gün etkinliği.
+   Metin alanlarında virgül, noktalı virgül ve ters bölü kaçışlanır (RFC 5545) */
+function ics(b){const d=b.day;if(!d)return;const t=/(\d{1,2}):(\d{2})/.exec(b.slot||'');
+  const p2=n=>String(n).padStart(2,'0'),day=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate()),tx=s=>String(s).replace(/[\\;,]/g,c=>'\\'+c);
   const loc=b.meet?b.meet.yer+', '+b.meet.adres:b.product.place;
   const txt=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//mola360//TR','BEGIN:VEVENT','UID:'+b.no+'@mola360','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',
-    'DTSTART:'+st,'SUMMARY:'+b.product.title,'LOCATION:'+loc.replace(/,/g,'\\,'),'DESCRIPTION:Rezervasyon no '+b.no,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+    t?'DTSTART:'+day+'T'+p2(+t[1])+t[2]+'00':'DTSTART;VALUE=DATE:'+day,'SUMMARY:'+tx(b.product.title),'LOCATION:'+tx(loc),'DESCRIPTION:Rezervasyon no '+b.no,'END:VEVENT','END:VCALENDAR'].join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/calendar'}));a.download='mola360-'+b.no+'.ics';
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 

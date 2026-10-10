@@ -5,10 +5,9 @@
 import { FOLLOWING, ME, getUser } from './api.js';
 import { USERS } from './data.js';
 import { ava, userUrl } from './cards.js';
-import { makeSheet } from './ui.js';
+import { makeSheet, esc } from './ui.js';
 import { IC, VERIFIED } from './icons.js';
 
-const h=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 const norm=t=>String(t).toLocaleLowerCase('tr');
 const $=id=>document.getElementById(id);
 const SK='m360-takip';
@@ -42,7 +41,7 @@ const HTML=`<div class="sh-bg" id="tkBg"></div>
 let sheet,cur={key:'',tab:'ers',q:'',counts:[0,0],kul:''};
 function row(k){
   const me=k==='me',u=U(k),on=!me&&mine().includes(k);
-  return '<div class="flw-r"><a class="flw-p" href="'+userUrl(u)+'">'+ava(u)+'<span class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+h(u.ad)+'</small></span></a>'
+  return '<div class="flw-r"><a class="flw-p" href="'+userUrl(u)+'">'+ava(u)+'<span class="x"><b>'+u.kul+(u.onay?VERIFIED:'')+'</b><small>'+esc(u.ad)+'</small></span></a>'
    +(me?'<span class="flw-me">Sen</span>':'<button type="button" class="follow'+(on?'':' go')+'" data-tf="'+k+'" aria-pressed="'+on+'">'+(on?'Takiptesin':'Takip et')+'</button>')+'</div>';
 }
 function draw(){
