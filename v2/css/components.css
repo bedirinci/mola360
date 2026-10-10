@@ -377,7 +377,7 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 /* puanın sözcüğü (Harika) yalnızca liste ve büyük kartta */
 .vk-st em{display:none}
 /* yer satırı, özellik çipleri ve ok yalnızca büyük kartta */
-.vk-pl,.vk-ch,.vk-go,.vk-fc,.vk-p em{display:none}
+.vk-pl,.vk-ch,.vk-fc,.vk-p em{display:none}
 .vk-st.new{background:var(--card);color:var(--ink);font-size:var(--fs-xs);padding:3px 8px;border-radius:var(--r-xs)}
 .vk-p{display:flex;flex-direction:column;align-items:flex-end;background:#fff;color:var(--ink);border-radius:var(--r-sm);padding:4px 9px 5px;white-space:nowrap;min-width:0;line-height:var(--lh-tight)}
 .vk-p b{font-size:var(--fs-base);font-weight:var(--fw-black);letter-spacing:var(--ls-snug);font-variant-numeric:tabular-nums}
@@ -399,9 +399,9 @@ html.kb .pics:focus-visible{outline-offset:-2px}
 .stack .vk-b{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;padding:22px 0 0}
 .stack .vk h3{font-size:var(--fs-base)}
 .stack .vk-s{display:none}
-.stack .vk-pl,.ls-grid .vk-pl{display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stack .vk-pl,.ls-grid .vk-pl{display:block;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--mute);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stack .vk-pl{order:-1}
-.stack .vk-pl svg,.ls-grid .vk-pl svg{width:14px;height:14px;flex:none;stroke-width:2.2}
+.stack .vk-pl svg,.ls-grid .vk-pl svg{display:inline-block;width:14px;height:14px;margin-right:4px;vertical-align:-2px;stroke-width:2.2}
 .stack .vk-pl b,.ls-grid .vk-pl b{color:var(--ink)}
 .stack .vk h3{order:-2}
 .stack .vk-fc,.ls-grid .vk-fc{display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--green-ink)}

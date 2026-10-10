@@ -219,7 +219,7 @@ describe.skipIf(!VAR)('v2 tarayıcıda', () => {
     /* adresle açılınca da süre seçili gelir; süre kalkınca adres yalın */
     await page.goto(base + pg.path + '?sure=' + sure, { waitUntil: 'networkidle' });
     expect(await page.textContent('#ltN')).toBe('1');
-    await page.click('#filters [data-off="sure"]');
+    await page.click('#filters [data-off="sure:' + sure + '"]');
     expect(page.url()).toBe(base + pg.path);
     expect(await kat()).toEqual([false, false, false]);
     expect(sorun).toEqual([]);

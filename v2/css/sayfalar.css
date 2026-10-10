@@ -52,7 +52,8 @@ body{min-height:100vh;min-height:100dvh}
    lacivert puan kutusu, fiyat ve yeşil ok */
 .ls-grid{display:flex;flex-direction:column;gap:16px;padding:12px 16px 0}
 .ls-grid .vk{width:auto;aspect-ratio:auto;justify-content:flex-start;background:var(--card);color:var(--ink);border-radius:var(--r-xl);box-shadow:var(--shadow)}
-.ls-grid .vk::before{content:"";display:block;flex:none;aspect-ratio:16/10;margin:8px 8px 0;border-radius:var(--r-lg);background:var(--g)}
+/* genişlik açık yazılı: Safari'de en-boy oranlı ::before sağ boşluğu yok sayıp kartın kenarına dayanıyordu */
+.ls-grid .vk::before{content:"";display:block;flex:none;width:calc(100% - 16px);aspect-ratio:16/10;margin:8px auto 0;border-radius:var(--r-lg);background:var(--g)}
 .ls-grid .vk-tg{left:20px;top:20px}
 .ls-grid .vk-off{left:20px;top:50px}
 .ls-grid .vk .heart{right:20px;top:20px}
@@ -67,15 +68,24 @@ body{min-height:100vh;min-height:100dvh}
 .ls-grid .vk-st.new{background:var(--soft)}
 .ls-grid .vk-p{margin-left:auto;background:none;padding:0;border-radius:0}
 .ls-grid .vk-p b{font-size:var(--fs-xl)}
-.ls-grid .vk-go{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--green);color:var(--navy)}
-.ls-grid .vk-go svg{width:18px;height:18px;stroke-width:2.4}
 @media (max-width:359px){.ls-grid .vk-st em{display:none}}
 .ls-grid+.kat-seo{margin-top:24px}
 /* Filtreler çekmecesi */
-.lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:60vh;overflow-y:auto}
+.lf-b{display:flex;flex-direction:column;gap:18px;padding:6px 0 4px;max-height:68vh;overflow-y:auto;overscroll-behavior:contain}
 .lf-g{border:0;margin:0;padding:0;min-width:0}
-.lf-g legend{padding:0;margin-bottom:10px;font-size:var(--fs-base);font-weight:var(--fw-bold)}
-.lf-c{display:flex;flex-wrap:wrap;gap:8px}
+/* başlık yüzer: fieldset'in özel legend yerleşimi kalkar, ayraç çizgisi başlığın üstünde kalır */
+.lf-g legend{float:left;width:100%;padding:0;margin-bottom:4px;font-size:var(--fs-base);font-weight:var(--fw-bold)}
+/* işaretlemeli satır: solda kutu, ad, sağda kaç deneyim */
+.lf-c{clear:both;display:flex;flex-direction:column}
+.lf-o{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:4px 0;text-align:left;font-size:var(--fs-base);color:var(--ink)}
+.lf-cb{display:grid;place-items:center;flex:none;width:22px;height:22px;border:1.5px solid #C9CEDA;border-radius:var(--r-xs);background:var(--card);color:transparent}
+.lf-cb svg{width:15px;height:15px;stroke-width:3}
+.lf-o[aria-checked="true"] .lf-cb{background:var(--navy);border-color:var(--navy);color:#fff}
+.lf-o[aria-checked="true"] .lf-l{font-weight:var(--fw-semi)}
+.lf-l{flex:1;min-width:0}
+.lf-o i{font-style:normal;font-size:var(--fs-md);color:var(--mute);font-variant-numeric:tabular-nums}
+.lf-more{align-self:flex-start;margin-top:4px;padding:6px 0;font-size:var(--fs-md);font-weight:var(--fw-bold);color:var(--navy);text-decoration:underline;text-underline-offset:3px}
+.lf-g+.lf-g{padding-top:18px;border-top:1px solid var(--line)}
 .lf-f{display:flex;gap:10px;padding-top:16px;margin-top:8px;border-top:1px solid var(--line)}
 .lf-f .btn{justify-content:center;padding:14px;font-size:var(--fs-base)}
 .lf-f .ghost{flex:none;padding:14px 18px}

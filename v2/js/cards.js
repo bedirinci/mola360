@@ -31,7 +31,7 @@ export function card(x){
   return '<article class="vk" style="--g:'+(x.gbg||G[x.g])+'"><div class="vk-tg"><span class="type">'+x.k+'</span>'+(lv?'<span class="vk-off">%10 indirim</span>':'')+'</div>'+heartBtn(x.t)
   +'<div class="vk-b">'+pp(x.id,x.pp)+'<p class="vk-pl">'+PIN+(x.km!=null?'<b>'+km(x.km)+'</b> · ':'')+placeOf(x)+'</p><h3>'+ttl(x.t)+'</h3><p class="vk-s">'+(x.km!=null?'<span class="km">'+PIN+km(x.km)+'</span> · ':'')+placeOf(x)+(durOf(x)?' · '+durOf(x):'')+'</p>'+chips(x)+'<p class="vk-fc">'+IC.check+'Ücretsiz iptal</p>'
   +'<div class="vk-r">'+(x.s&&x.c?'<span class="vk-st">'+STAR+'<b>'+x.s.toFixed(1).replace('.',',')+'</b><em>'+word(x.s)+'</em> <i>('+x.c.toLocaleString('tr-TR')+')</i></span>':'<span class="vk-st new">Yeni</span>')
-  +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s><em>Kâşif fiyatı</em>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span><span class="vk-go" aria-hidden="true">'+IC.right+'</span></div></div></article>';
+  +'<span class="vk-p">'+(lv?'<s>'+tl(x.p)+'</s><em>Kâşif fiyatı</em>':'')+'<b>'+tl(lvPrice(x.t,x.p))+'</b><small>'+unitOf(unit)+'</small></span></div></div></article>';
 }
 
 /* Veri katmanındaki ürünü (api.js) kart biçimine çevirip çizer */
