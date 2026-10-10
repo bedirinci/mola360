@@ -2175,3 +2175,24 @@ güncellenecek yaşayan proje dokümanıdır.
   v2'nin CSS ve JS dosyalarında `text-wrap:balance` olursa düşer.
   Paragraflardaki `text-wrap:pretty` kalıyor.
 - **UX sonucu:** Sığan başlık tek satır; sığmayan başlık doğal kırılır.
+
+### 2026-10-10 — Liste araç çubuğu: Filtreler, sıralama, ızgara/liste
+
+- **Karar:** Liste ve şehir/kategori sayfalarında başlığın altındaki çip
+  satırı ve "N deneyim · Önerilen sıralama" satırı tek bir araç çubuğuna
+  dönüştü: solda Filtreler, sağda sıralama ve ızgara/liste geçişi.
+- **Neden:** Bedir referans görselle "bunun gibi kaliteli bir bölüm"
+  istedi. Eski satırdaki "Yakınımda", "Fiyat aralığı" ve sıralama
+  çalışmıyordu.
+- **Etkilediği alanlar:** `v2/liste/` ve ondan üretilen bütün SEO liste
+  sayfaları (`v2/izmir/…`, `v2/oteller/…`, `v2/turlar/…`).
+- **Teknik sonuç:** Filtreler alttan çekmece açar (süre, kiminle, fiyat
+  aralığı; seçim "N deneyimi gör" ile uygulanır, sayısı düğmede rozet).
+  Fiyat aralıkları listenin kendi fiyatlarından üçte birlik dilimlerle
+  çıkar, boş dilim gösterilmez. Sıralama: Önerilen, Yakınımda (konum
+  yalnızca seçilince istenir, kartta km), En düşük fiyat, En yüksek puan.
+  Görünüm tarayıcıda hatırlanır (`m360-liste-gorunum`). Fiyat ve sıra
+  adrese yazılmaz; süre ve kiminle adreste kalır.
+- **UX sonucu:** Seçili filtreler çubuğun altında × ile kaldırılabilen
+  lacivert çiplerdir. Izgara iki sütunlu görsel kartlar, liste
+  karşılaştırmalı yatay kartlardır. 320 px'te üç parça tek satıra sığar.
