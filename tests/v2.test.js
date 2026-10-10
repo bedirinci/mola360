@@ -28,6 +28,11 @@ describe('v2', () => {
     });
   });
 
+  it('yazılar sığdığı halde alt satıra kaymaz (text-wrap:balance yok)', () => {
+    // Safari balance ile tek satıra sığan başlığı da ikiye bölüyor.
+    kodlar.forEach(f => expect(oku(f), relative(V2, f)).not.toMatch(/text-wrap(-style)?:\s*balance\s*[;}]/));
+  });
+
   it('birden çok sayfa var ve hepsi yayına hazır olana kadar arama motorlarına kapalı', () => {
     expect(sayfalar.length).toBeGreaterThan(1);
     sayfalar.forEach(f => expect(oku(f), relative(V2, f)).toMatch(/<meta name="robots" content="noindex, nofollow">/));
