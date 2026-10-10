@@ -2254,9 +2254,13 @@ güncellenecek yaşayan proje dokümanıdır.
   sayfasındaki ızgara yerine tek sütun "büyük kart" görünümü var (Bedir
   dört örnekten B'yi seçti): beyaz kart, geniş görsel (tür, indirim,
   favori üstünde); altında yer, ad, özellik çipleri, paylaşım; ayraçtan
-  sonra lacivert puan kutusu ("9,3 Harika (410)"), fiyat ve yeşil ok. Liste kartı da aynı
-  puan kutusunu kullanır; puan ile fiyat sığmazsa fiyat alt satıra iner.
-  Keşfet raylarındaki kartlar değişmedi.
+  sonra lacivert puan kutusu ("9,3 Harika (410)"), fiyat ve yeşil ok.
+  Liste kartı yatay "Kompakt premium" (Bedir on örnekten 9'u seçti,
+  görseli genişletti): solda 132 px görsel (favori, indirim üstünde);
+  sağda tür, ad, yer, yeşil tikli "Ücretsiz iptal", paylaşım; altta yıldız
+  ve lacivert puan kutusu ile fiyat. İki kartta da puanın önünde altın
+  yıldız, indirimli fiyatın üstünde yeşil "Kâşif fiyatı" ve "Ücretsiz
+  iptal" satırı var. Keşfet raylarındaki kartlar değişmedi.
 - **Neden:** Bedir çip bulutlarını çok yer kaplıyor, yan yana iki kartı
   ve görsel üstü yazılı kartları kötü buldu; liste kartlarının da daha
   iyi olmasını istedi (320 px'te puan ile "2 gece toplam" üst üste
@@ -2267,7 +2271,9 @@ güncellenecek yaşayan proje dokümanıdır.
 - **Teknik sonuç:** `sayfalar.css` (`.sh-tur`/`.sh-oz` şerit,
   `.ls-grid` tek sütun), `components.css` (liste kartı, puan kutusu),
   `cards.js` (puan `<b>`, sözcüğü `<em>`; yer satırı `.vk-pl`, çipler
-  `.vk-ch`, ok `.vk-go` yalnızca büyük kartta; otelde tarih çipi yok, SEO
+  `.vk-ch`, ok `.vk-go` yalnızca büyük kartta; `.vk-fc` ücretsiz iptal
+  ve `.vk-p em` Kâşif fiyatı liste ve büyük kartta; Yakınımda sıralamasında
+  uzaklık yer satırında; otelde tarih çipi yok, SEO
   sayfası tarihsiz kalır);
   görünüm düğmesinin ikonu büyük kart.
 - **UX sonucu:** Bağlar tek satır yer kaplar; büyük kart görseli öne
